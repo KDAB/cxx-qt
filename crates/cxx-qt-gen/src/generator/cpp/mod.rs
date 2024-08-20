@@ -91,12 +91,11 @@ pub fn get_cpp_params(method: &ForeignItemFn, type_names: &TypeNames) -> Result<
             if let FnArg::Typed(PatType { pat, ty, .. }) = input {
                 let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
                     ident
-                }
-                // CODECOV_EXCLUDE_START
-                else {
+                } else {
+                    // CODECOV_EXCLUDE_START
                     unreachable!("Unknown pattern for type, FnArg can only have Pat::Ident")
+                    // CODECOV_EXCLUDE_STOP
                 };
-                // CODECOV_EXCLUDE_STOP
 
                 Ok(Some(CppNamedType {
                     ident: ident.to_string(),

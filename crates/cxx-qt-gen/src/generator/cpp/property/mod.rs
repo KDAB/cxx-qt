@@ -11,7 +11,6 @@ use crate::generator::{
 use crate::{
     naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
 };
-
 use syn::Result;
 
 mod getter;
@@ -69,49 +68,40 @@ pub fn generate_cpp_properties(
 }
 
 #[cfg(test)]
-pub(crate) mod tests {
+pub mod tests {
     use super::*;
-
-    use crate::parser::property::QPropertyFlags;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::generator::structuring::Structures;
+    use crate::parser::property::QPropertyFlags;
     use crate::parser::qobject::ParsedQObject;
     use crate::{CppFragment, Parser};
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
-    use syn::{parse_quote, Error, ItemMod, ItemStruct};
+    use syn::{parse_quote, ItemMod, ItemStruct};
 
-    pub fn require_pair(fragment: &CppFragment) -> Result<(String, String)> {
+    pub fn require_pair(fragment: &CppFragment) -> core::result::Result<(String, String), String> {
         match fragment {
             CppFragment::Pair { header, source } => Ok((header.clone(), source.clone())),
-            _ => {
-                let fragment_string: String = fragment.clone().into();
-                Err(Error::new_spanned(fragment_string, "Expected Pair!"))
-            }
+            _ => Err(format!("Expected a pair, got {fragment:?} instead")),
         }
     }
 
-    pub fn require_header(fragment: &CppFragment) -> Result<String> {
+    pub fn require_header(fragment: &CppFragment) -> core::result::Result<String, String> {
         match fragment {
             CppFragment::Header(header) => Ok(header.clone()),
-            _ => {
-                let tokens: String = fragment.clone().into();
-                Err(Error::new_spanned(tokens, "Expected Header!"))
-            }
+            _ => Err(format!("Expected just a header, got {fragment:?} instead")),
         }
     }
 
-    pub fn require_source(fragment: &CppFragment) -> Result<String> {
+    pub fn require_source(fragment: &CppFragment) -> core::result::Result<String, String> {
         match fragment {
             CppFragment::Source(source) => Ok(source.clone()),
-            _ => {
-                let tokens: String = fragment.clone().into();
-                Err(Error::new_spanned(tokens, "Expected Source!"))
-            }
+            _ => Err(format!("Expected just a source, got {fragment:?} instead")),
         }
     }
+
     fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
 
