@@ -81,7 +81,7 @@ impl ParsedFunctionParameter {
         } else {
             return Err(Error::new(
                 type_pattern.span(),
-                "Invalid argument ident format.", // TODO: test this somehow
+                "Invalid argument ident format.",
             ));
         };
 
@@ -95,7 +95,7 @@ impl ParsedFunctionParameter {
 #[cfg(test)]
 mod tests {
     use quote::ToTokens;
-    use syn::ForeignItemFn;
+    use syn::{parse_quote, ForeignItemFn};
 
     use super::*;
 
@@ -108,6 +108,12 @@ mod tests {
         let parameters =
             ParsedFunctionParameter::parse_remaining(function.sig.inputs.iter()).unwrap();
         assert_eq!(parameters.len(), 0)
+    }
+
+    #[test]
+    fn test_parse_non_ident_type_pat() {
+        let type_pattern: PatType = parse_quote!( (a, b): (i32, i32) );
+        assert!(ParsedFunctionParameter::parse(&type_pattern).is_err())
     }
 
     #[test]

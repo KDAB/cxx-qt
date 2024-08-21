@@ -4,9 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use proc_macro2::TokenStream;
-use quote::{quote, ToTokens};
 use syn::{
     parse::{Parse, ParseStream, Parser},
+    parse_quote,
     spanned::Spanned,
     Attribute, Error, FnArg, ForeignItem, ForeignItemType, Ident, ItemForeignMod, Path, Receiver,
     Result, Signature, Token, Visibility,
@@ -62,13 +62,10 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
                 Ok(((), rest))
             })?;
 
-            Ok(Some(syn::parse2(
-                quote! {
-                    #(#attrs)*
-                    #visibility #type_token #ident;
-                }
-                .into_token_stream(),
-            )?))
+            Ok(Some(parse_quote! {
+                #(#attrs)*
+                #visibility #type_token #ident;
+            }))
         } else {
             // Error as we have parsed the attributes and visiblity but have an unknown stream
             //
@@ -205,6 +202,8 @@ mod tests {
     use syn::{parse_quote, ForeignItemFn};
 
     use super::*;
+
+    use quote::{quote, ToTokens};
 
     #[test]
     fn test_foreign_mod_to_foreign_item_types() {

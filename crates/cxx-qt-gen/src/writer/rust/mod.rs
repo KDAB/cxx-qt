@@ -52,6 +52,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
         items.extend(cxx_mod_contents);
     } else {
         cxx_mod.content = Some((syn::token::Brace::default(), cxx_mod_contents));
+        cxx_mod.semi = None;
     }
 
     quote! {
@@ -68,8 +69,9 @@ mod tests {
     use super::*;
 
     use crate::generator::rust::fragment::GeneratedRustFragment;
+    use crate::Parser;
     use pretty_assertions::assert_str_eq;
-    use syn::parse_quote;
+    use syn::{parse_quote, ItemMod};
 
     /// Helper to create a GeneratedRustBlocks for testing
     pub fn create_generated_rust() -> GeneratedRustBlocks {
@@ -298,6 +300,18 @@ mod tests {
         let generated = create_generated_rust();
         let result = write_rust(&generated);
         assert_str_eq!(result.to_string(), expected_rust());
+    }
+
+    #[test]
+    fn test_write_rust_empty_mod() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi;
+        };
+        let parser = Parser::from(module).unwrap();
+
+        let generated = GeneratedRustBlocks::from(&parser).unwrap();
+        write_rust(&generated);
     }
 
     #[test]

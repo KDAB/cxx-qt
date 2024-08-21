@@ -201,10 +201,11 @@ fn path_argument_to_string(
                 .map(|generic| generic_argument_to_string(generic, type_names))
                 .collect::<Result<Vec<String>>>()?,
         )),
-        PathArguments::Parenthesized(_) => Err(Error::new(
-            args.span(),
-            "Parenthesized arguments are unsupported",
-        )),
+        PathArguments::Parenthesized(_) => {
+            // CODECOV_EXCLUDE_START
+            unreachable!("Parenthesized path args are not supported!")
+            // CODECOV_EXCLUDE_STOP
+        }
         PathArguments::None => Ok(None),
     }
 }
@@ -450,6 +451,15 @@ mod tests {
         assert_eq!(
             syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
             Some("bool".to_string())
+        );
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_return_type_array() {
+        let ty = parse_quote! { -> [i32; 5] };
+        assert_eq!(
+            syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
+            Some("::std::array<::std::int32_t, 5>".to_string())
         );
     }
 

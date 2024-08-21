@@ -22,8 +22,10 @@ use crate::{
 };
 use cxxqtdata::ParsedCxxQtData;
 use syn::{
-    punctuated::Punctuated, spanned::Spanned, token::Brace, Error, Ident, Item, ItemMod, Meta,
-    Result, Token,
+    punctuated::Punctuated,
+    spanned::Spanned,
+    token::{Brace, Semi},
+    Error, Ident, Item, ItemMod, Meta, Result, Token,
 };
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
@@ -102,7 +104,13 @@ impl Parser {
         }
 
         // Create a new module using only items that are not CXX-Qt items
-        module.content = Some((Brace::default(), others));
+        if !others.is_empty() {
+            module.content = Some((Brace::default(), others));
+            module.semi = None;
+        } else {
+            module.content = None;
+            module.semi = Some(Semi::default());
+        }
         Ok((cxx_qt_data, module))
     }
 
@@ -164,11 +172,34 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
         let expected_module: ItemMod = parse_quote! {
-            mod ffi {}
+            mod ffi;
         };
         assert_eq!(parser.passthrough_module, expected_module);
         assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
+    }
+
+    #[test]
+    fn test_incorrect_bridge_args() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge(a, b, c)]
+            mod ffi {
+                extern "Rust" {
+                    fn test();
+                }
+            }
+        };
+        assert!(Parser::from(module).is_ok()); // Meta::List args in cxx_qt bridge are ignored
+
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge(a = b)]
+            mod ffi {
+                extern "Rust" {
+                    fn test();
+                }
+            }
+        };
+        assert!(Parser::from(module).is_ok()); // Meta::NameValue args which aren't `namespace` or `cxx_file_stem` are ignored
     }
 
     #[test]
@@ -216,7 +247,7 @@ mod tests {
 
         assert_eq!(parser.passthrough_module.attrs.len(), 0);
         assert_eq!(parser.passthrough_module.ident, "ffi");
-        assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 0);
+        assert!(parser.passthrough_module.content.is_none());
         assert_eq!(parser.cxx_qt_data.namespace, Some("cxx_qt".to_owned()));
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
         assert_eq!(parser.type_names.num_types(), 18);

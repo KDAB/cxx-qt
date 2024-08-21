@@ -28,28 +28,19 @@ fn from_pathsegment(segment: &PathSegment) -> Result<Vec<Lifetime>> {
             .into_iter()
             .flatten()
             .collect()),
-        PathArguments::Parenthesized(ref parens) => Ok(parens
-            .inputs
-            .iter()
-            .map(from_type)
-            .collect::<Result<Vec<Vec<Lifetime>>>>()?
-            .into_iter()
-            .flatten()
-            .chain(
-                if let syn::ReturnType::Type(_arrow, ref return_ty) = parens.output {
-                    from_type(return_ty)?
-                } else {
-                    vec![]
-                },
+        PathArguments::Parenthesized(_) => {
+            // CODECOV_EXCLUDE_START
+            unreachable!(
+                "Parenthesized path args should not be in function args, only trait bounds!"
             )
-            .collect()),
+            // CODECOV_EXCLUDE_STOP
+        }
     }
 }
 
 pub fn from_type(ty: &Type) -> Result<Vec<Lifetime>> {
     match ty {
         Type::Array(array) => from_type(&array.elem),
-        Type::Group(group) => from_type(&group.elem),
         Type::Paren(paren) => from_type(&paren.elem),
         Type::Ptr(pointer) => from_type(&pointer.elem),
         Type::Slice(slice) => from_type(&slice.elem),

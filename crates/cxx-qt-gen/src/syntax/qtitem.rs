@@ -108,6 +108,16 @@ mod tests {
     }
 
     #[test]
+    fn test_format_non_cxx() {
+        let cxx: CxxQtItem = parse_quote! {
+            #[attr]
+            mod ffi {}
+        };
+        let debug_formatted = format!("{:?}", cxx);
+        assert!(debug_formatted.starts_with("Item(Item::Mod"))
+    }
+
+    #[test]
     fn test_format_rust_item() {
         let rust: CxxQtItem = parse_quote! {
           struct MyStruct {

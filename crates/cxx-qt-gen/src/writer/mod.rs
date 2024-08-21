@@ -11,9 +11,11 @@ use std::{error::Error, path::PathBuf};
 fn header_prefix_from_out_dir() -> Result<String, Box<dyn Error>> {
     // This file should be written by cxx-qt-build
     let header_prefix_path = PathBuf::from(std::env::var("OUT_DIR")?)
+        // CODECOV_EXCLUDE_START
         .join("cxx-qt-gen")
         .join("include-prefix.txt");
     Ok(std::fs::read_to_string(header_prefix_path)?)
+    // CODECOV_EXCLUDE_STOP
 }
 
 pub(crate) fn get_header_prefix() -> String {
