@@ -225,7 +225,7 @@ mod tests {
 
         assert_str_eq!(
             generated.metaobjects[0],
-            "Q_PROPERTY(::std::int32_t num READ getNum WRITE mySetter RESET my_resetter)"
+            "Q_PROPERTY(::std::int32_t num READ getNum WRITE mySetter RESET myResetter)"
         );
     }
 

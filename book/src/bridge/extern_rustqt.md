@@ -99,13 +99,13 @@ For further documentation see the [traits page](./traits.md).
 The `#[qproperty(TYPE, NAME, ...)]` attribute can be specified on a [`#[qobject]` marked type](#qobjects) to expose a [`Q_PROPERTY`](https://doc.qt.io/qt-6/properties.html) on the generated `QObject`.
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_signature}}
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct_signature}}
 ```
 
 The type and name of the
 
 ```rust,ignore,noplayground
-{{#include ../../../examples/qml_features/rust/src/properties.rs:book_properties_struct}}
+{{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct}}
 ```
 
 For every `#[qproperty]`, CXX-Qt will generate setters and getters, as well as a "changed" signal.
@@ -134,8 +134,6 @@ These setters and getters assure that the changed signal is emitted every time t
 It is also possible to specify custom getters, setters and notify signals, using flags passed like so:
 `#[qproperty(TYPE, NAME, READ = myGetter, WRITE = mySetter, NOTIFY = myOnChanged)]`
 > Note: the key for the flags use all capitals like in the Qt version of qproperty
-
-> Note: currently the rust name must be in camel case or specified like `#[cxx_name = "my_getter"]` if not
 
 It is also possible to use any combination of custom functions or omit them entirely, but if flags are specified, read must be included as all properties need to be able to be read.
 
