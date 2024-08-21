@@ -68,19 +68,39 @@ pub fn generate_cpp_properties(
 }
 
 #[cfg(test)]
-mod tests {
+pub mod tests {
     use super::*;
-
-    use crate::parser::property::QPropertyFlags;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::generator::structuring::Structures;
+    use crate::parser::property::QPropertyFlags;
     use crate::parser::qobject::ParsedQObject;
     use crate::{CppFragment, Parser};
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
     use syn::{parse_quote, ItemMod, ItemStruct};
+
+    pub fn require_pair(fragment: &CppFragment) -> core::result::Result<(String, String), String> {
+        match fragment {
+            CppFragment::Pair { header, source } => Ok((header.clone(), source.clone())),
+            _ => Err(format!("Expected a pair, got {fragment:?} instead")),
+        }
+    }
+
+    pub fn require_header(fragment: &CppFragment) -> core::result::Result<String, String> {
+        match fragment {
+            CppFragment::Header(header) => Ok(header.clone()),
+            _ => Err(format!("Expected just a header, got {fragment:?} instead")),
+        }
+    }
+
+    pub fn require_source(fragment: &CppFragment) -> core::result::Result<String, String> {
+        match fragment {
+            CppFragment::Source(source) => Ok(source.clone()),
+            _ => Err(format!("Expected just a source, got {fragment:?} instead")),
+        }
+    }
 
     fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
         let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
@@ -139,6 +159,45 @@ mod tests {
     }
 
     #[test]
+    fn test_unexpected_headers() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(i32, num, READ, WRITE = mySetter)]
+            struct MyStruct;
+        };
+
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+
+        let properties = vec![property];
+
+        let qobject_idents = create_qobjectname();
+
+        let module = mock_module_custom_setter();
+        let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+
+        let structured_qobject = structures.qobjects.first().unwrap();
+
+        let type_names = TypeNames::mock();
+        let generated = generate_cpp_properties(
+            &properties,
+            &qobject_idents,
+            &type_names,
+            structured_qobject,
+        )
+        .unwrap();
+
+        // should be a pair
+        let result = require_header(&generated.methods[0]);
+        assert!(result.is_err());
+
+        let result = require_pair(&generated.private_methods[0]);
+        assert!(result.is_err());
+
+        let result = require_source(&generated.methods[0]);
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn test_custom_setter() {
         let mut input: ItemStruct = parse_quote! {
             #[qproperty(i32, num, READ, WRITE = mySetter)]
@@ -174,11 +233,7 @@ mod tests {
 
         // Methods
         assert_eq!(generated.methods.len(), 1);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
-            (header, source)
-        } else {
-            panic!("Expected pair!")
-        };
+        let (header, source) = require_pair(&generated.methods[0]).unwrap();
 
         assert_str_eq!(header, "::std::int32_t const& getNum() const;");
         assert_str_eq!(
@@ -283,12 +338,8 @@ mod tests {
 
         // methods
         assert_eq!(generated.methods.len(), 6);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
-            (header, source)
-        } else {
-            panic!("Expected pair!")
-        };
 
+        let (header, source) = require_pair(&generated.methods[0]).unwrap();
         assert_str_eq!(header, "::std::int32_t const& getTrivialProperty() const;");
         assert_str_eq!(
             source,
@@ -302,11 +353,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
-            (header, source)
-        } else {
-            panic!("Expected pair!")
-        };
+        let (header, source) = require_pair(&generated.methods[1]).unwrap();
         assert_str_eq!(
             header,
             "Q_SLOT void setTrivialProperty(::std::int32_t const& value);"
@@ -323,11 +370,7 @@ mod tests {
                 "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[2] {
-            (header, source)
-        } else {
-            panic!("Expected pair!")
-        };
+        let (header, source) = require_pair(&generated.methods[2]).unwrap();
 
         assert_str_eq!(
             header,
@@ -345,11 +388,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
-            (header, source)
-        } else {
-            panic!("Expected pair!")
-        };
+        let (header, source) = require_pair(&generated.methods[3]).unwrap();
         assert_str_eq!(
             header,
             "Q_SLOT void setOpaqueProperty(::std::unique_ptr<QColor> const& value);"
@@ -366,27 +405,15 @@ mod tests {
             "#}
         );
 
-        let header = if let CppFragment::Header(header) = &generated.methods[4] {
-            header
-        } else {
-            panic!("Expected header!")
-        };
+        let header = require_header(&generated.methods[4]).unwrap();
         assert_str_eq!(header, "Q_SIGNAL void trivialPropertyChanged();");
 
-        let header = if let CppFragment::Header(header) = &generated.methods[5] {
-            header
-        } else {
-            panic!("Expected header!")
-        };
+        let header = require_header(&generated.methods[5]).unwrap();
         assert_str_eq!(header, "Q_SIGNAL void opaquePropertyChanged();");
 
         assert_eq!(generated.fragments.len(), 2);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
-        {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
+
         assert_str_eq!(
             header,
             indoc! {r#"
@@ -442,12 +469,8 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[1]
-        {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
+        let (header, source) = require_pair(&generated.fragments[1]).unwrap();
+
         assert_str_eq!(
             header,
             indoc! {r#"
@@ -505,41 +528,27 @@ mod tests {
 
         // private methods
         assert_eq!(generated.private_methods.len(), 4);
-        let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[0]).unwrap();
         assert_str_eq!(
             header,
             "::std::int32_t const& getTrivialPropertyWrapper() const noexcept;"
         );
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[1] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[1]).unwrap();
         assert_str_eq!(
             header,
             "void setTrivialPropertyWrapper(::std::int32_t value) noexcept;"
         );
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[2] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[2]).unwrap();
+
         assert_str_eq!(
             header,
             "::std::unique_ptr<QColor> const& getOpaquePropertyWrapper() const noexcept;"
         );
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[3] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[3]).unwrap();
+
         assert_str_eq!(
             header,
             "void setOpaquePropertyWrapper(::std::unique_ptr<QColor> value) noexcept;"
@@ -576,11 +585,8 @@ mod tests {
 
         // methods
         assert_eq!(generated.methods.len(), 3);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
-            (header, source)
-        } else {
-            panic!("Expected pair!")
-        };
+        let (header, source) = require_pair(&generated.methods[0]).unwrap();
+
         assert_str_eq!(header, "A1 const& getMappedProperty() const;");
         assert_str_eq!(
             source,
@@ -593,12 +599,8 @@ mod tests {
             }
             "#}
         );
+        let (header, source) = require_pair(&generated.methods[1]).unwrap();
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
-            (header, source)
-        } else {
-            panic!("Expected pair!")
-        };
         assert_str_eq!(header, "Q_SLOT void setMappedProperty(A1 const& value);");
         assert_str_eq!(
             source,
@@ -611,20 +613,14 @@ mod tests {
                 }
                 "#}
         );
-        let header = if let CppFragment::Header(header) = &generated.methods[2] {
-            header
-        } else {
-            panic!("Expected header!")
-        };
+        let header = require_header(&generated.methods[2]).unwrap();
+
         assert_str_eq!(header, "Q_SIGNAL void mappedPropertyChanged();");
 
         assert_eq!(generated.fragments.len(), 1);
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.fragments[0]
-        {
-            (header, source)
-        } else {
-            panic!("Expected Pair")
-        };
+
+        let (header, source) = require_pair(&generated.fragments[0]).unwrap();
+
         assert_str_eq!(
             header,
             indoc! {r#"
@@ -682,21 +678,14 @@ mod tests {
 
         // private methods
         assert_eq!(generated.private_methods.len(), 2);
-        let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[0]).unwrap();
+
         assert_str_eq!(
             header,
             "A1 const& getMappedPropertyWrapper() const noexcept;"
         );
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[1] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[1]).unwrap();
         assert_str_eq!(header, "void setMappedPropertyWrapper(A1 value) noexcept;");
     }
 }

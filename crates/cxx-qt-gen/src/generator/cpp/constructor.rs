@@ -43,9 +43,11 @@ fn default_constructor(
             {{ }}
             "#,
                 base_class_line = if base_class.is_empty() {
+                    // CODECOV_EXCLUDE_START
                     unreachable!(
                         "Cannot have an empty #[base] attribute  with no #[qobject] attribute"
                     );
+                    // CODECOV_EXCLUDE_STOP
                 } else {
                     format!(": {base_class}()")
                 },

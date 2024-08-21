@@ -27,8 +27,7 @@ use crate::naming::TypeNames;
 use crate::{generator::structuring, parser::Parser};
 use externcxxqt::GeneratedCppExternCxxQtBlocks;
 use qobject::GeneratedCppQObject;
-use syn::spanned::Spanned;
-use syn::{Error, FnArg, ForeignItemFn, Pat, PatIdent, PatType, Result};
+use syn::{FnArg, ForeignItemFn, Pat, PatIdent, PatType, Result};
 
 /// Representation of the generated C++ code for a group of QObjects
 pub struct GeneratedCppBlocks {
@@ -93,19 +92,15 @@ pub fn get_cpp_params(method: &ForeignItemFn, type_names: &TypeNames) -> Result<
                 let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
                     ident
                 } else {
-                    return Err(Error::new(input.span(), "Unknown pattern for type"));
+                    // CODECOV_EXCLUDE_START
+                    unreachable!("Unknown pattern for type, FnArg can only have Pat::Ident")
+                    // CODECOV_EXCLUDE_STOP
                 };
 
-                // If the name of the argument is self then ignore,
-                // as this is likely the self: Pin<T>
-                if ident == "self" {
-                    Ok(None)
-                } else {
-                    Ok(Some(CppNamedType {
-                        ident: ident.to_string(),
-                        ty: syn_type_to_cpp_type(ty, type_names)?,
-                    }))
-                }
+                Ok(Some(CppNamedType {
+                    ident: ident.to_string(),
+                    ty: syn_type_to_cpp_type(ty, type_names)?,
+                }))
             } else {
                 Ok(None)
             }

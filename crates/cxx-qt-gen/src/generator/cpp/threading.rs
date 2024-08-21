@@ -45,6 +45,7 @@ pub fn generate(qobject_idents: &QObjectNames) -> Result<(String, GeneratedCppQO
 mod tests {
     use super::*;
 
+    use crate::generator::cpp::property::tests::require_source;
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
@@ -72,11 +73,7 @@ mod tests {
         // methods
         assert_eq!(generated.methods.len(), 1);
 
-        let source = if let CppFragment::Source(source) = &generated.methods[0] {
-            source
-        } else {
-            panic!("Expected source")
-        };
+        let source = require_source(&generated.methods[0]).unwrap();
         assert_str_eq!(
             source,
             indoc! {r#"

@@ -126,9 +126,11 @@ impl GeneratedCppQObject {
             if qobject.has_qobject_macro {
                 "QObject".to_string()
             } else {
+                // CODECOV_EXCLUDE_START
                 unreachable!(
                     "Cannot have an empty #[base] attribute  with no #[qobject] attribute"
                 );
+                // CODECOV_EXCLUDE_STOP
             }
         });
         generated.blocks.base_classes.push(base_class.clone());

@@ -130,6 +130,7 @@ pub fn generate_cpp_methods(
 mod tests {
     use super::*;
 
+    use crate::generator::cpp::property::tests::{require_header, require_pair};
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::naming::Name;
     use crate::parser::parameter::ParsedFunctionParameter;
@@ -197,11 +198,7 @@ mod tests {
         // methods
         assert_eq!(generated.methods.len(), 5);
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
-            (header, source)
-        } else {
-            panic!("Expected pair")
-        };
+        let (header, source) = require_pair(&generated.methods[0]).unwrap();
         assert_str_eq!(header, "Q_INVOKABLE void voidInvokable() const;");
         assert_str_eq!(
             source,
@@ -215,11 +212,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[1] {
-            (header, source)
-        } else {
-            panic!("Expected pair")
-        };
+        let (header, source) = require_pair(&generated.methods[1]).unwrap();
         assert_str_eq!(
             header,
             "Q_INVOKABLE ::std::int32_t trivialInvokable(::std::int32_t param) const;"
@@ -236,11 +229,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[2] {
-            (header, source)
-        } else {
-            panic!("Expected pair")
-        };
+        let (header, source) = require_pair(&generated.methods[2]).unwrap();
         assert_str_eq!(
             header,
             "Q_INVOKABLE ::std::unique_ptr<QColor> opaqueInvokable(QColor const& param);"
@@ -257,11 +246,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[3] {
-            (header, source)
-        } else {
-            panic!("Expected pair")
-        };
+        let (header, source) = require_pair(&generated.methods[3]).unwrap();
         assert_str_eq!(
             header,
             "Q_INVOKABLE virtual ::std::int32_t specifiersInvokable(::std::int32_t param) const final override;"
@@ -278,11 +263,7 @@ mod tests {
             "#}
         );
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[4] {
-            (header, source)
-        } else {
-            panic!("Expected pair")
-        };
+        let (header, source) = require_pair(&generated.methods[4]).unwrap();
         assert_str_eq!(header, "void cppMethod() const;");
         assert_str_eq!(
             source,
@@ -299,48 +280,28 @@ mod tests {
         // private methods
         assert_eq!(generated.private_methods.len(), 5);
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[0]).unwrap();
         assert_str_eq!(header, "void voidInvokableWrapper() const noexcept;");
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[1] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[1]).unwrap();
         assert_str_eq!(
             header,
             "::std::int32_t trivialInvokableWrapper(::std::int32_t param) const noexcept;"
         );
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[2] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[2]).unwrap();
         assert_str_eq!(
             header,
             "::std::unique_ptr<QColor> opaqueInvokableWrapper(QColor const& param) noexcept;"
         );
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[3] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[3]).unwrap();
         assert_str_eq!(
             header,
             "::std::int32_t specifiersInvokableWrapper(::std::int32_t param) const noexcept;"
         );
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[4] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[4]).unwrap();
         assert_str_eq!(header, "void cppMethodWrapper() const noexcept;");
     }
 
@@ -380,11 +341,7 @@ mod tests {
         // methods
         assert_eq!(generated.methods.len(), 1);
 
-        let (header, source) = if let CppFragment::Pair { header, source } = &generated.methods[0] {
-            (header, source)
-        } else {
-            panic!("Expected pair")
-        };
+        let (header, source) = require_pair(&generated.methods[0]).unwrap();
         assert_str_eq!(header, "Q_INVOKABLE B2 trivialInvokable(A1 param) const;");
         assert_str_eq!(
             source,
@@ -401,11 +358,7 @@ mod tests {
         // private methods
         assert_eq!(generated.private_methods.len(), 1);
 
-        let header = if let CppFragment::Header(header) = &generated.private_methods[0] {
-            header
-        } else {
-            panic!("Expected header")
-        };
+        let header = require_header(&generated.private_methods[0]).unwrap();
         assert_str_eq!(
             header,
             "B2 trivialInvokableWrapper(A1 param) const noexcept;"
