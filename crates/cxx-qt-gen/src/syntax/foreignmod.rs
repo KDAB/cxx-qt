@@ -271,6 +271,14 @@ mod tests {
     }
 
     #[test]
+    fn test_foreign_type_ident_alias_invalid() {
+        let alias = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+            struct MyStruct;
+        });
+        assert!(alias.is_err()); // Unsupported verbatim input from trying to parse a struct as a foreign Type alias
+    }
+
+    #[test]
     fn test_foreign_type_ident_alias() {
         let alias = syn::parse2::<ForeignTypeIdentAlias>(quote! {
             #[attr]

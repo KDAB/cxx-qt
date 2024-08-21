@@ -1,5 +1,5 @@
 #!/usr/bin/
-// Test for qtfile
+// Test for qtitem and qtfile, for code coverage
 #[cxx_qt::bridge]
 mod ffi {
     extern "RustQt" {

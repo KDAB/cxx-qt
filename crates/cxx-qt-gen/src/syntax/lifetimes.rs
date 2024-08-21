@@ -151,5 +151,8 @@ mod tests {
         assert_unsupported_type! { fn(A) };
         assert_unsupported_type! { fn(i64) -> i32 };
         assert_unsupported_type! { Vec<T = A> };
+        assert_unsupported_type! { fn(A, B) -> C };
+        assert_unsupported_type! { <T as Send>::Associated };
+        assert_unsupported_type! { impl Fn(A,B) };
     }
 }
