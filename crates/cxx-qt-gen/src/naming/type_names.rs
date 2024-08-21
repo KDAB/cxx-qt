@@ -196,7 +196,6 @@ impl TypeNames {
             if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
                 Some(expr_to_string(
                     &foreign_mod.attrs[index].meta.require_name_value()?.value,
-                    // only errors if provided with a non string literal so might be uncatchable?
                 )?)
             } else {
                 bridge_namespace.map(str::to_owned)

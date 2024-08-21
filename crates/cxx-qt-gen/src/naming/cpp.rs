@@ -128,8 +128,15 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 .iter()
                 .map(|generic| path_segment_to_string(generic, type_names))
                 .collect::<Result<Vec<String>>>()?;
-            let first = ty_strings.first().unwrap();
-            Ok(first.to_owned())
+            if ty_strings.len() == 1 {
+                let first = ty_strings.first().unwrap();
+                Ok(first.to_owned())
+            } else {
+                Err(Error::new(
+                    ty.span(),
+                    "Paths with multiple segments are not supported in types",
+                ))
+            }
         }
         Type::Ptr(TypePtr {
             const_token, elem, ..
@@ -370,6 +377,11 @@ mod tests {
         assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
 
         let ty = parse_quote! { Vec<'a,T> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { f32::f32::f32 };
         let mut type_names = TypeNames::default();
         type_names.mock_insert("A", None, Some("A1"), None);
         assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());

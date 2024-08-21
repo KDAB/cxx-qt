@@ -146,7 +146,6 @@ impl Name {
         let mut namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
             Some(expr_to_string(
                 &attrs[index].meta.require_name_value()?.value,
-                // requires non string literal so might be uncatchable
             )?)
         } else {
             parent_namespace.map(|namespace| namespace.to_owned())
