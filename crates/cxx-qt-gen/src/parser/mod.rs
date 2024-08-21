@@ -268,6 +268,21 @@ mod tests {
     }
 
     #[test]
+    fn test_non_string_namespace() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "Rust" {
+                    #[namespace = 1]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        let parser = Parser::from(module);
+        assert!(parser.is_err());
+    }
+
+    #[test]
     fn test_parser_from_error_no_attribute() {
         let module: ItemMod = parse_quote! {
             mod ffi {

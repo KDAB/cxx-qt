@@ -564,6 +564,22 @@ mod tests {
         );
     }
 
+    #[test]
+    fn test_fallback_population() {
+        let item: Item = parse_quote! {
+            struct MyStruct {}
+        };
+
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_cxx_items(&[item.clone()], None, &format_ident!("ffi"))
+            .is_ok());
+
+        assert!(types
+            .populate_from_cxx_items(&[item], None, &format_ident!("ffi"))
+            .is_err());
+    }
+
     fn parse_cxx_item(item: Item) -> TypeNames {
         let mut type_names = TypeNames::default();
         assert!(type_names
@@ -733,9 +749,29 @@ mod tests {
             },
         ];
 
+        // Duplicate types in items
         let mut types = TypeNames::default();
         assert!(types
             .populate_from_cxx_items(&items, None, &format_ident!("ffi"))
+            .is_err());
+
+        // Bare duplicate Name insertion
+        let mut types = TypeNames::default();
+        assert!(types
+            .insert(Name {
+                rust: format_ident!("my_struct"),
+                cxx: None,
+                module: None,
+                namespace: None,
+            })
+            .is_ok());
+        assert!(types
+            .insert(Name {
+                rust: format_ident!("my_struct"),
+                cxx: None,
+                module: None,
+                namespace: None,
+            })
             .is_err());
     }
 

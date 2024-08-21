@@ -18,6 +18,10 @@ pub(crate) fn syn_return_type_to_cpp_except(return_ty: &ReturnType) -> &str {
                 if segment.ident == "Result" {
                     return "";
                 }
+            } else {
+                // CODECOV_EXCLUDE_START
+                unreachable!("Path cannot be empty!")
+                // CODECOV_EXCLUDE_STOP
             }
         }
     }
@@ -59,6 +63,10 @@ pub(crate) fn syn_type_to_cpp_return_type(
                         // CODECOV_EXCLUDE_STOP
                     }
                 }
+            } else {
+                // CODECOV_EXCLUDE_START
+                unreachable!("Path cannot be empty!")
+                // CODECOV_EXCLUDE_STOP
             }
         }
 
@@ -124,7 +132,10 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 let first = ty_strings.first().unwrap();
                 Ok(first.to_owned())
             } else {
-                Ok(ty_strings.join("::"))
+                Err(Error::new(
+                    ty.span(),
+                    "Paths with multiple segments are not supported in types",
+                ))
             }
         }
         Type::Ptr(TypePtr {
@@ -281,6 +292,12 @@ mod tests {
         assert_eq!(syn_return_type_to_cpp_except(&ty), "noexcept");
     }
 
+    #[test]
+    fn test_syn_return_type_to_cpp_except_type_ptr() {
+        let ty = parse_quote! { -> *mut T };
+        assert_eq!(syn_return_type_to_cpp_except(&ty), "noexcept");
+    }
+
     macro_rules! test_syn_types_to_cpp_types {
         [$($input_type:tt => $output_type:literal),*] => {
             let mut type_names = TypeNames::default();
@@ -358,6 +375,16 @@ mod tests {
         let mut type_names = TypeNames::default();
         type_names.mock_insert("A", None, Some("A1"), None);
         assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { Vec<'a,T> };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+
+        let ty = parse_quote! { f32::f32::f32 };
+        let mut type_names = TypeNames::default();
+        type_names.mock_insert("A", None, Some("A1"), None);
+        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
     }
 
     #[test]
@@ -393,6 +420,12 @@ mod tests {
     #[test]
     fn test_syn_type_to_cpp_type_array_length_invalid() {
         let ty = parse_quote! { [i32; String] };
+        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
+    }
+
+    #[test]
+    fn test_syn_type_to_cpp_type_array_length_non_integer() {
+        let ty = parse_quote! { [i32; 1.5f32] };
         assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
     }
 
