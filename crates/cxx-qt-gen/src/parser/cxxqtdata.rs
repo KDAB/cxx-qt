@@ -111,7 +111,7 @@ impl ParsedCxxQtData {
                                 {
                                     return Err(Error::new(
                                         foreign_item.span(),
-                                        "The #[base] attribute cannot be empty",
+                                        "The #[base] attribute cannot be empty", // TODO: unreachable because of a require_name_value so the error for empty base is there
                                     ));
                                 }
 
@@ -481,6 +481,35 @@ mod tests {
     }
 
     #[test]
+    fn test_invokable_wrong_safety() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            extern "RustQt" {
+                #[qinvokable]
+                fn invokable(self: &MyObject);
+            }
+        };
+        let result = cxx_qt_data.parse_cxx_qt_item(item);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_invokable_disallowed_namespace() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            unsafe extern "RustQt" {
+                #[qinvokable]
+                #[namespace = "disallowed"]
+                fn invokable(self: &MyObject);
+            }
+        };
+        let result = cxx_qt_data.parse_cxx_qt_item(item);
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn test_find_and_merge_cxx_qt_item_impl_unknown_qobject() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
@@ -724,5 +753,37 @@ mod tests {
             "other_namespace",
             cxxqtdata.qenums[1].name.namespace().unwrap()
         );
+    }
+
+    #[test]
+    fn test_parse_empty_base() {
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+        let module: ItemMod = parse_quote! {
+            mod module {
+                extern "RustQt" {
+                    #[qobject]
+                    #[base = ""]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        assert!(cxx_qt_data
+            .find_qobject_types(&module.content.unwrap().1)
+            .is_err());
+    }
+
+    #[test]
+    fn test_parse_unsupported_type() {
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+        let module: ItemMod = parse_quote! {
+            mod module {
+                extern "RustQt" {
+                    static COUNTER: usize;
+                }
+            }
+        };
+        assert!(cxx_qt_data
+            .find_qobject_types(&module.content.unwrap().1)
+            .is_err());
     }
 }

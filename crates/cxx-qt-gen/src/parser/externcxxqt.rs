@@ -9,6 +9,9 @@ use crate::{
 };
 use syn::{spanned::Spanned, Attribute, Error, ForeignItem, ItemForeignMod, Result, Token};
 
+#[cfg(test)]
+use syn::ForeignItemType;
+
 /// Representation of an extern "C++Qt" block
 #[derive(Default)]
 pub struct ParsedExternCxxQt {
@@ -81,6 +84,18 @@ impl ParsedExternCxxQt {
 
         Ok(extern_cxx_block)
     }
+
+    #[cfg(test)]
+    fn get_passthrough_foreign_type(&self) -> Result<ForeignItemType> {
+        if let ForeignItem::Type(foreign_ty) = &self.passthrough_items[0] {
+            Ok(foreign_ty.clone())
+        } else {
+            Err(Error::new_spanned(
+                &self.passthrough_items[0],
+                "Item should be ForeignItem::Type",
+            ))
+        }
+    }
 }
 
 #[cfg(test)]
@@ -134,11 +149,25 @@ mod tests {
         assert_eq!(extern_cxx_qt.attrs.len(), 0);
         assert_eq!(extern_cxx_qt.passthrough_items.len(), 1);
         // Check that the attribute is removed
-        if let ForeignItem::Type(foreign_ty) = &extern_cxx_qt.passthrough_items[0] {
-            assert_eq!(foreign_ty.attrs.len(), 0);
-        } else {
-            panic!("Item should be ForeignItem::Type");
-        }
+        let foreign_ty = extern_cxx_qt.get_passthrough_foreign_type();
+        assert!(foreign_ty.unwrap().attrs.is_empty());
+
+        assert_eq!(extern_cxx_qt.signals.len(), 0);
+        assert!(extern_cxx_qt.unsafety.is_none());
+    }
+
+    #[test]
+    fn test_extern_cxxqt_type_non_type() {
+        let extern_cxx_qt = ParsedExternCxxQt::parse(parse_quote! {
+            extern "C++Qt" {
+                fn myFunction();
+            }
+        })
+        .unwrap();
+        // Check that the non Type object is detected and error
+        let foreign_ty = extern_cxx_qt.get_passthrough_foreign_type();
+        assert!(foreign_ty.is_err());
+
         assert_eq!(extern_cxx_qt.signals.len(), 0);
         assert!(extern_cxx_qt.unsafety.is_none());
     }

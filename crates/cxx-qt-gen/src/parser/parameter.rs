@@ -27,10 +27,6 @@ impl ParsedFunctionParameter {
                 FnArg::Typed(type_pattern) => {
                     let parameter = ParsedFunctionParameter::parse(type_pattern)?;
 
-                    // Ignore self as a parameter
-                    if parameter.ident == "self" {
-                        return Ok(None);
-                    }
                     Ok(Some(parameter))
                 }
                 // Ignore self as a parameter
@@ -85,7 +81,7 @@ impl ParsedFunctionParameter {
         } else {
             return Err(Error::new(
                 type_pattern.span(),
-                "Invalid argument ident format.",
+                "Invalid argument ident format.", // TODO: test this somehow
             ));
         };
 
@@ -102,6 +98,17 @@ mod tests {
     use syn::ForeignItemFn;
 
     use super::*;
+
+    #[test]
+    fn test_parse_remove_receiver() {
+        let function: ForeignItemFn = syn::parse_quote! {
+            fn foo(self: Pin<&mut Self>);
+        };
+
+        let parameters =
+            ParsedFunctionParameter::parse_remaining(function.sig.inputs.iter()).unwrap();
+        assert_eq!(parameters.len(), 0)
+    }
 
     #[test]
     fn test_parse_all_without_receiver() {
@@ -151,5 +158,25 @@ mod tests {
         assert_eq!(parameters[0].ty.to_token_stream().to_string(), "i32");
         assert_eq!(parameters[1].ident, "b");
         assert_eq!(parameters[1].ty.to_token_stream().to_string(), "String");
+    }
+
+    #[test]
+    fn test_parse_all_ignoring_receiver_invalid() {
+        // missing receiver type
+        let function: ForeignItemFn = syn::parse_quote! {
+            fn foo();
+        };
+
+        assert!(ParsedFunctionParameter::parse_all_ignoring_receiver(&function.sig).is_err())
+    }
+
+    #[test]
+    fn test_parse_all_without_receiver_invalid() {
+        // missing receiver type
+        let function: ForeignItemFn = syn::parse_quote! {
+            fn foo();
+        };
+
+        assert!(ParsedFunctionParameter::parse_all_without_receiver(&function.sig).is_err())
     }
 }
