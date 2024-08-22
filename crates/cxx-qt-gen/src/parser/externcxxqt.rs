@@ -72,7 +72,7 @@ impl ParsedExternCxxQt {
                     } else {
                         return Err(Error::new(
                             foreign_ty.span(),
-                            "Types in extern \"C++Qt\" blocks must be tagged with #[qobject], use a extern \"C++\" block for non QObject types",
+                            "Types in extern \"C++Qt\" blocks must be tagged with #[qobject]!, use an extern \"C++\" block for non QObject types",
                         ));
                     }
                 }
@@ -92,7 +92,7 @@ impl ParsedExternCxxQt {
         } else {
             Err(Error::new_spanned(
                 &self.passthrough_items[0],
-                "Item should be ForeignItem::Type",
+                "Item should be `ForeignItem::Type`!",
             ))
         }
     }

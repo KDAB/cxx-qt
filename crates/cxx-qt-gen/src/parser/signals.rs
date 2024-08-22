@@ -90,7 +90,7 @@ impl ParsedSignal {
         if !mutable {
             return Err(Error::new(
                 method.span(),
-                "signals must be mutable, use Pin<&mut T> instead of T for the self type",
+                "Signals must be mutable! use Pin<&mut T> instead of T for the self type",
             ));
         }
 
@@ -101,7 +101,7 @@ impl ParsedSignal {
         if name.namespace().is_some() {
             return Err(Error::new_spanned(
                 method.sig.ident,
-                "Signals cannot have a namespace attribute",
+                "Signals cannot have a namespace attribute!",
             ));
         }
 

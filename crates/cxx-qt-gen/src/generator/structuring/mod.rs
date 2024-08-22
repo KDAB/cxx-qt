@@ -28,6 +28,11 @@ pub struct Structures<'a> {
     pub qobjects: Vec<StructuredQObject<'a>>,
 }
 
+/// Error for looking up against a QObject which isn't registered in Structures
+fn unknown_qobject(ident: &Ident) -> Error {
+    Error::new_spanned(&ident, format!("Unknown QObject `{:?}`!", &ident))
+}
+
 fn find_qobject<'a, 'b>(
     qobjects: &'b mut [StructuredQObject<'a>],
     ident: &Ident,

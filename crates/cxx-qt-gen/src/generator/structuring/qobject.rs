@@ -51,7 +51,7 @@ impl<'a> StructuredQObject<'a> {
             .map(|method| &method.name)
             .find(|name| name.rust_unqualified() == id)
             .cloned()
-            .ok_or_else(|| Error::new_spanned(id, format!("Method with name '{id}' not found!")))
+            .ok_or_else(|| Error::new_spanned(id, format!("Method with name `{id}` not found!")))
     }
 
     pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
@@ -60,7 +60,7 @@ impl<'a> StructuredQObject<'a> {
             .map(|signal| &signal.name)
             .find(|name| name.rust_unqualified() == id)
             .cloned()
-            .ok_or_else(|| Error::new_spanned(id, format!("Signal with name '{id}' not found!")))
+            .ok_or_else(|| Error::new_spanned(id, format!("Signal with name `{id}` not found!")))
     }
 
     #[cfg(test)]

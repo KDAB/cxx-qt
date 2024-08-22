@@ -85,7 +85,7 @@ fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
                 if mutability.is_none() {
                     return Err(Error::new_spanned(
                         reference,
-                        "Expected a mutable reference when using Pin<>!",
+                        "Expected a mutable reference when using `Pin<>`!",
                     ));
                 }
                 return Ok((ident, mutability.unwrap()));
@@ -118,7 +118,7 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
             if mutability.is_some() {
                 return Err(Error::new_spanned(
                     type_ref,
-                    "Cannot take T by mutable reference, use either `self: &T`, or `Pin<&mut T>`",
+                    "Cannot take T by mutable reference! use either `self: &T`, or `Pin<&mut T>`",
                 ));
             }
             Ok((ident, mutability))

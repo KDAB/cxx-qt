@@ -81,7 +81,7 @@ impl ParsedFunctionParameter {
         } else {
             return Err(Error::new(
                 type_pattern.span(),
-                "Invalid argument ident format.",
+                "Invalid argument ident format!",
             ));
         };
 

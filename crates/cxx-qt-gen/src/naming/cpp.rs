@@ -5,9 +5,13 @@
 
 use crate::naming::TypeNames;
 use syn::{
-    spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result,
+    spanned::Spanned, Error, Expr, GenericArgument, Ident, Lit, PathArguments, PathSegment, Result,
     ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,
 };
+
+pub(crate) fn unsupported_error(id: &Ident) -> Error {
+    Error::new_spanned(id, format!("`{id}` is not supported!"))
+}
 
 /// For a given Rust return type determine if the C++ header should have noexcept
 pub(crate) fn syn_return_type_to_cpp_except(return_ty: &ReturnType) -> &str {
@@ -46,7 +50,7 @@ pub(crate) fn syn_type_to_cpp_return_type(
                     if args.len() != 1 {
                         return Err(Error::new(
                             return_ty.span(),
-                            "Result must have one argument",
+                            "Result must have one argument!",
                         ));
                     }
 
@@ -87,14 +91,14 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 if let Lit::Int(len) = &len.lit {
                     len.base10_parse::<usize>()?
                 } else {
-                    return Err(Error::new(ty.span(), "Array length must be a integer"));
+                    return Err(Error::new(ty.span(), "Array length must be an integer!"));
                 }
             } else {
-                return Err(Error::new(ty.span(), "Array length must be a integer"));
+                return Err(Error::new(ty.span(), "Array length must be an integer!"));
             };
 
             if len == 0 {
-                return Err(Error::new(ty.span(), "Array length must be > 0"));
+                return Err(Error::new(ty.span(), "Array length must be > 0!"));
             }
 
             Ok(format!(
@@ -134,7 +138,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
             } else {
                 Err(Error::new(
                     ty.span(),
-                    "Paths with multiple segments are not supported in types",
+                    "Paths with multiple segments are not supported in types!",
                 ))
             }
         }
@@ -172,7 +176,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
         Type::Tuple(tuple) if tuple.elems.is_empty() => Ok("void".to_string()),
         _others => Err(Error::new(
             ty.span(),
-            format!("Unsupported type: {_others:?}"),
+            format!("Unsupported type `{_others:?}`!"),
         )),
     }
 }
@@ -183,7 +187,7 @@ fn generic_argument_to_string(generic: &GenericArgument, type_names: &TypeNames)
         GenericArgument::Type(ty) => syn_type_to_cpp_type(ty, type_names),
         _others => Err(Error::new(
             generic.span(),
-            "Unsupported GenericArgument type",
+            "Unsupported GenericArgument type!",
         )),
     }
 }
@@ -222,15 +226,12 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
                 path_argument_to_string(&segment.arguments, type_names)?.unwrap_or_else(Vec::new);
 
             if args.len() != 1 {
-                return Err(Error::new(segment.span(), "Pin must have one argument"));
+                return Err(Error::new(segment.span(), "Pin must have one argument!"));
             }
             return Ok(args.pop().unwrap());
         }
-        "Result" => {
-            return Err(Error::new(segment.span(), "Result is not supported"));
-        }
-        "Option" => {
-            return Err(Error::new(segment.span(), "Option is not supported"));
+        "Result" | "Option" => {
+            return Err(unsupported_error(ident));
         }
         _others => {
             path_argument_to_string(&segment.arguments, type_names)?.map(|values| values.join(", "))

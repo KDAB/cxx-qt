@@ -232,7 +232,7 @@ impl TypeNames {
             Err(Error::new_spanned(
                 &duplicate.rust,
                 format!(
-                    "The type `{}` is defined multiple times with different mappings",
+                    "The type `{}` is defined multiple times with different mappings!",
                     duplicate.rust
                 ),
             ))

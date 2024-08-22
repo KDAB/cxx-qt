@@ -217,6 +217,152 @@ mod tests {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
         cxx_qt_data.qobjects.push(create_parsed_qobject());
         cxx_qt_data
+            .qobjects
+            .insert(qobject_ident(), create_parsed_qobject());
+        cxx_qt_data
+    }
+
+    #[test]
+    fn test_find_qobjects_one_qobject() {
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+
+        let module: ItemMod = parse_quote! {
+            mod module {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
+        assert!(result.is_ok());
+        assert_eq!(cxx_qt_data.qobjects.len(), 1);
+        assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
+        assert!(
+            cxx_qt_data
+                .qobjects
+                .get(&qobject_ident())
+                .unwrap()
+                .has_qobject_macro
+        );
+    }
+
+    #[test]
+    fn test_find_qobjects_multiple_qobject() {
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+
+        let module: ItemMod = parse_quote! {
+            mod module {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                    #[qobject]
+                    type SecondObject = super::SecondObjectRust;
+                    #[qobject]
+                    #[rust_name="ThirdObjectQt"]
+                    type ThirdObject = super::ThirdObjectRust;
+                }
+            }
+        };
+        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
+        assert!(result.is_ok());
+        let qobjects = &cxx_qt_data.qobjects;
+        assert_eq!(qobjects.len(), 3);
+        assert!(qobjects.contains_key(&qobject_ident()));
+        assert!(qobjects.contains_key(&format_ident!("SecondObject")));
+        // Ensure the rust_name attribute is used as the key.
+        assert!(qobjects.contains_key(&format_ident!("ThirdObjectQt")));
+    }
+
+    #[test]
+    fn test_find_qobjects_namespace() {
+        let mut cxx_qt_data =
+            ParsedCxxQtData::new(format_ident!("ffi"), Some("bridge_namespace".to_string()));
+
+        let module: ItemMod = parse_quote! {
+            mod module {
+                extern "RustQt" {
+                    #[qobject]
+                    #[namespace = "qobject_namespace"]
+                    type MyObject = super::MyObjectRust;
+                    #[qobject]
+                    type SecondObject = super::SecondObjectRust;
+                }
+            }
+        };
+        cxx_qt_data
+            .find_qobject_types(&module.content.unwrap().1)
+            .unwrap();
+        assert_eq!(cxx_qt_data.qobjects.len(), 2);
+        assert_eq!(
+            cxx_qt_data
+                .qobjects
+                .get(&format_ident!("MyObject"))
+                .unwrap()
+                .name
+                .namespace()
+                .unwrap(),
+            "qobject_namespace"
+        );
+        assert_eq!(
+            cxx_qt_data
+                .qobjects
+                .get(&format_ident!("SecondObject"))
+                .unwrap()
+                .name
+                .namespace()
+                .unwrap(),
+            "bridge_namespace"
+        );
+    }
+
+    #[test]
+    fn test_find_qobjects_no_qobject_no_base() {
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+
+        let module: ItemMod = parse_quote! {
+            mod module {
+                extern "RustQt" {
+                    type Other = super::OtherRust;
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_find_qobjects_no_qobject_with_base() {
+        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+
+        let module: ItemMod = parse_quote! {
+            mod module {
+                extern "RustQt" {
+                    #[base = "OtherBase"]
+                    type Other = super::OtherRust;
+                    #[base = "MyObjectBase"]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
+        assert!(result.is_ok());
+        assert_eq!(cxx_qt_data.qobjects.len(), 2);
+        assert!(
+            !cxx_qt_data
+                .qobjects
+                .get(&format_ident!("Other"))
+                .unwrap()
+                .has_qobject_macro
+        );
+        assert!(
+            !cxx_qt_data
+                .qobjects
+                .get(&format_ident!("MyObject"))
+                .unwrap()
+                .has_qobject_macro
+        );
     }
 
     #[test]

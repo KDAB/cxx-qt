@@ -97,7 +97,7 @@ impl Constructor {
 
             Err(Error::new(
                 span,
-                "cxx_qt::Constructor expects a tuple as the first generic argument",
+                "cxx_qt::Constructor expects a tuple as the first generic argument!",
             ))
         }
     }
@@ -148,7 +148,7 @@ impl Constructor {
         if let Some(unsafety) = imp.unsafety {
             return Err(Error::new_spanned(
                 unsafety,
-                "Unnecessary unsafe around constructor impl.",
+                "Unnecessary unsafe around constructor impl!",
             ));
         }
 

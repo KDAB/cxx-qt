@@ -90,7 +90,7 @@ impl ParsedMethod {
         if name.namespace().is_some() {
             return Err(Error::new_spanned(
                 method.sig.ident,
-                "Methods / QInvokables cannot have a namespace attribute",
+                "Methods / QInvokables cannot have a namespace attribute!",
             ));
         }
 

@@ -32,13 +32,13 @@ pub struct ParsedQObject {
     /// The name of the QObject
     pub name: Name,
     /// The ident of the inner type of the QObject
+    pub rust_type: Ident,
     /// List of properties that need to be implemented on the C++ object
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
     pub properties: Vec<ParsedQProperty>,
     /// List of specifiers to register with in QML
     pub qml_metadata: Option<QmlElementMetadata>,
-    pub rust_type: Ident,
     /// Whether this type has a #[qobject] / Q_OBJECT macro
     pub has_qobject_macro: bool,
 
