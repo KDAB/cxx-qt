@@ -9,8 +9,10 @@
 #include "../../assertion_utils.h"
 
 #define CXX_QT_QSET_ASSERTS(typeName, name)                                    \
+  constexpr static ::std::array<::std::size_t, 1> arr_##name{ sizeof(          \
+    ::std::size_t) };                                                          \
   assert_alignment_and_size(                                                   \
-    QSet_##name, alignof(::std::size_t), sizeof(::std::size_t));               \
+    QSet_##name, alignof(::std::size_t), arr_##name, arr_##name.size());       \
                                                                                \
   static_assert(!::std::is_trivially_copy_assignable<QSet_##name>::value);     \
   static_assert(!::std::is_trivially_copy_constructible<QSet_##name>::value);  \
