@@ -35,6 +35,12 @@ pub fn is_pin_of_self(ty: &Type) -> bool {
                     if path_compare_str(self_path, &["Self"]) {
                         return true;
                     }
+                } else {
+                    // CODECOV_EXCLUDE_START
+                    unreachable!(
+                        "Path is already checked in pin_path so this should be unreachable!"
+                    )
+                    // CODECOV_EXCLUDE_STOP
                 }
             }
         }
@@ -83,7 +89,16 @@ fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
                     ));
                 }
                 return Ok((ident, mutability.unwrap()));
+            } else {
+                return Err(Error::new_spanned(
+                    ty,
+                    "Non reference args in Pin are not allowed",
+                ));
             }
+        } else {
+            // CODECOV_EXCLUDE_START
+            unreachable!("Pin must use angle brackets for generic args like Pin<&mut T>");
+            // CODECOV_EXCLUDE_STOP
         }
     }
 
@@ -136,6 +151,7 @@ mod tests {
         assert!(!super::is_pin_of_self(&parse_quote! { Pin<Self> }));
         assert!(!super::is_pin_of_self(&parse_quote! { Pin<&Foo> }));
         assert!(!super::is_pin_of_self(&parse_quote! { Pin<&mut Foo> }));
+        assert!(!super::is_pin_of_self(&parse_quote! { *mut T }));
     }
 
     fn assert_qobject_ident(ty: Type, expected_ident: &str, expected_mutability: bool) {
@@ -155,5 +171,6 @@ mod tests {
         assert!(super::extract_qobject_ident(&parse_quote! { Foo }).is_err());
         assert!(super::extract_qobject_ident(&parse_quote! { X::Foo }).is_err());
         assert!(super::extract_qobject_ident(&parse_quote! { Self }).is_err());
+        assert!(super::extract_qobject_ident(&parse_quote! { Pin<T = A> }).is_err());
     }
 }

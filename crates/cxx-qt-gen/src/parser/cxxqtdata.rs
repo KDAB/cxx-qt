@@ -481,6 +481,41 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_unnamed_extern_mod() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            unsafe extern {
+                type A;
+            }
+        };
+        let result = cxx_qt_data.parse_cxx_qt_item(item);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_parse_impl_non_path() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            impl &MyStruct {}
+        };
+        let result = cxx_qt_data.parse_cxx_qt_item(item);
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_parse_impl_non_ident() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            impl ::MyStruct {}
+        };
+        let result = cxx_qt_data.parse_cxx_qt_item(item);
+        assert!(result.is_ok());
+    }
+
+    #[test]
     fn test_invokable_wrong_safety() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 

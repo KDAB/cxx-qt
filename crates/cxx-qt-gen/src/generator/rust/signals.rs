@@ -51,6 +51,10 @@ pub fn generate_rust_signal(
         .map(|mut parameter| -> Result<_> {
             if let FnArg::Typed(pat_type) = &mut parameter {
                 *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names)?;
+            } else {
+                // CODECOV_EXCLUDE_START
+                unreachable!("ParsedSignal strips the self parameter off already so this should be unreachable")
+                // CODECOV_EXCLUDE_STOP
             }
             Ok(parameter)
         })
@@ -76,8 +80,9 @@ pub fn generate_rust_signal(
     let self_type_cxx = if signal.mutable {
         parse_quote! { Pin<&mut #qobject_name_rust> }
     } else {
-        // Signals cannot be immutable so this cannot be reached
-        parse_quote! { &#qobject_name_rust }
+        // CODECOV_EXCLUDE_START
+        unreachable!("Signals cannot be immutable right now so this cannot be reached")
+        // CODECOV_EXCLUDE_STOP
     };
     let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx, type_names)?;
     let qualified_impl = qobject_name.rust_qualified();

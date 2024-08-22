@@ -185,6 +185,29 @@ mod tests {
     use syn::{parse_quote, ItemMod};
 
     #[test]
+    fn test_generated_rust_qobject_blocks_non_singleton() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge(namespace = "cxx_qt")]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    #[qml_element]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+
+        assert!(GeneratedRustFragment::from_qobject(
+            structures.qobjects.first().unwrap(),
+            &parser.type_names,
+            &format_ident!("ffi"),
+        )
+        .is_ok());
+    }
+
+    #[test]
     fn test_generated_rust_qobject_blocks_singleton() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(namespace = "cxx_qt")]

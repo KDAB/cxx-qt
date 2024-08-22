@@ -145,7 +145,7 @@ mod tests {
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
-        assert_eq!(rust.cxx_mod.content.unwrap().1.len(), 0);
+        assert!(rust.cxx_mod.content.is_none());
         assert_eq!(rust.cxx_mod_contents.len(), 1);
         assert_tokens_eq(
             &rust.cxx_mod_contents[0],
@@ -173,7 +173,7 @@ mod tests {
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
-        assert_eq!(rust.cxx_mod.content.unwrap().1.len(), 0);
+        assert!(rust.cxx_mod.content.is_none());
         assert_eq!(rust.cxx_mod_contents.len(), 1);
         assert_eq!(rust.namespace, "cxx_qt");
         assert_eq!(rust.fragments.len(), 1);
@@ -193,7 +193,7 @@ mod tests {
         let parser = Parser::from(module).unwrap();
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
-        assert_eq!(rust.cxx_mod.content.unwrap().1.len(), 0);
+        assert!(rust.cxx_mod.content.is_none());
         assert_eq!(rust.cxx_mod_contents.len(), 1);
         assert_tokens_eq(
             &rust.cxx_mod_contents[0],

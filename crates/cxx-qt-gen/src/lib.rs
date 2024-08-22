@@ -28,12 +28,13 @@ pub use syn::{Error, Result};
 mod tests {
     use super::*;
 
+    use crate::generator::cpp::property::tests::require_pair;
     use clang_format::{clang_format_with_style, ClangFormatStyle};
     use generator::{cpp::GeneratedCppBlocks, rust::GeneratedRustBlocks};
     use parser::Parser;
     use pretty_assertions::assert_str_eq;
     use proc_macro2::TokenStream;
-    use quote::ToTokens;
+    use quote::{quote, ToTokens};
     use std::{
         env,
         fs::OpenOptions,
@@ -56,7 +57,9 @@ mod tests {
             assert_str_eq!(format_rs_source(&left), format_rs_source(&right));
             // Fallback, in case assert_str_eq doesn't actually panic after formatting for some
             // reason.
+            // CODECOV_EXCLUDE_START
             assert_str_eq!(left, right);
+            // CODECOV_EXCLUDE_STOP
         }
     }
 
@@ -149,21 +152,20 @@ mod tests {
         let parser = Parser::from(syn::parse_str(input).unwrap()).unwrap();
 
         let generated_cpp = GeneratedCppBlocks::from(&parser).unwrap();
-        let (header, source) =
-            if let CppFragment::Pair { header, source } = write_cpp(&generated_cpp) {
-                (sanitize_code(header), sanitize_code(source))
-            } else {
-                panic!("Expected CppFragment::Pair")
-            };
+        let (mut header, mut source) = require_pair(&write_cpp(&generated_cpp)).unwrap();
+        header = sanitize_code(header);
+        source = sanitize_code(source);
 
         let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
         let rust = sanitize_code(format_rs_source(&write_rust(&generated_rust).to_string()));
 
+        // CODECOV_EXCLUDE_START
         if !update_expected(test_name, &rust, &header, &source) {
             assert_str_eq!(sanitize_code(expected_cpp_header.to_owned()), header);
             assert_str_eq!(sanitize_code(expected_cpp_source.to_owned()), source);
             assert_str_eq!(sanitize_code(expected_rust_output.to_owned()), rust);
         }
+        // CODECOV_EXCLUDE_STOP
     }
 
     /// Helper for testing if a given input Rust file generates the expected C++ & Rust code
@@ -208,5 +210,14 @@ mod tests {
     #[test]
     fn generates_qenum() {
         test_code_generation!("qenum");
+    }
+
+    #[test]
+    #[should_panic]
+    fn fail_token_assert() {
+        assert_tokens_eq(
+            &quote! { struct MyStruct; },
+            quote! { struct MyOtherStruct; },
+        )
     }
 }
