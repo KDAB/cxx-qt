@@ -30,7 +30,7 @@ pub struct Structures<'a> {
 
 /// Error for looking up against a QObject which isn't registered in Structures
 fn unknown_qobject(ident: &Ident) -> Error {
-    Error::new_spanned(&ident, format!("Unknown QObject `{:?}`!", &ident))
+    Error::new_spanned(ident, format!("Unknown QObject `{:?}`!", &ident))
 }
 
 fn find_qobject<'a, 'b>(
