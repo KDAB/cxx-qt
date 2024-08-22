@@ -11,7 +11,7 @@
 #include <cassert>
 #include <cstdint>
 
-namespace assertion_util {
+namespace rust::cxxqtlib1 {
 template<typename iter>
 constexpr static ::std::size_t
 calc_align_size(const iter rbegin,
@@ -44,7 +44,7 @@ calc_align_size(const iter rbegin,
 
   return rows * actual_alignment;
 }
-} // namespace assertion_util
+} // namespace rust::cxxqtlib1
 
 #define assert_alignment_and_size(TYPE, EXP_ALIGN, ARR, ARR_SZ)                \
   static_assert(EXP_ALIGN == alignof(TYPE));                                   \
