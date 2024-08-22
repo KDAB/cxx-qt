@@ -284,7 +284,6 @@ pub fn generate(
                     unreachable!("Args here should not be able to be Receiver")
                     // CODECOV_EXCLUDE_STOP
                 }
-                // Should this be an error if FnArg::Receiver is passed?
                 Ok(parameter)
             })
             .collect::<Result<_>>()?;
