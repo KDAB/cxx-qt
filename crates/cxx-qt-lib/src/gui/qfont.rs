@@ -368,8 +368,8 @@ pub use ffi::{
 
 #[repr(C)]
 pub struct QFont {
-    _cspec: MaybeUninit<i32>,
-    _resolve_mask: MaybeUninit<u16>,
+    _cspec: MaybeUninit<usize>,
+    _resolve_mask: MaybeUninit<i32>,
 }
 
 impl Default for QFont {

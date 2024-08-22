@@ -20,7 +20,7 @@
 // 3. QImageData *d;
 // For a total of 3 pointers in length.
 // Because of the added v-table, it's a total of 4 pointers in size.
-constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(ushort),
+constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::uint16_t),
                                                      sizeof(::std::size_t),
                                                      sizeof(::std::size_t),
                                                      sizeof(::std::size_t) };
@@ -28,7 +28,7 @@ assert_alignment_and_size(QImage, alignof(::std::size_t), arr, arr.size());
 #else
 // In Qt6 the QPaintDevice doesn't contain the `reserved` pointer, making it 1
 // pointer smaller
-constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(ushort),
+constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(::std::uint16_t),
                                                      sizeof(::std::size_t),
                                                      sizeof(::std::size_t) };
 assert_alignment_and_size(QImage, alignof(::std::size_t), arr, arr.size());

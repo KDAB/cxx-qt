@@ -11,8 +11,11 @@
 
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/text/qfont.h?h=v5.15.6-lts-lgpl#n344
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/text/qfont.h?h=v6.2.4#n323
-constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(::std::size_t),
-                                                     sizeof(uint) };
+constexpr static ::std::array<::std::size_t, 2> arr{
+  sizeof(::std::size_t),
+  sizeof(::std::uint32_t)
+}; // uint can be 16 or 32 but should align to at least 32
+
 assert_alignment_and_size(QFont, alignof(::std::size_t), arr, arr.size());
 
 static_assert(!::std::is_trivially_copy_assignable<QFont>::value);
