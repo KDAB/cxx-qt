@@ -23,17 +23,21 @@ The version of Emscripten used to build CXX-Qt and programs using it should matc
 
 Here are the associated Qt and Emscripten versions, and whether they are currently working with CXX-Qt for WebAssembly:
 
-Qt|Emscripten|CXX-Qt Support: `wasm_32`|CXX-Qt Support: `wasm_singlethread`|CXX-Qt Support: `wasm_multithread`
--|-|-|-|-
-6.2|2.0.14|✅ working|*️⃣ N/A|*️⃣ N/A
-6.3|3.0.0|✅ working|*️⃣ N/A|*️⃣ N/A
-6.4|3.1.14|✅ working|*️⃣ N/A|*️⃣ N/A
-6.5|3.1.25|*️⃣ N/A|✅ working|❌ broken
-6.6|3.1.37|*️⃣ N/A|✅ working|❌ broken
+Qt|Emscripten
+-|-
+6.2|2.0.14
+6.3|3.0.0
+6.4|3.1.14
+6.5|3.1.25
+6.6|3.1.37
 
-Info about other versions can be found in the [Qt documentation](https://doc.qt.io/qt-6/wasm.html).
+For Qt 6.5 or later, use the `wasm_singlethread` toolchain. For versions earlier than 6.5 use `wasm_32`.
 
-Make sure you have a version of Qt for WebAssembly that will work and clone the `emsdk` repository if you do not already have it.
+The `wasm_multithread` toolchain available in 6.5 and later is currently not supported. For more information, see the [Known Issues](#known-issues) section at the bottom of this page.
+
+Info about other Qt and emscripten versions can be found in the [Qt documentation](https://doc.qt.io/qt-6/wasm.html).
+
+Make sure you have a version of Qt for WebAssembly that will work, and clone the `emsdk` repository if you do not already have it.
 
 ## Setting Up `emsdk`
 
@@ -94,6 +98,8 @@ Example|Working
 `qml_features`|✅ working
 `qml_minimal`|✅ working
 
+For more information, see the [Known Issues](#known-issues) section at the bottom of this page.
+
 ## Compiling CXX-Qt Projects for WebAssembly
 
 When compiling a CXX-Qt project for wasm, the Rust target must be set to `wasm32-unknown-emscripten`, and the project must be configured to use POSIX threads.
@@ -114,14 +120,35 @@ else()
 endif()
 ```
 
-## Issues
+## Known Issues
 
-- CXX-Qt will currently not build with `wasm_multithread` versions of Qt:
+### `wasm_multithread` toolchain
 
-    ```console
-    wasm-ld: error: --shared-memory is disallowed by qml_minimal-e6f36338b0e1fa5c.17g6vcid2nczsjj0.rcgu.o 
-                because it was not compiled with 'atomics' or 'bulk-memory' features.
-    ```
+CXX-Qt will currently not build with `wasm_multithread` versions of Qt.
 
-- The example `qml-minimal-no-cmake` will not build for WebAssembly with Cargo
-- The example `demo_threading` will not build for WebAssembly
+```console
+wasm-ld: error: --shared-memory is disallowed by qml_minimal-e6f36338b0e1fa5c.17g6vcid2nczsjj0.rcgu.o 
+            because it was not compiled with 'atomics' or 'bulk-memory' features.
+```
+
+This issue is related to `pthread` in the `libc` crate. It is possible that manually compiling `cxx` and `libc` crates with `-pthread` may solve this.
+
+### `cargo`-only builds
+
+The example `qml-minimal-no-cmake` will not build for WebAssembly with `cargo`, and attempts to build with `cargo` without `cmake` will not work. This is due to an upstream issue with the `libc` crate, which does not support wasm and can cause breakage.
+
+```console
+cannot find function `pthread_kill` in crate `libc`
+```
+
+### `demo_threading` example
+
+The example `demo_threading` will not build for WebAssembly due to an upstream issue with `async-std`, which does not support wasm. On Linux, the observed breakage is due to `socket2` using its `unix.rs` file to target a Unix rather than wasm environment, resulting in error messages from `unix.rs` like the following:
+
+```console
+error[E0433]: failed to resolve: use of undeclared type `IovLen`
+```
+
+`socket2` is a dependency of `async-io`, which is a dependency of `async-std`.
+
+There is discussion around supporting wasm in the GitHub repository for `async-std`, and the progress is being tracked [here](https://github.com/async-rs/async-std/issues/220).

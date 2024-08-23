@@ -9,8 +9,6 @@
 
 #include <cxx-qt-lib/assertion_utils.h>
 
-constexpr ::std::size_t membs = sizeof(::std::size_t) + sizeof(uint);
-
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/text/qfont.h?h=v5.15.6-lts-lgpl#n344
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/text/qfont.h?h=v6.2.4#n323
 assert_alignment_and_size(QFont, {
