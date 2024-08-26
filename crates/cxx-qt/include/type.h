@@ -32,4 +32,14 @@ protected:
   ::rust::Box<T> m_rustObj;
 };
 
+template<typename Inner, typename Outer>
+Inner &unsafeRustMut(Outer &outer) {
+  return static_cast<CxxQtType<Inner>&>(outer).unsafeRustMut();
+}
+
+template<typename Inner, typename Outer>
+const Inner &unsafeRust(const Outer &outer) {
+  return static_cast<const CxxQtType<Inner>&>(outer).unsafeRust();
+}
+
 }

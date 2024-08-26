@@ -110,7 +110,11 @@ impl GeneratedRustFragment {
             module_ident,
         )?);
 
-        generated.append(&mut cxxqttype::generate(&qobject_idents, type_names)?);
+        generated.append(&mut cxxqttype::generate(
+            &qobject_idents,
+            type_names,
+            module_ident,
+        )?);
 
         Ok(generated)
     }

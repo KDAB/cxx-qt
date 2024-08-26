@@ -8,13 +8,14 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::Result;
+use syn::{Ident, Result};
 
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
     qobject_ident: &QObjectNames,
     type_names: &TypeNames,
+    module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
@@ -27,38 +28,40 @@ pub fn generate(
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRust"]
+                    #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &#cpp_struct_ident) -> &#rust_struct_ident;
+                    fn cxx_qt_ffi_rust(outer: &#cpp_struct_ident) -> &#rust_struct_ident;
                 }
             },
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
+                    #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
+                    fn cxx_qt_ffi_rust_mut(outer: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
                 }
             },
         ],
         implementation: vec![
             quote! {
-                impl core::ops::Deref for #qualified_impl {
+                impl ::core::ops::Deref for #qualified_impl {
                     type Target = #rust_struct_ident;
 
                     fn deref(&self) -> &Self::Target {
-                        self.cxx_qt_ffi_rust()
+                        #module_ident::cxx_qt_ffi_rust(self)
                     }
                 }
             },
             quote! {
-                impl cxx_qt::CxxQtType for #qualified_impl {
+                impl ::cxx_qt::CxxQtType for #qualified_impl {
                     type Rust = #rust_struct_ident;
 
                     fn rust(&self) -> &Self::Rust {
-                        self.cxx_qt_ffi_rust()
+                        #module_ident::cxx_qt_ffi_rust(self)
                     }
 
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        self.cxx_qt_ffi_rust_mut()
+                        #module_ident::cxx_qt_ffi_rust_mut(self)
                     }
                 }
             },
@@ -83,12 +86,19 @@ mod tests {
 
     use crate::parser::qobject::tests::create_parsed_qobject;
 
+    use quote::format_ident;
+
     #[test]
     fn test_generate_rust_cxxqttype() {
         let qobject = create_parsed_qobject();
         let qobject_idents = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
 
-        let generated = generate(&qobject_idents, &TypeNames::mock()).unwrap();
+        let generated = generate(
+            &qobject_idents,
+            &TypeNames::mock(),
+            &format_ident!("qobject"),
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
