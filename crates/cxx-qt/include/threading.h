@@ -16,7 +16,7 @@
 namespace rust::cxxqt1 {
 
 template<typename T>
-class CxxQtThreading : public CxxQtLocking
+class CxxQtThreading : virtual CxxQtLocking
 {
 public:
   explicit CxxQtThreading(T* obj)
@@ -32,11 +32,20 @@ public:
 
   CxxQtThread<T> qtThread() const
   {
+    // Note that this assumes that T inherits from CxxQtLocking, which we assert
+    // during parsing.
     return CxxQtThread<T>(m_cxxQtThreadObj, m_rustObjMutex);
   }
 
 private:
   ::std::shared_ptr<CxxQtGuardedPointer<T>> m_cxxQtThreadObj;
 };
+
+template<typename T>
+CxxQtThread<T>
+qtThread(const T& qobject)
+{
+  return static_cast<const CxxQtThreading<T>&>(qobject).qtThread();
+}
 
 }

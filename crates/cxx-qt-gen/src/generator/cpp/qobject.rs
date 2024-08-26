@@ -179,10 +179,11 @@ impl GeneratedCppQObject {
             let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
             generated.blocks.append(&mut blocks);
             class_initializers.push(initializer);
-            // If this type has locking enabled then add generation
-            let (initializer, mut blocks) = locking::generate(qobject.base_class.as_deref())?;
+        }
+        // If this type has locking enabled then add generation
+        if structured_qobject.locking {
+            let (_initializer, mut blocks) = locking::generate(qobject.base_class.as_deref())?;
             generated.blocks.append(&mut blocks);
-            class_initializers.push(initializer);
         }
 
         generated.blocks.append(&mut constructor::generate(

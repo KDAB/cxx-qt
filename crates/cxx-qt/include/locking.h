@@ -12,11 +12,6 @@
 
 namespace rust::cxxqt1 {
 
-// The CxxQtNull type exists to conditionally disable inheritance from CxxQtLocking
-// This is necessary to allow transitive inheritance (e.g. a CXX-Qt class that inherits from another CXX-Qt class).
-// As otherwise CxxQtLocking would be inherited multiple times.
-class CxxQtNull{};
-
 class CxxQtLocking
 {
 public:

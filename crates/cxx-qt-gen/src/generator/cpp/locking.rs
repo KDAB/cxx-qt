@@ -4,10 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::cpp::qobject::GeneratedCppQObjectBlocks;
-use indoc::formatdoc;
 use syn::Result;
 
-pub fn generate(base_class: Option<&str>) -> Result<(String, GeneratedCppQObjectBlocks)> {
+pub fn generate(_base_class: Option<&str>) -> Result<(String, GeneratedCppQObjectBlocks)> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     result
@@ -15,30 +14,10 @@ pub fn generate(base_class: Option<&str>) -> Result<(String, GeneratedCppQObject
         .insert("#include <cxx-qt/locking.h>".to_owned());
 
     const LOCKING: &str = "::rust::cxxqt1::CxxQtLocking";
-    const NULL: &str = "::rust::cxxqt1::CxxQtNull";
 
-    // The base class may already inherit from CxxQtLocking, so make sure to only inherit once.
-    if let Some(base_class) = base_class {
-        // TODO: Do we need to look up the base_class in the Type names?
-
-        result.includes.insert("#include <type_traits>".to_owned());
-
-        let locking_class = formatdoc!(
-            "::std::conditional<
-                ::std::is_base_of<{LOCKING}, {base_class}>::value,
-                {NULL},
-                {LOCKING}>::type"
-        );
-
-        let class_initializer = format!("{locking_class}()");
-        result.base_classes.push(locking_class);
-
-        Ok((class_initializer, result))
-    } else {
-        result.base_classes.push(LOCKING.to_owned());
-        let class_initializer = format!("{LOCKING}()");
-        Ok((class_initializer, result))
-    }
+    result.base_classes.push(format!("virtual {LOCKING}"));
+    let class_initializer = format!("{LOCKING}()");
+    Ok((class_initializer, result))
 }
 
 #[cfg(test)]
