@@ -181,10 +181,9 @@ pub mod tests {
     use crate::parser::qobject::ParsedQObject;
 
     pub fn create_i32_qpropertyname() -> QPropertyNames {
-        let ty: syn::Type = parse_quote! { i32 };
         let property = ParsedQProperty {
             ident: format_ident!("my_property"),
-            ty,
+            ty: parse_quote! { i32 },
             flags: QPropertyFlags::default(),
         };
 
