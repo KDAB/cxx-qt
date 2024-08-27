@@ -5,8 +5,9 @@
 
 use crate::naming::TypeNames;
 use syn::{
-    spanned::Spanned, Error, Expr, GenericArgument, Ident, Lit, PathArguments, PathSegment, Result,
-    ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,
+    spanned::Spanned, Attribute, Error, Expr, ExprLit, GenericArgument, Ident, Lit, PathArguments,
+    PathSegment, Result, ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference,
+    TypeSlice,
 };
 
 pub(crate) fn unsupported_error(id: &Ident) -> Error {
@@ -87,12 +88,23 @@ pub(crate) fn syn_type_to_cpp_return_type(
 pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<String> {
     match ty {
         Type::Array(TypeArray { elem, len, .. }) => {
-            let len = if let Expr::Lit(len) = &len {
-                if let Lit::Int(len) = &len.lit {
-                    len.base10_parse::<usize>()?
-                } else {
-                    return Err(Error::new(ty.span(), "Array length must be an integer!"));
-                }
+            // let len = if let Expr::Lit(len) = &len {
+            //     if let Lit::Int(len) = &len.lit {
+            //         len.base10_parse::<usize>()?
+            //     } else {
+            //         return Err(Error::new(ty.span(), "Array length must be an integer!"));
+            //     }
+            // } else {
+            //     return Err(Error::new(ty.span(), "Array length must be an integer!"));
+            // };
+
+            let _empty: Vec<Attribute> = vec![];
+
+            let len = if let Expr::Lit(ExprLit {
+                lit: Lit::Int(len), ..
+            }) = &len
+            {
+                len.base10_parse::<usize>()?
             } else {
                 return Err(Error::new(ty.span(), "Array length must be an integer!"));
             };

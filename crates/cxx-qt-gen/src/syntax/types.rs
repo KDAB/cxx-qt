@@ -92,19 +92,19 @@ fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
             } else {
                 return Err(Error::new_spanned(
                     ty,
-                    "Non reference args in Pin are not allowed",
+                    "Non reference args in Pin are not allowed!",
                 ));
             }
         } else {
             // CODECOV_EXCLUDE_START
-            unreachable!("Pin must use angle brackets for generic args like Pin<&mut T>");
+            unreachable!("Pin must use angle brackets for generic args like Pin<&mut T>!");
             // CODECOV_EXCLUDE_STOP
         }
     }
 
     Err(Error::new_spanned(
         ty,
-        "Expected a T reference! Use either `&T` or `Pin<&mut T>`",
+        "Expected a T reference! Use either `&T` or `Pin<&mut T>`!",
     ))
 }
 
@@ -118,7 +118,7 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
             if mutability.is_some() {
                 return Err(Error::new_spanned(
                     type_ref,
-                    "Cannot take T by mutable reference! use either `self: &T`, or `Pin<&mut T>`",
+                    "Cannot take T by mutable reference! Use either `self: &T`, or `Pin<&mut T>`",
                 ));
             }
             Ok((ident, mutability))
