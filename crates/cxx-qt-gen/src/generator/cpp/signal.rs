@@ -219,32 +219,23 @@ mod tests {
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
-    use syn::parse_quote;
+    use syn::{parse_quote, ForeignItemFn};
 
     #[test]
     fn test_generate_cpp_signals() {
-        let signal = ParsedSignal {
-            method: parse_quote! {
-                fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
-            },
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![
-                ParsedFunctionParameter {
-                    ident: format_ident!("trivial"),
-                    ty: parse_quote! { i32 },
-                },
-                ParsedFunctionParameter {
-                    ident: format_ident!("opaque"),
-                    ty: parse_quote! { UniquePtr<QColor> },
-                },
-            ],
-            name: Name::new(format_ident!("data_changed")).with_cxx_name("dataChanged".to_owned()),
-            safe: true,
-            inherit: false,
-            private: false,
-            docs: vec![],
+        let method: ForeignItemFn = parse_quote! {
+            fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
+        let signal = ParsedSignal::mock_with_method(&method).with_parameters(vec![
+            ParsedFunctionParameter {
+                ident: format_ident!("trivial"),
+                ty: parse_quote! { i32 },
+            },
+            ParsedFunctionParameter {
+                ident: format_ident!("opaque"),
+                ty: parse_quote! { UniquePtr<QColor> },
+            },
+        ]);
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
 
@@ -321,22 +312,15 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals_mapped_cxx_name() {
-        let signal = ParsedSignal {
-            method: parse_quote! {
-                fn data_changed(self: Pin<&mut MyObject>, mapped: A);
-            },
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![ParsedFunctionParameter {
+        let method: ForeignItemFn = parse_quote! {
+            fn data_changed(self: Pin<&mut MyObject>, mapped: A);
+        };
+        let signal = ParsedSignal::mock_with_method(&method).with_parameters(vec![
+            ParsedFunctionParameter {
                 ident: format_ident!("mapped"),
                 ty: parse_quote! { A },
-            }],
-            name: Name::new(format_ident!("data_changed")).with_cxx_name("dataChanged".to_owned()),
-            safe: true,
-            inherit: false,
-            private: false,
-            docs: vec![],
-        };
+            },
+        ]);
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
 
@@ -410,20 +394,15 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signals_existing_cxx_name() {
-        let signal = ParsedSignal {
-            method: parse_quote! {
+        let method: ForeignItemFn = parse_quote! {
                 #[cxx_name = "baseName"]
                 fn existing_signal(self: Pin<&mut MyObject>);
-            },
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::new(format_ident!("existing_signal")).with_cxx_name("baseName".to_owned()),
-            safe: true,
-            inherit: true,
-            private: false,
-            docs: vec![],
         };
+        let signal = ParsedSignal {
+            inherit: true,
+            ..ParsedSignal::mock_with_method(&method)
+        };
+
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
         let generated =
@@ -491,23 +470,16 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signal_free() {
+        let method: ForeignItemFn = parse_quote! {
+            fn signal_rust_name(self: Pin<&mut MyObject>);
+        };
         let signal = ParsedSignal {
-            method: parse_quote! {
-                fn signal_rust_name(self: Pin<&mut ObjRust>);
-            },
-            qobject_ident: format_ident!("ObjRust"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::new(format_ident!("signal_rust_name"))
-                .with_cxx_name("signalRustName".to_owned()),
-            safe: true,
             inherit: true,
-            private: false,
-            docs: vec![],
+            ..ParsedSignal::mock_with_method(&method)
         };
 
         let mut type_names = TypeNames::default();
-        type_names.mock_insert("ObjRust", None, None, None);
+        type_names.mock_insert("MyObject", None, None, None);
         let qobject_name = type_names.lookup(&signal.qobject_ident).unwrap();
         let generated = generate_cpp_signal(&signal, qobject_name, &type_names).unwrap();
 
@@ -522,7 +494,7 @@ mod tests {
             r#"
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
-            ObjRust_signalRustNameConnect(ObjRust& self, ::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalRustName closure, ::Qt::ConnectionType type);
+            MyObject_signalRustNameConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlersignalRustName closure, ::Qt::ConnectionType type);
             } // namespace rust::cxxqtgen1
             "#}
         );
@@ -533,38 +505,38 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqt1 {
             template <>
-            SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>::~SignalHandler() noexcept
+            SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamssignalRustName *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
                     return;
                 }
 
-                drop_ObjRust_signal_handler_signalRustName(::std::move(*this));
+                drop_MyObject_signal_handler_signalRustName(::std::move(*this));
             }
 
             template <>
             template <>
-            void SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>::operator()<ObjRust&>(ObjRust& self)
+            void SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamssignalRustName *>::operator()<MyObject&>(MyObject& self)
             {
-                call_ObjRust_signal_handler_signalRustName(*this, self);
+                call_MyObject_signal_handler_signalRustName(*this, self);
             }
 
-            static_assert(alignof(SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>) <= alignof(::std::size_t), "unexpected aligment");
-            static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalRustName *>) == sizeof(::std::size_t[2]), "unexpected size");
+            static_assert(alignof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamssignalRustName *>) <= alignof(::std::size_t), "unexpected aligment");
+            static_assert(sizeof(SignalHandler<::rust::cxxqtgen1::MyObjectCxxQtSignalParamssignalRustName *>) == sizeof(::std::size_t[2]), "unexpected size");
             } // namespace rust::cxxqt1
 
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
-            ObjRust_signalRustNameConnect(ObjRust& self, ::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalRustName closure, ::Qt::ConnectionType type)
+            MyObject_signalRustNameConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlersignalRustName closure, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(
                     &self,
-                    &ObjRust::signalRustName,
+                    &MyObject::signalRustName,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<ObjRust> guard(self);
-                        closure.template operator()<ObjRust&>(self);
+                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
+                        closure.template operator()<MyObject&>(self);
                     },
                     type);
             }
@@ -575,24 +547,17 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_signal_free_mapped() {
+        let method = parse_quote! {
+            #[cxx_name = "signalCxxName"]
+            fn signal_rust_name(self: Pin<&mut MyObject>);
+        };
         let signal = ParsedSignal {
-            method: parse_quote! {
-                #[cxx_name = "signalCxxName"]
-                fn signal_rust_name(self: Pin<&mut ObjRust>);
-            },
-            qobject_ident: format_ident!("ObjRust"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::new(format_ident!("signal_rust_name"))
-                .with_cxx_name("signalCxxName".to_owned()),
-            safe: true,
             inherit: true,
-            private: false,
-            docs: vec![],
+            ..ParsedSignal::mock_with_method(&method)
         };
 
         let mut type_names = TypeNames::default();
-        type_names.mock_insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
+        type_names.mock_insert("MyObject", None, Some("ObjCpp"), Some("mynamespace"));
         let qobject_name = type_names.lookup(&signal.qobject_ident).unwrap();
         let generated = generate_cpp_signal(&signal, qobject_name, &type_names).unwrap();
 
@@ -607,7 +572,7 @@ mod tests {
             r#"
             namespace mynamespace::rust::cxxqtgen1 {
             ::QMetaObject::Connection
-            ObjCpp_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type);
+            ObjCpp_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::MyObjectCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type);
             } // namespace mynamespace::rust::cxxqtgen1
             "#}
         );
@@ -618,30 +583,30 @@ mod tests {
             // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
             namespace rust::cxxqt1 {
             template <>
-            SignalHandler<::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalCxxName *>::~SignalHandler() noexcept
+            SignalHandler<::mynamespace::rust::cxxqtgen1::MyObjectCxxQtSignalParamssignalCxxName *>::~SignalHandler() noexcept
             {
                 if (data[0] == nullptr && data[1] == nullptr)
                 {
                     return;
                 }
 
-                drop_ObjRust_signal_handler_signalCxxName(::std::move(*this));
+                drop_MyObject_signal_handler_signalCxxName(::std::move(*this));
             }
 
             template <>
             template <>
-            void SignalHandler<::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalCxxName *>::operator()<mynamespace::ObjCpp&>(mynamespace::ObjCpp& self)
+            void SignalHandler<::mynamespace::rust::cxxqtgen1::MyObjectCxxQtSignalParamssignalCxxName *>::operator()<mynamespace::ObjCpp&>(mynamespace::ObjCpp& self)
             {
-                call_ObjRust_signal_handler_signalCxxName(*this, self);
+                call_MyObject_signal_handler_signalCxxName(*this, self);
             }
 
-            static_assert(alignof(SignalHandler<::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalCxxName *>) <= alignof(::std::size_t), "unexpected aligment");
-            static_assert(sizeof(SignalHandler<::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalParamssignalCxxName *>) == sizeof(::std::size_t[2]), "unexpected size");
+            static_assert(alignof(SignalHandler<::mynamespace::rust::cxxqtgen1::MyObjectCxxQtSignalParamssignalCxxName *>) <= alignof(::std::size_t), "unexpected aligment");
+            static_assert(sizeof(SignalHandler<::mynamespace::rust::cxxqtgen1::MyObjectCxxQtSignalParamssignalCxxName *>) == sizeof(::std::size_t[2]), "unexpected size");
             } // namespace rust::cxxqt1
 
             namespace mynamespace::rust::cxxqtgen1 {
             ::QMetaObject::Connection
-            ObjCpp_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::ObjRustCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type)
+            ObjCpp_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::MyObjectCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type)
             {
                 return ::QObject::connect(
                     &self,

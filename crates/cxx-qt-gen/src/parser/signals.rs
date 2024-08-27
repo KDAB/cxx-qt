@@ -76,6 +76,11 @@ impl ParsedSignal {
         }
     }
 
+    #[cfg(test)]
+    pub fn with_parameters(self, parameters: Vec<ParsedFunctionParameter>) -> Self {
+        Self { parameters, ..self }
+    }
+
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 

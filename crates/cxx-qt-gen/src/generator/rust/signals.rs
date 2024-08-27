@@ -422,27 +422,16 @@ mod tests {
             #[attribute]
             fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
-        let qsignal = ParsedSignal {
-            method: method.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![
-                ParsedFunctionParameter {
-                    ident: format_ident!("trivial"),
-                    ty: parse_quote! { i32 },
-                },
-                ParsedFunctionParameter {
-                    ident: format_ident!("opaque"),
-                    ty: parse_quote! { UniquePtr<QColor> },
-                },
-            ],
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-            safe: true,
-            inherit: false,
-            private: false,
-            docs: vec![],
-        };
+        let qsignal = ParsedSignal::mock_with_method(&method).with_parameters(vec![
+            ParsedFunctionParameter {
+                ident: format_ident!("trivial"),
+                ty: parse_quote! { i32 },
+            },
+            ParsedFunctionParameter {
+                ident: format_ident!("opaque"),
+                ty: parse_quote! { UniquePtr<QColor> },
+            },
+        ]);
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
@@ -585,22 +574,17 @@ mod tests {
 
     #[test]
     fn test_generate_rust_signal_unsafe() {
+        let method = parse_quote! {
+            unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
+        };
         let qsignal = ParsedSignal {
-            method: parse_quote! {
-                unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
-            },
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![ParsedFunctionParameter {
-                ident: format_ident!("param"),
-                ty: parse_quote! { *mut T },
-            }],
-            name: Name::new(format_ident!("unsafe_signal"))
-                .with_cxx_name("unsafeSignal".to_owned()),
             safe: false,
-            inherit: false,
-            private: false,
-            docs: vec![],
+            ..ParsedSignal::mock_with_method(&method).with_parameters(vec![
+                ParsedFunctionParameter {
+                    ident: format_ident!("param"),
+                    ty: parse_quote! { *mut T },
+                },
+            ])
         };
         let qobject_idents = create_qobjectname();
 
@@ -743,19 +727,14 @@ mod tests {
 
     #[test]
     fn test_generate_rust_signal_existing() {
+        let method = parse_quote! {
+            #[inherit]
+            #[cxx_name = "baseName"]
+            fn existing_signal(self: Pin<&mut MyObject>, );
+        };
         let qsignal = ParsedSignal {
-            method: parse_quote! {
-                #[inherit]
-                fn existing_signal(self: Pin<&mut MyObject>, );
-            },
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::new(format_ident!("existing_signal")).with_cxx_name("baseName".to_owned()),
-            safe: true,
             inherit: true,
-            private: false,
-            docs: vec![],
+            ..ParsedSignal::mock_with_method(&method)
         };
         let qobject_idents = create_qobjectname();
 
