@@ -202,6 +202,7 @@ impl GeneratedCppQObject {
 mod tests {
     use super::*;
 
+    use crate::generator::mock_qml_singleton;
     use crate::{generator::structuring::Structures, parser::Parser};
     use syn::{parse_quote, ItemMod};
 
@@ -295,17 +296,7 @@ mod tests {
 
     #[test]
     fn test_generated_cpp_qobject_singleton() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(namespace = "cxx_qt")]
-            mod ffi {
-                extern "RustQt" {
-                    #[qobject]
-                    #[qml_element]
-                    #[qml_singleton]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
+        let module = mock_qml_singleton();
         let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 

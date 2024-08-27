@@ -55,6 +55,47 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
+    #[cfg(test)]
+    pub fn mock_with_method(method: &ForeignItemFn) -> Self {
+        Self {
+            method: method.clone(),
+            qobject_ident: format_ident!("MyObject"),
+            mutable: false,
+            safe: true,
+            parameters: vec![],
+            specifiers: HashSet::new(),
+            is_qinvokable: true,
+            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
+                .unwrap(),
+        }
+    }
+
+    #[cfg(test)]
+    pub fn make_mutable(self) -> Self {
+        Self {
+            mutable: true,
+            ..self
+        }
+    }
+
+    #[cfg(test)]
+    pub fn make_unsafe(self) -> Self {
+        Self {
+            safe: false,
+            ..self
+        }
+    }
+
+    #[cfg(test)]
+    pub fn with_parameters(self, parameters: Vec<ParsedFunctionParameter>) -> Self {
+        Self { parameters, ..self }
+    }
+
+    #[cfg(test)]
+    pub fn with_specifiers(self, specifiers: HashSet<ParsedQInvokableSpecifiers>) -> Self {
+        Self { specifiers, ..self }
+    }
+
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 
@@ -106,35 +147,6 @@ impl ParsedMethod {
             specifiers,
             is_qinvokable,
             name: fields.name,
-        }
-    }
-
-    #[cfg(test)]
-    pub fn from_method_and_params(
-        method: &ForeignItemFn,
-        parameters: Vec<ParsedFunctionParameter>,
-    ) -> Self {
-        ParsedMethod {
-            method: method.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: false,
-            safe: true,
-            parameters,
-            specifiers: HashSet::new(),
-            is_qinvokable: true,
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-        }
-    }
-
-    #[cfg(test)]
-    pub fn mut_from_method_and_params(
-        method: &ForeignItemFn,
-        parameters: Vec<ParsedFunctionParameter>,
-    ) -> Self {
-        ParsedMethod {
-            mutable: true,
-            ..ParsedMethod::from_method_and_params(method, parameters)
         }
     }
 }

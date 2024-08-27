@@ -3,18 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
+use crate::generator::cpp::GeneratedCppBlocks;
+use crate::writer::cpp::{extract_extern_qt, pair_as_source};
 use crate::writer::{self, cpp::namespaced};
 use indoc::formatdoc;
-
-/// Extract the source from a given CppFragment
-fn pair_as_source(pair: &CppFragment) -> Option<String> {
-    match pair {
-        CppFragment::Pair { header: _, source } => Some(source.clone()),
-        CppFragment::Header(_) => None,
-        CppFragment::Source(source) => Some(source.clone()),
-    }
-}
 
 /// For a given GeneratedCppBlocks write the implementations
 fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
@@ -46,18 +38,7 @@ fn qobjects_source(generated: &GeneratedCppBlocks) -> Vec<String> {
 
 /// For a given GeneratedCppBlocks write this into a C++ source
 pub fn write_cpp_source(generated: &GeneratedCppBlocks) -> String {
-    let extern_cxx_qt = generated
-        .extern_cxx_qt
-        .iter()
-        .flat_map(|block| {
-            block
-                .fragments
-                .iter()
-                .filter_map(pair_as_source)
-                .collect::<Vec<String>>()
-        })
-        .collect::<Vec<String>>()
-        .join("\n");
+    let extern_cxx_qt = extract_extern_qt(generated, pair_as_source);
 
     formatdoc! {r#"
         #include "{header_prefix}/{cxx_file_stem}.cxxqt.h"

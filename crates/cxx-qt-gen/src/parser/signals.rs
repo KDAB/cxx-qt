@@ -60,8 +60,8 @@ impl ParsedSignal {
     }
 
     #[cfg(test)]
-    /// Test fn for creating a dummy signal from a method body
-    pub fn from_method(method: &ForeignItemFn) -> Self {
+    /// Test fn for creating a mocked signal from a method body
+    pub fn mock_with_method(method: &ForeignItemFn) -> Self {
         Self {
             method: method.clone(),
             qobject_ident: format_ident!("MyObject"),
