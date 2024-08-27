@@ -5,16 +5,15 @@
 
 use crate::{
     naming::Name,
-    parser::{constructor::Constructor, property::ParsedQProperty},
+    parser::property::ParsedQProperty,
     syntax::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
-        path::path_compare_str,
     },
 };
 #[cfg(test)]
 use quote::format_ident;
 
-use syn::{Attribute, Error, Ident, ItemImpl, Meta, Result};
+use syn::{Attribute, Ident, Meta, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -33,19 +32,13 @@ pub struct ParsedQObject {
     /// The name of the QObject
     pub name: Name,
     /// The ident of the inner type of the QObject
-    pub rust_type: Ident,
-    /// Any user-defined constructors
-    pub constructors: Vec<Constructor>,
     /// List of properties that need to be implemented on the C++ object
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
     pub properties: Vec<ParsedQProperty>,
     /// List of specifiers to register with in QML
     pub qml_metadata: Option<QmlElementMetadata>,
-    /// Whether locking is enabled for this QObject
-    pub locking: bool,
-    /// Whether threading has been enabled for this QObject
-    pub threading: bool,
+    pub rust_type: Ident,
     /// Whether this type has a #[qobject] / Q_OBJECT macro
     pub has_qobject_macro: bool,
 
@@ -60,11 +53,8 @@ impl ParsedQObject {
             base_class: None,
             name: Name::new(format_ident!("MyObject")),
             rust_type: format_ident!("MyObjectRust"),
-            constructors: vec![],
             properties: vec![],
             qml_metadata: None,
-            locking: false,
-            threading: false,
             has_qobject_macro: false,
             declaration: ForeignTypeIdentAlias {
                 attrs: vec![],
@@ -106,11 +96,8 @@ impl ParsedQObject {
             declaration,
             name,
             rust_type: inner,
-            constructors: vec![],
             properties,
             qml_metadata,
-            locking: true,
-            threading: false,
             has_qobject_macro: false,
         })
     }
@@ -143,74 +130,6 @@ impl ParsedQObject {
         Ok(None)
     }
 
-    pub fn parse_trait_impl(&mut self, imp: ItemImpl) -> Result<()> {
-        let (not, trait_path, _) = &imp
-            .trait_
-            .as_ref()
-            .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected trait impl!"))?;
-
-        if let Some(attr) = imp.attrs.first() {
-            return Err(Error::new_spanned(
-                attr,
-                "Attributes are not allowed on trait impls in cxx_qt::bridge",
-            ));
-        }
-
-        if path_compare_str(trait_path, &["cxx_qt", "Locking"]) {
-            if imp.unsafety.is_none() {
-                return Err(Error::new_spanned(
-                    trait_path,
-                    "cxx_qt::Locking must be an unsafe impl",
-                ));
-            }
-
-            if not.is_none() {
-                return Err(Error::new_spanned(
-                    trait_path,
-                    "cxx_qt::Locking is enabled by default, it can only be negated.",
-                ));
-            }
-
-            // Check that cxx_qt::Threading is not enabled
-            if self.threading {
-                return Err(Error::new_spanned(
-                    trait_path,
-                    "cxx_qt::Locking must be enabled if cxx_qt::Threading is enabled",
-                ));
-            }
-
-            self.locking = false;
-            Ok(())
-        } else if path_compare_str(trait_path, &["cxx_qt", "Threading"]) {
-            if not.is_some() {
-                return Err(Error::new_spanned(
-                    trait_path,
-                    "Negative impls for cxx_qt::Threading are not allowed",
-                ));
-            }
-
-            // Check that cxx_qt::Locking is not disabled
-            if !self.locking {
-                return Err(Error::new_spanned(
-                    trait_path,
-                    "cxx_qt::Locking must be enabled if cxx_qt::Threading is enabled",
-                ));
-            }
-
-            self.threading = true;
-            Ok(())
-        } else if path_compare_str(trait_path, &["cxx_qt", "Constructor"]) {
-            self.constructors.push(Constructor::parse(imp)?);
-            Ok(())
-        } else {
-            // TODO: Give suggestions on which trait might have been meant
-            Err(Error::new_spanned(
-                trait_path,
-                "Unsupported trait!\nCXX-Qt currently only supports:\n- cxx_qt::Threading\n- cxx_qt::Constructor\n- cxx_qt::Locking\nNote that the trait must always be fully-qualified."
-            ))
-        }
-    }
-
     fn parse_property_attributes(attrs: &mut Vec<Attribute>) -> Result<Vec<ParsedQProperty>> {
         let mut properties = vec![];
 
@@ -232,7 +151,7 @@ pub mod tests {
 
     use crate::parser::tests::f64_type;
     use quote::format_ident;
-    use syn::{parse_quote, ItemImpl};
+    use syn::parse_quote;
 
     pub fn create_parsed_qobject() -> ParsedQObject {
         let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
@@ -292,77 +211,6 @@ pub mod tests {
         let qobject =
             ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
         assert_eq!(qobject.properties.len(), 0);
-    }
-
-    #[test]
-    fn test_parse_trait_impl_valid() {
-        let mut qobject = create_parsed_qobject();
-        let item: ItemImpl = parse_quote! {
-            impl cxx_qt::Threading for MyObject {}
-        };
-        assert!(!qobject.threading);
-        assert!(qobject.parse_trait_impl(item).is_ok());
-        assert!(qobject.threading);
-    }
-
-    #[test]
-    fn test_parse_trait_impl_invalid() {
-        let mut qobject = create_parsed_qobject();
-
-        // must be a trait
-        let item: ItemImpl = parse_quote! {
-            impl T {}
-        };
-        assert!(qobject.parse_trait_impl(item).is_err());
-
-        // no attribute allowed
-        let item: ItemImpl = parse_quote! {
-            #[attr]
-            impl cxx_qt::Threading for T {}
-        };
-        assert!(qobject.parse_trait_impl(item).is_err());
-
-        // Threading cannot be negative
-        let item: ItemImpl = parse_quote! {
-            impl !cxx_qt::Threading for T {}
-        };
-        assert!(qobject.parse_trait_impl(item).is_err());
-
-        // must be a known trait
-        let item: ItemImpl = parse_quote! {
-            impl cxx_qt::ABC for T {}
-        };
-        assert!(qobject.parse_trait_impl(item).is_err());
-
-        // locking unsafe impl
-        let item: ItemImpl = parse_quote! {
-            impl cxx_qt::Locking for T {}
-        };
-        assert!(qobject.parse_trait_impl(item).is_err());
-
-        // locking can only be negated
-        let item: ItemImpl = parse_quote! {
-            unsafe impl cxx_qt::Locking for T {}
-        };
-        assert!(qobject.parse_trait_impl(item).is_err());
-
-        // locking must be enabled if threading is enabled
-        let mut non_lock_qobject = create_parsed_qobject();
-        non_lock_qobject.locking = false;
-
-        let item: ItemImpl = parse_quote! {
-            impl cxx_qt::Threading for T {}
-        };
-        assert!(non_lock_qobject.parse_trait_impl(item).is_err());
-
-        // if threading is enabled, !Locking cannot be implemented
-        let mut threaded_qobject = create_parsed_qobject();
-        threaded_qobject.threading = true;
-
-        let item: ItemImpl = parse_quote! {
-            unsafe impl !cxx_qt::Locking for T {}
-        };
-        assert!(threaded_qobject.parse_trait_impl(item).is_err());
     }
 
     #[test]

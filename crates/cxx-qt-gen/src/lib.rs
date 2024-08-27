@@ -63,6 +63,13 @@ mod tests {
         }
     }
 
+    macro_rules! assert_parse_errors {
+        { $type:ident: $($input:tt)* } => {
+            $(assert!($type::parse(syn::parse_quote! $input).is_err());)*
+        }
+    }
+    pub(crate) use assert_parse_errors;
+
     /// Helper for formating C++ code
     pub(crate) fn format_cpp(cpp_code: &str) -> String {
         clang_format_with_style(cpp_code, &ClangFormatStyle::File).unwrap()

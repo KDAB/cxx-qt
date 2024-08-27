@@ -14,6 +14,7 @@ pub mod qenum;
 pub mod qnamespace;
 pub mod qobject;
 pub mod signals;
+pub mod trait_impl;
 
 use crate::{
     // Used for error handling when resolving the namespace of the qenum.

@@ -17,11 +17,13 @@ use crate::{
 use std::collections::BTreeMap;
 use syn::{
     spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result,
-    Type, TypePath,
 };
 use syn::{ItemMacro, Meta};
 
 use super::qnamespace::ParsedQNamespace;
+use super::trait_impl::TraitImpl;
+
+// Test comment
 
 pub struct ParsedCxxQtData {
     /// Map of the QObjects defined in the module that will be used for code generation
@@ -43,6 +45,8 @@ pub struct ParsedCxxQtData {
     pub extern_cxxqt_blocks: Vec<ParsedExternCxxQt>,
     /// The namespace of the CXX-Qt module
     pub namespace: Option<String>,
+    /// All trait implementations found
+    pub trait_impls: Vec<TraitImpl>,
     /// The ident of the module, used for mappings
     pub module_ident: Ident,
 }
@@ -57,6 +61,7 @@ impl ParsedCxxQtData {
             signals: vec![],
             inherited_methods: vec![],
             qnamespaces: vec![],
+            trait_impls: vec![],
             extern_cxxqt_blocks: Vec::<ParsedExternCxxQt>::default(),
             module_ident,
             namespace,
@@ -237,23 +242,14 @@ impl ParsedCxxQtData {
     /// Parse a [syn::ItemImpl] into the qobjects if it's a CXX-Qt implementation
     /// otherwise return as a [syn::Item] to pass through.
     fn parse_impl(&mut self, imp: ItemImpl) -> Result<Option<Item>> {
-        // If the implementation has a T
-        // then this is the block of methods to be implemented on the C++ object
-        if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_ref() {
-            // If this path is an ident then try to match to a QObject
-            if let Some(ident) = path.get_ident() {
-                // Find if we are an impl block for a qobject
-                if let Some(qobject) = self.qobjects.get_mut(ident) {
-                    // If we are a trait then process it otherwise add to others
-                    if imp.trait_.is_some() {
-                        qobject.parse_trait_impl(imp)?;
-                        return Ok(None);
-                    }
-                }
-            }
+        // If it is a trait impl compared to a regular impl block
+        // This allows the cxx shim trait feature
+        if imp.trait_.is_some() {
+            self.trait_impls.push(TraitImpl::parse(imp)?);
+            Ok(None)
+        } else {
+            Ok(Some(Item::Impl(imp)))
         }
-
-        Ok(Some(Item::Impl(imp)))
     }
 }
 
@@ -585,19 +581,6 @@ mod tests {
     }
 
     #[test]
-    fn test_find_and_merge_cxx_qt_item_threading() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-        assert!(!cxx_qt_data.qobjects[&qobject_ident()].threading);
-
-        let item: Item = parse_quote! {
-            impl cxx_qt::Threading for MyObject {}
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].threading);
-    }
-
-    #[test]
     fn test_find_and_merge_cxx_qt_item_extern_cxx_qt() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
@@ -727,18 +710,27 @@ mod tests {
     #[test]
     fn test_parse_threading() {
         let mut cxxqtdata = create_parsed_cxx_qt_data();
-
-        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
-        assert!(!qobject.threading);
+        assert!(cxxqtdata.trait_impls.is_empty());
 
         let threading_block: Item = parse_quote! {
             impl cxx_qt::Threading for MyObject {}
         };
+        let result = cxxqtdata.parse_cxx_qt_item(threading_block).unwrap();
+        assert!(result.is_none());
+        assert!(!cxxqtdata.trait_impls.is_empty());
+    }
 
-        cxxqtdata.parse_cxx_qt_item(threading_block).unwrap();
+    #[test]
+    fn test_passthrough_non_trait_impl() {
+        let mut cxxqtdata = create_parsed_cxx_qt_data();
 
-        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
-        assert!(qobject.threading);
+        let result = cxxqtdata
+            .parse_cxx_qt_item(parse_quote! {
+                impl T {}
+            })
+            .unwrap();
+        assert!(result.is_some());
+        assert!(matches!(result, Some(Item::Impl(_))));
     }
 
     #[test]
