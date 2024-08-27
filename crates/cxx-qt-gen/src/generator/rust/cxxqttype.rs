@@ -21,6 +21,8 @@ pub fn generate(
 
     let cpp_struct_ident = &qobject_ident.name.rust_unqualified();
     let rust_struct_ident = &qobject_ident.rust_struct.rust_unqualified();
+    let rust_fn = qobject_ident.cxx_qt_ffi_method("rust");
+    let rust_mut_fn = qobject_ident.cxx_qt_ffi_method("rust_mut");
     let qualified_impl = type_names.rust_qualified(cpp_struct_ident)?;
 
     let fragment = RustFragmentPair {
@@ -30,7 +32,7 @@ pub fn generate(
                     #[cxx_name = "unsafeRust"]
                     #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(outer: &#cpp_struct_ident) -> &#rust_struct_ident;
+                    fn #rust_fn(outer: &#cpp_struct_ident) -> &#rust_struct_ident;
                 }
             },
             quote! {
@@ -38,7 +40,7 @@ pub fn generate(
                     #[cxx_name = "unsafeRustMut"]
                     #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(outer: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
+                    fn #rust_mut_fn(outer: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
                 }
             },
         ],
@@ -48,7 +50,7 @@ pub fn generate(
                     type Target = #rust_struct_ident;
 
                     fn deref(&self) -> &Self::Target {
-                        #module_ident::cxx_qt_ffi_rust(self)
+                        #module_ident::#rust_fn(self)
                     }
                 }
             },
@@ -57,11 +59,11 @@ pub fn generate(
                     type Rust = #rust_struct_ident;
 
                     fn rust(&self) -> &Self::Rust {
-                        #module_ident::cxx_qt_ffi_rust(self)
+                        #module_ident::#rust_fn(self)
                     }
 
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        #module_ident::cxx_qt_ffi_rust_mut(self)
+                        #module_ident::#rust_mut_fn(self)
                     }
                 }
             },
@@ -110,8 +112,9 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRust"]
+                    #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
+                    fn cxx_qt_ffi_my_object_rust(outer: &MyObject) -> &MyObjectRust;
                 }
             },
         );
@@ -120,8 +123,9 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
+                    #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+                    fn cxx_qt_ffi_my_object_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
                 }
             },
         );
@@ -130,11 +134,11 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                impl core::ops::Deref for qobject::MyObject {
+                impl ::core::ops::Deref for qobject::MyObject {
                     type Target = MyObjectRust;
 
                     fn deref(&self) -> &Self::Target {
-                        self.cxx_qt_ffi_rust()
+                        qobject::cxx_qt_ffi_my_object_rust(self)
                     }
                 }
             },
@@ -142,15 +146,15 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[1],
             quote! {
-                impl cxx_qt::CxxQtType for qobject::MyObject {
+                impl ::cxx_qt::CxxQtType for qobject::MyObject {
                     type Rust = MyObjectRust;
 
                     fn rust(&self) -> &Self::Rust {
-                        self.cxx_qt_ffi_rust()
+                        qobject::cxx_qt_ffi_my_object_rust(self)
                     }
 
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        self.cxx_qt_ffi_rust_mut()
+                        qobject::cxx_qt_ffi_my_object_rust_mut(self)
                     }
                 }
             },

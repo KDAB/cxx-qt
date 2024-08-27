@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cxx-qt/locking.h>
 #include <cxx-qt/maybelockguard.h>
 #include <cxx-qt/threading.h>
 #include <cxx-qt/type.h>
@@ -17,6 +18,7 @@ class MyObject
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
   , public ::rust::cxxqt1::CxxQtThreading<MyObject>
+  , public virtual ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:

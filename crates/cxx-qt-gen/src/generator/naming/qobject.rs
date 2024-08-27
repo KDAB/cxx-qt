@@ -56,7 +56,7 @@ impl QObjectNames {
     }
 
     /// For a given ident generate the mangled threading suffix ident
-    pub fn cxx_qt_thread_method(&self, suffix: &str) -> Ident {
+    pub fn cxx_qt_ffi_method(&self, suffix: &str) -> Ident {
         format_ident!(
             "cxx_qt_ffi_{ident}_{suffix}",
             ident = self.name.cxx_unqualified().to_case(Case::Snake)
@@ -105,15 +105,15 @@ pub mod tests {
         );
 
         assert_eq!(
-            names.cxx_qt_thread_method("threading_clone"),
+            names.cxx_qt_ffi_method("threading_clone"),
             "cxx_qt_ffi_my_object_threading_clone"
         );
         assert_eq!(
-            names.cxx_qt_thread_method("threading_drop"),
+            names.cxx_qt_ffi_method("threading_drop"),
             "cxx_qt_ffi_my_object_threading_drop"
         );
         assert_eq!(
-            names.cxx_qt_thread_method("queue_boxed_fn"),
+            names.cxx_qt_ffi_method("queue_boxed_fn"),
             "cxx_qt_ffi_my_object_queue_boxed_fn"
         );
     }

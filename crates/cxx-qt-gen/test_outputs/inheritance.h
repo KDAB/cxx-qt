@@ -11,7 +11,7 @@ class MyObject;
 class MyObject
   : public QAbstractItemModel
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
+  , public virtual ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:

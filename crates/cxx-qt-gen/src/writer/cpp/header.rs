@@ -267,7 +267,7 @@ class MyObject;
 
 
 
-class MyObject : public MyBase, public ::rust::cxxqt1::CxxQtType<MyObjectRust>, public ::rust::cxxqt1::CxxQtLocking
+class MyObject : public MyBase, public ::rust::cxxqt1::CxxQtType<MyObjectRust>, public virtual ::rust::cxxqt1::CxxQtLocking
 {
 
 public:

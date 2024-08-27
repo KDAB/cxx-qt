@@ -100,8 +100,9 @@ mod ffi {
         type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObject>;
         include!("cxx-qt/thread.h");
         #[doc(hidden)]
+        #[namespace = "rust::cxxqt1"]
         #[cxx_name = "qtThread"]
-        fn cxx_qt_ffi_qt_thread(self: &MyObject) -> MyObjectCxxQtThread;
+        fn cxx_qt_ffi_my_object_qt_thread(qobject: &MyObject) -> MyObjectCxxQtThread;
         #[doc(hidden)]
         #[namespace = "rust::cxxqt1"]
         #[cxx_name = "cxxQtThreadQueue"]
@@ -216,20 +217,22 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRust"]
+        #[namespace = "rust::cxxqt1"]
         #[doc(hidden)]
-        fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
+        fn cxx_qt_ffi_my_object_rust(outer: &MyObject) -> &MyObjectRust;
     }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRustMut"]
+        #[namespace = "rust::cxxqt1"]
         #[doc(hidden)]
-        fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+        fn cxx_qt_ffi_my_object_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
 impl cxx_qt::Threading for ffi::MyObject {
     type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
     type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
     fn qt_thread(&self) -> ffi::MyObjectCxxQtThread {
-        self.cxx_qt_ffi_qt_thread()
+        ffi::cxx_qt_ffi_my_object_qt_thread(self)
     }
     #[doc(hidden)]
     fn queue<F>(
@@ -337,18 +340,18 @@ pub fn initialize_my_object_1(
 ) {
     <ffi::MyObject as cxx_qt::Constructor<()>>::initialize(qobject, ());
 }
-impl core::ops::Deref for ffi::MyObject {
+impl ::core::ops::Deref for ffi::MyObject {
     type Target = MyObjectRust;
     fn deref(&self) -> &Self::Target {
-        self.cxx_qt_ffi_rust()
+        ffi::cxx_qt_ffi_my_object_rust(self)
     }
 }
-impl cxx_qt::CxxQtType for ffi::MyObject {
+impl ::cxx_qt::CxxQtType for ffi::MyObject {
     type Rust = MyObjectRust;
     fn rust(&self) -> &Self::Rust {
-        self.cxx_qt_ffi_rust()
+        ffi::cxx_qt_ffi_my_object_rust(self)
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-        self.cxx_qt_ffi_rust_mut()
+        ffi::cxx_qt_ffi_my_object_rust_mut(self)
     }
 }

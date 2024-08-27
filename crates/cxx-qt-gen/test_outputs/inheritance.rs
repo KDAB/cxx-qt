@@ -60,13 +60,15 @@ mod inheritance {
     }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRust"]
+        #[namespace = "rust::cxxqt1"]
         #[doc(hidden)]
-        fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
+        fn cxx_qt_ffi_my_object_rust(outer: &MyObject) -> &MyObjectRust;
     }
     unsafe extern "C++" {
         #[cxx_name = "unsafeRustMut"]
+        #[namespace = "rust::cxxqt1"]
         #[doc(hidden)]
-        fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+        fn cxx_qt_ffi_my_object_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
 impl cxx_qt::Locking for inheritance::MyObject {}
@@ -74,18 +76,18 @@ impl cxx_qt::Locking for inheritance::MyObject {}
 pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
-impl core::ops::Deref for inheritance::MyObject {
+impl ::core::ops::Deref for inheritance::MyObject {
     type Target = MyObjectRust;
     fn deref(&self) -> &Self::Target {
-        self.cxx_qt_ffi_rust()
+        inheritance::cxx_qt_ffi_my_object_rust(self)
     }
 }
-impl cxx_qt::CxxQtType for inheritance::MyObject {
+impl ::cxx_qt::CxxQtType for inheritance::MyObject {
     type Rust = MyObjectRust;
     fn rust(&self) -> &Self::Rust {
-        self.cxx_qt_ffi_rust()
+        inheritance::cxx_qt_ffi_my_object_rust(self)
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-        self.cxx_qt_ffi_rust_mut()
+        inheritance::cxx_qt_ffi_my_object_rust_mut(self)
     }
 }

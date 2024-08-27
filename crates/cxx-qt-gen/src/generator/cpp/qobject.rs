@@ -182,7 +182,7 @@ impl GeneratedCppQObject {
         }
         // If this type has locking enabled then add generation
         if structured_qobject.locking {
-            let (_initializer, mut blocks) = locking::generate(qobject.base_class.as_deref())?;
+            let mut blocks = locking::generate(qobject.base_class.as_deref())?;
             generated.blocks.append(&mut blocks);
         }
 
@@ -233,7 +233,10 @@ mod tests {
             cpp.blocks.base_classes[1],
             "::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
-        assert_eq!(cpp.blocks.base_classes[2], "::rust::cxxqt1::CxxQtLocking");
+        assert_eq!(
+            cpp.blocks.base_classes[2],
+            "virtual ::rust::cxxqt1::CxxQtLocking"
+        );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 
@@ -262,7 +265,10 @@ mod tests {
             cpp.blocks.base_classes[1],
             "::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
-        assert_eq!(cpp.blocks.base_classes[2], "::rust::cxxqt1::CxxQtLocking");
+        assert_eq!(
+            cpp.blocks.base_classes[2],
+            "virtual ::rust::cxxqt1::CxxQtLocking"
+        );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 

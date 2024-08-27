@@ -6,7 +6,7 @@
 use crate::generator::cpp::qobject::GeneratedCppQObjectBlocks;
 use syn::Result;
 
-pub fn generate(_base_class: Option<&str>) -> Result<(String, GeneratedCppQObjectBlocks)> {
+pub fn generate(_base_class: Option<&str>) -> Result<GeneratedCppQObjectBlocks> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     result
@@ -16,8 +16,7 @@ pub fn generate(_base_class: Option<&str>) -> Result<(String, GeneratedCppQObjec
     const LOCKING: &str = "::rust::cxxqt1::CxxQtLocking";
 
     result.base_classes.push(format!("virtual {LOCKING}"));
-    let class_initializer = format!("{LOCKING}()");
-    Ok((class_initializer, result))
+    Ok(result)
 }
 
 #[cfg(test)]
@@ -26,10 +25,7 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_locking() {
-        let (initializer, generated) = generate(None).unwrap();
-
-        // initializer
-        assert_eq!(initializer, "::rust::cxxqt1::CxxQtLocking()");
+        let generated = generate(None).unwrap();
 
         // includes
         assert_eq!(generated.includes.len(), 1);
@@ -37,11 +33,9 @@ mod tests {
 
         // base class
         assert_eq!(generated.base_classes.len(), 1);
-        assert_eq!(generated.base_classes[0], "::rust::cxxqt1::CxxQtLocking");
-    }
-
-    #[test]
-    fn test_generate_cpp_conditional_locking() {
-        todo!();
+        assert_eq!(
+            generated.base_classes[0],
+            "virtual ::rust::cxxqt1::CxxQtLocking"
+        );
     }
 }

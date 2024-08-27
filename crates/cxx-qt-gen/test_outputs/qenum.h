@@ -78,7 +78,7 @@ namespace cxx_qt::my_object {
 class MyObject
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
+  , public virtual ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
@@ -120,7 +120,7 @@ namespace cxx_qt::my_object {
 class CxxName
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<InternalObject>
-  , public ::rust::cxxqt1::CxxQtLocking
+  , public virtual ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:

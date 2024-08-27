@@ -271,8 +271,9 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRust"]
+                    #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
+                    fn cxx_qt_ffi_my_object_rust(outer: &MyObject) -> &MyObjectRust;
                 }
             },
         );
@@ -281,8 +282,9 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafeRustMut"]
+                    #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+                    fn cxx_qt_ffi_my_object_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
                 }
             },
         );

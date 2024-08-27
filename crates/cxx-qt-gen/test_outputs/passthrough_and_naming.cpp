@@ -312,7 +312,6 @@ MyObject::MyObject(QObject* parent)
   : QStringListModel(parent)
   , ::rust::cxxqt1::CxxQtType<MyObjectRust>(
       ::cxx_qt::multi_object::cxx_qt_my_object::createRs())
-  , ::rust::cxxqt1::CxxQtLocking()
 {
 }
 
@@ -470,7 +469,6 @@ MyCxxName::MyCxxName(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<ThirdObjectRust>(
       ::my_namespace::cxx_qt_my_rust_name::createRs())
-  , ::rust::cxxqt1::CxxQtLocking()
 {
 }
 

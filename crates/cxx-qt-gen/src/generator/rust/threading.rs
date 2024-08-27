@@ -29,9 +29,10 @@ pub fn generate(
     let cpp_struct_ident = qobject_ident.name.rust_unqualified();
     let cxx_qt_thread_ident = &qobject_ident.cxx_qt_thread_class;
     let cxx_qt_thread_queued_fn_ident = &qobject_ident.cxx_qt_thread_queued_fn_struct;
-    let cxx_qt_thread_queue_fn = qobject_ident.cxx_qt_thread_method("queue_boxed_fn");
-    let cxx_qt_thread_clone = qobject_ident.cxx_qt_thread_method("threading_clone");
-    let cxx_qt_thread_drop = qobject_ident.cxx_qt_thread_method("threading_drop");
+    let cxx_qt_thread_queue_fn = qobject_ident.cxx_qt_ffi_method("queue_boxed_fn");
+    let cxx_qt_thread_clone = qobject_ident.cxx_qt_ffi_method("threading_clone");
+    let cxx_qt_thread_drop = qobject_ident.cxx_qt_ffi_method("threading_drop");
+    let cxx_qt_thread_fn = qobject_ident.cxx_qt_ffi_method("qt_thread");
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
@@ -53,9 +54,9 @@ pub fn generate(
                     include!("cxx-qt/thread.h");
 
                     #[doc(hidden)]
-                    #[cxx_name = "qtThread"]
                     #[namespace = "rust::cxxqt1"]
-                    fn cxx_qt_ffi_qt_thread(qobject: &#cpp_struct_ident) -> #cxx_qt_thread_ident;
+                    #[cxx_name = "qtThread"]
+                    fn #cxx_qt_thread_fn(qobject: &#cpp_struct_ident) -> #cxx_qt_thread_ident;
 
                     // SAFETY:
                     // - Send + 'static: argument closure can be transferred to QObject thread.
@@ -95,7 +96,7 @@ pub fn generate(
 
                     fn qt_thread(&self) -> #module_ident::#cxx_qt_thread_ident
                     {
-                        #module_ident::cxx_qt_ffi_qt_thread(self)
+                        #module_ident::#cxx_qt_thread_fn(self)
                     }
 
                     #[doc(hidden)]
@@ -192,8 +193,9 @@ mod tests {
                     include!("cxx-qt/thread.h");
 
                     #[doc(hidden)]
+                    #[namespace = "rust::cxxqt1"]
                     #[cxx_name = "qtThread"]
-                    fn cxx_qt_ffi_qt_thread(self: &MyObject) -> MyObjectCxxQtThread;
+                    fn cxx_qt_ffi_my_object_qt_thread(qobject: &MyObject) -> MyObjectCxxQtThread;
 
                     // SAFETY:
                     // - Send + 'static: argument closure can be transferred to QObject thread.
@@ -239,7 +241,7 @@ mod tests {
 
                     fn qt_thread(&self) -> qobject::MyObjectCxxQtThread
                     {
-                        self.cxx_qt_ffi_qt_thread()
+                        qobject::cxx_qt_ffi_my_object_qt_thread(self)
                     }
 
                     #[doc(hidden)]

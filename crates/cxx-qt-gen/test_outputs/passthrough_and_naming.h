@@ -108,7 +108,7 @@ namespace cxx_qt::multi_object {
 class MyObject
   : public QStringListModel
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
+  , public virtual ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
@@ -190,7 +190,7 @@ namespace my_namespace {
 class MyCxxName
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<ThirdObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
+  , public virtual ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
