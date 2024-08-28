@@ -89,12 +89,9 @@ impl Parser {
         let mut cxx_qt_data = ParsedCxxQtData::new(module.ident.clone(), namespace);
 
         // Check that there are items in the module
-        if let Some(mut items) = module.content {
-            // Find any QObject structs
-            cxx_qt_data.find_qobject_types(&items.1)?;
-
+        if let Some((_, items)) = module.content {
             // Loop through items and load into qobject or others and populate mappings
-            for item in items.1.drain(..) {
+            for item in items.into_iter() {
                 // Try to find any CXX-Qt items, if found add them to the relevant
                 // qobject or extern C++Qt block. Otherwise return them to be added to other
                 if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {

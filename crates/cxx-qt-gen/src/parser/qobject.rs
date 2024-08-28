@@ -13,7 +13,7 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 
-use syn::{Attribute, Ident, Meta, Result};
+use syn::{Attribute, Error, Ident, Meta, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -70,14 +70,38 @@ impl ParsedQObject {
         namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
-        // Find any QML metadata
-        let qml_metadata =
-            Self::parse_qml_metadata(&declaration.ident_left, &mut declaration.attrs)?;
+        let has_qobject_macro = attribute_take_path(&mut declaration.attrs, &["qobject"]).is_some();
 
         // Find if there is any base class
         let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
-            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
+            .map(|attr| {
+                let string = expr_to_string(&attr.meta.require_name_value()?.value)?;
+                if string.is_empty() {
+                    // Ensure that the base class attribute is not empty, as this is not valid in both cases
+                    // - when there is a qobject macro it is not valid
+                    // - when there is not a qobject macro it is not valid
+                    return Err(Error::new_spanned(
+                        attr,
+                        "The #[base] attribute cannot be empty",
+                    ));
+                }
+                Ok(string)
+            })
             .transpose()?;
+
+        // Ensure that if there is no qobject macro that a base class is specificed
+        //
+        // Note this assumes the check above
+        if !has_qobject_macro && base_class.is_none() {
+            return Err(Error::new_spanned(
+                declaration.ident_left,
+                "A type without a #[qobject] attribute must specify a #[base] attribute",
+            ));
+        }
+
+        // Find any QML metadata
+        let qml_metadata =
+            Self::parse_qml_metadata(&declaration.ident_left, &mut declaration.attrs)?;
 
         let name = Name::from_ident_and_attrs(
             &declaration.ident_left,
@@ -98,7 +122,7 @@ impl ParsedQObject {
             rust_type: inner,
             properties,
             qml_metadata,
-            has_qobject_macro: false,
+            has_qobject_macro,
         })
     }
 
@@ -159,6 +183,31 @@ pub mod tests {
             type MyObject = super::MyObjectRust;
         };
         ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap()
+    }
+
+    macro_rules! parse_qobject {
+        { $($input:tt)* } => {
+            {
+                let input = parse_quote! {
+                    $($input)*
+                };
+                ParsedQObject::parse(input, None, &format_ident!("qobject")).unwrap()
+            }
+       }
+    }
+
+    #[test]
+    fn test_has_qobject_name() {
+        let qobject = parse_qobject! {
+            #[qobject]
+            type MyObject = super::MyObjectRust;
+        };
+        assert!(qobject.has_qobject_macro);
+        let qobject = parse_qobject! {
+            #[base="Thing"]
+            type MyObject = super::MyObjectRust;
+        };
+        assert!(!qobject.has_qobject_macro);
     }
 
     #[test]
@@ -305,5 +354,25 @@ pub mod tests {
                 singleton: false,
             })
         );
+    }
+
+    macro_rules! assert_parse_errors {
+        { $($input:tt)* } => {
+            $(assert!(ParsedQObject::parse(syn::parse_quote! $input, None, &format_ident!("qobject")).is_err());)*
+        }
+    }
+
+    #[test]
+    fn test_parse_errors() {
+        assert_parse_errors! {
+            {
+                #[qobject]
+                #[base = ""]
+                type MyObject = super::T;
+            }
+            {
+                type MyObject = super::T;
+            }
+        }
     }
 }
