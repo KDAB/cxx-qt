@@ -90,7 +90,7 @@ impl<'a> Structures<'a> {
     pub fn new(cxxqtdata: &'a ParsedCxxQtData) -> Result<Self> {
         let mut qobjects: Vec<_> = cxxqtdata
             .qobjects
-            .values()
+            .iter()
             .map(StructuredQObject::from_qobject)
             .collect();
 

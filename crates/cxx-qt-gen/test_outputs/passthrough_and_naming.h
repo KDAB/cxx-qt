@@ -21,11 +21,6 @@ using MyObjectCxxQtSignalHandlerready =
   ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsready*>;
 } // namespace cxx_qt::multi_object::rust::cxxqtgen1
 
-namespace my_namespace {
-class MyCxxName;
-
-} // namespace my_namespace
-
 namespace second_object {
 class SecondObject;
 
@@ -41,6 +36,11 @@ namespace second_object::rust::cxxqtgen1 {
 using SecondObjectCxxQtSignalHandlerready =
   ::rust::cxxqt1::SignalHandler<struct SecondObjectCxxQtSignalParamsready*>;
 } // namespace second_object::rust::cxxqtgen1
+
+namespace my_namespace {
+class MyCxxName;
+
+} // namespace my_namespace
 
 namespace rust::cxxqtgen1 {
 using QPushButtonCxxQtSignalHandlerclicked =
@@ -137,26 +137,6 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
 
 Q_DECLARE_METATYPE(cxx_qt::multi_object::MyObject*)
 
-namespace my_namespace {
-class MyCxxName
-  : public QObject
-  , public ::rust::cxxqt1::CxxQtType<ThirdObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
-{
-  Q_OBJECT
-public:
-  virtual ~MyCxxName() = default;
-
-public:
-  explicit MyCxxName(QObject* parent = nullptr);
-};
-
-static_assert(::std::is_base_of<QObject, MyCxxName>::value,
-              "MyCxxName must inherit from QObject");
-} // namespace my_namespace
-
-Q_DECLARE_METATYPE(my_namespace::MyCxxName*)
-
 namespace second_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
 SecondObject_propertyNameChangedConnect(
@@ -205,3 +185,23 @@ static_assert(::std::is_base_of<QObject, SecondObject>::value,
 } // namespace second_object
 
 Q_DECLARE_METATYPE(second_object::SecondObject*)
+
+namespace my_namespace {
+class MyCxxName
+  : public QObject
+  , public ::rust::cxxqt1::CxxQtType<ThirdObjectRust>
+  , public ::rust::cxxqt1::CxxQtLocking
+{
+  Q_OBJECT
+public:
+  virtual ~MyCxxName() = default;
+
+public:
+  explicit MyCxxName(QObject* parent = nullptr);
+};
+
+static_assert(::std::is_base_of<QObject, MyCxxName>::value,
+              "MyCxxName must inherit from QObject");
+} // namespace my_namespace
+
+Q_DECLARE_METATYPE(my_namespace::MyCxxName*)

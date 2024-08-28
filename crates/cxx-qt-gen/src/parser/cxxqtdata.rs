@@ -14,7 +14,6 @@ use crate::{
     },
     syntax::expr::expr_to_string,
 };
-use std::collections::BTreeMap;
 use syn::{Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result};
 use syn::{ItemMacro, Meta};
 
@@ -28,7 +27,7 @@ pub struct ParsedCxxQtData {
     //
     // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
     // Otherwise, the output order would be different, depending on the environment, which makes it hard to test/debug.
-    pub qobjects: BTreeMap<Ident, ParsedQObject>,
+    pub qobjects: Vec<ParsedQObject>,
     /// List of QEnums defined in the module, that aren't associated with a QObject
     pub qenums: Vec<ParsedQEnum>,
     /// List of methods and Q_INVOKABLES found
@@ -53,7 +52,7 @@ impl ParsedCxxQtData {
     /// Create a ParsedCxxQtData from a given module and namespace
     pub fn new(module_ident: Ident, namespace: Option<String>) -> Self {
         Self {
-            qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
+            qobjects: Vec::new(),
             qenums: vec![],
             methods: vec![],
             signals: vec![],
@@ -174,8 +173,7 @@ impl ParsedCxxQtData {
 
                     // Note that we assume a compiler error will occur later
                     // if you had two structs with the same name
-                    self.qobjects
-                        .insert(qobject.name.rust_unqualified().clone(), qobject);
+                    self.qobjects.push(qobject);
                 }
                 // Const Macro, Type are unsupported in extern "RustQt" for now
                 _ => return Err(Error::new_spanned(item, "Unsupported item")),
@@ -196,6 +194,13 @@ impl ParsedCxxQtData {
             Ok(Some(Item::Impl(imp)))
         }
     }
+
+    #[cfg(test)]
+    fn find_object(&self, id: &Ident) -> Option<&ParsedQObject> {
+        self.qobjects
+            .iter()
+            .find(|obj| obj.name.rust_unqualified() == id)
+    }
 }
 
 #[cfg(test)]
@@ -207,18 +212,10 @@ mod tests {
     use quote::format_ident;
     use syn::parse_quote;
 
-    /// The QObject ident used in these tests as the ident that already
-    /// has been found.
-    fn qobject_ident() -> Ident {
-        format_ident!("MyObject")
-    }
-
     /// Creates a ParsedCxxQtData with a QObject definition already found
     pub fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-        cxx_qt_data
-            .qobjects
-            .insert(qobject_ident(), create_parsed_qobject());
+        cxx_qt_data.qobjects.push(create_parsed_qobject());
         cxx_qt_data
     }
 
@@ -609,12 +606,13 @@ mod tests {
 
         parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
         assert_eq!(parsed_cxxqtdata.qobjects.len(), 2);
+
         assert!(parsed_cxxqtdata
-            .qobjects
-            .contains_key(&format_ident!("MyObject")));
+            .find_object(&format_ident!("MyObject"))
+            .is_some());
         assert!(parsed_cxxqtdata
-            .qobjects
-            .contains_key(&format_ident!("MyOtherObject")));
+            .find_object(&format_ident!("MyOtherObject"))
+            .is_some());
     }
 
     #[test]
@@ -634,13 +632,17 @@ mod tests {
         parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
         assert_eq!(parsed_cxxqtdata.qobjects.len(), 2);
         assert_eq!(
-            parsed_cxxqtdata.qobjects[&format_ident!("MyObject")]
+            parsed_cxxqtdata
+                .find_object(&format_ident!("MyObject"))
+                .unwrap()
                 .name
                 .namespace(),
             Some("a")
         );
         assert_eq!(
-            parsed_cxxqtdata.qobjects[&format_ident!("MyOtherObject")]
+            parsed_cxxqtdata
+                .find_object(&format_ident!("MyOtherObject"))
+                .unwrap()
                 .name
                 .namespace(),
             Some("b")
