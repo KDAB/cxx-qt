@@ -93,6 +93,8 @@ fn main() {
         "core/qlist/qlist_i64",
         "core/qlist/qlist_qbytearray",
         "core/qlist/qlist_qdate",
+        "core/qlist/qlist_qline",
+        "core/qlist/qlist_qlinef",
         "core/qlist/qlist_qmargins",
         "core/qlist/qlist_qmarginsf",
         "core/qlist/qlist_qpersistentmodelindex",
