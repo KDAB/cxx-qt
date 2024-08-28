@@ -177,7 +177,7 @@ mod tests {
             // Invalid trait name
             { impl cxx_qt::AnotherTrait for QObject {} }
             // Invalid Path to self type
-            { impl cxx_qt::Threading for incorrect::path::QObject {} }
+            { impl cxx_qt::Threading for *mut QObject{} }
 
             {
                 // Attributes are not allowed
