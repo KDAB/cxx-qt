@@ -15,6 +15,9 @@ pub mod qnamespace;
 pub mod qobject;
 pub mod signals;
 
+use crate::parser::parameter::ParsedFunctionParameter;
+use crate::syntax::safety::Safety;
+use crate::syntax::{foreignmod, types};
 use crate::{
     // Used for error handling when resolving the namespace of the qenum.
     naming::TypeNames,
@@ -25,8 +28,61 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Brace, Semi},
-    Error, Ident, Item, ItemMod, Meta, Result, Token,
+    Attribute, Error, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token,
 };
+
+fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
+    if safety == &Safety::Unsafe && method.sig.unsafety.is_none() {
+        Err(Error::new(
+            method.span(),
+            "Invokables must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+/// Struct with common fields between Invokable types.
+/// These types are ParsedSignal, ParsedMethod and ParsedInheritedMethod
+pub struct InvokableFields {
+    qobject_ident: Ident,
+    mutable: bool,
+    parameters: Vec<ParsedFunctionParameter>,
+    safe: bool,
+    docs: Vec<Attribute>,
+}
+
+/// Function for creating an [InvokableFields] from a method and docs.
+/// These fields are shared by ParsedSignal, ParsedMethod and ParsedInheritedMethod so grouped into common logic.
+pub fn extract_common_fields(
+    method: &ForeignItemFn,
+    docs: Vec<Attribute>,
+) -> Result<InvokableFields> {
+    let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
+    let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
+    let mutable = mutability.is_some();
+
+    let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
+    let safe = method.sig.unsafety.is_none();
+    Ok(InvokableFields {
+        qobject_ident,
+        mutable,
+        parameters,
+        safe,
+        docs,
+    })
+}
+
+/// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
+///
+/// Note: This modifies the method by removing those doc attributes
+pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
+    let mut docs = vec![];
+    while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
+        docs.push(doc);
+    }
+    docs
+}
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
 /// parsed into ParsedCxxQtData, to be used later to generate Rust & C++ code.

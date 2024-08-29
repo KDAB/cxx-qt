@@ -3,15 +3,14 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::{check_safety, extract_common_fields, separate_docs, InvokableFields};
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
-    syntax::{
-        attribute::attribute_take_path, expr::expr_to_string, foreignmod, safety::Safety, types,
-    },
+    syntax::{attribute::attribute_take_path, expr::expr_to_string, safety::Safety},
 };
 use quote::format_ident;
-use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result};
+use syn::{Attribute, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
@@ -33,42 +32,32 @@ pub struct ParsedInheritedMethod {
 
 impl ParsedInheritedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
-        if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
-            return Err(Error::new(
-                method.span(),
-                "Inherited methods must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
-            ));
-        }
+        check_safety(&method, &safety)?;
 
-        let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
-        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
-        let mutable = mutability.is_some();
+        let docs = separate_docs(&mut method);
+        let invokable_fields = extract_common_fields(&method, docs)?;
 
-        let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
-
-        let mut ident =
+        let mut name =
             Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
 
+        // This block seems unnecessary but removing it causes one cxx_name attr in test_outputs to lose the CxxQtInherit suffix
         if let Some(attr) = attribute_take_path(&mut method.attrs, &["cxx_name"]) {
-            ident = ident.with_cxx_name(expr_to_string(&attr.meta.require_name_value()?.value)?);
+            name = name.with_cxx_name(expr_to_string(&attr.meta.require_name_value()?.value)?);
         }
 
-        let mut docs = vec![];
-        while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
-            docs.push(doc);
-        }
+        Ok(Self::from_invokable_fields(invokable_fields, method, name))
+    }
 
-        let safe = method.sig.unsafety.is_none();
-
-        Ok(Self {
+    fn from_invokable_fields(fields: InvokableFields, method: ForeignItemFn, name: Name) -> Self {
+        Self {
             method,
-            qobject_ident,
-            mutable,
-            parameters,
-            name: ident,
-            safe,
-            docs,
-        })
+            qobject_ident: fields.qobject_ident,
+            mutable: fields.mutable,
+            safe: fields.safe,
+            parameters: fields.parameters,
+            name,
+            docs: fields.docs,
+        }
     }
 
     /// the name of the wrapper function in C++

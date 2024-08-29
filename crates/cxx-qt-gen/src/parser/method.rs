@@ -6,11 +6,12 @@
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::attribute_take_path, foreignmod, safety::Safety, types},
+    syntax::{attribute::attribute_take_path, safety::Safety},
 };
 use std::collections::HashSet;
-use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result};
+use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
 
+use crate::parser::{check_safety, extract_common_fields, separate_docs, InvokableFields};
 #[cfg(test)]
 use quote::format_ident;
 
@@ -56,10 +57,17 @@ pub struct ParsedMethod {
 
 impl ParsedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
-        if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
-            return Err(Error::new(
-                method.span(),
-                "Invokable methods must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
+        check_safety(&method, &safety)?;
+
+        let docs = separate_docs(&mut method);
+        let invokable_fields = extract_common_fields(&method, docs)?;
+
+        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+
+        if name.namespace().is_some() {
+            return Err(Error::new_spanned(
+                method.sig.ident,
+                "Methods / QInvokables cannot have a namespace attribute",
             ));
         }
 
@@ -78,40 +86,33 @@ impl ParsedMethod {
             }
         }
 
-        // Determine if the invokable is mutable
-        let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
-        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
-        let mutable = mutability.is_some();
-
-        let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
-
-        let safe = method.sig.unsafety.is_none();
-
-        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
-
-        if name.namespace().is_some() {
-            return Err(Error::new_spanned(
-                method.sig.ident,
-                "Methods / QInvokables cannot have a namespace attribute",
-            ));
-        }
-
-        let mut docs = vec![];
-        while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
-            docs.push(doc);
-        }
-
-        Ok(ParsedMethod {
+        Ok(ParsedMethod::from_invokable_fields(
+            invokable_fields,
             method,
-            qobject_ident,
-            mutable,
-            parameters,
+            name,
             specifiers,
-            safe,
+            is_qinvokable,
+        ))
+    }
+
+    fn from_invokable_fields(
+        fields: InvokableFields,
+        method: ForeignItemFn,
+        name: Name,
+        specifiers: HashSet<ParsedQInvokableSpecifiers>,
+        is_qinvokable: bool,
+    ) -> Self {
+        Self {
+            method,
+            qobject_ident: fields.qobject_ident,
+            mutable: fields.mutable,
+            safe: fields.safe,
+            parameters: fields.parameters,
+            specifiers,
             is_qinvokable,
             name,
-            docs,
-        })
+            docs: fields.docs,
+        }
     }
 
     #[cfg(test)]

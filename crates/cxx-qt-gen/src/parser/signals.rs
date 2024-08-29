@@ -6,12 +6,11 @@
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
-    syntax::{
-        attribute::attribute_take_path, foreignmod, path::path_compare_str, safety::Safety, types,
-    },
+    syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety},
 };
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visibility};
 
+use crate::parser::{check_safety, extract_common_fields, separate_docs, InvokableFields};
 #[cfg(test)]
 use quote::format_ident;
 
@@ -77,24 +76,10 @@ impl ParsedSignal {
     }
 
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
-        if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
-            return Err(Error::new(
-                method.span(),
-                "qsignals methods must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
-            ));
-        }
+        check_safety(&method, &safety)?;
 
-        let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
-        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
-        let mutable = mutability.is_some();
-        if !mutable {
-            return Err(Error::new(
-                method.span(),
-                "signals must be mutable, use Pin<&mut T> instead of T for the self type",
-            ));
-        }
-
-        let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
+        let docs = separate_docs(&mut method);
+        let invokable_fields = extract_common_fields(&method, docs)?;
 
         let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
 
@@ -105,30 +90,47 @@ impl ParsedSignal {
             ));
         }
 
-        let mut docs = vec![];
-        while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
-            docs.push(doc);
+        if !invokable_fields.mutable {
+            return Err(Error::new(
+                method.span(),
+                "signals must be mutable, use Pin<&mut T> instead of T for the self type",
+            ));
         }
 
         let inherit = attribute_take_path(&mut method.attrs, &["inherit"]).is_some();
-        let safe = method.sig.unsafety.is_none();
         let private = if let Visibility::Restricted(vis_restricted) = &method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
         } else {
             false
         };
 
-        Ok(Self {
+        Ok(Self::from_invokable_fields(
+            invokable_fields,
             method,
-            qobject_ident,
-            mutable,
-            parameters,
             name,
-            safe,
             inherit,
             private,
-            docs,
-        })
+        ))
+    }
+
+    fn from_invokable_fields(
+        fields: InvokableFields,
+        method: ForeignItemFn,
+        name: Name,
+        inherit: bool,
+        private: bool,
+    ) -> Self {
+        Self {
+            method,
+            qobject_ident: fields.qobject_ident,
+            mutable: fields.mutable,
+            safe: fields.safe,
+            parameters: fields.parameters,
+            name,
+            inherit,
+            private,
+            docs: fields.docs,
+        }
     }
 }
 
