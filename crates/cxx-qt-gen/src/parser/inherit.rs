@@ -11,7 +11,7 @@ use crate::{
     },
 };
 use quote::format_ident;
-use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
+use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
@@ -27,6 +27,8 @@ pub struct ParsedInheritedMethod {
     pub parameters: Vec<ParsedFunctionParameter>,
     /// the name of the function in Rust, as well as C++
     pub ident: Name,
+    /// All the docs (each line) of the inherited method
+    pub docs: Vec<Attribute>,
 }
 
 impl ParsedInheritedMethod {
@@ -51,6 +53,11 @@ impl ParsedInheritedMethod {
             ident = ident.with_cxx_name(expr_to_string(&attr.meta.require_name_value()?.value)?);
         }
 
+        let mut docs = vec![];
+        while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
+            docs.push(doc);
+        }
+
         let safe = method.sig.unsafety.is_none();
 
         Ok(Self {
@@ -60,6 +67,7 @@ impl ParsedInheritedMethod {
             parameters,
             ident,
             safe,
+            docs,
         })
     }
 

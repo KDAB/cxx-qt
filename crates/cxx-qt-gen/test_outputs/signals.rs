@@ -35,7 +35,6 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableWrapper"]
         fn invokable(self: Pin<&mut MyObject>);
     }

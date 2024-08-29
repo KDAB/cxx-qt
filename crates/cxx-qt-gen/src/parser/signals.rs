@@ -34,7 +34,7 @@ pub struct ParsedSignal {
     pub inherit: bool,
     /// Whether the signal is private
     pub private: bool,
-    /// All the doc attributes (each line) of the Signal
+    /// All the doc attributes (each line) of the signal
     pub docs: Vec<Attribute>,
 }
 

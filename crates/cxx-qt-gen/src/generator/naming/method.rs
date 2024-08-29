@@ -59,6 +59,7 @@ mod tests {
             is_qinvokable: true,
             name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
                 .unwrap(),
+            docs: vec![],
         };
 
         let invokable = QMethodName::try_from(&parsed).unwrap();

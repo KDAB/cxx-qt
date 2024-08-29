@@ -9,7 +9,7 @@ use crate::{
     syntax::{attribute::attribute_take_path, foreignmod, safety::Safety, types},
 };
 use std::collections::HashSet;
-use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
+use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result};
 
 #[cfg(test)]
 use quote::format_ident;
@@ -50,6 +50,8 @@ pub struct ParsedMethod {
     pub is_qinvokable: bool,
     /// The rust and cxx name of the function
     pub name: Name,
+    /// All the docs (each line) of the method
+    pub docs: Vec<Attribute>,
 }
 
 impl ParsedMethod {
@@ -94,6 +96,11 @@ impl ParsedMethod {
             ));
         }
 
+        let mut docs = vec![];
+        while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
+            docs.push(doc);
+        }
+
         Ok(ParsedMethod {
             method,
             qobject_ident,
@@ -103,6 +110,7 @@ impl ParsedMethod {
             safe,
             is_qinvokable,
             name,
+            docs,
         })
     }
 
@@ -121,6 +129,7 @@ impl ParsedMethod {
             is_qinvokable: true,
             name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
                 .unwrap(),
+            docs: vec![],
         }
     }
 

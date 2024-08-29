@@ -41,57 +41,46 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "cppMethodWrapper"]
         fn cpp_method(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableWrapper"]
         fn invokable(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableMutableWrapper"]
         fn invokable_mutable(self: Pin<&mut MyObject>);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableParametersWrapper"]
         fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableReturnOpaqueWrapper"]
         fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableReturnTrivialWrapper"]
         fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableFinalWrapper"]
         fn invokable_final(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableOverrideWrapper"]
         fn invokable_override(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableVirtualWrapper"]
         fn invokable_virtual(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableResultTupleWrapper"]
         fn invokable_result_tuple(self: &MyObject) -> Result<()>;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableResultTypeWrapper"]
         fn invokable_result_type(self: &MyObject) -> Result<String>;
     }
