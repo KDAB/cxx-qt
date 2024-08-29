@@ -26,7 +26,7 @@ pub struct ParsedInheritedMethod {
     /// the parameters of the method, without the `self` argument
     pub parameters: Vec<ParsedFunctionParameter>,
     /// the name of the function in Rust, as well as C++
-    pub ident: Name,
+    pub name: Name,
     /// All the docs (each line) of the inherited method
     pub docs: Vec<Attribute>,
 }
@@ -65,7 +65,7 @@ impl ParsedInheritedMethod {
             qobject_ident,
             mutable,
             parameters,
-            ident,
+            name: ident,
             safe,
             docs,
         })
@@ -73,7 +73,7 @@ impl ParsedInheritedMethod {
 
     /// the name of the wrapper function in C++
     pub fn wrapper_ident(&self) -> Ident {
-        format_ident!("{}CxxQtInherit", self.ident.cxx_unqualified())
+        format_ident!("{}CxxQtInherit", self.name.cxx_unqualified())
     }
 }
 
@@ -154,10 +154,10 @@ mod tests {
         assert_eq!(parsed.qobject_ident, format_ident!("T"));
         assert_eq!(parsed.parameters.len(), 2);
         assert_eq!(
-            parsed.ident.rust_unqualified().to_string(),
+            parsed.name.rust_unqualified().to_string(),
             String::from("test")
         );
-        assert_eq!(parsed.ident.cxx_unqualified(), String::from("testFunction"));
+        assert_eq!(parsed.name.cxx_unqualified(), String::from("testFunction"));
         assert_eq!(
             parsed.wrapper_ident(),
             format_ident!("testFunctionCxxQtInherit")
