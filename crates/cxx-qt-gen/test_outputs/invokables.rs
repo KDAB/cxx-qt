@@ -43,56 +43,67 @@ mod ffi {
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "cppMethodWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn cpp_method(self: &MyObject);
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable(self: &MyObject);
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableMutableWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_mutable(self: Pin<&mut MyObject>);
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableParametersWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableReturnOpaqueWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableReturnTrivialWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableFinalWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_final(self: &MyObject);
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableOverrideWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_override(self: &MyObject);
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableVirtualWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_virtual(self: &MyObject);
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableResultTupleWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_result_tuple(self: &MyObject) -> Result<()>;
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableResultTypeWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         fn invokable_result_type(self: &MyObject) -> Result<String>;
     }
     unsafe extern "C++" {
