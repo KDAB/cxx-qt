@@ -10,12 +10,17 @@
 
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 #define CXX_QT_QVECTOR_ALIGN_AND_SIZE(typeName, name)                          \
+  constexpr static ::std::array<::std::size_t, 3> arr_##name{                  \
+    sizeof(::std::size_t), sizeof(::std::size_t), sizeof(::std::size_t)        \
+  };                                                                           \
   assert_alignment_and_size(                                                   \
-    QVector_##name, alignof(::std::size_t), sizeof(::std::size_t[3]));
+    QVector_##name, alignof(::std::size_t), arr_##name, arr_##name.size());
 #else
 #define CXX_QT_QVECTOR_ALIGN_AND_SIZE(typeName, name)                          \
+  constexpr static ::std::array<::std::size_t, 1> arr_##name{ sizeof(          \
+    ::std::size_t) };                                                          \
   assert_alignment_and_size(                                                   \
-    QVector_##name, alignof(::std::size_t), sizeof(::std::size_t));
+    QVector_##name, alignof(::std::size_t), arr_##name, arr_##name.size());
 #endif
 
 #define CXX_QT_QVECTOR_ASSERTS(typeName, name)                                 \

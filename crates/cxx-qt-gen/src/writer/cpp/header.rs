@@ -197,13 +197,16 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
 mod tests {
     use super::*;
 
+    use crate::tests::format_cpp;
     use crate::writer::cpp::tests::{
         create_generated_cpp, create_generated_cpp_multi_qobjects,
         create_generated_cpp_no_namespace, expected_header, expected_header_multi_qobjects,
         expected_header_no_namespace,
     };
+    use crate::Parser;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
+    use syn::{parse_quote, ItemMod};
 
     #[test]
     fn test_create_block() {
@@ -249,5 +252,60 @@ mod tests {
         let generated = create_generated_cpp_no_namespace();
         let output = write_cpp_header(&generated);
         assert_str_eq!(output, expected_header_no_namespace());
+    }
+
+    #[test]
+    fn test_write_cpp_header_no_qobject_macro() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[base = "MyBase"]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+
+        let parser = Parser::from(module.clone()).unwrap();
+
+        let generated = GeneratedCppBlocks::from(&parser).unwrap();
+        let header = write_cpp_header(&generated);
+        let expected = indoc! {r#"
+#pragma once
+
+#include <cxx-qt/locking.h>
+#include <cxx-qt/maybelockguard.h>
+#include <cxx-qt/type.h>
+
+class MyObject;
+
+
+
+
+#include "cxx-qt-gen/ffi.cxx.h"
+
+
+
+class MyObject : public MyBase, public ::rust::cxxqt1::CxxQtType<MyObjectRust>, public ::rust::cxxqt1::CxxQtLocking
+{
+
+public:
+
+
+  virtual ~MyObject() = default;
+
+public:
+  explicit MyObject();
+
+
+};
+
+
+
+
+
+"#};
+
+        assert_str_eq!(format_cpp(&header), format_cpp(expected))
     }
 }

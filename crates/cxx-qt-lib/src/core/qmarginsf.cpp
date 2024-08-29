@@ -14,6 +14,10 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qmargins.h?h=v5.15.6-lts-lgpl#n314
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qmargins.h?h=v6.2.4#n329
-assert_alignment_and_size(QMarginsF, alignof(double), sizeof(double[4]));
+constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(double),
+                                                     sizeof(double),
+                                                     sizeof(double),
+                                                     sizeof(double) };
+assert_alignment_and_size(QMarginsF, alignof(double), arr, arr.size());
 
 static_assert(::std::is_trivially_copyable<QMarginsF>::value);

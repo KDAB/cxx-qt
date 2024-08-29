@@ -13,9 +13,8 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n176
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n147
-assert_alignment_and_size(QDate,
-                          alignof(::std::int64_t),
-                          sizeof(::std::int64_t));
+constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::int64_t) };
+assert_alignment_and_size(QDate, alignof(::std::int64_t), arr, arr.size());
 
 static_assert(::std::is_trivially_copyable<QDate>::value,
               "QDate must be trivially copyable!");

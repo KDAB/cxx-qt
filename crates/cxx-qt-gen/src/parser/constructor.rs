@@ -182,12 +182,15 @@ mod tests {
 
     use super::*;
 
+    // CODECOV_EXCLUDE_START
     fn assert_parse_error(item: ItemImpl, message: &str) {
         assert!(
             Constructor::parse(item).is_err(),
+            // Excluded as this is just a custom error message for if asserts fail
             "Constructor shouldn't have parsed because '{message}'."
         );
     }
+    // CODECOV_EXCLUDE_STOP
 
     #[test]
     fn parse_invalid_constructors() {

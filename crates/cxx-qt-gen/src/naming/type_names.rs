@@ -549,6 +549,20 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_namespace() {
+        let items = [parse_quote! {
+            extern "RustQt" {
+                #[namespace = 2]
+                type A = super::RustA;
+            }
+        }];
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_cxx_items(&items, None, &format_ident!("ffi"))
+            .is_err());
+    }
+
+    #[test]
     fn test_qualified() {
         let mut types = TypeNames::default();
         let ident = format_ident!("A");
@@ -606,6 +620,20 @@ mod tests {
             type_names.rust_qualified(&ident).unwrap(),
             parse_quote! { ffi::A }
         );
+    }
+
+    #[test]
+    fn test_cxx_items_invalid_namespace() {
+        let item: Item = parse_quote! {
+            extern "C++" {
+                #[namespace = 3]
+                type F;
+            }
+        };
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_item(&item, None, &format_ident!("ffi"))
+            .is_err());
     }
 
     #[test]
@@ -747,13 +775,29 @@ mod tests {
                     type B;
                 }
             },
+            parse_quote! {
+                extern "C++" { type T; }
+            },
+            parse_quote! {
+                struct T;
+            },
         ];
 
-        // Duplicate types in items
+        // Duplicate types in foreign items
         let mut types = TypeNames::default();
         assert!(types
             .populate_from_cxx_items(&items, None, &format_ident!("ffi"))
             .is_err());
+
+        // Duplicate types in items
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_item(&items[2], None, &format_ident!("ffi"))
+            .is_ok());
+
+        assert!(types
+            .populate_from_item(&items[3], None, &format_ident!("ffi"))
+            .is_ok());
 
         // Bare duplicate Name insertion
         let mut types = TypeNames::default();
@@ -802,6 +846,25 @@ mod tests {
     }
 
     #[test]
+    fn test_shared_type() {
+        let items = [parse_quote! {
+            mod ffi {
+                enum MyEnum {
+                    Yes,
+                    No
+                }
+                extern "C++" {
+                    type MyEnum;
+                }
+            }
+        }];
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_cxx_items(&items, None, &format_ident!("ffi"))
+            .is_ok());
+    }
+
+    #[test]
     fn test_extern_shared_type_incompatible() {
         let items = [
             parse_quote! {
@@ -819,5 +882,20 @@ mod tests {
         assert!(types
             .populate_from_cxx_items(&items, None, &format_ident!("ffi"))
             .is_err());
+    }
+
+    #[test]
+    fn test_populate_from_foreign_mod_invalid_namespace() {
+        let item_mod: ItemForeignMod = parse_quote! {
+            #[namespace=3]
+            extern "RustQt" {
+                fn my_fn();
+            }
+        };
+
+        let mut types = TypeNames::default();
+        assert!(types
+            .populate_from_foreign_mod_item(&item_mod, None, &format_ident!("ffi"))
+            .is_err())
     }
 }

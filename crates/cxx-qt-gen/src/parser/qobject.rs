@@ -354,6 +354,15 @@ pub mod tests {
             impl cxx_qt::Threading for T {}
         };
         assert!(non_lock_qobject.parse_trait_impl(item).is_err());
+
+        // if threading is enabled, !Locking cannot be implemented
+        let mut threaded_qobject = create_parsed_qobject();
+        threaded_qobject.threading = true;
+
+        let item: ItemImpl = parse_quote! {
+            unsafe impl !cxx_qt::Locking for T {}
+        };
+        assert!(threaded_qobject.parse_trait_impl(item).is_err());
     }
 
     #[test]

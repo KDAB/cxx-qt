@@ -278,6 +278,11 @@ pub fn generate(
             .map(|mut parameter| -> Result<_> {
                 if let FnArg::Typed(pat_type) = &mut parameter {
                     *pat_type.ty = syn_type_cxx_bridge_to_qualified(&pat_type.ty, type_names)?;
+                } else {
+                    // CODECOV_EXCLUDE_START
+                    // Unreachable as route_arguments_parameters are created with names like arg0: Type above
+                    unreachable!("Args here should not be able to be Receiver")
+                    // CODECOV_EXCLUDE_STOP
                 }
                 Ok(parameter)
             })

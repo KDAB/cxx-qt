@@ -180,7 +180,8 @@ mod tests {
         { &mut [UniquePtr<T>] } => { &mut[cxx::UniquePtr<T>] },
         { (UniquePtr<T>, ) } => { (cxx::UniquePtr<T>, ) },
         // Mapped type
-        { MyObject } => { qobject::MyObject }
+        { MyObject } => { qobject::MyObject },
+        { fn(i32) } => { fn(i32) }
         ];
     }
 

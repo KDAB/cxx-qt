@@ -16,11 +16,11 @@
 // compiler padding this results in a sizeof 16.
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v5.15.6-lts-lgpl#n262
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v6.2.4#n237
-assert_alignment_and_size(QColor,
-                          alignof(::std::size_t),
-                          sizeof(::std::int32_t) +
-                            (sizeof(::std::uint16_t) * 5) +
-                            2 /* compiler padding */);
+constexpr static ::std::array<::std::size_t, 6> arr{
+  sizeof(::std::int32_t),  sizeof(::std::uint16_t), sizeof(::std::uint16_t),
+  sizeof(::std::uint16_t), sizeof(::std::uint16_t), sizeof(::std::uint16_t)
+};
+assert_alignment_and_size(QColor, alignof(::std::int32_t), arr, arr.size());
 
 // QColor still had copy & move constructors in Qt 5 but they were basically
 // trivial.
