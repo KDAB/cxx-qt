@@ -279,11 +279,11 @@ mod tests {
 
     #[test]
     fn test_foreign_type_ident_alias() {
-        let alias = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+        let alias: ForeignTypeIdentAlias = parse_quote! {
             #[attr]
             type A = super::B;
-        })
-        .unwrap();
+        };
+
         assert_eq!(alias.attrs.len(), 1);
         assert_eq!(alias.ident_left, "A");
         assert_eq!(alias.ident_right, "B");
@@ -324,11 +324,10 @@ mod tests {
     #[test]
     fn test_foreign_type_ident_visibility() {
         // Ensure that visibility does not error, later it might be stored
-        let alias = syn::parse2::<ForeignTypeIdentAlias>(quote! {
+        let alias: ForeignTypeIdentAlias = parse_quote! {
             #[attr]
             pub type A = super::B;
-        })
-        .unwrap();
+        };
         assert_eq!(alias.attrs.len(), 1);
         assert_eq!(alias.ident_left, "A");
         assert_eq!(alias.ident_right, "B");
