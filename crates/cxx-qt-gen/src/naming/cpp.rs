@@ -4,14 +4,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::TypeNames;
+use crate::syntax::lifetimes::err_unsupported_type;
+use quote::ToTokens;
 use syn::{
-    spanned::Spanned, Attribute, Error, Expr, ExprLit, GenericArgument, Ident, Lit, PathArguments,
+    spanned::Spanned, Attribute, Error, Expr, ExprLit, GenericArgument, Lit, PathArguments,
     PathSegment, Result, ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference,
     TypeSlice,
 };
 
-pub(crate) fn unsupported_error(id: &Ident) -> Error {
-    Error::new_spanned(id, format!("`{id}` is not supported!"))
+pub(crate) fn err_unsupported_item(item: &impl ToTokens) -> Error {
+    Error::new_spanned(item, "Unsupported Item!")
 }
 
 /// For a given Rust return type determine if the C++ header should have noexcept
@@ -186,10 +188,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
             }
         }
         Type::Tuple(tuple) if tuple.elems.is_empty() => Ok("void".to_string()),
-        _others => Err(Error::new(
-            ty.span(),
-            format!("Unsupported type `{_others:?}`!"),
-        )),
+        _others => Err(err_unsupported_type(ty)),
     }
 }
 
@@ -197,7 +196,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
 fn generic_argument_to_string(generic: &GenericArgument, type_names: &TypeNames) -> Result<String> {
     match generic {
         GenericArgument::Type(ty) => syn_type_to_cpp_type(ty, type_names),
-        _others => Err(Error::new(
+        other => Err(Error::new(
             generic.span(),
             "Unsupported GenericArgument type!",
         )),
@@ -243,7 +242,7 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
             return Ok(args.pop().unwrap());
         }
         "Result" | "Option" => {
-            return Err(unsupported_error(ident));
+            return Err(err_unsupported_item(ident));
         }
         _others => {
             path_argument_to_string(&segment.arguments, type_names)?.map(|values| values.join(", "))
@@ -256,10 +255,7 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
         if let Some(ident) = possible_built_in_template_base(&ident_string) {
             Ok(format!("{ident}<{arg}>"))
         } else {
-            Err(Error::new_spanned(
-                ident,
-                format!("Unsupported template base: {ident}"),
-            ))
+            Err(err_unsupported_type(ident))
         }
     } else {
         type_names.cxx_qualified(&segment.ident)

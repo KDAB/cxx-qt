@@ -135,7 +135,7 @@ impl ParsedQProperty {
                         "RESET" => reset = Some(
                                 value.ok_or_else(|| Error::new(
                                     ident.span(),
-                                    "Reset flag must be given a user defined reset function, e.g. `RESET = my_reset`!",
+                                    "Reset flag must be given a user defined function, e.g. `RESET = my_reset`!",
                                 ))?
                             ),
                         _ => {
@@ -158,7 +158,7 @@ impl ParsedQProperty {
                 if constant && (write.is_some() || notify.is_some()) {
                     return Err(Error::new(
                         punctuated_flags.span(),
-                        "Constant properties cannot have a setter or notify signal!",
+                        "QProperties marked as CONSTANT cannot have a setter or notify signal!",
                     ))
                 }
 
@@ -179,7 +179,7 @@ impl ParsedQProperty {
                 } else {
                     Err(Error::new(
                         punctuated_flags.span(),
-                        "If any flags are passed, read must be explicitly specified!",
+                        "If any flags are passed, READ must be explicitly specified!",
                     ))
                 }
             }

@@ -155,12 +155,12 @@ impl Constructor {
         let (not, trait_path, _) = &imp
             .trait_
             .as_ref()
-            .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected trait impl!"))?;
+            .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected a trait impl!"))?;
 
         if not.is_some() {
             return Err(Error::new_spanned(
                 trait_path,
-                "Negative impls for cxx_qt::Constructor are not allowed",
+                "Negative impls for cxx_qt::Constructor are not allowed!",
             ));
         }
 

@@ -26,7 +26,7 @@ impl TraitKind {
         if not.is_none() {
             return Err(Error::new_spanned(
                 path,
-                "cxx_qt::Locking is enabled by default, use `!cxx_qt::Locking` to disable it.",
+                "cxx_qt::Locking is enabled by default, use `impl !cxx_qt::Locking` to disable it.",
             ));
         }
 
@@ -39,13 +39,13 @@ impl TraitKind {
         if let Some(unsafety) = imp.unsafety.as_ref() {
             return Err(Error::new_spanned(
                 unsafety,
-                "cxx_qt::Threading is safe to implement!",
+                "Unnecessary unsafe, cxx_qt::Threading is safe to implement!",
             ));
         }
         if not.is_some() {
             return Err(Error::new_spanned(
                 path,
-                "Negative impls for cxx_qt::Threading are not allowed",
+                "Negative impls for cxx_qt::Threading are not allowed!",
             ));
         }
         Ok(Self::Threading)

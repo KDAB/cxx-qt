@@ -90,7 +90,7 @@ impl ParsedSignal {
         if !mutable {
             return Err(Error::new(
                 method.span(),
-                "Signals must be mutable! use Pin<&mut T> instead of T for the self type",
+                "Signals must be mutable! Use Pin<&mut T> instead of T for the self type",
             ));
         }
 

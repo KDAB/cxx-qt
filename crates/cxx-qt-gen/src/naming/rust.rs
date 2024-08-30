@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::TypeNames;
+use crate::syntax::lifetimes::err_unsupported_type;
 use syn::spanned::Spanned;
 use syn::{
     Error, GenericArgument, PathArguments, PathSegment, Result, ReturnType, Type, TypePath,
@@ -105,10 +106,7 @@ pub(crate) fn syn_type_cxx_bridge_to_qualified(ty: &Type, type_names: &TypeNames
             }
             Ok(Type::Tuple(ty_tuple))
         }
-        _others => Err(Error::new_spanned(
-            ty,
-            format!("Unsupported type `{ty:?}`!"),
-        )),
+        _others => Err(err_unsupported_type(ty)),
     }
 }
 

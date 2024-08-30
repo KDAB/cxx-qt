@@ -82,7 +82,7 @@ impl ParsedQObject {
                     // - when there is not a qobject macro it is not valid
                     return Err(Error::new_spanned(
                         attr,
-                        "The #[base] attribute cannot be empty",
+                        "The #[base] attribute cannot be empty!",
                     ));
                 }
                 Ok(string)
@@ -95,7 +95,7 @@ impl ParsedQObject {
         if !has_qobject_macro && base_class.is_none() {
             return Err(Error::new_spanned(
                 declaration.ident_left,
-                "A type without a #[qobject] attribute must specify a #[base] attribute",
+                "A type without a #[qobject] attribute must specify a #[base] attribute!",
             ));
         }
 

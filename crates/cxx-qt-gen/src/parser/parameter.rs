@@ -43,7 +43,10 @@ impl ParsedFunctionParameter {
         let mut iter = signature.inputs.iter();
         // whilst we can ignore the receiver argument, make sure it actually exists
         if iter.next().is_none() {
-            return Err(Error::new_spanned(signature, "Missing receiver argument!"));
+            return Err(Error::new_spanned(
+                signature,
+                "Missing self receiver argument!",
+            ));
         }
 
         Self::parse_remaining(iter)
@@ -81,7 +84,7 @@ impl ParsedFunctionParameter {
         } else {
             return Err(Error::new(
                 type_pattern.span(),
-                "Invalid argument ident format!",
+                "Invalid argument ident format!\nPlease specify like `arg: Ty`",
             ));
         };
 
