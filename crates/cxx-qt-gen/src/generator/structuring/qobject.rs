@@ -21,7 +21,7 @@ pub struct StructuredQObject<'a> {
     pub signals: Vec<&'a ParsedSignal>,
 }
 
-fn lookup(invokables: &Vec<impl Invokable>, id: &Ident) -> Option<Name> {
+fn lookup(invokables: &[impl Invokable], id: &Ident) -> Option<Name> {
     invokables
         .iter()
         .map(|invokable| invokable.name())

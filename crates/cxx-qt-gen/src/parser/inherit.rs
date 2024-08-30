@@ -9,7 +9,7 @@ use crate::parser::{
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::attribute_take_path, expr::expr_to_string, safety::Safety},
+    syntax::{attribute::attribute_take_path, safety::Safety},
 };
 use quote::format_ident;
 use syn::{Attribute, ForeignItemFn, Ident, Result};
@@ -45,25 +45,20 @@ impl ParsedInheritedMethod {
         let docs = separate_docs(&mut method);
         let invokable_fields = extract_common_fields(&method, docs)?;
 
-        let mut name =
-            Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+        // This block seems unnecessary but since attrs are passed through on generator/rust/inherit.rs a duplicate attr would occur without it
+        attribute_take_path(&mut method.attrs, &["cxx_name"]);
 
-        // This block seems unnecessary but removing it causes one cxx_name attr in test_outputs to lose the CxxQtInherit suffix
-        if let Some(attr) = attribute_take_path(&mut method.attrs, &["cxx_name"]) {
-            name = name.with_cxx_name(expr_to_string(&attr.meta.require_name_value()?.value)?);
-        }
-
-        Ok(Self::from_invokable_fields(invokable_fields, method, name))
+        Ok(Self::from_invokable_fields(invokable_fields, method))
     }
 
-    fn from_invokable_fields(fields: InvokableFields, method: ForeignItemFn, name: Name) -> Self {
+    fn from_invokable_fields(fields: InvokableFields, method: ForeignItemFn) -> Self {
         Self {
             method,
             qobject_ident: fields.qobject_ident,
             mutable: fields.mutable,
             safe: fields.safe,
             parameters: fields.parameters,
-            name,
+            name: fields.name,
             docs: fields.docs,
         }
     }

@@ -30,6 +30,7 @@ pub fn generate(
                     quote! { #ident: #ty }
                 })
                 .collect::<Vec<TokenStream>>();
+
             let ident = &method.method.sig.ident;
             let cxx_name_string = &method.wrapper_ident().to_string();
             let self_param = if method.mutable {
@@ -44,8 +45,8 @@ pub fn generate(
             if method.safe {
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }
-            let attrs = &method.method.attrs;
 
+            let attrs = &method.method.attrs;
             let doc_comments = &method.docs;
 
             syn::parse2(quote_spanned! {

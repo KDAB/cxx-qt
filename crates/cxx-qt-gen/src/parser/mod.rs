@@ -44,7 +44,7 @@ fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
 }
 
 pub trait Invokable {
-    fn name(self: &Self) -> &Name;
+    fn name(&self) -> &Name;
 }
 
 /// Struct with common fields between Invokable types.
@@ -54,6 +54,7 @@ pub struct InvokableFields {
     mutable: bool,
     parameters: Vec<ParsedFunctionParameter>,
     safe: bool,
+    name: Name,
     docs: Vec<Attribute>,
 }
 
@@ -69,11 +70,14 @@ pub fn extract_common_fields(
 
     let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
     let safe = method.sig.unsafety.is_none();
+    let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+
     Ok(InvokableFields {
         qobject_ident,
         mutable,
         parameters,
         safe,
+        name,
         docs,
     })
 }

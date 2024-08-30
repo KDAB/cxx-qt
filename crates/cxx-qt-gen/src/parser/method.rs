@@ -70,9 +70,7 @@ impl ParsedMethod {
         let docs = separate_docs(&mut method);
         let invokable_fields = extract_common_fields(&method, docs)?;
 
-        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
-
-        if name.namespace().is_some() {
+        if invokable_fields.name.namespace().is_some() {
             return Err(Error::new_spanned(
                 method.sig.ident,
                 "Methods / QInvokables cannot have a namespace attribute",
@@ -90,14 +88,13 @@ impl ParsedMethod {
             ParsedQInvokableSpecifiers::Virtual,
         ] {
             if attribute_take_path(&mut method.attrs, specifier.as_str_slice()).is_some() {
-                specifiers.insert(specifier);
+                specifiers.insert(specifier); // Should a fn be able to be Override AND Virtual?
             }
         }
 
         Ok(ParsedMethod::from_invokable_fields(
             invokable_fields,
             method,
-            name,
             specifiers,
             is_qinvokable,
         ))
@@ -106,7 +103,6 @@ impl ParsedMethod {
     fn from_invokable_fields(
         fields: InvokableFields,
         method: ForeignItemFn,
-        name: Name,
         specifiers: HashSet<ParsedQInvokableSpecifiers>,
         is_qinvokable: bool,
     ) -> Self {
@@ -118,7 +114,7 @@ impl ParsedMethod {
             parameters: fields.parameters,
             specifiers,
             is_qinvokable,
-            name,
+            name: fields.name,
             docs: fields.docs,
         }
     }

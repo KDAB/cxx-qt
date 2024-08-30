@@ -37,10 +37,9 @@ pub fn generate_rust_methods(
 
         let return_type = &invokable.method.sig.output;
 
-        let mut unsafe_block = None;
         let mut unsafe_call = Some(quote! { unsafe });
         if invokable.safe {
-            std::mem::swap(&mut unsafe_call, &mut unsafe_block);
+            std::mem::swap(&mut unsafe_call, &mut None);
         }
 
         let doc_comments = &invokable.docs;

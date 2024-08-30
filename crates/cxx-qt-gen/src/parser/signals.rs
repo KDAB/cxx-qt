@@ -89,9 +89,7 @@ impl ParsedSignal {
         let docs = separate_docs(&mut method);
         let invokable_fields = extract_common_fields(&method, docs)?;
 
-        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
-
-        if name.namespace().is_some() {
+        if invokable_fields.name.namespace().is_some() {
             return Err(Error::new_spanned(
                 method.sig.ident,
                 "Signals cannot have a namespace attribute",
@@ -115,7 +113,6 @@ impl ParsedSignal {
         Ok(Self::from_invokable_fields(
             invokable_fields,
             method,
-            name,
             inherit,
             private,
         ))
@@ -124,7 +121,6 @@ impl ParsedSignal {
     fn from_invokable_fields(
         fields: InvokableFields,
         method: ForeignItemFn,
-        name: Name,
         inherit: bool,
         private: bool,
     ) -> Self {
@@ -134,7 +130,7 @@ impl ParsedSignal {
             mutable: fields.mutable,
             safe: fields.safe,
             parameters: fields.parameters,
-            name,
+            name: fields.name,
             inherit,
             private,
             docs: fields.docs,
