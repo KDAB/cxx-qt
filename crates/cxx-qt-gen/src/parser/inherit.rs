@@ -3,7 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{check_safety, extract_common_fields, separate_docs, InvokableFields};
+use crate::parser::{
+    check_safety, extract_common_fields, separate_docs, Invokable, InvokableFields,
+};
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
@@ -28,6 +30,12 @@ pub struct ParsedInheritedMethod {
     pub name: Name,
     /// All the docs (each line) of the inherited method
     pub docs: Vec<Attribute>,
+}
+
+impl Invokable for &ParsedInheritedMethod {
+    fn name(&self) -> &Name {
+        &self.name
+    }
 }
 
 impl ParsedInheritedMethod {

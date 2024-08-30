@@ -11,7 +11,9 @@ use crate::{
 use std::collections::HashSet;
 use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
 
-use crate::parser::{check_safety, extract_common_fields, separate_docs, InvokableFields};
+use crate::parser::{
+    check_safety, extract_common_fields, separate_docs, Invokable, InvokableFields,
+};
 #[cfg(test)]
 use quote::format_ident;
 
@@ -53,6 +55,12 @@ pub struct ParsedMethod {
     pub name: Name,
     /// All the docs (each line) of the method
     pub docs: Vec<Attribute>,
+}
+
+impl Invokable for &ParsedMethod {
+    fn name(&self) -> &Name {
+        &self.name
+    }
 }
 
 impl ParsedMethod {

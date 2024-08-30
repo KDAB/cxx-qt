@@ -7,7 +7,7 @@ use crate::naming::Name;
 use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::method::ParsedMethod;
 use crate::parser::signals::ParsedSignal;
-use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject};
+use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject, Invokable};
 use proc_macro2::Ident;
 use syn::{Error, Result};
 
@@ -19,6 +19,14 @@ pub struct StructuredQObject<'a> {
     pub methods: Vec<&'a ParsedMethod>,
     pub inherited_methods: Vec<&'a ParsedInheritedMethod>,
     pub signals: Vec<&'a ParsedSignal>,
+}
+
+fn lookup(invokables: &Vec<impl Invokable>, id: &Ident) -> Option<Name> {
+    invokables
+        .iter()
+        .map(|invokable| invokable.name())
+        .find(|name| name.rust_unqualified() == id)
+        .cloned()
 }
 
 impl<'a> StructuredQObject<'a> {
@@ -39,28 +47,14 @@ impl<'a> StructuredQObject<'a> {
 
     /// Returns the name of the method with the provided Rust ident if it exists, or an error
     pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
-        self.methods
-            .iter()
-            .map(|method| &method.name)
-            .find(|name| name.rust_unqualified() == id)
-            .cloned()
-            .or_else(|| {
-                self.inherited_methods
-                    .iter()
-                    .map(|inherited_method| &inherited_method.name)
-                    .find(|name| name.rust_unqualified() == id)
-                    .cloned()
-            })
+        lookup(&self.methods, id)
+            .or_else(|| lookup(&self.inherited_methods, id)) // fallback to searching inherited methods
             .ok_or_else(|| Error::new_spanned(id, format!("Method with name '{id}' not found!")))
     }
 
     /// Returns the name of the signal with the provided Rust ident if it exists, or an error
     pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
-        self.signals
-            .iter()
-            .map(|signal| &signal.name)
-            .find(|name| name.rust_unqualified() == id)
-            .cloned()
+        lookup(&self.signals, id)
             .ok_or_else(|| Error::new_spanned(id, format!("Signal with name '{id}' not found!")))
     }
 

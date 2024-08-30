@@ -15,6 +15,7 @@ pub mod qnamespace;
 pub mod qobject;
 pub mod signals;
 
+use crate::naming::Name;
 use crate::parser::parameter::ParsedFunctionParameter;
 use crate::syntax::safety::Safety;
 use crate::syntax::{foreignmod, types};
@@ -40,6 +41,10 @@ fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
     } else {
         Ok(())
     }
+}
+
+pub trait Invokable {
+    fn name(self: &Self) -> &Name;
 }
 
 /// Struct with common fields between Invokable types.
