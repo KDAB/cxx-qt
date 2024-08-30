@@ -14,9 +14,12 @@
 /// All resulting structures are listed in the `Structures` struct.
 pub mod qobject;
 
-use crate::parser::cxxqtdata::ParsedCxxQtData;
+use crate::parser::{
+    cxxqtdata::ParsedCxxQtData,
+    trait_impl::{TraitImpl, TraitKind},
+};
 pub use qobject::StructuredQObject;
-use syn::{Error, Result};
+use syn::{Error, Ident, Result};
 
 /// The list of all structures that could be associated from the parsed data.
 /// Most importantly, this includes the list of qobjects.
@@ -25,72 +28,99 @@ pub struct Structures<'a> {
     pub qobjects: Vec<StructuredQObject<'a>>,
 }
 
+fn find_qobject<'a, 'b>(
+    qobjects: &'b mut [StructuredQObject<'a>],
+    ident: &Ident,
+) -> Result<&'b mut StructuredQObject<'a>> {
+    qobjects
+        .iter_mut()
+        .find(|qobject| qobject.has_qobject_name(ident))
+        .ok_or_else(|| Error::new_spanned(ident, format!("Unknown QObject: {ident}")))
+}
+
 impl<'a> Structures<'a> {
+    fn structure_trait_impls(
+        qobjects: &mut [StructuredQObject<'a>],
+        trait_impls: &'a [TraitImpl],
+    ) -> Result<()> {
+        // Associate each trait impl with its appropriate qobject
+        for imp in trait_impls {
+            let qobject = find_qobject(qobjects, &imp.qobject)?;
+            match imp.kind {
+                TraitKind::Threading => {
+                    if qobject.threading {
+                        return Err(Error::new_spanned(
+                            &imp.declaration,
+                            format!(
+                                "Threading already enabled on QObject {qobject}!",
+                                qobject = imp.qobject
+                            ),
+                        ));
+                    }
+                    qobject.threading = true;
+                }
+                TraitKind::DisableLocking => {
+                    if !qobject.locking {
+                        return Err(Error::new_spanned(
+                            &imp.declaration,
+                            format!(
+                                "Locking already disabled on QObject {qobject}!",
+                                qobject = imp.qobject
+                            ),
+                        ));
+                    }
+                    qobject.locking = false;
+                }
+                // TODO: Check for duplicate declarations?
+                TraitKind::Constructor(ref constructor) => qobject.constructors.push(constructor),
+            }
+
+            if !qobject.locking && qobject.threading {
+                return Err(Error::new_spanned(
+                    &imp.declaration,
+                    "QObject cannot have cxx_qt::Threading enabled and cxx_qt::Locking disabled!",
+                ));
+            }
+        }
+        Ok(())
+    }
+
     /// Create a new `Structures` object from the given `ParsedCxxQtData`
     /// Returns an error, if any references could not be resolved.
     pub fn new(cxxqtdata: &'a ParsedCxxQtData) -> Result<Self> {
         let mut qobjects: Vec<_> = cxxqtdata
             .qobjects
-            .values()
+            .iter()
             .map(StructuredQObject::from_qobject)
             .collect();
 
         for qenum in &cxxqtdata.qenums {
             if let Some(qobject_ident) = &qenum.qobject {
-                let qobject = qobjects
-                    .iter_mut()
-                    .find(|qobject| qobject.has_qobject_name(qobject_ident))
-                    .ok_or_else(|| {
-                        Error::new_spanned(
-                            qobject_ident,
-                            format!("Unknown QObject: {qobject_ident}"),
-                        )
-                    })?;
+                let qobject = find_qobject(&mut qobjects, qobject_ident)?;
                 qobject.qenums.push(qenum);
             }
         }
 
         // Associate each method parsed with its appropriate qobject
         for method in &cxxqtdata.methods {
-            let qobject = qobjects
-                .iter_mut()
-                .find(|qobject| qobject.has_qobject_name(&method.qobject_ident))
-                .ok_or_else(|| {
-                    Error::new_spanned(
-                        &method.qobject_ident,
-                        format!("Unknown QObject: {:?}", &method.qobject_ident),
-                    )
-                })?;
+            let qobject = find_qobject(&mut qobjects, &method.qobject_ident)?;
             qobject.methods.push(method);
         }
 
         // Associate each inherited method parsed with its appropriate qobject
         for inherited_method in &cxxqtdata.inherited_methods {
-            let qobject = qobjects
-                .iter_mut()
-                .find(|qobject| qobject.has_qobject_name(&inherited_method.qobject_ident))
-                .ok_or_else(|| {
-                    Error::new_spanned(
-                        &inherited_method.qobject_ident,
-                        format!("Unknown QObject: {:?}", &inherited_method.qobject_ident),
-                    )
-                })?;
+            let qobject = find_qobject(&mut qobjects, &inherited_method.qobject_ident)?;
             qobject.inherited_methods.push(inherited_method);
         }
 
         // Associate each signal parsed with its appropriate qobject
         for signal in &cxxqtdata.signals {
-            let qobject = qobjects
-                .iter_mut()
-                .find(|qobject| qobject.has_qobject_name(&signal.qobject_ident))
-                .ok_or_else(|| {
-                    Error::new_spanned(
-                        &signal.qobject_ident,
-                        format!("Unknown QObject: {:?}", &signal.qobject_ident),
-                    )
-                })?;
+            let qobject = find_qobject(&mut qobjects, &signal.qobject_ident)?;
             qobject.signals.push(signal);
         }
+
+        Self::structure_trait_impls(&mut qobjects, &cxxqtdata.trait_impls)?;
+
         Ok(Structures { qobjects })
     }
 }
@@ -104,7 +134,7 @@ mod tests {
 
     #[test]
     fn test_structuring_unknown_qobject() {
-        let module: ItemMod = parse_quote! {
+        let module = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
@@ -126,7 +156,7 @@ mod tests {
 
     #[test]
     fn test_module_invalid_qobject_qenum() {
-        let module: ItemMod = parse_quote! {
+        let module = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 #[qenum(MyObject)]
@@ -136,13 +166,13 @@ mod tests {
             }
         };
 
-        let parser = Parser::from(module.clone()).unwrap();
+        let parser = Parser::from(module).unwrap();
         assert!(Structures::new(&parser.cxx_qt_data).is_err());
     }
 
     #[test]
     fn test_module_invalid_qobject_method() {
-        let module: ItemMod = parse_quote! {
+        let module = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 unsafe extern "RustQt" {
@@ -152,13 +182,13 @@ mod tests {
             }
         };
 
-        let parser = Parser::from(module.clone()).unwrap();
+        let parser = Parser::from(module).unwrap();
         assert!(Structures::new(&parser.cxx_qt_data).is_err());
     }
 
     #[test]
     fn test_module_invalid_qobject_signal() {
-        let module: ItemMod = parse_quote! {
+        let module = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 unsafe extern "RustQt" {
@@ -168,13 +198,13 @@ mod tests {
             }
         };
 
-        let parser = Parser::from(module.clone()).unwrap();
+        let parser = Parser::from(module).unwrap();
         assert!(Structures::new(&parser.cxx_qt_data).is_err());
     }
 
     #[test]
     fn test_module_invalid_qobject_inherited() {
-        let module: ItemMod = parse_quote! {
+        let module = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 unsafe extern "RustQt" {
@@ -184,13 +214,13 @@ mod tests {
             }
         };
 
-        let parser = Parser::from(module.clone()).unwrap();
+        let parser = Parser::from(module).unwrap();
         assert!(Structures::new(&parser.cxx_qt_data).is_err());
     }
 
     #[test]
     fn test_invalid_lookup() {
-        let module: ItemMod = parse_quote! {
+        let module = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
@@ -200,7 +230,7 @@ mod tests {
             }
         };
 
-        let parser = Parser::from(module.clone()).unwrap();
+        let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         let qobject = structures.qobjects.first().unwrap();
@@ -212,7 +242,7 @@ mod tests {
 
     #[test]
     fn test_structures() {
-        let module: ItemMod = parse_quote! {
+        let module = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
@@ -239,7 +269,7 @@ mod tests {
             }
         };
 
-        let parser = Parser::from(module.clone()).unwrap();
+        let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
 
         assert_eq!(structures.qobjects.len(), 2);
@@ -278,5 +308,47 @@ mod tests {
             *my_other_object.signals[0].name.rust_unqualified(),
             format_ident!("ready")
         );
+    }
+
+    fn mock_bridge() -> ItemMod {
+        parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        }
+    }
+
+    fn assert_structuring_error(additional_items: impl IntoIterator<Item = syn::Item>) {
+        let mut bridge = mock_bridge();
+        bridge.content.as_mut().unwrap().1.extend(additional_items);
+        let parser = Parser::from(bridge).unwrap();
+        assert!(Structures::new(&parser.cxx_qt_data).is_err());
+    }
+
+    #[test]
+    fn test_incompatible_trait_impl() {
+        assert_structuring_error([
+            parse_quote! {impl cxx_qt::Threading for MyObject {}},
+            parse_quote! {impl cxx_qt::Threading for MyObject {}},
+        ]);
+
+        assert_structuring_error([
+            parse_quote! {unsafe impl !cxx_qt::Locking for MyObject {}},
+            parse_quote! {unsafe impl !cxx_qt::Locking for MyObject {}},
+        ]);
+
+        assert_structuring_error([
+            parse_quote! {unsafe impl !cxx_qt::Locking for MyObject {}},
+            parse_quote! {impl cxx_qt::Threading for MyObject {}},
+        ]);
+
+        assert_structuring_error([
+            parse_quote! {impl cxx_qt::Threading for MyObject {}},
+            parse_quote! {unsafe impl !cxx_qt::Locking for MyObject {}},
+        ]);
     }
 }

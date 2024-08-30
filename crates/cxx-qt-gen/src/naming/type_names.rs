@@ -111,7 +111,7 @@ impl Default for TypeNames {
 }
 
 impl TypeNames {
-    /// Part of the The "Naming" phase.
+    /// Part of the "Naming" phase.
     /// Extract all nameable types from the CXX-Qt data and the CXX items.
     ///
     /// This allows the generator to fully-qualify all types in the generated code.
@@ -159,7 +159,7 @@ impl TypeNames {
         bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
-        for qobject in cxx_qt_data.qobjects.values() {
+        for qobject in cxx_qt_data.qobjects.iter() {
             self.populate_qobject(qobject)?;
         }
 
@@ -294,7 +294,7 @@ impl TypeNames {
     /// For a given rust ident return the CXX name with its namespace
     ///
     /// Ideally we'd want this type name to always be **fully** qualified, starting with `::`.
-    /// Unfortunately, this isn't always possible, as the Qt5 meta object system doesn't register
+    /// Unfortunately, this isn't always possible, as the Qt5 metaobject system doesn't register
     /// types with the fully qualified path :(
     /// E.g. it will recognize `QString`, but not `::QString` from QML.
     ///
@@ -315,7 +315,7 @@ impl TypeNames {
         self.lookup(ident).map(|name| name.namespace.clone())
     }
 
-    /// Return a qualified version of the ident that can by used to refer to the type T outside of a CXX bridge
+    /// Return a qualified version of the ident that can be used to refer to the type T outside a CXX bridge
     ///
     /// Eg MyObject -> ffi::MyObject
     ///

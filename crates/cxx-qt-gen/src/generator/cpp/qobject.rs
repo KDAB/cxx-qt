@@ -172,15 +172,15 @@ impl GeneratedCppQObject {
         // If this type has threading enabled then add generation
         //
         // Note that threading also includes locking C++ generation
-        if qobject.threading {
+        if structured_qobject.threading {
             // The parser phase should check that this is true
-            debug_assert!(qobject.locking);
+            debug_assert!(structured_qobject.locking);
 
             let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
             generated.blocks.append(&mut blocks);
             class_initializers.push(initializer);
             // If this type has locking enabled then add generation
-        } else if qobject.locking {
+        } else if structured_qobject.locking {
             let (initializer, mut blocks) = locking::generate()?;
             generated.blocks.append(&mut blocks);
             class_initializers.push(initializer);
@@ -188,7 +188,7 @@ impl GeneratedCppQObject {
 
         generated.blocks.append(&mut constructor::generate(
             &generated,
-            &qobject.constructors,
+            &structured_qobject.constructors,
             base_class,
             &class_initializers,
             type_names,

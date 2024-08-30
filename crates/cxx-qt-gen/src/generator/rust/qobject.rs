@@ -81,7 +81,7 @@ impl GeneratedRustFragment {
         }
 
         // If this type has threading enabled then add generation
-        if qobject.threading {
+        if structured_qobject.threading {
             generated.append(&mut threading::generate(
                 &qobject_idents,
                 &namespace_idents,
@@ -94,7 +94,7 @@ impl GeneratedRustFragment {
         //
         // This could be implemented using an auto trait in the future once stable
         // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
-        if qobject.locking {
+        if structured_qobject.locking {
             let qualified_impl =
                 type_names.rust_qualified(qobject_idents.name.rust_unqualified())?;
             generated.cxx_qt_mod_contents.push(syn::parse_quote! {
@@ -103,7 +103,7 @@ impl GeneratedRustFragment {
         }
 
         generated.append(&mut constructor::generate(
-            &qobject.constructors,
+            &structured_qobject.constructors,
             &qobject_idents,
             &namespace_idents,
             type_names,
