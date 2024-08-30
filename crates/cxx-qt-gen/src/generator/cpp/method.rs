@@ -328,7 +328,6 @@ mod tests {
                 None,
             )
             .unwrap(),
-            docs: vec![],
         };
         let invokables = vec![&method];
         let qobject_idents = create_qobjectname();

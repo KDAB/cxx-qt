@@ -49,21 +49,18 @@ pub trait Invokable {
 
 /// Struct with common fields between Invokable types.
 /// These types are ParsedSignal, ParsedMethod and ParsedInheritedMethod
-pub struct InvokableFields {
+pub struct MethodFields {
     qobject_ident: Ident,
     mutable: bool,
     parameters: Vec<ParsedFunctionParameter>,
     safe: bool,
     name: Name,
-    docs: Vec<Attribute>,
+    docs: Vec<Attribute>, // TODO: Remove this
 }
 
-/// Function for creating an [InvokableFields] from a method and docs.
+/// Function for creating an [MethodFields] from a method and docs.
 /// These fields are shared by ParsedSignal, ParsedMethod and ParsedInheritedMethod so grouped into common logic.
-pub fn extract_common_fields(
-    method: &ForeignItemFn,
-    docs: Vec<Attribute>,
-) -> Result<InvokableFields> {
+pub fn extract_common_fields(method: &ForeignItemFn, docs: Vec<Attribute>) -> Result<MethodFields> {
     let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
     let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
     let mutable = mutability.is_some();
@@ -72,7 +69,7 @@ pub fn extract_common_fields(
     let safe = method.sig.unsafety.is_none();
     let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
 
-    Ok(InvokableFields {
+    Ok(MethodFields {
         qobject_ident,
         mutable,
         parameters,

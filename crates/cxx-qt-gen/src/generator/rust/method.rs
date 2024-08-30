@@ -42,8 +42,6 @@ pub fn generate_rust_methods(
             std::mem::swap(&mut unsafe_call, &mut None);
         }
 
-        let doc_comments = &invokable.docs;
-
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote_spanned! {
                 invokable.method.span() =>
@@ -52,8 +50,8 @@ pub fn generate_rust_methods(
                     // Note that we are exposing a Rust method on the C++ type to C++
                     //
                     // CXX ends up generating the source, then we generate the matching header.
-                    #(#doc_comments)*
                     #[cxx_name = #wrapper_ident_cpp]
+                    #[doc(hidden)]
                     // TODO: Add #[namespace] of the QObject
                     #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }
@@ -108,7 +106,6 @@ mod tests {
                     None,
                 )
                 .unwrap(),
-                docs: vec![],
             },
             ParsedMethod {
                 method: method2.clone(),
@@ -128,7 +125,6 @@ mod tests {
                     None,
                 )
                 .unwrap(),
-                docs: vec![],
             },
             ParsedMethod {
                 method: method3.clone(),
@@ -148,7 +144,6 @@ mod tests {
                     None,
                 )
                 .unwrap(),
-                docs: vec![],
             },
             ParsedMethod {
                 method: method4.clone(),
@@ -168,7 +163,6 @@ mod tests {
                     None,
                 )
                 .unwrap(),
-                docs: vec![],
             },
         ];
         let qobject_idents = create_qobjectname();

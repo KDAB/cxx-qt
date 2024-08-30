@@ -10,9 +10,7 @@ use crate::{
 };
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visibility};
 
-use crate::parser::{
-    check_safety, extract_common_fields, separate_docs, Invokable, InvokableFields,
-};
+use crate::parser::{check_safety, extract_common_fields, separate_docs, Invokable, MethodFields};
 #[cfg(test)]
 use quote::format_ident;
 
@@ -119,7 +117,7 @@ impl ParsedSignal {
     }
 
     fn from_invokable_fields(
-        fields: InvokableFields,
+        fields: MethodFields,
         method: ForeignItemFn,
         inherit: bool,
         private: bool,

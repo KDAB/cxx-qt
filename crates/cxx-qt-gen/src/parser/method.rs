@@ -9,11 +9,9 @@ use crate::{
     syntax::{attribute::attribute_take_path, safety::Safety},
 };
 use std::collections::HashSet;
-use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
+use syn::{Error, ForeignItemFn, Ident, Result};
 
-use crate::parser::{
-    check_safety, extract_common_fields, separate_docs, Invokable, InvokableFields,
-};
+use crate::parser::{check_safety, extract_common_fields, separate_docs, Invokable, MethodFields};
 #[cfg(test)]
 use quote::format_ident;
 
@@ -53,8 +51,6 @@ pub struct ParsedMethod {
     pub is_qinvokable: bool,
     /// The rust and cxx name of the function
     pub name: Name,
-    /// All the docs (each line) of the method
-    pub docs: Vec<Attribute>,
 }
 
 impl Invokable for &ParsedMethod {
@@ -101,7 +97,7 @@ impl ParsedMethod {
     }
 
     fn from_invokable_fields(
-        fields: InvokableFields,
+        fields: MethodFields,
         method: ForeignItemFn,
         specifiers: HashSet<ParsedQInvokableSpecifiers>,
         is_qinvokable: bool,
@@ -115,7 +111,6 @@ impl ParsedMethod {
             specifiers,
             is_qinvokable,
             name: fields.name,
-            docs: fields.docs,
         }
     }
 
@@ -134,7 +129,6 @@ impl ParsedMethod {
             is_qinvokable: true,
             name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
                 .unwrap(),
-            docs: vec![],
         }
     }
 

@@ -3,9 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{
-    check_safety, extract_common_fields, separate_docs, Invokable, InvokableFields,
-};
+use crate::parser::{check_safety, extract_common_fields, separate_docs, Invokable, MethodFields};
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
@@ -51,7 +49,7 @@ impl ParsedInheritedMethod {
         Ok(Self::from_invokable_fields(invokable_fields, method))
     }
 
-    fn from_invokable_fields(fields: InvokableFields, method: ForeignItemFn) -> Self {
+    fn from_invokable_fields(fields: MethodFields, method: ForeignItemFn) -> Self {
         Self {
             method,
             qobject_ident: fields.qobject_ident,
