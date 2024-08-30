@@ -37,16 +37,24 @@ impl<'a> StructuredQObject<'a> {
         }
     }
 
+    /// Returns the name of the method with the provided Rust ident if it exists, or an error
     pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
-        // TODO account for inherited methods too since those are in a different vector
         self.methods
             .iter()
             .map(|method| &method.name)
             .find(|name| name.rust_unqualified() == id)
             .cloned()
+            .or_else(|| {
+                self.inherited_methods
+                    .iter()
+                    .map(|inherited_method| &inherited_method.name)
+                    .find(|name| name.rust_unqualified() == id)
+                    .cloned()
+            })
             .ok_or_else(|| Error::new_spanned(id, format!("Method with name '{id}' not found!")))
     }
 
+    /// Returns the name of the signal with the provided Rust ident if it exists, or an error
     pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
         self.signals
             .iter()
