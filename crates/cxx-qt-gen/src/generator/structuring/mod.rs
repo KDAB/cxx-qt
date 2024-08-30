@@ -44,7 +44,7 @@ fn find_qobject<'a, 'b>(
     qobjects
         .iter_mut()
         .find(|qobject| qobject.has_qobject_name(ident))
-        .ok_or_else(|| Error::new_spanned(ident, format!("Unknown QObject: {ident}")))
+        .ok_or_else(|| unknown_qobject(ident))
 }
 
 impl<'a> Structures<'a> {
