@@ -3,13 +3,15 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::structuring::not_found_error;
 use crate::naming::Name;
+use crate::parser::constructor::Constructor;
 use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::method::ParsedMethod;
 use crate::parser::signals::ParsedSignal;
 use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject};
 use proc_macro2::Ident;
-use syn::{Error, Result};
+use syn::Result;
 
 /// The StructuredQObject contains the parsed QObject and all members.
 /// This includes QEnums, QSignals, methods, etc.
@@ -19,6 +21,17 @@ pub struct StructuredQObject<'a> {
     pub methods: Vec<&'a ParsedMethod>,
     pub inherited_methods: Vec<&'a ParsedInheritedMethod>,
     pub signals: Vec<&'a ParsedSignal>,
+    pub constructors: Vec<&'a Constructor>,
+    pub locking: bool,
+    pub threading: bool,
+}
+
+fn lookup<T>(invokables: &[T], id: &Ident, name_getter: impl Fn(&T) -> &Name) -> Option<Name> {
+    invokables
+        .iter()
+        .map(name_getter)
+        .find(|name| name.rust_unqualified() == id)
+        .cloned()
 }
 
 impl<'a> StructuredQObject<'a> {
@@ -34,26 +47,23 @@ impl<'a> StructuredQObject<'a> {
             methods: vec![],
             inherited_methods: vec![],
             signals: vec![],
+            constructors: vec![],
+            locking: true,
+            threading: false,
         }
     }
 
+    /// Returns the name of the method with the provided Rust ident if it exists, or an error
     pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
-        // TODO account for inherited methods too since those are in a different vector
-        self.methods
-            .iter()
-            .map(|method| &method.name)
-            .find(|name| name.rust_unqualified() == id)
-            .cloned()
-            .ok_or_else(|| Error::new_spanned(id, format!("Method with name '{id}' not found!")))
+        lookup(&self.methods, id, |method| &method.name)
+            .or_else(|| lookup(&self.inherited_methods, id, |inherited| &inherited.name)) // fallback to searching inherited methods
+            .ok_or_else(|| not_found_error("Method", id))
     }
 
+    /// Returns the name of the signal with the provided Rust ident if it exists, or an error
     pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
-        self.signals
-            .iter()
-            .map(|signal| &signal.name)
-            .find(|name| name.rust_unqualified() == id)
-            .cloned()
-            .ok_or_else(|| Error::new_spanned(id, format!("Signal with name '{id}' not found!")))
+        lookup(&self.signals, id, |signal| &signal.name)
+            .ok_or_else(|| not_found_error("Signal", id))
     }
 
     #[cfg(test)]

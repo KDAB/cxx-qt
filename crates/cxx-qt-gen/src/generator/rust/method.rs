@@ -37,10 +37,9 @@ pub fn generate_rust_methods(
 
         let return_type = &invokable.method.sig.output;
 
-        let mut unsafe_block = None;
         let mut unsafe_call = Some(quote! { unsafe });
         if invokable.safe {
-            std::mem::swap(&mut unsafe_call, &mut unsafe_block);
+            std::mem::swap(&mut unsafe_call, &mut None);
         }
 
         let fragment = RustFragmentPair {
@@ -51,9 +50,9 @@ pub fn generate_rust_methods(
                     // Note that we are exposing a Rust method on the C++ type to C++
                     //
                     // CXX ends up generating the source, then we generate the matching header.
-                    #[doc(hidden)]
                     #[cxx_name = #wrapper_ident_cpp]
                     // Namespace is not needed here
+                    #[doc(hidden)]
                     #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }
             }],
@@ -179,8 +178,8 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 extern "Rust" {
-                    #[doc(hidden)]
                     #[cxx_name = "voidInvokableWrapper"]
+                    #[doc(hidden)]
                     fn void_invokable(self: &MyObject);
                 }
             },
@@ -191,8 +190,8 @@ mod tests {
             &generated.cxx_mod_contents[1],
             quote! {
                 extern "Rust" {
-                    #[doc(hidden)]
                     #[cxx_name = "trivialInvokableWrapper"]
+                    #[doc(hidden)]
                     fn trivial_invokable(self: &MyObject, param: i32) -> i32;
                 }
             },
@@ -203,8 +202,8 @@ mod tests {
             &generated.cxx_mod_contents[2],
             quote! {
                 extern "Rust" {
-                    #[doc(hidden)]
                     #[cxx_name = "opaqueInvokableWrapper"]
+                    #[doc(hidden)]
                     fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
                 }
             },
@@ -215,8 +214,8 @@ mod tests {
             &generated.cxx_mod_contents[3],
             quote! {
                 extern "Rust" {
-                    #[doc(hidden)]
                     #[cxx_name = "unsafeInvokableWrapper"]
+                    #[doc(hidden)]
                     unsafe fn unsafe_invokable(self:&MyObject, param: *mut T) -> *mut T;
                 }
             },

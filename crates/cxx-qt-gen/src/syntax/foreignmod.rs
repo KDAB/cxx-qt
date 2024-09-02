@@ -72,7 +72,7 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
             // To return None here we should instead peek
             Err(Error::new(
                 tokens.span(),
-                "Unsupported verbatim input in ForeignItem",
+                "Unsupported verbatim input in ForeignItem!",
             ))
         }
     }
@@ -120,14 +120,14 @@ impl Parse for ForeignTypeIdentAlias {
                 if path.segments.len() != 2 {
                     return Err(Error::new(
                         path.span(),
-                        "Type alias path must have at exactly two segments, super::T",
+                        "Type alias path must have at exactly two segments, super::T!",
                     ));
                 }
 
                 if path.segments[0].ident != "super" {
                     return Err(Error::new(
                         path.span(),
-                        "Type alias path must have super as the first segment, super::T",
+                        "Type alias path must have super as the first segment, super::T!",
                     ));
                 }
 
@@ -137,7 +137,7 @@ impl Parse for ForeignTypeIdentAlias {
             if ident_left == ident_right {
                 return Err(Error::new(
                     path.span(),
-                    "Type alias path must have differing idents, type A = super::B. A and B cannot be the same.",
+                    "Type alias path must have differing idents, type A = super::B. A and B cannot be the same!",
                 ));
             }
 
@@ -152,7 +152,7 @@ impl Parse for ForeignTypeIdentAlias {
             // To return None here we should instead peek
             Err(Error::new(
                 input.span(),
-                "Unsupported verbatim input in ForeignItem",
+                "Unsupported verbatim input in ForeignItem!",
             ))
         }
     }
@@ -163,28 +163,28 @@ pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<Receiver> {
         if !receiver.attrs.is_empty() {
             return Err(Error::new(
                 receiver.span(),
-                "Attributes on the `self:` receiver are not supported",
+                "Attributes on the `self:` receiver are not supported!",
             ));
         }
 
         if receiver.mutability.is_some() {
             return Err(Error::new(
                 receiver.span(),
-                "mut on self (i.e. `&mut self`) are not supported, use `self: Pin<&mut T>` instead",
+                "mut on self (i.e. `&mut self`) are not supported! Use `self: Pin<&mut T>` instead",
             ));
         }
 
         if receiver.reference.is_some() {
             return Err(Error::new(
                 receiver.span(),
-                "Reference on self (i.e. `&self`) are not supported, use `self: &T` instead",
+                "Reference on self (i.e. `&self`) are not supported! Use `self: &T` instead",
             ));
         }
 
         if receiver.colon_token.is_none() {
             return Err(Error::new(
                 receiver.span(),
-                "`self` is not supported as receiver, use `self: T` to indicate a type.",
+                "`self` is not supported as receiver! Use `self: T` to indicate a type.",
             ));
         }
 
@@ -192,7 +192,7 @@ pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<Receiver> {
     } else {
         Err(Error::new_spanned(
             signature,
-            "Expected first argument to be a `self:` receiver",
+            "Expected first argument to be a `self:` receiver!",
         ))
     }
 }

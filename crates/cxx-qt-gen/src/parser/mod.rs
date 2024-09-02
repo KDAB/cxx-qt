@@ -14,7 +14,9 @@ pub mod qenum;
 pub mod qnamespace;
 pub mod qobject;
 pub mod signals;
+pub mod trait_impl;
 
+use crate::syntax::safety::Safety;
 use crate::{
     // Used for error handling when resolving the namespace of the qenum.
     naming::TypeNames,
@@ -25,8 +27,30 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Brace, Semi},
-    Error, Ident, Item, ItemMod, Meta, Result, Token,
+    Attribute, Error, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token,
 };
+
+fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
+    if safety == &Safety::Unsafe && method.sig.unsafety.is_none() {
+        Err(Error::new(
+            method.span(),
+            "Invokables must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+/// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
+///
+/// Note: This modifies the method by removing those doc attributes
+pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
+    let mut docs = vec![];
+    while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
+        docs.push(doc);
+    }
+    docs
+}
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
 /// parsed into ParsedCxxQtData, to be used later to generate Rust & C++ code.
@@ -72,7 +96,7 @@ impl Parser {
         } else {
             return Err(Error::new(
                 module.span(),
-                "Tried to parse a module which doesn't have a cxx_qt::bridge attribute",
+                "Tried to parse a module which doesn't have a cxx_qt::bridge attribute!",
             ));
         }
 
@@ -88,12 +112,9 @@ impl Parser {
         let mut cxx_qt_data = ParsedCxxQtData::new(module.ident.clone(), namespace);
 
         // Check that there are items in the module
-        if let Some(mut items) = module.content {
-            // Find any QObject structs
-            cxx_qt_data.find_qobject_types(&items.1)?;
-
+        if let Some((_, items)) = module.content {
             // Loop through items and load into qobject or others and populate mappings
-            for item in items.1.drain(..) {
+            for item in items.into_iter() {
                 // Try to find any CXX-Qt items, if found add them to the relevant
                 // qobject or extern C++Qt block. Otherwise return them to be added to other
                 if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {

@@ -66,7 +66,7 @@ fn parse_meta_name_value(name_value: &MetaNameValue) -> Result<(Ident, Ident)> {
     } else {
         return Err(Error::new(
             expr.span(),
-            "Function signature must be an identifier",
+            "Function signature must be an identifier!",
         ));
     }
 
@@ -82,7 +82,7 @@ fn parse_meta(meta: Meta) -> Result<(Ident, Option<Ident>)> {
         }
         _ => Err(Error::new(
             meta.span(),
-            "Invalid syntax, flags must be specified as either `READ` or `READ = my_getter`",
+            "Invalid syntax, flags must be specified as either `READ` or `READ = my_getter`!",
         )),
     }
 }
@@ -135,13 +135,13 @@ impl ParsedQProperty {
                         "RESET" => reset = Some(
                                 value.ok_or_else(|| Error::new(
                                     ident.span(),
-                                    "Reset flag must be given a user defined reset function, like `RESET = my_reset`",
+                                    "Reset flag must be given a user defined function, e.g. `RESET = my_reset`!",
                                 ))?
                             ),
                         _ => {
                             return Err(Error::new(
                                 ident.span(),
-                                "Invalid flag passed, must be one of READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL",
+                                "Invalid flag passed!, must be one of\n  READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL",
                             ));
                         }
                     };
@@ -158,7 +158,7 @@ impl ParsedQProperty {
                 if constant && (write.is_some() || notify.is_some()) {
                     return Err(Error::new(
                         punctuated_flags.span(),
-                        "constant properties cannot have a setter or notify signal",
+                        "QProperties marked as CONSTANT cannot have a setter or notify signal!",
                     ))
                 }
 
@@ -179,7 +179,7 @@ impl ParsedQProperty {
                 } else {
                     Err(Error::new(
                         punctuated_flags.span(),
-                        "If flags are passed, read must be explicitly specified",
+                        "If any flags are passed, READ must be explicitly specified!",
                     ))
                 }
             }

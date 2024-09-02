@@ -111,7 +111,7 @@ impl Default for TypeNames {
 }
 
 impl TypeNames {
-    /// Part of the The "Naming" phase.
+    /// Part of the "Naming" phase.
     /// Extract all nameable types from the CXX-Qt data and the CXX items.
     ///
     /// This allows the generator to fully-qualify all types in the generated code.
@@ -159,7 +159,7 @@ impl TypeNames {
         bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
-        for qobject in cxx_qt_data.qobjects.values() {
+        for qobject in cxx_qt_data.qobjects.iter() {
             self.populate_qobject(qobject)?;
         }
 
@@ -215,7 +215,7 @@ impl TypeNames {
                     if !this.shared_types.contains(&name.rust)
                         || this.extern_types.contains(&name.rust)
                     {
-                        return Err(this.duplicate_type(&name.rust));
+                        return Err(this.err_duplicate_type(&name.rust));
                     }
                     this.check_duplicate_compatability(&name)
                 },
@@ -232,7 +232,7 @@ impl TypeNames {
             Err(Error::new_spanned(
                 &duplicate.rust,
                 format!(
-                    "The type `{}` is defined multiple times with different mappings",
+                    "The type `{}` is defined multiple times with different mappings!",
                     duplicate.rust
                 ),
             ))
@@ -261,7 +261,7 @@ impl TypeNames {
                     if !this.extern_types.contains(&name.rust)
                         || this.shared_types.contains(&name.rust)
                     {
-                        return Err(this.duplicate_type(&name.rust));
+                        return Err(this.err_duplicate_type(&name.rust));
                     }
                     this.check_duplicate_compatability(&name)
                 })?;
@@ -278,7 +278,7 @@ impl TypeNames {
         Ok(())
     }
 
-    fn unknown_type(&self, ident: &Ident) -> Error {
+    fn err_unknown_type(&self, ident: &Ident) -> Error {
         Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
     }
 
@@ -288,13 +288,13 @@ impl TypeNames {
     pub fn lookup(&self, ident: &Ident) -> Result<&Name> {
         self.names
             .get(ident)
-            .ok_or_else(|| self.unknown_type(ident))
+            .ok_or_else(|| self.err_unknown_type(ident))
     }
 
     /// For a given rust ident return the CXX name with its namespace
     ///
     /// Ideally we'd want this type name to always be **fully** qualified, starting with `::`.
-    /// Unfortunately, this isn't always possible, as the Qt5 meta object system doesn't register
+    /// Unfortunately, this isn't always possible, as the Qt5 metaobject system doesn't register
     /// types with the fully qualified path :(
     /// E.g. it will recognize `QString`, but not `::QString` from QML.
     ///
@@ -315,7 +315,7 @@ impl TypeNames {
         self.lookup(ident).map(|name| name.namespace.clone())
     }
 
-    /// Return a qualified version of the ident that can by used to refer to the type T outside of a CXX bridge
+    /// Return a qualified version of the ident that can be used to refer to the type T outside a CXX bridge
     ///
     /// Eg MyObject -> ffi::MyObject
     ///
@@ -325,7 +325,7 @@ impl TypeNames {
         self.lookup(ident).map(Name::rust_qualified)
     }
 
-    fn duplicate_type(&self, ident: &Ident) -> Error {
+    fn err_duplicate_type(&self, ident: &Ident) -> Error {
         Error::new_spanned(
             ident,
             format!("The type name `{ident}` is defined multiple times"),
@@ -346,7 +346,7 @@ impl TypeNames {
             attrs,
             parent_namespace,
             module_ident,
-            |this, name| Err(this.duplicate_type(&name.rust)),
+            |this, name| Err(this.err_duplicate_type(&name.rust)),
         )
     }
 
@@ -375,7 +375,7 @@ impl TypeNames {
         let entry = self.names.entry(name.rust.clone());
 
         match entry {
-            Entry::Occupied(_) => Err(self.duplicate_type(&name.rust)),
+            Entry::Occupied(_) => Err(self.err_duplicate_type(&name.rust)),
             Entry::Vacant(entry) => {
                 entry.insert(name);
                 Ok(())

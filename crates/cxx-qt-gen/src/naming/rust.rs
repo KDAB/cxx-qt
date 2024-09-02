@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::TypeNames;
+use crate::syntax::lifetimes::err_unsupported_type;
 use syn::spanned::Spanned;
 use syn::{
     Error, GenericArgument, PathArguments, PathSegment, Result, ReturnType, Type, TypePath,
@@ -28,7 +29,7 @@ fn qualify_type_path(ty_path: &TypePath, type_names: &TypeNames) -> Result<Type>
                 if let GenericArgument::Type(ty) = arg {
                     *ty = syn_type_cxx_bridge_to_qualified(ty, type_names)?;
                 } else {
-                    return Err(Error::new(arg.span(), "Unsupported GenericArgument type"));
+                    return Err(Error::new(arg.span(), "Unsupported GenericArgument type!"));
                 }
             }
         }
@@ -105,7 +106,7 @@ pub(crate) fn syn_type_cxx_bridge_to_qualified(ty: &Type, type_names: &TypeNames
             }
             Ok(Type::Tuple(ty_tuple))
         }
-        _others => Err(syn::Error::new_spanned(ty, "Unsupported type")),
+        _others => Err(err_unsupported_type(ty)),
     }
 }
 

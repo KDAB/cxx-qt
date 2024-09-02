@@ -15,7 +15,7 @@ pub fn expr_to_string(expr: &Expr) -> Result<String> {
         return Ok(lit_str.value());
     }
 
-    Err(Error::new(expr.span(), "expected a literal string"))
+    Err(Error::new(expr.span(), "Expected a string literal!"))
 }
 
 #[cfg(test)]
