@@ -9,9 +9,10 @@ use crate::{
     syntax::{attribute::attribute_take_path, safety::Safety},
 };
 use std::collections::HashSet;
-use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
+use std::ops::Deref;
+use syn::{Error, ForeignItemFn, Ident, Result};
 
-use crate::parser::{check_safety, separate_docs};
+use crate::parser::check_safety;
 use crate::syntax::{foreignmod, types};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
@@ -36,20 +37,12 @@ impl ParsedQInvokableSpecifiers {
 pub struct ParsedMethod {
     /// The original [syn::ImplItemFn] of the invokable
     pub method: ForeignItemFn,
-    /// The type of the self argument
-    pub qobject_ident: Ident,
-    /// Whether this invokable is mutable
-    pub mutable: bool,
-    /// Whether the method is safe to call.
-    pub safe: bool,
-    /// The parameters of the invokable
-    pub parameters: Vec<ParsedFunctionParameter>,
+    /// The common fields which are available on all callable types
+    pub method_fields: MethodFields,
     /// Any specifiers that declared on the invokable
     pub specifiers: HashSet<ParsedQInvokableSpecifiers>,
     /// Whether the method is qinvokable
     pub is_qinvokable: bool,
-    /// The rust and cxx name of the function
-    pub name: Name,
 }
 
 impl ParsedMethod {
@@ -85,10 +78,9 @@ impl ParsedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 
-        let docs = separate_docs(&mut method);
-        let invokable_fields = MethodFields::parse(&method, docs)?;
+        let method_fields = MethodFields::parse(&method)?;
 
-        if invokable_fields.name.namespace().is_some() {
+        if method_fields.name.namespace().is_some() {
             return Err(Error::new_spanned(
                 method.sig.ident,
                 "Methods / QInvokables cannot have a namespace attribute",
@@ -110,46 +102,36 @@ impl ParsedMethod {
             }
         }
 
-        Ok(ParsedMethod::from_invokable_fields(
-            invokable_fields,
+        Ok(Self {
             method,
+            method_fields,
             specifiers,
             is_qinvokable,
-        ))
+        })
     }
+}
 
-    fn from_invokable_fields(
-        fields: MethodFields,
-        method: ForeignItemFn,
-        specifiers: HashSet<ParsedQInvokableSpecifiers>,
-        is_qinvokable: bool,
-    ) -> Self {
-        Self {
-            method,
-            qobject_ident: fields.qobject_ident,
-            mutable: fields.mutable,
-            safe: fields.safe,
-            parameters: fields.parameters,
-            specifiers,
-            is_qinvokable,
-            name: fields.name,
-        }
+impl Deref for ParsedMethod {
+    type Target = MethodFields;
+
+    fn deref(&self) -> &Self::Target {
+        &self.method_fields
     }
 }
 
 /// Struct with common fields between Invokable types.
 /// These types are ParsedSignal, ParsedMethod and ParsedInheritedMethod
+#[derive(Clone)]
 pub struct MethodFields {
     pub qobject_ident: Ident,
     pub mutable: bool,
     pub parameters: Vec<ParsedFunctionParameter>,
     pub safe: bool,
     pub name: Name,
-    pub docs: Vec<Attribute>, // TODO: Remove this
 }
 
 impl MethodFields {
-    pub fn parse(method: &ForeignItemFn, docs: Vec<Attribute>) -> Result<Self> {
+    pub fn parse(method: &ForeignItemFn) -> Result<Self> {
         let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
         let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
         let mutable = mutability.is_some();
@@ -164,7 +146,6 @@ impl MethodFields {
             parameters,
             safe,
             name,
-            docs,
         })
     }
 }

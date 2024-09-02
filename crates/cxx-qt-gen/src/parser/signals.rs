@@ -5,9 +5,9 @@
 
 use crate::{
     naming::Name,
-    parser::parameter::ParsedFunctionParameter,
     syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety},
 };
+use std::ops::Deref;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visibility};
 
 use crate::parser::method::MethodFields;
@@ -18,16 +18,8 @@ use crate::parser::{check_safety, separate_docs};
 pub struct ParsedSignal {
     /// The original [syn::ForeignItemFn] of the signal declaration
     pub method: ForeignItemFn,
-    /// The type of the self argument
-    pub qobject_ident: Ident,
-    /// whether the signal is marked as mutable
-    pub mutable: bool,
-    /// Whether the method is safe to call.
-    pub safe: bool,
-    /// The parameters of the signal
-    pub parameters: Vec<ParsedFunctionParameter>,
-    /// The name of the signal
-    pub name: Name,
+    /// The common fields which are available on all callable types
+    pub method_fields: MethodFields,
     /// If the signal is defined in the base class
     pub inherit: bool,
     /// Whether the signal is private
@@ -46,11 +38,13 @@ impl ParsedSignal {
     ) -> Self {
         Self {
             method,
-            qobject_ident,
-            mutable: true,
-            safe: true,
-            parameters: vec![],
-            name,
+            method_fields: MethodFields {
+                qobject_ident,
+                mutable: true,
+                parameters: vec![],
+                safe: true,
+                name,
+            },
             inherit: false,
             private: false,
             docs,
@@ -67,16 +61,16 @@ impl ParsedSignal {
         check_safety(&method, &safety)?;
 
         let docs = separate_docs(&mut method);
-        let invokable_fields = MethodFields::parse(&method, docs)?;
+        let method_fields = MethodFields::parse(&method)?;
 
-        if invokable_fields.name.namespace().is_some() {
+        if method_fields.name.namespace().is_some() {
             return Err(Error::new_spanned(
                 method.sig.ident,
                 "Signals cannot have a namespace attribute!",
             ));
         }
 
-        if !invokable_fields.mutable {
+        if !method_fields.mutable {
             return Err(Error::new(
                 method.span(),
                 "signals must be mutable, use Pin<&mut T> instead of T for the self type",
@@ -90,31 +84,21 @@ impl ParsedSignal {
             false
         };
 
-        Ok(Self::from_invokable_fields(
-            invokable_fields,
+        Ok(Self {
             method,
+            method_fields,
             inherit,
             private,
-        ))
+            docs,
+        })
     }
+}
 
-    fn from_invokable_fields(
-        fields: MethodFields,
-        method: ForeignItemFn,
-        inherit: bool,
-        private: bool,
-    ) -> Self {
-        Self {
-            method,
-            qobject_ident: fields.qobject_ident,
-            mutable: fields.mutable,
-            safe: fields.safe,
-            parameters: fields.parameters,
-            name: fields.name,
-            inherit,
-            private,
-            docs: fields.docs,
-        }
+impl Deref for ParsedSignal {
+    type Target = MethodFields;
+
+    fn deref(&self) -> &Self::Target {
+        &self.method_fields
     }
 }
 

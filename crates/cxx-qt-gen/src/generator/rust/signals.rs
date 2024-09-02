@@ -251,6 +251,8 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
+    use crate::parser::method::MethodFields;
+    use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::assert_tokens_eq;
     use quote::{format_ident, quote};
     use syn::{parse_quote, ForeignItemFn, Item};
