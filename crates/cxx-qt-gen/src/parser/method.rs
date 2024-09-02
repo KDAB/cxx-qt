@@ -13,8 +13,6 @@ use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
 
 use crate::parser::{check_safety, separate_docs};
 use crate::syntax::{foreignmod, types};
-#[cfg(test)]
-use quote::format_ident;
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -77,11 +75,6 @@ impl ParsedMethod {
             safe: false,
             ..self
         }
-    }
-
-    #[cfg(test)]
-    pub fn with_parameters(self, parameters: Vec<ParsedFunctionParameter>) -> Self {
-        Self { parameters, ..self }
     }
 
     #[cfg(test)]

@@ -12,8 +12,6 @@ use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visi
 
 use crate::parser::method::MethodFields;
 use crate::parser::{check_safety, separate_docs};
-#[cfg(test)]
-use quote::format_ident;
 
 #[derive(Clone)]
 /// Describes an individual Signal
@@ -62,23 +60,7 @@ impl ParsedSignal {
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
     pub fn mock_with_method(method: &ForeignItemFn) -> Self {
-        Self {
-            method: method.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-            safe: true,
-            inherit: false,
-            private: false,
-            docs: vec![],
-        }
-    }
-
-    #[cfg(test)]
-    pub fn with_parameters(self, parameters: Vec<ParsedFunctionParameter>) -> Self {
-        Self { parameters, ..self }
+        Self::parse(method.clone(), Safety::Safe).unwrap()
     }
 
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {

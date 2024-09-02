@@ -75,9 +75,7 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::assert_tokens_eq;
-    use quote::format_ident;
     use syn::{parse_quote, ForeignItemFn};
 
     #[test]
@@ -90,24 +88,9 @@ mod tests {
             parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; };
         let invokables = vec![
             ParsedMethod::mock_qinvokable(&method1),
-            ParsedMethod::mock_qinvokable(&method2).with_parameters(vec![
-                ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { i32 },
-                },
-            ]),
-            ParsedMethod::mock_qinvokable(&method3)
-                .with_parameters(vec![ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { &QColor },
-                }])
-                .make_mutable(),
-            ParsedMethod::mock_qinvokable(&method4)
-                .with_parameters(vec![ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { *mut T },
-                }])
-                .make_unsafe(),
+            ParsedMethod::mock_qinvokable(&method2),
+            ParsedMethod::mock_qinvokable(&method3).make_mutable(),
+            ParsedMethod::mock_qinvokable(&method4).make_unsafe(),
         ];
         let qobject_idents = create_qobjectname();
 

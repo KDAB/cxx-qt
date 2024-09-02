@@ -215,10 +215,8 @@ mod tests {
 
     use crate::generator::cpp::property::tests::{require_header, require_pair};
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::parser::parameter::ParsedFunctionParameter;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
-    use quote::format_ident;
     use syn::{parse_quote, ForeignItemFn};
 
     #[test]
@@ -226,16 +224,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
-        let signal = ParsedSignal::mock_with_method(&method).with_parameters(vec![
-            ParsedFunctionParameter {
-                ident: format_ident!("trivial"),
-                ty: parse_quote! { i32 },
-            },
-            ParsedFunctionParameter {
-                ident: format_ident!("opaque"),
-                ty: parse_quote! { UniquePtr<QColor> },
-            },
-        ]);
+        let signal = ParsedSignal::mock_with_method(&method);
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
 
@@ -315,12 +304,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn data_changed(self: Pin<&mut MyObject>, mapped: A);
         };
-        let signal = ParsedSignal::mock_with_method(&method).with_parameters(vec![
-            ParsedFunctionParameter {
-                ident: format_ident!("mapped"),
-                ty: parse_quote! { A },
-            },
-        ]);
+        let signal = ParsedSignal::mock_with_method(&method);
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
 

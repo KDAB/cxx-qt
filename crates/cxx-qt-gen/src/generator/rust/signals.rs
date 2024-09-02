@@ -252,7 +252,6 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::assert_tokens_eq;
     use quote::{format_ident, quote};
     use syn::{parse_quote, ForeignItemFn, Item};
@@ -421,16 +420,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
-        let qsignal = ParsedSignal::mock_with_method(&method).with_parameters(vec![
-            ParsedFunctionParameter {
-                ident: format_ident!("trivial"),
-                ty: parse_quote! { i32 },
-            },
-            ParsedFunctionParameter {
-                ident: format_ident!("opaque"),
-                ty: parse_quote! { UniquePtr<QColor> },
-            },
-        ]);
+        let qsignal = ParsedSignal::mock_with_method(&method);
         let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
@@ -578,12 +568,7 @@ mod tests {
         };
         let qsignal = ParsedSignal {
             safe: false,
-            ..ParsedSignal::mock_with_method(&method).with_parameters(vec![
-                ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { *mut T },
-                },
-            ])
+            ..ParsedSignal::mock_with_method(&method)
         };
         let qobject_idents = create_qobjectname();
 
