@@ -16,6 +16,7 @@ pub mod qobject;
 pub mod signals;
 pub mod trait_impl;
 
+use crate::syntax::safety::Safety;
 use crate::{
     // Used for error handling when resolving the namespace of the qenum.
     naming::TypeNames,
@@ -26,8 +27,30 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Brace, Semi},
-    Error, Ident, Item, ItemMod, Meta, Result, Token,
+    Attribute, Error, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token,
 };
+
+fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
+    if safety == &Safety::Unsafe && method.sig.unsafety.is_none() {
+        Err(Error::new(
+            method.span(),
+            "Invokables must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
+        ))
+    } else {
+        Ok(())
+    }
+}
+
+/// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
+///
+/// Note: This modifies the method by removing those doc attributes
+pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
+    let mut docs = vec![];
+    while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
+        docs.push(doc);
+    }
+    docs
+}
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
 /// parsed into ParsedCxxQtData, to be used later to generate Rust & C++ code.

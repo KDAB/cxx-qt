@@ -187,18 +187,18 @@ mod ffi {
         );
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "myGetterWrapper"]
+        #[doc(hidden)]
         fn my_getter(self: &MyObject) -> i32;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "MyCustomSetterWrapper"]
+        #[doc(hidden)]
         fn my_setter(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "myResetFnWrapper"]
+        #[doc(hidden)]
         fn myResetFn(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {

@@ -41,58 +41,58 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "cppMethodWrapper"]
+        #[doc(hidden)]
         fn cpp_method(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableWrapper"]
+        #[doc(hidden)]
         fn invokable(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableMutableWrapper"]
+        #[doc(hidden)]
         fn invokable_mutable(self: Pin<&mut MyObject>);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableParametersWrapper"]
+        #[doc(hidden)]
         fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableReturnOpaqueWrapper"]
+        #[doc(hidden)]
         fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableReturnTrivialWrapper"]
+        #[doc(hidden)]
         fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableFinalWrapper"]
+        #[doc(hidden)]
         fn invokable_final(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableOverrideWrapper"]
+        #[doc(hidden)]
         fn invokable_override(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableVirtualWrapper"]
+        #[doc(hidden)]
         fn invokable_virtual(self: &MyObject);
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableResultTupleWrapper"]
+        #[doc(hidden)]
         fn invokable_result_tuple(self: &MyObject) -> Result<()>;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "invokableResultTypeWrapper"]
+        #[doc(hidden)]
         fn invokable_result_type(self: &MyObject) -> Result<String>;
     }
     unsafe extern "C++" {

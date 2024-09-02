@@ -250,6 +250,31 @@ mod tests {
     }
 
     #[test]
+    fn test_inherited_lookup() {
+        let module = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::MyObjectRust;
+                }
+
+                unsafe extern "RustQt" {
+                    #[qinvokable]
+                    #[inherit]
+                    fn test_fn(self: Pin<&mut MyObject>);
+                }
+            }
+        };
+
+        let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+
+        let qobject = structures.qobjects.first().unwrap();
+        assert!(qobject.method_lookup(&format_ident!("test_fn")).is_ok());
+    }
+
+    #[test]
     fn test_structures() {
         let module = parse_quote! {
             #[cxx_qt::bridge]

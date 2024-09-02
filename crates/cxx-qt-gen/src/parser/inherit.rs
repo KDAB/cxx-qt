@@ -3,15 +3,15 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::method::MethodFields;
+use crate::parser::{check_safety, separate_docs};
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
-    syntax::{
-        attribute::attribute_take_path, expr::expr_to_string, foreignmod, safety::Safety, types,
-    },
+    syntax::{attribute::attribute_take_path, safety::Safety},
 };
 use quote::format_ident;
-use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
+use syn::{Attribute, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
@@ -26,46 +26,39 @@ pub struct ParsedInheritedMethod {
     /// the parameters of the method, without the `self` argument
     pub parameters: Vec<ParsedFunctionParameter>,
     /// the name of the function in Rust, as well as C++
-    pub ident: Name,
+    pub name: Name,
+    /// All the docs (each line) of the inherited method
+    pub docs: Vec<Attribute>,
 }
 
 impl ParsedInheritedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
-        if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
-            return Err(Error::new(
-                method.span(),
-                "Inherited methods must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
-            ));
-        }
+        check_safety(&method, &safety)?;
 
-        let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
-        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
-        let mutable = mutability.is_some();
+        let docs = separate_docs(&mut method);
+        let invokable_fields = MethodFields::parse(&method, docs)?;
 
-        let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
+        // This block seems unnecessary but since attrs are passed through on generator/rust/inherit.rs a duplicate attr would occur without it
+        attribute_take_path(&mut method.attrs, &["cxx_name"]);
 
-        let mut ident =
-            Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+        Ok(Self::from_invokable_fields(invokable_fields, method))
+    }
 
-        if let Some(attr) = attribute_take_path(&mut method.attrs, &["cxx_name"]) {
-            ident = ident.with_cxx_name(expr_to_string(&attr.meta.require_name_value()?.value)?);
-        }
-
-        let safe = method.sig.unsafety.is_none();
-
-        Ok(Self {
+    fn from_invokable_fields(fields: MethodFields, method: ForeignItemFn) -> Self {
+        Self {
             method,
-            qobject_ident,
-            mutable,
-            parameters,
-            ident,
-            safe,
-        })
+            qobject_ident: fields.qobject_ident,
+            mutable: fields.mutable,
+            safe: fields.safe,
+            parameters: fields.parameters,
+            name: fields.name,
+            docs: fields.docs,
+        }
     }
 
     /// the name of the wrapper function in C++
     pub fn wrapper_ident(&self) -> Ident {
-        format_ident!("{}CxxQtInherit", self.ident.cxx_unqualified())
+        format_ident!("{}CxxQtInherit", self.name.cxx_unqualified())
     }
 }
 
@@ -146,10 +139,10 @@ mod tests {
         assert_eq!(parsed.qobject_ident, format_ident!("T"));
         assert_eq!(parsed.parameters.len(), 2);
         assert_eq!(
-            parsed.ident.rust_unqualified().to_string(),
+            parsed.name.rust_unqualified().to_string(),
             String::from("test")
         );
-        assert_eq!(parsed.ident.cxx_unqualified(), String::from("testFunction"));
+        assert_eq!(parsed.name.cxx_unqualified(), String::from("testFunction"));
         assert_eq!(
             parsed.wrapper_ident(),
             format_ident!("testFunctionCxxQtInherit")
