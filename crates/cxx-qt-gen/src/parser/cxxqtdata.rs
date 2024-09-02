@@ -14,21 +14,20 @@ use crate::{
     },
     syntax::expr::expr_to_string,
 };
-use std::collections::BTreeMap;
-use syn::{
-    spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result,
-    Type, TypePath,
-};
+use syn::{Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result};
 use syn::{ItemMacro, Meta};
 
 use super::qnamespace::ParsedQNamespace;
+use super::trait_impl::TraitImpl;
+
+// Test comment
 
 pub struct ParsedCxxQtData {
     /// Map of the QObjects defined in the module that will be used for code generation
     //
     // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
     // Otherwise, the output order would be different, depending on the environment, which makes it hard to test/debug.
-    pub qobjects: BTreeMap<Ident, ParsedQObject>,
+    pub qobjects: Vec<ParsedQObject>,
     /// List of QEnums defined in the module, that aren't associated with a QObject
     pub qenums: Vec<ParsedQEnum>,
     /// List of methods and Q_INVOKABLES found
@@ -43,6 +42,8 @@ pub struct ParsedCxxQtData {
     pub extern_cxxqt_blocks: Vec<ParsedExternCxxQt>,
     /// The namespace of the CXX-Qt module
     pub namespace: Option<String>,
+    /// All trait implementations found
+    pub trait_impls: Vec<TraitImpl>,
     /// The ident of the module, used for mappings
     pub module_ident: Ident,
 }
@@ -51,93 +52,17 @@ impl ParsedCxxQtData {
     /// Create a ParsedCxxQtData from a given module and namespace
     pub fn new(module_ident: Ident, namespace: Option<String>) -> Self {
         Self {
-            qobjects: BTreeMap::<Ident, ParsedQObject>::default(),
+            qobjects: Vec::new(),
             qenums: vec![],
             methods: vec![],
             signals: vec![],
             inherited_methods: vec![],
             qnamespaces: vec![],
+            trait_impls: vec![],
             extern_cxxqt_blocks: Vec::<ParsedExternCxxQt>::default(),
             module_ident,
             namespace,
         }
-    }
-
-    /// Find the QObjects within the module and add into the qobjects BTreeMap
-    pub fn find_qobject_types(&mut self, items: &[Item]) -> Result<()> {
-        for item in items {
-            if let Item::ForeignMod(foreign_mod) = item {
-                if foreign_mod.abi.name.as_ref().map(|lit_str| lit_str.value())
-                    == Some("RustQt".to_string())
-                {
-                    // Find the namespace on the foreign mod block if there is one
-                    let namespace = attribute_find_path(&foreign_mod.attrs, &["namespace"])
-                        .map(|index| {
-                            expr_to_string(
-                                &foreign_mod.attrs[index].meta.require_name_value()?.value,
-                            )
-                        })
-                        .transpose()?
-                        .or_else(|| self.namespace.clone());
-
-                    for foreign_item in &foreign_mod.items {
-                        match foreign_item {
-                            // Fn are parsed later in parse_foreign_mod_rust_qt
-                            ForeignItem::Fn(_) => {}
-                            ForeignItem::Verbatim(tokens) => {
-                                let mut foreign_alias: ForeignTypeIdentAlias =
-                                    syn::parse2(tokens.clone())?;
-
-                                // Check this type is tagged with a #[qobject]
-                                let has_qobject_macro =
-                                    attribute_take_path(&mut foreign_alias.attrs, &["qobject"])
-                                        .is_some();
-
-                                // Load the QObject
-                                let mut qobject = ParsedQObject::parse(
-                                    foreign_alias,
-                                    namespace.as_deref(),
-                                    &self.module_ident,
-                                )?;
-                                qobject.has_qobject_macro = has_qobject_macro;
-
-                                // Ensure that the base class attribute is not empty, as this is not valid in both cases
-                                // - when there is a qobject macro it is not valid
-                                // - when there is not a qobject macro it is not valid
-                                if qobject
-                                    .base_class
-                                    .as_ref()
-                                    .is_some_and(|base| base.is_empty())
-                                {
-                                    return Err(Error::new(
-                                        foreign_item.span(),
-                                        "The #[base] attribute cannot be empty", // TODO: unreachable because of a require_name_value so the error for empty base is there
-                                    ));
-                                }
-
-                                // Ensure that if there is no qobject macro that a base class is specificed
-                                //
-                                // Note this assumes the check above
-                                if !qobject.has_qobject_macro && qobject.base_class.is_none() {
-                                    return Err(Error::new(foreign_item.span(), "A type without a #[qobject] attribute must specify a #[base] attribute"));
-                                }
-
-                                // Note that we assume a compiler error will occur later
-                                // if you had two structs with the same name
-                                self.qobjects
-                                    .insert(qobject.name.rust_unqualified().clone(), qobject);
-                            }
-                            // Const Macro, Type are unsupported in extern "RustQt" for now
-                            _others => {
-                                return Err(Error::new(foreign_item.span(), "Unsupported item"))
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        Ok(())
     }
 
     /// Determine if the given [syn::Item] is a CXX-Qt related item
@@ -203,6 +128,11 @@ impl ParsedCxxQtData {
     }
 
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
+        let namespace = attribute_find_path(&foreign_mod.attrs, &["namespace"])
+            .map(|index| expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value))
+            .transpose()?
+            .or_else(|| self.namespace.clone());
+
         let safe_call = if foreign_mod.unsafety.is_some() {
             Safety::Safe
         } else {
@@ -210,25 +140,43 @@ impl ParsedCxxQtData {
         };
 
         for item in foreign_mod.items.drain(..) {
-            if let ForeignItem::Fn(mut foreign_fn) = item {
-                // Test if the function is a signal
-                if attribute_take_path(&mut foreign_fn.attrs, &["qsignal"]).is_some() {
-                    let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
-                    self.signals.push(parsed_signal_method);
+            match item {
+                ForeignItem::Fn(mut foreign_fn) => {
+                    // Test if the function is a signal
+                    if attribute_take_path(&mut foreign_fn.attrs, &["qsignal"]).is_some() {
+                        let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
+                        self.signals.push(parsed_signal_method);
 
-                    // Test if the function is an inheritance method
-                    //
-                    // Note that we need to test for qsignal first as qsignals have their own inherit meaning
-                } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
-                    let parsed_inherited_method =
-                        ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
+                        // Test if the function is an inheritance method
+                        //
+                        // Note that we need to test for qsignal first as qsignals have their own inherit meaning
+                    } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
+                        let parsed_inherited_method =
+                            ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
 
-                    self.inherited_methods.push(parsed_inherited_method);
-                    // Remaining methods are either C++ methods or invokables
-                } else {
-                    let parsed_method = ParsedMethod::parse(foreign_fn, safe_call)?;
-                    self.methods.push(parsed_method);
+                        self.inherited_methods.push(parsed_inherited_method);
+                        // Remaining methods are either C++ methods or invokables
+                    } else {
+                        let parsed_method = ParsedMethod::parse(foreign_fn, safe_call)?;
+                        self.methods.push(parsed_method);
+                    }
                 }
+                ForeignItem::Verbatim(tokens) => {
+                    let foreign_alias: ForeignTypeIdentAlias = syn::parse2(tokens.clone())?;
+
+                    // Load the QObject
+                    let qobject = ParsedQObject::parse(
+                        foreign_alias,
+                        namespace.as_deref(),
+                        &self.module_ident,
+                    )?;
+
+                    // Note that we assume a compiler error will occur later
+                    // if you had two structs with the same name
+                    self.qobjects.push(qobject);
+                }
+                // Const Macro, Type are unsupported in extern "RustQt" for now
+                _ => return Err(Error::new_spanned(item, "Unsupported item")),
             }
         }
         Ok(())
@@ -237,23 +185,21 @@ impl ParsedCxxQtData {
     /// Parse a [syn::ItemImpl] into the qobjects if it's a CXX-Qt implementation
     /// otherwise return as a [syn::Item] to pass through.
     fn parse_impl(&mut self, imp: ItemImpl) -> Result<Option<Item>> {
-        // If the implementation has a T
-        // then this is the block of methods to be implemented on the C++ object
-        if let Type::Path(TypePath { path, .. }) = imp.self_ty.as_ref() {
-            // If this path is an ident then try to match to a QObject
-            if let Some(ident) = path.get_ident() {
-                // Find if we are an impl block for a qobject
-                if let Some(qobject) = self.qobjects.get_mut(ident) {
-                    // If we are a trait then process it otherwise add to others
-                    if imp.trait_.is_some() {
-                        qobject.parse_trait_impl(imp)?;
-                        return Ok(None);
-                    }
-                }
-            }
+        // If it is a trait impl compared to a regular impl block
+        // This allows the cxx shim trait feature
+        if imp.trait_.is_some() {
+            self.trait_impls.push(TraitImpl::parse(imp)?);
+            Ok(None)
+        } else {
+            Ok(Some(Item::Impl(imp)))
         }
+    }
 
-        Ok(Some(Item::Impl(imp)))
+    #[cfg(test)]
+    fn find_object(&self, id: &Ident) -> Option<&ParsedQObject> {
+        self.qobjects
+            .iter()
+            .find(|obj| obj.name.rust_unqualified() == id)
     }
 }
 
@@ -264,164 +210,13 @@ mod tests {
     use crate::generator::structuring::Structures;
     use crate::{naming::Name, parser::qobject::tests::create_parsed_qobject};
     use quote::format_ident;
-    use syn::{parse_quote, ItemMod};
-
-    /// The QObject ident used in these tests as the ident that already
-    /// has been found.
-    fn qobject_ident() -> Ident {
-        format_ident!("MyObject")
-    }
+    use syn::parse_quote;
 
     /// Creates a ParsedCxxQtData with a QObject definition already found
     pub fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+        cxx_qt_data.qobjects.push(create_parsed_qobject());
         cxx_qt_data
-            .qobjects
-            .insert(qobject_ident(), create_parsed_qobject());
-        cxx_qt_data
-    }
-
-    #[test]
-    fn test_find_qobjects_one_qobject() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-
-        let module: ItemMod = parse_quote! {
-            mod module {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
-        assert!(result.is_ok());
-        assert_eq!(cxx_qt_data.qobjects.len(), 1);
-        assert!(cxx_qt_data.qobjects.contains_key(&qobject_ident()));
-        assert!(
-            cxx_qt_data
-                .qobjects
-                .get(&qobject_ident())
-                .unwrap()
-                .has_qobject_macro
-        );
-    }
-
-    #[test]
-    fn test_find_qobjects_multiple_qobject() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-
-        let module: ItemMod = parse_quote! {
-            mod module {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                    #[qobject]
-                    type SecondObject = super::SecondObjectRust;
-                    #[qobject]
-                    #[rust_name="ThirdObjectQt"]
-                    type ThirdObject = super::ThirdObjectRust;
-                }
-            }
-        };
-        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
-        assert!(result.is_ok());
-        let qobjects = &cxx_qt_data.qobjects;
-        assert_eq!(qobjects.len(), 3);
-        assert!(qobjects.contains_key(&qobject_ident()));
-        assert!(qobjects.contains_key(&format_ident!("SecondObject")));
-        // Ensure the rust_name attribute is used as the key.
-        assert!(qobjects.contains_key(&format_ident!("ThirdObjectQt")));
-    }
-
-    #[test]
-    fn test_find_qobjects_namespace() {
-        let mut cxx_qt_data =
-            ParsedCxxQtData::new(format_ident!("ffi"), Some("bridge_namespace".to_string()));
-
-        let module: ItemMod = parse_quote! {
-            mod module {
-                extern "RustQt" {
-                    #[qobject]
-                    #[namespace = "qobject_namespace"]
-                    type MyObject = super::MyObjectRust;
-                    #[qobject]
-                    type SecondObject = super::SecondObjectRust;
-                }
-            }
-        };
-        cxx_qt_data
-            .find_qobject_types(&module.content.unwrap().1)
-            .unwrap();
-        assert_eq!(cxx_qt_data.qobjects.len(), 2);
-        assert_eq!(
-            cxx_qt_data
-                .qobjects
-                .get(&format_ident!("MyObject"))
-                .unwrap()
-                .name
-                .namespace()
-                .unwrap(),
-            "qobject_namespace"
-        );
-        assert_eq!(
-            cxx_qt_data
-                .qobjects
-                .get(&format_ident!("SecondObject"))
-                .unwrap()
-                .name
-                .namespace()
-                .unwrap(),
-            "bridge_namespace"
-        );
-    }
-
-    #[test]
-    fn test_find_qobjects_no_qobject_no_base() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-
-        let module: ItemMod = parse_quote! {
-            mod module {
-                extern "RustQt" {
-                    type Other = super::OtherRust;
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_find_qobjects_no_qobject_with_base() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-
-        let module: ItemMod = parse_quote! {
-            mod module {
-                extern "RustQt" {
-                    #[base = "OtherBase"]
-                    type Other = super::OtherRust;
-                    #[base = "MyObjectBase"]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let result = cxx_qt_data.find_qobject_types(&module.content.unwrap().1);
-        assert!(result.is_ok());
-        assert_eq!(cxx_qt_data.qobjects.len(), 2);
-        assert!(
-            !cxx_qt_data
-                .qobjects
-                .get(&format_ident!("Other"))
-                .unwrap()
-                .has_qobject_macro
-        );
-        assert!(
-            !cxx_qt_data
-                .qobjects
-                .get(&format_ident!("MyObject"))
-                .unwrap()
-                .has_qobject_macro
-        );
     }
 
     #[test]
@@ -585,19 +380,6 @@ mod tests {
     }
 
     #[test]
-    fn test_find_and_merge_cxx_qt_item_threading() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-        assert!(!cxx_qt_data.qobjects[&qobject_ident()].threading);
-
-        let item: Item = parse_quote! {
-            impl cxx_qt::Threading for MyObject {}
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert!(result.is_none());
-        assert!(cxx_qt_data.qobjects[&qobject_ident()].threading);
-    }
-
-    #[test]
     fn test_find_and_merge_cxx_qt_item_extern_cxx_qt() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
@@ -727,18 +509,27 @@ mod tests {
     #[test]
     fn test_parse_threading() {
         let mut cxxqtdata = create_parsed_cxx_qt_data();
-
-        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
-        assert!(!qobject.threading);
+        assert!(cxxqtdata.trait_impls.is_empty());
 
         let threading_block: Item = parse_quote! {
             impl cxx_qt::Threading for MyObject {}
         };
+        let result = cxxqtdata.parse_cxx_qt_item(threading_block).unwrap();
+        assert!(result.is_none());
+        assert!(!cxxqtdata.trait_impls.is_empty());
+    }
 
-        cxxqtdata.parse_cxx_qt_item(threading_block).unwrap();
+    #[test]
+    fn test_passthrough_non_trait_impl() {
+        let mut cxxqtdata = create_parsed_cxx_qt_data();
 
-        let qobject = cxxqtdata.qobjects.get(&qobject_ident()).unwrap();
-        assert!(qobject.threading);
+        let result = cxxqtdata
+            .parse_cxx_qt_item(parse_quote! {
+                impl T {}
+            })
+            .unwrap();
+        assert!(result.is_some());
+        assert!(matches!(result, Some(Item::Impl(_))));
     }
 
     #[test]
@@ -791,34 +582,70 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_empty_base() {
+    fn test_parse_unsupported_type() {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-        let module: ItemMod = parse_quote! {
-            mod module {
-                extern "RustQt" {
-                    #[qobject]
-                    #[base = ""]
-                    type MyObject = super::MyObjectRust;
-                }
+        let extern_rust_qt: Item = parse_quote! {
+            extern "RustQt" {
+                static COUNTER: usize;
             }
         };
-        assert!(cxx_qt_data
-            .find_qobject_types(&module.content.unwrap().1)
-            .is_err());
+        assert!(cxx_qt_data.parse_cxx_qt_item(extern_rust_qt).is_err());
     }
 
     #[test]
-    fn test_parse_unsupported_type() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-        let module: ItemMod = parse_quote! {
-            mod module {
-                extern "RustQt" {
-                    static COUNTER: usize;
-                }
+    fn test_qobjects() {
+        let mut parsed_cxxqtdata = ParsedCxxQtData::new(format_ident!("ffi"), None);
+        let extern_rust_qt: Item = parse_quote! {
+            extern "RustQt" {
+                #[qobject]
+                type MyObject = super::T;
+                #[qobject]
+                type MyOtherObject = super::MyOtherT;
             }
         };
-        assert!(cxx_qt_data
-            .find_qobject_types(&module.content.unwrap().1)
-            .is_err());
+
+        parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
+        assert_eq!(parsed_cxxqtdata.qobjects.len(), 2);
+
+        assert!(parsed_cxxqtdata
+            .find_object(&format_ident!("MyObject"))
+            .is_some());
+        assert!(parsed_cxxqtdata
+            .find_object(&format_ident!("MyOtherObject"))
+            .is_some());
+    }
+
+    #[test]
+    fn test_qobject_namespaces() {
+        let mut parsed_cxxqtdata = ParsedCxxQtData::new(format_ident!("ffi"), None);
+        let extern_rust_qt: Item = parse_quote! {
+            #[namespace="b"]
+            extern "RustQt" {
+                #[qobject]
+                #[namespace="a"]
+                type MyObject = super::T;
+                #[qobject]
+                type MyOtherObject = super::MyOtherT;
+            }
+        };
+
+        parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
+        assert_eq!(parsed_cxxqtdata.qobjects.len(), 2);
+        assert_eq!(
+            parsed_cxxqtdata
+                .find_object(&format_ident!("MyObject"))
+                .unwrap()
+                .name
+                .namespace(),
+            Some("a")
+        );
+        assert_eq!(
+            parsed_cxxqtdata
+                .find_object(&format_ident!("MyOtherObject"))
+                .unwrap()
+                .name
+                .namespace(),
+            Some("b")
+        );
     }
 }

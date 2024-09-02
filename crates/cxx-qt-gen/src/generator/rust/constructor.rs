@@ -179,7 +179,7 @@ fn unsafe_if(condition: bool) -> Option<TokenStream> {
 }
 
 pub fn generate(
-    constructors: &[Constructor],
+    constructors: &[&Constructor],
     qobject_idents: &QObjectNames,
     namespace: &NamespaceName,
     type_names: &TypeNames,
@@ -463,7 +463,7 @@ mod tests {
         NamespaceName::from_namespace_and_ident("qobject", &format_ident!("MyObject"))
     }
 
-    fn generate_mocked(constructors: &[Constructor]) -> GeneratedRustFragment {
+    fn generate_mocked(constructors: &[&Constructor]) -> GeneratedRustFragment {
         let mut type_names = TypeNames::mock();
 
         type_names.mock_insert("QString", None, None, None);
@@ -768,8 +768,8 @@ mod tests {
     #[test]
     fn multiple_constructors() {
         let blocks = generate_mocked(&[
-            mock_constructor(),
-            Constructor {
+            &mock_constructor(),
+            &Constructor {
                 arguments: vec![parse_quote! { *const QObject }],
                 new_arguments: vec![parse_quote! { i16 }],
                 initialize_arguments: vec![
@@ -801,7 +801,7 @@ mod tests {
     #[test]
     fn constructor_impl_with_unused_lifetime() {
         let result = super::generate(
-            &[Constructor {
+            &[&Constructor {
                 lifetime: Some(parse_quote! { 'a }),
                 ..mock_constructor()
             }],

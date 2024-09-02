@@ -81,7 +81,7 @@ fn expand_arguments(arguments: &[Type], type_names: &TypeNames) -> Result<String
 
 pub fn generate(
     qobject: &GeneratedCppQObject,
-    constructors: &[Constructor],
+    constructors: &[&Constructor],
     base_class: String,
     class_initializers: &[String],
     type_names: &TypeNames,
@@ -287,7 +287,7 @@ mod tests {
     fn constructor_without_base_arguments() {
         let blocks = generate(
             &qobject_for_testing(),
-            &[Constructor {
+            &[&Constructor {
                 arguments: vec![parse_quote! { i32 }, parse_quote! { *mut QObject }],
                 ..mock_constructor()
             }],
@@ -333,7 +333,7 @@ mod tests {
     fn constructor_with_all_arguments() {
         let blocks = generate(
             &qobject_for_testing(),
-            &[Constructor {
+            &[&Constructor {
                 arguments: vec![parse_quote! { i8 }, parse_quote! { i16 }],
                 new_arguments: vec![parse_quote! { i16}, parse_quote! { i32 }],
                 initialize_arguments: vec![parse_quote! { i32 }, parse_quote! { i64 }],
@@ -385,11 +385,11 @@ mod tests {
         let blocks = generate(
             &qobject_for_testing(),
             &[
-                Constructor {
+                &Constructor {
                     arguments: vec![],
                     ..mock_constructor()
                 },
-                Constructor {
+                &Constructor {
                     arguments: vec![parse_quote! { *mut QObject }],
                     base_arguments: vec![parse_quote! { *mut QObject }],
                     ..mock_constructor()

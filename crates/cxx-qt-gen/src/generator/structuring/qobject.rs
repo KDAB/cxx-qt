@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::Name;
+use crate::parser::constructor::Constructor;
 use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::method::ParsedMethod;
 use crate::parser::signals::ParsedSignal;
@@ -19,6 +20,9 @@ pub struct StructuredQObject<'a> {
     pub methods: Vec<&'a ParsedMethod>,
     pub inherited_methods: Vec<&'a ParsedInheritedMethod>,
     pub signals: Vec<&'a ParsedSignal>,
+    pub constructors: Vec<&'a Constructor>,
+    pub locking: bool,
+    pub threading: bool,
 }
 
 fn lookup<T>(invokables: &[T], id: &Ident, name_getter: impl Fn(&T) -> &Name) -> Option<Name> {
@@ -42,6 +46,9 @@ impl<'a> StructuredQObject<'a> {
             methods: vec![],
             inherited_methods: vec![],
             signals: vec![],
+            constructors: vec![],
+            locking: true,
+            threading: false,
         }
     }
 

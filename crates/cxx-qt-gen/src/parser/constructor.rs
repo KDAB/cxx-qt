@@ -20,6 +20,7 @@ struct ConstructorArguments {
 }
 
 /// A parsed cxx_qt::Constructor trait impl.
+#[derive(Debug, PartialEq, Eq)]
 pub struct Constructor {
     /// The arguments to the constructor defined by this trait impl.
     pub arguments: Vec<Type>,
@@ -37,6 +38,7 @@ pub struct Constructor {
     pub lifetime: Option<Lifetime>,
 
     /// The original impl that this constructor was parse from.
+    // TODO: This has moved into MarkerTrait
     pub imp: ItemImpl,
 }
 
@@ -150,19 +152,19 @@ impl Constructor {
             ));
         }
 
-        if !imp.items.is_empty() {
+        let (not, trait_path, _) = &imp
+            .trait_
+            .as_ref()
+            .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected trait impl!"))?;
+
+        if not.is_some() {
             return Err(Error::new_spanned(
-                imp.items.first(),
-                "cxx_qt::Constructor must only be declared, not implemented inside cxx_qt::bridge!",
+                trait_path,
+                "Negative impls for cxx_qt::Constructor are not allowed",
             ));
         }
 
         let lifetime = Self::parse_impl_generics(&imp.generics)?;
-
-        let (_, trait_path, _) = &imp
-            .trait_
-            .as_ref()
-            .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected trait impl!"))?;
 
         let (argument_list, arguments) = Self::parse_arguments(trait_path)?;
         Ok(Constructor {
@@ -207,13 +209,12 @@ mod tests {
             "missing main argument list",
         );
 
+        // Hard to tell if this actually hits the error as the rest of the project isn't compiling
         assert_parse_error(
             parse_quote! {
-                impl cxx_qt::Constructor<()> for X {
-                    fn some_impl() {}
-                }
+                impl !cxx_qt::Constructor<(i32, i32)> for T {}
             },
-            "item in impl block",
+            "Negative impls for cxx_qt::Constructor are not allowed",
         );
 
         assert_parse_error(
