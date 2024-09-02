@@ -252,7 +252,7 @@ mod tests {
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::parser::method::MethodFields;
-    use crate::parser::parameter::ParsedFunctionParameter;
+    use crate::syntax::safety::Safety;
     use crate::tests::assert_tokens_eq;
     use quote::{format_ident, quote};
     use syn::{parse_quote, ForeignItemFn, Item};
@@ -840,10 +840,14 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
+        let mock = ParsedSignal::mock_with_method(&method);
         let qsignal = ParsedSignal {
-            name: Name::new(format_ident!("ready")),
+            method_fields: MethodFields {
+                name: Name::new(format_ident!("ready")),
+                ..mock.method_fields
+            },
             private: true,
-            ..ParsedSignal::mock_with_method(&method)
+            ..mock
         };
 
         let type_names = TypeNames::mock();

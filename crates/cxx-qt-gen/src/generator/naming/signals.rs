@@ -103,7 +103,6 @@ impl QSignalHelperNames {
 mod tests {
     use super::*;
 
-    use crate::parser::method::MethodFields;
     use syn::parse_quote;
 
     #[test]

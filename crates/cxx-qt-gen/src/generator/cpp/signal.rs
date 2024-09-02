@@ -215,8 +215,6 @@ mod tests {
 
     use crate::generator::cpp::property::tests::{require_header, require_pair};
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::parser::method::MethodFields;
-    use crate::parser::parameter::ParsedFunctionParameter;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use syn::{parse_quote, ForeignItemFn};

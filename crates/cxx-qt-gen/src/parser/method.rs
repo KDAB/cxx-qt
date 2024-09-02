@@ -57,7 +57,10 @@ impl ParsedMethod {
     #[cfg(test)]
     pub fn make_mutable(self) -> Self {
         Self {
-            mutable: true,
+            method_fields: MethodFields {
+                mutable: true,
+                ..self.method_fields
+            },
             ..self
         }
     }
@@ -65,7 +68,10 @@ impl ParsedMethod {
     #[cfg(test)]
     pub fn make_unsafe(self) -> Self {
         Self {
-            safe: false,
+            method_fields: MethodFields {
+                safe: false,
+                ..self.method_fields
+            },
             ..self
         }
     }
