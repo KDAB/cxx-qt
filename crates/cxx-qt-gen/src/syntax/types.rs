@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::syntax::path::path_compare_str;
+use quote::ToTokens;
 use syn::{
     token::Mut, Error, GenericArgument, Ident, Path, PathArguments, Result, Type, TypePath,
     TypeReference,
@@ -17,6 +18,13 @@ fn pin_path(ty: &Type) -> Option<Path> {
     }
 
     None
+}
+
+fn err_pin_misuse(tokens: impl ToTokens) -> Error {
+    Error::new_spanned(
+        tokens,
+        "Expected a non mutable T reference! Use either `&T` or `Pin<&mut T>`!",
+    )
 }
 
 /// Checks if the given type is a `Pin<&Self>` or `Pin<&mut Self>`.
@@ -83,29 +91,21 @@ fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
             {
                 let (ident, mutability) = extract_qobject_ident_from_ref(reference)?;
                 if mutability.is_none() {
-                    return Err(Error::new_spanned(
-                        reference,
-                        "Expected a mutable reference when using `Pin<>`!",
-                    ));
+                    return Err(err_pin_misuse(reference));
                 }
                 return Ok((ident, mutability.unwrap()));
             } else {
-                return Err(Error::new_spanned(
-                    ty,
-                    "Non reference args in Pin are not allowed!",
-                ));
+                return Err(err_pin_misuse(ty));
             }
         } else {
-            // CODECOV_EXCLUDE_START
-            unreachable!("Pin must use angle brackets for generic args like Pin<&mut T>!");
-            // CODECOV_EXCLUDE_STOP
+            return Err(Error::new_spanned(
+                ty,
+                "Pin must use angle brackets not parentheses for generic args! Use Pin<&mut T>",
+            ));
         }
     }
 
-    Err(Error::new_spanned(
-        ty,
-        "Expected a T reference! Use either `&T` or `Pin<&mut T>`!",
-    ))
+    Err(err_pin_misuse(ty))
 }
 
 /// Extract the qobject ident from any of the following patterns:
@@ -116,10 +116,7 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
         Type::Reference(type_ref) => {
             let (ident, mutability) = extract_qobject_ident_from_ref(type_ref)?;
             if mutability.is_some() {
-                return Err(Error::new_spanned(
-                    type_ref,
-                    "Cannot take T by mutable reference! Use either `self: &T`, or `Pin<&mut T>`",
-                ));
+                return Err(err_pin_misuse(type_ref));
             }
             Ok((ident, mutability))
         }
@@ -127,16 +124,15 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
             let (ident, mutability) = extract_qobject_from_mut_pin(type_path)?;
             Ok((ident, Some(mutability)))
         }
-        _ => Err(Error::new_spanned(
-            ty,
-            "Expected type to be a &T or Pin<&mut T> reference!",
-        )),
+        _ => Err(err_pin_misuse(ty)),
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use syn::{parse_quote, Type};
+    use crate::parser::method::ParsedMethod;
+    use crate::syntax::safety::Safety;
+    use syn::{parse_quote, ForeignItemFn, Type};
 
     #[test]
     fn test_is_pin_of_self() {
@@ -172,5 +168,15 @@ mod tests {
         assert!(super::extract_qobject_ident(&parse_quote! { X::Foo }).is_err());
         assert!(super::extract_qobject_ident(&parse_quote! { Self }).is_err());
         assert!(super::extract_qobject_ident(&parse_quote! { Pin<T = A> }).is_err());
+    }
+
+    #[test]
+    fn test_incorrect_pin_syntax() {
+        let method: ForeignItemFn = parse_quote! {
+            #[qinvokable]
+            unsafe fn test(self: Pin);
+        };
+        let parsed = ParsedMethod::parse(method, Safety::Unsafe);
+        assert!(parsed.is_err())
     }
 }

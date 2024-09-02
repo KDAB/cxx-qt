@@ -90,16 +90,6 @@ pub(crate) fn syn_type_to_cpp_return_type(
 pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<String> {
     match ty {
         Type::Array(TypeArray { elem, len, .. }) => {
-            // let len = if let Expr::Lit(len) = &len {
-            //     if let Lit::Int(len) = &len.lit {
-            //         len.base10_parse::<usize>()?
-            //     } else {
-            //         return Err(Error::new(ty.span(), "Array length must be an integer!"));
-            //     }
-            // } else {
-            //     return Err(Error::new(ty.span(), "Array length must be an integer!"));
-            // };
-
             let _empty: Vec<Attribute> = vec![];
 
             let len = if let Expr::Lit(ExprLit {
@@ -196,7 +186,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
 fn generic_argument_to_string(generic: &GenericArgument, type_names: &TypeNames) -> Result<String> {
     match generic {
         GenericArgument::Type(ty) => syn_type_to_cpp_type(ty, type_names),
-        other => Err(Error::new(
+        _other => Err(Error::new(
             generic.span(),
             "Unsupported GenericArgument type!",
         )),
