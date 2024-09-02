@@ -4,10 +4,17 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::TypeNames;
+use crate::syntax::lifetimes::err_unsupported_type;
+use quote::ToTokens;
 use syn::{
-    spanned::Spanned, Error, Expr, GenericArgument, Lit, PathArguments, PathSegment, Result,
-    ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference, TypeSlice,
+    spanned::Spanned, Attribute, Error, Expr, ExprLit, GenericArgument, Lit, PathArguments,
+    PathSegment, Result, ReturnType, Type, TypeArray, TypeBareFn, TypePtr, TypeReference,
+    TypeSlice,
 };
+
+pub(crate) fn err_unsupported_item(item: &impl ToTokens) -> Error {
+    Error::new_spanned(item, "Unsupported Item!")
+}
 
 /// For a given Rust return type determine if the C++ header should have noexcept
 pub(crate) fn syn_return_type_to_cpp_except(return_ty: &ReturnType) -> &str {
@@ -46,7 +53,7 @@ pub(crate) fn syn_type_to_cpp_return_type(
                     if args.len() != 1 {
                         return Err(Error::new(
                             return_ty.span(),
-                            "Result must have one argument",
+                            "Result must have one argument!",
                         ));
                     }
 
@@ -83,18 +90,19 @@ pub(crate) fn syn_type_to_cpp_return_type(
 pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<String> {
     match ty {
         Type::Array(TypeArray { elem, len, .. }) => {
-            let len = if let Expr::Lit(len) = &len {
-                if let Lit::Int(len) = &len.lit {
-                    len.base10_parse::<usize>()?
-                } else {
-                    return Err(Error::new(ty.span(), "Array length must be a integer"));
-                }
+            let _empty: Vec<Attribute> = vec![];
+
+            let len = if let Expr::Lit(ExprLit {
+                lit: Lit::Int(len), ..
+            }) = &len
+            {
+                len.base10_parse::<usize>()?
             } else {
-                return Err(Error::new(ty.span(), "Array length must be a integer"));
+                return Err(Error::new(ty.span(), "Array length must be an integer!"));
             };
 
             if len == 0 {
-                return Err(Error::new(ty.span(), "Array length must be > 0"));
+                return Err(Error::new(ty.span(), "Array length must be > 0!"));
             }
 
             Ok(format!(
@@ -134,7 +142,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
             } else {
                 Err(Error::new(
                     ty.span(),
-                    "Paths with multiple segments are not supported in types",
+                    "Paths with multiple segments are not supported in types!",
                 ))
             }
         }
@@ -170,10 +178,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
             }
         }
         Type::Tuple(tuple) if tuple.elems.is_empty() => Ok("void".to_string()),
-        _others => Err(Error::new(
-            ty.span(),
-            format!("Unsupported type: {_others:?}"),
-        )),
+        _others => Err(err_unsupported_type(ty)),
     }
 }
 
@@ -181,9 +186,9 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
 fn generic_argument_to_string(generic: &GenericArgument, type_names: &TypeNames) -> Result<String> {
     match generic {
         GenericArgument::Type(ty) => syn_type_to_cpp_type(ty, type_names),
-        _others => Err(Error::new(
+        _other => Err(Error::new(
             generic.span(),
-            "Unsupported GenericArgument type",
+            "Unsupported GenericArgument type!",
         )),
     }
 }
@@ -222,15 +227,12 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
                 path_argument_to_string(&segment.arguments, type_names)?.unwrap_or_else(Vec::new);
 
             if args.len() != 1 {
-                return Err(Error::new(segment.span(), "Pin must have one argument"));
+                return Err(Error::new(segment.span(), "Pin must have one argument!"));
             }
             return Ok(args.pop().unwrap());
         }
-        "Result" => {
-            return Err(Error::new(segment.span(), "Result is not supported"));
-        }
-        "Option" => {
-            return Err(Error::new(segment.span(), "Option is not supported"));
+        "Result" | "Option" => {
+            return Err(err_unsupported_item(ident));
         }
         _others => {
             path_argument_to_string(&segment.arguments, type_names)?.map(|values| values.join(", "))
@@ -243,10 +245,7 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
         if let Some(ident) = possible_built_in_template_base(&ident_string) {
             Ok(format!("{ident}<{arg}>"))
         } else {
-            Err(Error::new_spanned(
-                ident,
-                format!("Unsupported template base: {ident}"),
-            ))
+            Err(err_unsupported_type(ident))
         }
     } else {
         type_names.cxx_qualified(&segment.ident)

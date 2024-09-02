@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use super::qnamespace::ParsedQNamespace;
+use super::trait_impl::TraitImpl;
+use crate::naming::cpp::err_unsupported_item;
 use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
 use crate::syntax::foreignmod::ForeignTypeIdentAlias;
 use crate::syntax::path::path_compare_str;
@@ -14,13 +17,8 @@ use crate::{
     },
     syntax::expr::expr_to_string,
 };
-use syn::{Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result};
+use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result};
 use syn::{ItemMacro, Meta};
-
-use super::qnamespace::ParsedQNamespace;
-use super::trait_impl::TraitImpl;
-
-// Test comment
 
 pub struct ParsedCxxQtData {
     /// Map of the QObjects defined in the module that will be used for code generation
@@ -176,7 +174,7 @@ impl ParsedCxxQtData {
                     self.qobjects.push(qobject);
                 }
                 // Const Macro, Type are unsupported in extern "RustQt" for now
-                _ => return Err(Error::new_spanned(item, "Unsupported item")),
+                _ => return Err(err_unsupported_item(&item)),
             }
         }
         Ok(())
@@ -215,6 +213,7 @@ mod tests {
     /// Creates a ParsedCxxQtData with a QObject definition already found
     pub fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
+        cxx_qt_data.qobjects.push(create_parsed_qobject());
         cxx_qt_data.qobjects.push(create_parsed_qobject());
         cxx_qt_data
     }

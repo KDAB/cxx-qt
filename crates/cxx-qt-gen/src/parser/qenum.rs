@@ -57,7 +57,7 @@ impl ParsedQEnum {
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
                 qenum,
-                "QEnum must have at least one variant",
+                "QEnum must have at least one variant!",
             ));
         }
 
@@ -78,7 +78,7 @@ impl ParsedQEnum {
         }) {
             return Err(syn::Error::new_spanned(
                 attr,
-                "Additional attributes are not allowed on #[qenum] enums",
+                "Additional attributes are not allowed on #[qenum] enums!",
             ));
         }
 

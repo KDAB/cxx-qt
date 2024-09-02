@@ -233,7 +233,7 @@ pub fn generate(
         {
             return Err(Error::new_spanned(
                 &constructor.lifetime,
-                "this lifetime isn't used in the Constructor declaration!",
+                "This lifetime isn't used in the Constructor declaration!",
             ));
         }
 

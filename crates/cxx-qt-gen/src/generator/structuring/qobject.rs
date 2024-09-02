@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::generator::structuring::not_found_error;
 use crate::naming::Name;
 use crate::parser::constructor::Constructor;
 use crate::parser::inherit::ParsedInheritedMethod;
@@ -10,7 +11,7 @@ use crate::parser::method::ParsedMethod;
 use crate::parser::signals::ParsedSignal;
 use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject};
 use proc_macro2::Ident;
-use syn::{Error, Result};
+use syn::Result;
 
 /// The StructuredQObject contains the parsed QObject and all members.
 /// This includes QEnums, QSignals, methods, etc.
@@ -56,13 +57,13 @@ impl<'a> StructuredQObject<'a> {
     pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
         lookup(&self.methods, id, |method| &method.name)
             .or_else(|| lookup(&self.inherited_methods, id, |inherited| &inherited.name)) // fallback to searching inherited methods
-            .ok_or_else(|| Error::new_spanned(id, format!("Method with name '{id}' not found!")))
+            .ok_or_else(|| not_found_error("Method", id))
     }
 
     /// Returns the name of the signal with the provided Rust ident if it exists, or an error
     pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
         lookup(&self.signals, id, |signal| &signal.name)
-            .ok_or_else(|| Error::new_spanned(id, format!("Signal with name '{id}' not found!")))
+            .ok_or_else(|| not_found_error("Signal", id))
     }
 
     #[cfg(test)]

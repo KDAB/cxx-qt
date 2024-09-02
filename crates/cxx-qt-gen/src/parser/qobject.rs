@@ -32,13 +32,13 @@ pub struct ParsedQObject {
     /// The name of the QObject
     pub name: Name,
     /// The ident of the inner type of the QObject
+    pub rust_type: Ident,
     /// List of properties that need to be implemented on the C++ object
     ///
     /// These will be exposed as Q_PROPERTY on the C++ object
     pub properties: Vec<ParsedQProperty>,
     /// List of specifiers to register with in QML
     pub qml_metadata: Option<QmlElementMetadata>,
-    pub rust_type: Ident,
     /// Whether this type has a #[qobject] / Q_OBJECT macro
     pub has_qobject_macro: bool,
 
@@ -82,7 +82,7 @@ impl ParsedQObject {
                     // - when there is not a qobject macro it is not valid
                     return Err(Error::new_spanned(
                         attr,
-                        "The #[base] attribute cannot be empty",
+                        "The #[base] attribute cannot be empty!",
                     ));
                 }
                 Ok(string)
@@ -95,7 +95,7 @@ impl ParsedQObject {
         if !has_qobject_macro && base_class.is_none() {
             return Err(Error::new_spanned(
                 declaration.ident_left,
-                "A type without a #[qobject] attribute must specify a #[base] attribute",
+                "A type without a #[qobject] attribute must specify a #[base] attribute!",
             ));
         }
 

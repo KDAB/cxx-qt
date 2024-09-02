@@ -5,7 +5,7 @@
 
 use syn::{Error, GenericArgument, Lifetime, PathArguments, PathSegment, Result, Type};
 
-fn err_unsupported_type<T: quote::ToTokens>(ty: &T) -> Error {
+pub(crate) fn err_unsupported_type<T: quote::ToTokens>(ty: &T) -> Error {
     Error::new_spanned(ty, "Type not supported by CXX-Qt!")
 }
 

@@ -215,7 +215,7 @@ impl TypeNames {
                     if !this.shared_types.contains(&name.rust)
                         || this.extern_types.contains(&name.rust)
                     {
-                        return Err(this.duplicate_type(&name.rust));
+                        return Err(this.err_duplicate_type(&name.rust));
                     }
                     this.check_duplicate_compatability(&name)
                 },
@@ -232,7 +232,7 @@ impl TypeNames {
             Err(Error::new_spanned(
                 &duplicate.rust,
                 format!(
-                    "The type `{}` is defined multiple times with different mappings",
+                    "The type `{}` is defined multiple times with different mappings!",
                     duplicate.rust
                 ),
             ))
@@ -261,7 +261,7 @@ impl TypeNames {
                     if !this.extern_types.contains(&name.rust)
                         || this.shared_types.contains(&name.rust)
                     {
-                        return Err(this.duplicate_type(&name.rust));
+                        return Err(this.err_duplicate_type(&name.rust));
                     }
                     this.check_duplicate_compatability(&name)
                 })?;
@@ -278,7 +278,7 @@ impl TypeNames {
         Ok(())
     }
 
-    fn unknown_type(&self, ident: &Ident) -> Error {
+    fn err_unknown_type(&self, ident: &Ident) -> Error {
         Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
     }
 
@@ -288,7 +288,7 @@ impl TypeNames {
     pub fn lookup(&self, ident: &Ident) -> Result<&Name> {
         self.names
             .get(ident)
-            .ok_or_else(|| self.unknown_type(ident))
+            .ok_or_else(|| self.err_unknown_type(ident))
     }
 
     /// For a given rust ident return the CXX name with its namespace
@@ -325,7 +325,7 @@ impl TypeNames {
         self.lookup(ident).map(Name::rust_qualified)
     }
 
-    fn duplicate_type(&self, ident: &Ident) -> Error {
+    fn err_duplicate_type(&self, ident: &Ident) -> Error {
         Error::new_spanned(
             ident,
             format!("The type name `{ident}` is defined multiple times"),
@@ -346,7 +346,7 @@ impl TypeNames {
             attrs,
             parent_namespace,
             module_ident,
-            |this, name| Err(this.duplicate_type(&name.rust)),
+            |this, name| Err(this.err_duplicate_type(&name.rust)),
         )
     }
 
@@ -375,7 +375,7 @@ impl TypeNames {
         let entry = self.names.entry(name.rust.clone());
 
         match entry {
-            Entry::Occupied(_) => Err(self.duplicate_type(&name.rust)),
+            Entry::Occupied(_) => Err(self.err_duplicate_type(&name.rust)),
             Entry::Vacant(entry) => {
                 entry.insert(name);
                 Ok(())

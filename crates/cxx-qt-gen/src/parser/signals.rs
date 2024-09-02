@@ -85,7 +85,7 @@ impl ParsedSignal {
         if invokable_fields.name.namespace().is_some() {
             return Err(Error::new_spanned(
                 method.sig.ident,
-                "Signals cannot have a namespace attribute",
+                "Signals cannot have a namespace attribute!",
             ));
         }
 

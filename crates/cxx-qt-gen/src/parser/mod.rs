@@ -96,7 +96,7 @@ impl Parser {
         } else {
             return Err(Error::new(
                 module.span(),
-                "Tried to parse a module which doesn't have a cxx_qt::bridge attribute",
+                "Tried to parse a module which doesn't have a cxx_qt::bridge attribute!",
             ));
         }
 

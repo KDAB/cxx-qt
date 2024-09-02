@@ -97,7 +97,7 @@ impl Constructor {
 
             Err(Error::new(
                 span,
-                "cxx_qt::Constructor expects a tuple as the first generic argument",
+                "cxx_qt::Constructor expects a tuple as the first generic argument!",
             ))
         }
     }
@@ -148,19 +148,19 @@ impl Constructor {
         if let Some(unsafety) = imp.unsafety {
             return Err(Error::new_spanned(
                 unsafety,
-                "Unnecessary unsafe around constructor impl.",
+                "Unnecessary unsafe around constructor impl!",
             ));
         }
 
         let (not, trait_path, _) = &imp
             .trait_
             .as_ref()
-            .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected trait impl!"))?;
+            .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected a trait impl!"))?;
 
         if not.is_some() {
             return Err(Error::new_spanned(
                 trait_path,
-                "Negative impls for cxx_qt::Constructor are not allowed",
+                "Negative impls for cxx_qt::Constructor are not allowed!",
             ));
         }
 
