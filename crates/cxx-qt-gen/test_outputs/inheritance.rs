@@ -35,10 +35,12 @@ mod inheritance {
     }
     extern "Rust" {
         #[cxx_name = "dataWrapper"]
+        #[doc(hidden)]
         fn data(self: &MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
     }
     extern "Rust" {
         #[cxx_name = "hasChildrenWrapper"]
+        #[doc(hidden)]
         fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {

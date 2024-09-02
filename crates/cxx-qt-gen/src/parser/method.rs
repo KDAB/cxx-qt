@@ -9,9 +9,10 @@ use crate::{
     syntax::{attribute::attribute_take_path, safety::Safety},
 };
 use std::collections::HashSet;
-use syn::{Error, ForeignItemFn, Ident, Result};
+use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
 
-use crate::parser::{check_safety, extract_common_fields, separate_docs, Invokable, MethodFields};
+use crate::parser::{check_safety, separate_docs};
+use crate::syntax::{foreignmod, types};
 #[cfg(test)]
 use quote::format_ident;
 
@@ -53,18 +54,12 @@ pub struct ParsedMethod {
     pub name: Name,
 }
 
-impl Invokable for &ParsedMethod {
-    fn name(&self) -> &Name {
-        &self.name
-    }
-}
-
 impl ParsedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 
         let docs = separate_docs(&mut method);
-        let invokable_fields = extract_common_fields(&method, docs)?;
+        let invokable_fields = MethodFields::parse(&method, docs)?;
 
         if invokable_fields.name.namespace().is_some() {
             return Err(Error::new_spanned(
@@ -141,5 +136,37 @@ impl ParsedMethod {
             mutable: true,
             ..ParsedMethod::from_method_and_params(method, parameters)
         }
+    }
+}
+
+/// Struct with common fields between Invokable types.
+/// These types are ParsedSignal, ParsedMethod and ParsedInheritedMethod
+pub struct MethodFields {
+    pub qobject_ident: Ident,
+    pub mutable: bool,
+    pub parameters: Vec<ParsedFunctionParameter>,
+    pub safe: bool,
+    pub name: Name,
+    pub docs: Vec<Attribute>, // TODO: Remove this
+}
+
+impl MethodFields {
+    pub fn parse(method: &ForeignItemFn, docs: Vec<Attribute>) -> Result<Self> {
+        let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
+        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
+        let mutable = mutability.is_some();
+
+        let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
+        let safe = method.sig.unsafety.is_none();
+        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+
+        Ok(MethodFields {
+            qobject_ident,
+            mutable,
+            parameters,
+            safe,
+            name,
+            docs,
+        })
     }
 }

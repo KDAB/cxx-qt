@@ -15,10 +15,7 @@ pub mod qnamespace;
 pub mod qobject;
 pub mod signals;
 
-use crate::naming::Name;
-use crate::parser::parameter::ParsedFunctionParameter;
 use crate::syntax::safety::Safety;
-use crate::syntax::{foreignmod, types};
 use crate::{
     // Used for error handling when resolving the namespace of the qenum.
     naming::TypeNames,
@@ -41,42 +38,6 @@ fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
     } else {
         Ok(())
     }
-}
-
-pub trait Invokable {
-    fn name(&self) -> &Name;
-}
-
-/// Struct with common fields between Invokable types.
-/// These types are ParsedSignal, ParsedMethod and ParsedInheritedMethod
-pub struct MethodFields {
-    qobject_ident: Ident,
-    mutable: bool,
-    parameters: Vec<ParsedFunctionParameter>,
-    safe: bool,
-    name: Name,
-    docs: Vec<Attribute>, // TODO: Remove this
-}
-
-/// Function for creating an [MethodFields] from a method and docs.
-/// These fields are shared by ParsedSignal, ParsedMethod and ParsedInheritedMethod so grouped into common logic.
-pub fn extract_common_fields(method: &ForeignItemFn, docs: Vec<Attribute>) -> Result<MethodFields> {
-    let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
-    let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
-    let mutable = mutability.is_some();
-
-    let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
-    let safe = method.sig.unsafety.is_none();
-    let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
-
-    Ok(MethodFields {
-        qobject_ident,
-        mutable,
-        parameters,
-        safe,
-        name,
-        docs,
-    })
 }
 
 /// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)

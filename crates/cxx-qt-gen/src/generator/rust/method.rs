@@ -179,6 +179,7 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name = "voidInvokableWrapper"]
+                    #[doc(hidden)]
                     fn void_invokable(self: &MyObject);
                 }
             },
@@ -190,6 +191,7 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name = "trivialInvokableWrapper"]
+                    #[doc(hidden)]
                     fn trivial_invokable(self: &MyObject, param: i32) -> i32;
                 }
             },
@@ -201,6 +203,7 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name = "opaqueInvokableWrapper"]
+                    #[doc(hidden)]
                     fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
                 }
             },
@@ -212,6 +215,7 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name = "unsafeInvokableWrapper"]
+                    #[doc(hidden)]
                     unsafe fn unsafe_invokable(self:&MyObject, param: *mut T) -> *mut T;
                 }
             },

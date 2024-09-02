@@ -3,7 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{check_safety, extract_common_fields, separate_docs, Invokable, MethodFields};
+use crate::parser::method::MethodFields;
+use crate::parser::{check_safety, separate_docs};
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
@@ -30,18 +31,12 @@ pub struct ParsedInheritedMethod {
     pub docs: Vec<Attribute>,
 }
 
-impl Invokable for &ParsedInheritedMethod {
-    fn name(&self) -> &Name {
-        &self.name
-    }
-}
-
 impl ParsedInheritedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 
         let docs = separate_docs(&mut method);
-        let invokable_fields = extract_common_fields(&method, docs)?;
+        let invokable_fields = MethodFields::parse(&method, docs)?;
 
         // This block seems unnecessary but since attrs are passed through on generator/rust/inherit.rs a duplicate attr would occur without it
         attribute_take_path(&mut method.attrs, &["cxx_name"]);

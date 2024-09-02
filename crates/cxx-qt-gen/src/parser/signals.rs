@@ -10,7 +10,8 @@ use crate::{
 };
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visibility};
 
-use crate::parser::{check_safety, extract_common_fields, separate_docs, Invokable, MethodFields};
+use crate::parser::method::MethodFields;
+use crate::parser::{check_safety, separate_docs};
 #[cfg(test)]
 use quote::format_ident;
 
@@ -35,12 +36,6 @@ pub struct ParsedSignal {
     pub private: bool,
     /// All the doc attributes (each line) of the signal
     pub docs: Vec<Attribute>,
-}
-
-impl Invokable for &ParsedSignal {
-    fn name(&self) -> &Name {
-        &self.name
-    }
 }
 
 impl ParsedSignal {
@@ -85,7 +80,7 @@ impl ParsedSignal {
         check_safety(&method, &safety)?;
 
         let docs = separate_docs(&mut method);
-        let invokable_fields = extract_common_fields(&method, docs)?;
+        let invokable_fields = MethodFields::parse(&method, docs)?;
 
         if invokable_fields.name.namespace().is_some() {
             return Err(Error::new_spanned(

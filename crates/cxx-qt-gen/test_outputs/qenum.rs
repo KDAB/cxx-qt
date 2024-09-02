@@ -79,6 +79,7 @@ mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "myInvokableWrapper"]
+        #[doc(hidden)]
         fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
     extern "Rust" {

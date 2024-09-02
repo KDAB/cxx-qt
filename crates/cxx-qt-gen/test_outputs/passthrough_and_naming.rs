@@ -125,6 +125,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "invokableNameWrapper"]
+        #[doc(hidden)]
         fn invokable_name(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -257,6 +258,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "invokableNameWrapper"]
+        #[doc(hidden)]
         fn invokable_name(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
