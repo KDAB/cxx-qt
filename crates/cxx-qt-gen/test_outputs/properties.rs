@@ -35,72 +35,58 @@ mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "getPrimitiveWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         unsafe fn primitive<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "setPrimitiveWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn set_primitive(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
         #[cxx_name = "getTrivialWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         unsafe fn trivial<'a>(self: &'a MyObject) -> &'a QPoint;
     }
     extern "Rust" {
         #[cxx_name = "setTrivialWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn set_trivial(self: Pin<&mut MyObject>, value: QPoint);
     }
     extern "Rust" {
         #[cxx_name = "getReadonlyPropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         unsafe fn readonly_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "getCustomOnChangedPropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         unsafe fn custom_on_changed_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "setCustomOnChangedPropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn set_custom_on_changed_prop(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
         #[cxx_name = "getConstPropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         unsafe fn const_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "getResettablePropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         unsafe fn resettable_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "setResettablePropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn set_resettable_prop(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
         #[cxx_name = "getRequiredPropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         unsafe fn required_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "setRequiredPropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn set_required_prop(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
         #[cxx_name = "getFinalPropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         unsafe fn final_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "setFinalPropWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn set_final_prop(self: Pin<&mut MyObject>, value: i32);
     }
     unsafe extern "C++" {
@@ -203,19 +189,16 @@ mod ffi {
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "myGetterWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn my_getter(self: &MyObject) -> i32;
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "MyCustomSetterWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn my_setter(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "myResetFnWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn myResetFn(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {

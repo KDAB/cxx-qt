@@ -34,18 +34,11 @@ pub fn generate(
         let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
         let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;
 
-        let namespace = qobject_idents.name.namespace();
-        let cxx_namespace = if namespace.is_none() {
-            quote! {}
-        } else {
-            quote! { #[namespace = #namespace ] }
-        };
-
         Ok(Some(RustFragmentPair {
             cxx_bridge: vec![quote! {
                 extern "Rust" {
                     #[cxx_name = #getter_wrapper_cpp]
-                    #cxx_namespace
+                    // Namespace is not needed here
                     unsafe fn #getter_rust<'a>(self: &'a #cpp_class_name_rust) -> &'a #cxx_ty;
                 }
             }],

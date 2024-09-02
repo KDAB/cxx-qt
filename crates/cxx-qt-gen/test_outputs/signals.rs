@@ -37,7 +37,6 @@ mod ffi {
     extern "Rust" {
         #[doc(hidden)]
         #[cxx_name = "invokableWrapper"]
-        #[namespace = "cxx_qt::my_object"]
         fn invokable(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
