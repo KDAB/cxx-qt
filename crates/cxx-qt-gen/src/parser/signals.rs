@@ -13,8 +13,6 @@ use crate::parser::{check_safety, separate_docs};
 #[derive(Clone)]
 /// Describes an individual Signal
 pub struct ParsedSignal {
-    /// The original [syn::ForeignItemFn] of the signal declaration
-    pub method: ForeignItemFn,
     /// The common fields which are available on all callable types
     pub method_fields: MethodFields,
     /// If the signal is defined in the base class
@@ -36,32 +34,31 @@ impl ParsedSignal {
         check_safety(&method, &safety)?;
 
         let docs = separate_docs(&mut method);
-        let method_fields = MethodFields::parse(&method)?;
+        let mut fields = MethodFields::parse(method)?;
 
-        if method_fields.name.namespace().is_some() {
+        if fields.name.namespace().is_some() {
             return Err(Error::new_spanned(
-                method.sig.ident,
+                fields.method.sig.ident,
                 "Signals cannot have a namespace attribute!",
             ));
         }
 
-        if !method_fields.mutable {
+        if !fields.mutable {
             return Err(Error::new(
-                method.span(),
+                fields.method.span(),
                 "signals must be mutable, use Pin<&mut T> instead of T for the self type",
             ));
         }
 
-        let inherit = attribute_take_path(&mut method.attrs, &["inherit"]).is_some();
-        let private = if let Visibility::Restricted(vis_restricted) = &method.vis {
+        let inherit = attribute_take_path(&mut fields.method.attrs, &["inherit"]).is_some();
+        let private = if let Visibility::Restricted(vis_restricted) = &fields.method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
         } else {
             false
         };
 
         Ok(Self {
-            method,
-            method_fields,
+            method_fields: fields,
             inherit,
             private,
             docs,

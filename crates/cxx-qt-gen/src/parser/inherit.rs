@@ -12,8 +12,6 @@ use syn::{Attribute, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
-    /// The original [syn::ForeignItemFn] of the inherited method declaration
-    pub method: ForeignItemFn,
     /// The common fields which are available on all callable types
     pub method_fields: MethodFields,
     /// All the docs (each line) of the inherited method
@@ -25,14 +23,13 @@ impl ParsedInheritedMethod {
         check_safety(&method, &safety)?;
 
         let docs = separate_docs(&mut method);
-        let method_fields = MethodFields::parse(&method)?;
+        let mut fields = MethodFields::parse(method)?;
 
         // This block seems unnecessary but since attrs are passed through on generator/rust/inherit.rs a duplicate attr would occur without it
-        attribute_take_path(&mut method.attrs, &["cxx_name"]);
+        attribute_take_path(&mut fields.method.attrs, &["cxx_name"]);
 
         Ok(Self {
-            method,
-            method_fields,
+            method_fields: fields,
             docs,
         })
     }
