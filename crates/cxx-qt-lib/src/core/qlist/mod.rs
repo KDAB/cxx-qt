@@ -8,8 +8,8 @@ use crate::QColor;
 #[cfg(not(target_os = "emscripten"))]
 use crate::QDateTime;
 use crate::{
-    QByteArray, QDate, QMargins, QMarginsF, QPersistentModelIndex, QPoint, QPointF, QRect, QRectF,
-    QSize, QSizeF, QString, QTime, QUrl, QVariant, QLine, QLineF
+    QByteArray, QDate, QLine, QLineF, QMargins, QMarginsF, QPersistentModelIndex, QPoint, QPointF,
+    QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
