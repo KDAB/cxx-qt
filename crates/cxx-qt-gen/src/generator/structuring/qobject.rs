@@ -25,6 +25,14 @@ pub struct StructuredQObject<'a> {
     pub threading: bool,
 }
 
+fn lookup<T>(invokables: &[T], id: &Ident, name_getter: impl Fn(&T) -> &Name) -> Option<Name> {
+    invokables
+        .iter()
+        .map(name_getter)
+        .find(|name| name.rust_unqualified() == id)
+        .cloned()
+}
+
 impl<'a> StructuredQObject<'a> {
     pub fn has_qobject_name(&self, ident: &Ident) -> bool {
         self.declaration.name.rust_unqualified() == ident
@@ -44,22 +52,16 @@ impl<'a> StructuredQObject<'a> {
         }
     }
 
+    /// Returns the name of the method with the provided Rust ident if it exists, or an error
     pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
-        // TODO account for inherited methods too since those are in a different vector
-        self.methods
-            .iter()
-            .map(|method| &method.name)
-            .find(|name| name.rust_unqualified() == id)
-            .cloned()
+        lookup(&self.methods, id, |method| &method.name)
+            .or_else(|| lookup(&self.inherited_methods, id, |inherited| &inherited.name)) // fallback to searching inherited methods
             .ok_or_else(|| Error::new_spanned(id, format!("Method with name '{id}' not found!")))
     }
 
+    /// Returns the name of the signal with the provided Rust ident if it exists, or an error
     pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
-        self.signals
-            .iter()
-            .map(|signal| &signal.name)
-            .find(|name| name.rust_unqualified() == id)
-            .cloned()
+        lookup(&self.signals, id, |signal| &signal.name)
             .ok_or_else(|| Error::new_spanned(id, format!("Signal with name '{id}' not found!")))
     }
 

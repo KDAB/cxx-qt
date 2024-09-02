@@ -34,23 +34,23 @@ mod inheritance {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "dataWrapper"]
+        #[doc(hidden)]
         fn data(self: &MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
     }
     extern "Rust" {
-        #[doc(hidden)]
         #[cxx_name = "hasChildrenWrapper"]
+        #[doc(hidden)]
         fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {
-        #[doc = " Inherited hasChildren from the base class"]
         #[cxx_name = "hasChildrenCxxQtInherit"]
+        #[doc = " Inherited hasChildren from the base class"]
         fn has_children_super(self: &MyObject, parent: &QModelIndex) -> bool;
     }
     extern "C++" {
-        #[doc = " Inherited fetchMore from the base class"]
         #[cxx_name = "fetchMoreCxxQtInherit"]
+        #[doc = " Inherited fetchMore from the base class"]
         unsafe fn fetch_more(self: Pin<&mut MyObject>, index: &QModelIndex);
     }
     extern "Rust" {

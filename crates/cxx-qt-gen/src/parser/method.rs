@@ -6,11 +6,13 @@
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::attribute_take_path, foreignmod, safety::Safety, types},
+    syntax::{attribute::attribute_take_path, safety::Safety},
 };
 use std::collections::HashSet;
-use syn::{spanned::Spanned, Error, ForeignItemFn, Ident, Result};
+use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
 
+use crate::parser::{check_safety, separate_docs};
+use crate::syntax::{foreignmod, types};
 #[cfg(test)]
 use quote::format_ident;
 
@@ -54,10 +56,15 @@ pub struct ParsedMethod {
 
 impl ParsedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
-        if safety == Safety::Unsafe && method.sig.unsafety.is_none() {
-            return Err(Error::new(
-                method.span(),
-                "Invokable methods must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
+        check_safety(&method, &safety)?;
+
+        let docs = separate_docs(&mut method);
+        let invokable_fields = MethodFields::parse(&method, docs)?;
+
+        if invokable_fields.name.namespace().is_some() {
+            return Err(Error::new_spanned(
+                method.sig.ident,
+                "Methods / QInvokables cannot have a namespace attribute",
             ));
         }
 
@@ -72,38 +79,34 @@ impl ParsedMethod {
             ParsedQInvokableSpecifiers::Virtual,
         ] {
             if attribute_take_path(&mut method.attrs, specifier.as_str_slice()).is_some() {
-                specifiers.insert(specifier);
+                specifiers.insert(specifier); // Should a fn be able to be Override AND Virtual?
             }
         }
 
-        // Determine if the invokable is mutable
-        let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
-        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
-        let mutable = mutability.is_some();
-
-        let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
-
-        let safe = method.sig.unsafety.is_none();
-
-        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
-
-        if name.namespace().is_some() {
-            return Err(Error::new_spanned(
-                method.sig.ident,
-                "Methods / QInvokables cannot have a namespace attribute",
-            ));
-        }
-
-        Ok(ParsedMethod {
+        Ok(ParsedMethod::from_invokable_fields(
+            invokable_fields,
             method,
-            qobject_ident,
-            mutable,
-            parameters,
             specifiers,
-            safe,
             is_qinvokable,
-            name,
-        })
+        ))
+    }
+
+    fn from_invokable_fields(
+        fields: MethodFields,
+        method: ForeignItemFn,
+        specifiers: HashSet<ParsedQInvokableSpecifiers>,
+        is_qinvokable: bool,
+    ) -> Self {
+        Self {
+            method,
+            qobject_ident: fields.qobject_ident,
+            mutable: fields.mutable,
+            safe: fields.safe,
+            parameters: fields.parameters,
+            specifiers,
+            is_qinvokable,
+            name: fields.name,
+        }
     }
 
     #[cfg(test)]
@@ -133,5 +136,37 @@ impl ParsedMethod {
             mutable: true,
             ..ParsedMethod::from_method_and_params(method, parameters)
         }
+    }
+}
+
+/// Struct with common fields between Invokable types.
+/// These types are ParsedSignal, ParsedMethod and ParsedInheritedMethod
+pub struct MethodFields {
+    pub qobject_ident: Ident,
+    pub mutable: bool,
+    pub parameters: Vec<ParsedFunctionParameter>,
+    pub safe: bool,
+    pub name: Name,
+    pub docs: Vec<Attribute>, // TODO: Remove this
+}
+
+impl MethodFields {
+    pub fn parse(method: &ForeignItemFn, docs: Vec<Attribute>) -> Result<Self> {
+        let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
+        let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
+        let mutable = mutability.is_some();
+
+        let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
+        let safe = method.sig.unsafety.is_none();
+        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+
+        Ok(MethodFields {
+            qobject_ident,
+            mutable,
+            parameters,
+            safe,
+            name,
+            docs,
+        })
     }
 }
