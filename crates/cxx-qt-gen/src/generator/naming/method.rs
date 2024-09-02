@@ -46,7 +46,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn my_invokable(self: &MyObject);
         };
-        let parsed = ParsedMethod::mock_with_method(&method);
+        let parsed = ParsedMethod::mock_qinvokable(&method);
 
         let invokable = QMethodName::try_from(&parsed).unwrap();
         assert_eq!(

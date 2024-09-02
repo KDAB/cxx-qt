@@ -149,20 +149,20 @@ mod tests {
             parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; };
         let method5: ForeignItemFn = parse_quote! { fn cpp_method(self: &MyObject); };
         let invokables = vec![
-            ParsedMethod::mock_with_method(&method1),
-            ParsedMethod::mock_with_method(&method2).with_parameters(vec![
+            ParsedMethod::mock_qinvokable(&method1),
+            ParsedMethod::mock_qinvokable(&method2).with_parameters(vec![
                 ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { i32 },
                 },
             ]),
-            ParsedMethod::mock_with_method(&method3)
+            ParsedMethod::mock_qinvokable(&method3)
                 .with_parameters(vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { &QColor },
                 }])
                 .make_mutable(),
-            ParsedMethod::mock_with_method(&method4)
+            ParsedMethod::mock_qinvokable(&method4)
                 .with_parameters(vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { i32 },
@@ -176,7 +176,7 @@ mod tests {
                 }),
             ParsedMethod {
                 is_qinvokable: false,
-                ..ParsedMethod::mock_with_method(&method5)
+                ..ParsedMethod::mock_qinvokable(&method5)
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -303,7 +303,7 @@ mod tests {
         let method_declaration: ForeignItemFn =
             parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; };
 
-        let method = ParsedMethod::mock_with_method(&method_declaration).with_parameters(vec![
+        let method = ParsedMethod::mock_qinvokable(&method_declaration).with_parameters(vec![
             ParsedFunctionParameter {
                 ident: format_ident!("param"),
                 ty: parse_quote! { i32 },

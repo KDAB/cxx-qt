@@ -89,20 +89,20 @@ mod tests {
         let method4: ForeignItemFn =
             parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; };
         let invokables = vec![
-            ParsedMethod::mock_with_method(&method1),
-            ParsedMethod::mock_with_method(&method2).with_parameters(vec![
+            ParsedMethod::mock_qinvokable(&method1),
+            ParsedMethod::mock_qinvokable(&method2).with_parameters(vec![
                 ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { i32 },
                 },
             ]),
-            ParsedMethod::mock_with_method(&method3)
+            ParsedMethod::mock_qinvokable(&method3)
                 .with_parameters(vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { &QColor },
                 }])
                 .make_mutable(),
-            ParsedMethod::mock_with_method(&method4)
+            ParsedMethod::mock_qinvokable(&method4)
                 .with_parameters(vec![ParsedFunctionParameter {
                     ident: format_ident!("param"),
                     ty: parse_quote! { *mut T },

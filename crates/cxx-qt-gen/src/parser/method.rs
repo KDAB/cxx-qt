@@ -56,17 +56,10 @@ pub struct ParsedMethod {
 
 impl ParsedMethod {
     #[cfg(test)]
-    pub fn mock_with_method(method: &ForeignItemFn) -> Self {
+    pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
         Self {
-            method: method.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: false,
-            safe: true,
-            parameters: vec![],
-            specifiers: HashSet::new(),
             is_qinvokable: true,
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
+            ..Self::parse(method.clone(), Safety::Safe).unwrap()
         }
     }
 
