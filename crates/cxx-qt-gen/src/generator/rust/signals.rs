@@ -380,7 +380,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
-        let qsignal = ParsedSignal::mock_with_method(&method);
+        let qsignal = ParsedSignal::mock(&method);
 
         let type_names = TypeNames::mock();
 
@@ -414,7 +414,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
-        let qsignal = ParsedSignal::mock_with_method(&method);
+        let qsignal = ParsedSignal::mock(&method);
         let qobject_names = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
@@ -702,7 +702,7 @@ mod tests {
         };
         let qsignal = ParsedSignal {
             inherit: true,
-            ..ParsedSignal::mock_with_method(&method)
+            ..ParsedSignal::mock(&method)
         };
         let qobject_names = create_qobjectname();
 
@@ -840,7 +840,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
-        let mock = ParsedSignal::mock_with_method(&method);
+        let mock = ParsedSignal::mock(&method);
         let qsignal = ParsedSignal {
             method_fields: MethodFields {
                 name: Name::new(format_ident!("ready")),

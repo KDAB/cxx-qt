@@ -3,12 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{
-    naming::Name,
-    syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety},
-};
+use crate::syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety};
 use std::ops::Deref;
-use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visibility};
+use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
 
 use crate::parser::method::MethodFields;
 use crate::parser::{check_safety, separate_docs};
@@ -29,31 +26,9 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
-    /// Builds a signal from a given property method
-    pub fn from_property_method(
-        method: ForeignItemFn,
-        name: Name,
-        qobject_ident: Ident,
-        docs: Vec<Attribute>,
-    ) -> Self {
-        Self {
-            method,
-            method_fields: MethodFields {
-                qobject_ident,
-                mutable: true,
-                parameters: vec![],
-                safe: true,
-                name,
-            },
-            inherit: false,
-            private: false,
-            docs,
-        }
-    }
-
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
-    pub fn mock_with_method(method: &ForeignItemFn) -> Self {
+    pub fn mock(method: &ForeignItemFn) -> Self {
         Self::parse(method.clone(), Safety::Safe).unwrap()
     }
 
@@ -108,6 +83,7 @@ mod tests {
 
     use super::*;
 
+    use crate::naming::Name;
     use crate::parser::tests::f64_type;
     use quote::format_ident;
 
