@@ -64,8 +64,8 @@ mod tests {
     }
 
     macro_rules! assert_parse_errors {
-        { $type:ident: $($input:tt)* } => {
-            $(assert!($type::parse(syn::parse_quote! $input).is_err());)*
+        { $parse_fn:expr => $($input:tt)* } => {
+            $(assert!($parse_fn(syn::parse_quote! $input).is_err());)*
         }
     }
     pub(crate) use assert_parse_errors;

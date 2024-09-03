@@ -423,6 +423,7 @@ impl TypeNames {
 mod tests {
     use super::*;
 
+    use crate::tests::assert_parse_errors;
     use quote::format_ident;
     use syn::parse_quote;
 

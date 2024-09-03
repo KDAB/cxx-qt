@@ -82,7 +82,26 @@ mod tests {
 
     use crate::naming::Name;
     use crate::parser::tests::f64_type;
+    use crate::tests::assert_parse_errors;
     use quote::format_ident;
+    #[test]
+    fn test_parse_signal_invalid() {
+        assert_parse_errors! {
+            |input| ParsedSignal::parse(input, Safety::Safe) =>
+
+            // No immutable signals
+            { fn ready(self: &MyObject); }
+            {
+                // No namespaces
+                #[namespace = "disallowed_namespace"]
+                fn ready(self: Pin<&mut MyObject>);
+            }
+            // Missing self
+            { fn ready(x: f64); }
+            // Self needs to be receiver like self: &T instead of &self
+            { fn ready(&self); }
+        }
+    }
 
     #[test]
     fn test_parse_signal() {
@@ -147,25 +166,6 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_signal_mutable_err() {
-        let method: ForeignItemFn = parse_quote! {
-            fn ready(self: &MyObject);
-        };
-        // Can't be immutable
-        assert!(ParsedSignal::parse(method, Safety::Safe).is_err());
-    }
-
-    #[test]
-    fn test_parse_signal_namespace_err() {
-        let method: ForeignItemFn = parse_quote! {
-            #[namespace = "disallowed_namespace"]
-            fn ready(self: Pin<&mut MyObject>);
-        };
-        // Can't have a namespace attr
-        assert!(ParsedSignal::parse(method, Safety::Safe).is_err());
-    }
-
-    #[test]
     fn test_parse_signal_parameters() {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>, x: f64, y: f64);
@@ -199,24 +199,6 @@ mod tests {
         assert!(signal.safe);
         assert!(!signal.inherit);
         assert!(signal.private);
-    }
-
-    #[test]
-    fn test_parse_signal_qobject_self_missing() {
-        let method: ForeignItemFn = parse_quote! {
-            fn ready(x: f64);
-        };
-        // Can't have a missing self
-        assert!(ParsedSignal::parse(method, Safety::Safe).is_err());
-    }
-
-    #[test]
-    fn test_parse_signal_qobject_ident_missing() {
-        let method: ForeignItemFn = parse_quote! {
-            fn ready(&self);
-        };
-        // Can't have a missing ident
-        assert!(ParsedSignal::parse(method, Safety::Safe).is_err());
     }
 
     #[test]

@@ -51,46 +51,32 @@ impl Deref for ParsedInheritedMethod {
 #[cfg(test)]
 mod tests {
     use super::*;
-
+    use crate::tests::assert_parse_errors;
     use syn::parse_quote;
-
-    fn assert_parse_error(function: ForeignItemFn) {
-        let result = ParsedInheritedMethod::parse(function, Safety::Safe);
-        assert!(result.is_err());
-    }
 
     #[test]
     fn test_parser_errors() {
-        // Missing self type
-        assert_parse_error(parse_quote! {
-            fn test(&self);
-        });
-        assert_parse_error(parse_quote! {
-            fn test(self: &mut T);
-        });
-        // Pointer types
-        assert_parse_error(parse_quote! {
-            fn test(self: *const T);
-        });
-        assert_parse_error(parse_quote! {
-            fn test(self: *mut T);
-        });
-        // Invalid pin usage
-        assert_parse_error(parse_quote! {
-            fn test(self: Pin<&T>);
-        });
-        assert_parse_error(parse_quote! {
-            fn test(self: &mut T);
-        });
-        // Attributes
-        assert_parse_error(parse_quote! {
-            fn test(#[test] self: &T);
-        });
         // Missing "unsafe"
         let function: ForeignItemFn = parse_quote! {
             fn test(self: &T);
         };
         assert!(ParsedInheritedMethod::parse(function, Safety::Unsafe).is_err());
+
+        assert_parse_errors! {
+            |item| ParsedInheritedMethod::parse(item, Safety::Safe) =>
+
+            // Missing self type
+            { fn test(&self); }
+            { fn test(self: &mut T); }
+            // Pointer types
+            { fn test(self: *const T); }
+            { fn test(self: *mut T); }
+            // Invalid pin usage
+            { fn test(self: Pin<&T>); }
+            { fn test(self: &mut T); }
+            // Attributes
+            { fn test(#[test] self: &T); }
+        }
     }
 
     #[test]

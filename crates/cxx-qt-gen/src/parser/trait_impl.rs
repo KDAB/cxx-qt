@@ -135,26 +135,23 @@ mod tests {
     #[test]
     fn test_parse_errors() {
         assert_parse_errors! {
-            TraitImpl:
+            TraitImpl::parse =>
 
             // Threading is safe to implement
             { unsafe impl cxx_qt::Threading for QObject {} }
             // Threading cannot be negated
             { impl !cxx_qt::Threading for QObject {} }
-
             // Invalid QObject name
-            { impl cxx_qt::Threading for my::path {} }
+            { impl cxx_qt::Locking for my::path {} }
             // Invalid trait name
             { impl cxx_qt::AnotherTrait for QObject {} }
             // Invalid Path to self type
             { impl cxx_qt::Threading for *mut QObject{} }
-
             {
                 // Attributes are not allowed
                 #[my_attribute]
                 impl cxx_qt::Threading for QObject {}
             }
-
             {
                 // Item in the impl block
                 impl cxx_qt::Threading for X {

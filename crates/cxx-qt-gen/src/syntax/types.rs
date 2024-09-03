@@ -132,6 +132,7 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
 mod tests {
     use crate::parser::method::ParsedMethod;
     use crate::syntax::safety::Safety;
+    use crate::tests::assert_parse_errors;
     use syn::{parse_quote, ForeignItemFn, Type};
 
     #[test]
@@ -161,13 +162,16 @@ mod tests {
         assert_qobject_ident(parse_quote! { &Foo }, "Foo", false);
         assert_qobject_ident(parse_quote! { Pin<&mut Foo> }, "Foo", true);
 
-        assert!(super::extract_qobject_ident(&parse_quote! { Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { &mut Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Pin<&Foo> }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { X::Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Self }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Pin<T = A> }).is_err());
+        assert_parse_errors! {
+            |ty| super::extract_qobject_ident(&ty) =>
+
+            { Foo }
+            { &mut Foo }
+            { Pin<&Foo> }
+            { X::Foo }
+            { Self }
+            { Pin<T = A> }
+        }
     }
 
     #[test]

@@ -169,16 +169,9 @@ pub mod tests {
     use super::*;
 
     use crate::parser::tests::f64_type;
+    use crate::tests::assert_parse_errors;
     use quote::format_ident;
     use syn::parse_quote;
-
-    pub fn create_parsed_qobject() -> ParsedQObject {
-        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
-            #[qobject]
-            type MyObject = super::MyObjectRust;
-        };
-        ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap()
-    }
 
     macro_rules! parse_qobject {
         { $($input:tt)* } => {
@@ -190,14 +183,18 @@ pub mod tests {
             }
        }
     }
+    pub fn create_parsed_qobject() -> ParsedQObject {
+        parse_qobject! {
+            #[qobject]
+            type MyObject = super::MyObjectRust;
+        }
+    }
 
     #[test]
     fn test_has_qobject_name() {
-        let qobject = parse_qobject! {
-            #[qobject]
-            type MyObject = super::MyObjectRust;
-        };
+        let qobject = create_parsed_qobject();
         assert!(qobject.has_qobject_macro);
+
         let qobject = parse_qobject! {
             #[base=Thing]
             type MyObject = super::MyObjectRust;
@@ -207,67 +204,51 @@ pub mod tests {
 
     #[test]
     fn test_from_struct_no_base_class() {
-        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
-            #[qobject]
-            type MyObject = super::MyObjectRust;
-        };
+        let qobject = create_parsed_qobject();
 
-        let qobject =
-            ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
         assert!(qobject.base_class.is_none());
         assert!(qobject.qml_metadata.is_none());
     }
 
     #[test]
     fn test_from_struct_base_class() {
-        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
+        let qobject = parse_qobject! {
             #[qobject]
             #[base = QStringListModel]
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject =
-            ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
-        assert_eq!(qobject.base_class.unwrap().to_string(), "QStringListModel");
+        assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
     }
 
     #[test]
     fn test_from_struct_properties_and_fields() {
-        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
+        let qobject = parse_qobject! {
             #[qobject]
             #[qproperty(i32, int_property)]
             #[qproperty(i32, public_property)]
             type MyObject = super::MyObjectRust;
         };
 
-        let qobject =
-            ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
         assert_eq!(qobject.properties.len(), 2);
     }
 
     #[test]
     fn test_from_struct_fields() {
-        let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
-            #[qobject]
-            type MyObject = super::MyObjectRust;
-        };
+        let qobject = create_parsed_qobject();
 
-        let qobject =
-            ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
         assert_eq!(qobject.properties.len(), 0);
     }
 
     #[test]
     fn test_parse_struct_fields_valid() {
-        let item: ForeignTypeIdentAlias = parse_quote! {
+        let qobject = parse_qobject! {
             #[qobject]
             #[qproperty(f64, f64_property)]
             #[qproperty(f64, public_property)]
             type T = super::TRust;
         };
-        let properties = ParsedQObject::parse(item, None, &format_ident!("qobject"))
-            .unwrap()
-            .properties;
+        let properties = qobject.properties;
         assert_eq!(properties.len(), 2);
 
         assert_eq!(properties[0].ident, "f64_property");
@@ -290,23 +271,21 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata() {
-        let item: ForeignTypeIdentAlias = parse_quote! {
+        let qobject = parse_qobject! {
             #[qobject]
             #[qml_element]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
         assert_qml_name(qobject, "MyObject");
     }
 
     #[test]
     fn test_qml_metadata_named() {
-        let item: ForeignTypeIdentAlias = parse_quote! {
+        let qobject = parse_qobject! {
             #[qobject]
             #[qml_element = "OtherName"]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
         assert_qml_name(qobject, "OtherName");
     }
 
@@ -324,13 +303,12 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_singleton() {
-        let item: ForeignTypeIdentAlias = parse_quote! {
+        let qobject = parse_qobject! {
             #[qobject]
             #[qml_element]
             #[qml_singleton]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -343,13 +321,12 @@ pub mod tests {
 
     #[test]
     fn test_qml_metadata_uncreatable() {
-        let item: ForeignTypeIdentAlias = parse_quote! {
+        let qobject = parse_qobject! {
             #[qobject]
             #[qml_element]
             #[qml_uncreatable]
             type MyObject = super::MyObjectRust;
         };
-        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
@@ -360,23 +337,17 @@ pub mod tests {
         );
     }
 
-    macro_rules! assert_parse_errors {
-        { $($input:tt)* } => {
-            $(assert!(ParsedQObject::parse(syn::parse_quote! $input, None, &format_ident!("qobject")).is_err());)*
-        }
-    }
-
     #[test]
     fn test_parse_errors() {
         assert_parse_errors! {
+            |input |ParsedQObject::parse(input, None, &format_ident!("qobject")) =>
+
             {
                 #[qobject]
                 #[base = ""]
                 type MyObject = super::T;
             }
-            {
-                type MyObject = super::T;
-            }
+            { type MyObject = super::T; }
         }
     }
 }

@@ -218,6 +218,52 @@ mod tests {
         cxx_qt_data
     }
 
+    use crate::tests::assert_parse_errors;
+
+    #[test]
+    fn test_parse_invalid() {
+        assert_parse_errors! {
+            |item| create_parsed_cxx_qt_data().parse_cxx_qt_item(item) =>
+
+            {
+                // Invalid QObject
+                unsafe extern "RustQt" {
+                    #[qinvokable]
+                    fn invokable(self: &MyObject::Bad);
+                }
+            }
+            {
+                // Not unsafe
+                extern "RustQt" {
+                    #[qinvokable]
+                    fn invokable(self: &MyObject);
+                }
+            }
+            {
+                // Namespaces aren't allowed on qinvokables
+                unsafe extern "RustQt" {
+                    #[qinvokable]
+                    #[namespace = "disallowed"]
+                    fn invokable(self: &MyObject);
+                }
+            }
+            {
+                // Qenum without namespace
+                #[qenum]
+                enum MyEnum {
+                    A,
+                    B
+                }
+            }
+            {
+                // Unsupported Item
+                extern "RustQt" {
+                    static COUNTER: usize;
+                }
+            }
+        }
+    }
+
     #[test]
     fn test_find_and_merge_cxx_qt_item_struct_qobject_passthrough() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
@@ -261,20 +307,6 @@ mod tests {
     }
 
     #[test]
-    fn test_find_and_merge_cxx_qt_item_impl_invalid_qobject() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            unsafe extern "RustQt" {
-                #[qinvokable]
-                fn invokable(self: &MyObject::Bad);
-            }
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_err());
-    }
-
-    #[test]
     fn test_parse_unnamed_extern_mod() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
@@ -307,35 +339,6 @@ mod tests {
         };
         let result = cxx_qt_data.parse_cxx_qt_item(item);
         assert!(result.is_ok());
-    }
-
-    #[test]
-    fn test_invokable_wrong_safety() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            extern "RustQt" {
-                #[qinvokable]
-                fn invokable(self: &MyObject);
-            }
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_err());
-    }
-
-    #[test]
-    fn test_invokable_disallowed_namespace() {
-        let mut cxx_qt_data = create_parsed_cxx_qt_data();
-
-        let item: Item = parse_quote! {
-            unsafe extern "RustQt" {
-                #[qinvokable]
-                #[namespace = "disallowed"]
-                fn invokable(self: &MyObject);
-            }
-        };
-        let result = cxx_qt_data.parse_cxx_qt_item(item);
-        assert!(result.is_err());
     }
 
     #[test]
@@ -535,21 +538,7 @@ mod tests {
     fn test_parse_namespaced_qenum() {
         let mut cxxqtdata = create_parsed_cxx_qt_data();
 
-        assert!(cxxqtdata.qenums.is_empty());
-
-        let qenum_without_namespace: Item = parse_quote! {
-            #[qenum]
-            enum MyEnum {
-                A,
-                B
-            }
-        };
-
-        assert!(cxxqtdata
-            .parse_cxx_qt_item(qenum_without_namespace.clone())
-            .is_err());
-
-        let qenum_with_namespace: Item = parse_quote! {
+        let qenum: Item = parse_quote! {
             #[qenum]
             #[namespace="my_namespace"]
             enum MyEnum {
@@ -557,10 +546,7 @@ mod tests {
                 B
             }
         };
-        assert!(cxxqtdata
-            .parse_cxx_qt_item(qenum_with_namespace)
-            .unwrap()
-            .is_none());
+        assert!(cxxqtdata.parse_cxx_qt_item(qenum).unwrap().is_none());
         assert_eq!(1, cxxqtdata.qenums.len());
 
         let qenum = &cxxqtdata.qenums[0];
@@ -568,27 +554,7 @@ mod tests {
 
         cxxqtdata.namespace = Some("other_namespace".to_string());
 
-        assert!(cxxqtdata
-            .parse_cxx_qt_item(qenum_without_namespace)
-            .unwrap()
-            .is_none());
-
-        assert_eq!(2, cxxqtdata.qenums.len());
-        assert_eq!(
-            "other_namespace",
-            cxxqtdata.qenums[1].name.namespace().unwrap()
-        );
-    }
-
-    #[test]
-    fn test_parse_unsupported_type() {
-        let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-        let extern_rust_qt: Item = parse_quote! {
-            extern "RustQt" {
-                static COUNTER: usize;
-            }
-        };
-        assert!(cxx_qt_data.parse_cxx_qt_item(extern_rust_qt).is_err());
+        assert_eq!(1, cxxqtdata.qenums.len());
     }
 
     #[test]

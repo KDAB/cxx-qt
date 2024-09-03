@@ -85,42 +85,29 @@ mod test {
         assert!(parsed.qml_element);
     }
 
-    macro_rules! assert_parse_error {
-        { $($input:tt)* } => {
-            assert!(ParsedQNamespace::parse(syn::parse_quote! { $($input)* }).is_err())
-        }
-    }
+    use crate::tests::assert_parse_errors;
 
     #[test]
     fn parse_errors() {
-        assert_parse_error! {
-            qnamespace!(my_namespace);
-        }
-        assert_parse_error! {
-            qnamespace!();
-        }
-        assert_parse_error! {
-            #[my_attribute]
-            qnamespace!("hello");
-        }
-        assert_parse_error! {
-            qnamespace! test ("hello");
-        }
-        assert_parse_error! {
-            qnamespace!("hello" "world");
-        }
-        assert_parse_error! {
-            /// A doc comment
-            qnamespace!("my_namespace");
-        }
-        assert_parse_error! {
-            qnamespace!("");
-        }
-        assert_parse_error! {
-            qnamespace!(" ");
-        }
-        assert_parse_error! {
-            qnamespace!("my namespace");
+        assert_parse_errors! {
+            ParsedQNamespace::parse =>
+
+            { qnamespace!(my_namespace); }
+            { qnamespace!(); }
+            {
+                #[my_attribute]
+                qnamespace!("hello");
+            }
+            { qnamespace! test ("hello"); }
+            { qnamespace!("hello" "world"); }
+            {
+                /// A doc comment
+                qnamespace!("my_namespace");
+            }
+            { qnamespace!(""); }
+            { qnamespace!(" "); }
+            { qnamespace!("my namespace"); }
+
         }
     }
 }
