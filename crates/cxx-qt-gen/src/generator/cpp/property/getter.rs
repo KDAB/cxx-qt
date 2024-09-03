@@ -7,11 +7,12 @@ use crate::generator::{
     cpp::fragment::CppFragment,
     naming::property::{NameState, QPropertyNames},
 };
+use crate::naming::Name;
 use indoc::formatdoc;
 
 pub fn generate(
     idents: &QPropertyNames,
-    qobject_ident: &str,
+    qobject_name: &Name,
     return_cxx_ty: &str,
 ) -> Option<CppFragment> {
     if let (NameState::Auto(name), Some(getter_wrapper)) = (&idents.getter, &idents.getter_wrapper)
@@ -30,6 +31,7 @@ pub fn generate(
                         return {ident_getter_wrapper}();
                     }}
                     "#,
+                qobject_ident = qobject_name.cxx_unqualified(),
                 ident_getter = name.cxx_unqualified(),
                 ident_getter_wrapper = getter_wrapper.cxx_unqualified(),
             ),

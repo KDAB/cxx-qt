@@ -180,24 +180,24 @@ fn unsafe_if(condition: bool) -> Option<TokenStream> {
 
 pub fn generate(
     constructors: &[&Constructor],
-    qobject_idents: &QObjectNames,
+    qobject_names: &QObjectNames,
     namespace: &NamespaceName,
     type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     if constructors.is_empty() {
-        return Ok(generate_default_constructor(qobject_idents, namespace));
+        return Ok(generate_default_constructor(qobject_names, namespace));
     }
 
     let mut result = GeneratedRustFragment::default();
     let namespace_internals = &namespace.internal;
 
-    let qobject_name = qobject_idents.name.cxx_unqualified();
-    let qobject_name_rust = qobject_idents.name.rust_unqualified();
+    let qobject_name = qobject_names.name.cxx_unqualified();
+    let qobject_name_rust = qobject_names.name.rust_unqualified();
     let qobject_name_rust_qualified = type_names.rust_qualified(qobject_name_rust)?;
     let qobject_name_snake = qobject_name.to_string().to_case(Case::Snake);
 
-    let rust_struct_name_rust = qobject_idents.rust_struct.rust_unqualified();
+    let rust_struct_name_rust = qobject_names.rust_struct.rust_unqualified();
 
     for (index, constructor) in constructors.iter().enumerate() {
         let lifetime = constructor.lifetime.as_ref().map(|lifetime| {

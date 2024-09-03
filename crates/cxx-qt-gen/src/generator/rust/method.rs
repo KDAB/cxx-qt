@@ -16,10 +16,10 @@ use syn::{spanned::Spanned, Result};
 
 pub fn generate_rust_methods(
     invokables: &Vec<&ParsedMethod>,
-    qobject_idents: &QObjectNames,
+    qobject_names: &QObjectNames,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
-    let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
+    let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
     for &invokable in invokables {
         let idents = QMethodName::try_from(invokable)?;
@@ -92,10 +92,10 @@ mod tests {
             ParsedMethod::mock_qinvokable(&method3).make_mutable(),
             ParsedMethod::mock_qinvokable(&method4).make_unsafe(),
         ];
-        let qobject_idents = create_qobjectname();
+        let qobject_names = create_qobjectname();
 
         let generated =
-            generate_rust_methods(&invokables.iter().collect(), &qobject_idents).unwrap();
+            generate_rust_methods(&invokables.iter().collect(), &qobject_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 0);

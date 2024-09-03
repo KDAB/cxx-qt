@@ -228,7 +228,7 @@ pub fn generate_rust_signal(
 
 pub fn generate_rust_signals(
     signals: &Vec<&ParsedSignal>,
-    qobject_idents: &QObjectNames,
+    qobject_names: &QObjectNames,
     type_names: &TypeNames,
     module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
@@ -238,7 +238,7 @@ pub fn generate_rust_signals(
     for signal in signals {
         generated.append(&mut generate_rust_signal(
             signal,
-            &qobject_idents.name,
+            &qobject_names.name,
             type_names,
             module_ident,
         )?);
@@ -383,10 +383,10 @@ mod tests {
 
         let type_names = TypeNames::mock();
 
-        let qobject_idents = create_qobjectname();
+        let qobject_names = create_qobjectname();
         let generated = generate_rust_signals(
             &vec![&qsignal],
-            &qobject_idents,
+            &qobject_names,
             &type_names,
             &format_ident!("ffi"),
         )
@@ -421,13 +421,13 @@ mod tests {
             fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
         let qsignal = ParsedSignal::mock_with_method(&method);
-        let qobject_idents = create_qobjectname();
+        let qobject_names = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
         let generated = generate_rust_signals(
             &vec![&qsignal],
-            &qobject_idents,
+            &qobject_names,
             &type_names,
             &format_ident!("ffi"),
         )
@@ -570,13 +570,13 @@ mod tests {
             safe: false,
             ..ParsedSignal::mock_with_method(&method)
         };
-        let qobject_idents = create_qobjectname();
+        let qobject_names = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("T", None, None, None);
         let generated = generate_rust_signals(
             &vec![&qsignal],
-            &qobject_idents,
+            &qobject_names,
             &type_names,
             &format_ident!("ffi"),
         )
@@ -720,11 +720,11 @@ mod tests {
             inherit: true,
             ..ParsedSignal::mock_with_method(&method)
         };
-        let qobject_idents = create_qobjectname();
+        let qobject_names = create_qobjectname();
 
         let generated = generate_rust_signals(
             &vec![&qsignal],
-            &qobject_idents,
+            &qobject_names,
             &TypeNames::mock(),
             &format_ident!("ffi"),
         )

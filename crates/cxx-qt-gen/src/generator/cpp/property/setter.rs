@@ -7,9 +7,10 @@ use crate::generator::{
     cpp::fragment::CppFragment,
     naming::property::{NameState, QPropertyNames},
 };
+use crate::naming::Name;
 use indoc::formatdoc;
 
-pub fn generate(idents: &QPropertyNames, qobject_ident: &str, cxx_ty: &str) -> Option<CppFragment> {
+pub fn generate(idents: &QPropertyNames, qobject_name: &Name, cxx_ty: &str) -> Option<CppFragment> {
     // Only generates setter code if the state provided is Auto (not custom provided by user)
     if let (Some(NameState::Auto(setter)), Some(setter_wrapper)) =
         (&idents.setter, &idents.setter_wrapper)
@@ -28,6 +29,7 @@ pub fn generate(idents: &QPropertyNames, qobject_ident: &str, cxx_ty: &str) -> O
                         {ident_setter_wrapper}(value);
                     }}
                     "#,
+                qobject_ident = qobject_name.cxx_unqualified(),
                 ident_setter = setter.cxx_unqualified(),
                 ident_setter_wrapper = setter_wrapper.cxx_unqualified(),
             },

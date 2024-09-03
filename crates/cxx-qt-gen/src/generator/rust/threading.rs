@@ -19,19 +19,19 @@ use syn::{Ident, Result};
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
-    qobject_ident: &QObjectNames,
+    qobject_names: &QObjectNames,
     namespace_ident: &NamespaceName,
     type_names: &TypeNames,
-    module_ident: &Ident,
+    module_ident: &Ident, // TODO: Potential to remove this if the info is stored in qobject_names already?
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
-    let cpp_struct_ident = qobject_ident.name.rust_unqualified();
-    let cxx_qt_thread_ident = &qobject_ident.cxx_qt_thread_class;
-    let cxx_qt_thread_queued_fn_ident = &qobject_ident.cxx_qt_thread_queued_fn_struct;
-    let cxx_qt_thread_queue_fn = qobject_ident.cxx_qt_thread_method("queue_boxed_fn");
-    let cxx_qt_thread_clone = qobject_ident.cxx_qt_thread_method("threading_clone");
-    let cxx_qt_thread_drop = qobject_ident.cxx_qt_thread_method("threading_drop");
+    let cpp_struct_ident = qobject_names.name.rust_unqualified();
+    let cxx_qt_thread_ident = &qobject_names.cxx_qt_thread_class;
+    let cxx_qt_thread_queued_fn_ident = &qobject_names.cxx_qt_thread_queued_fn_struct;
+    let cxx_qt_thread_queue_fn = qobject_names.cxx_qt_thread_method("queue_boxed_fn");
+    let cxx_qt_thread_clone = qobject_names.cxx_qt_thread_method("threading_clone");
+    let cxx_qt_thread_drop = qobject_names.cxx_qt_thread_method("threading_drop");
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
@@ -166,11 +166,11 @@ mod tests {
     #[test]
     fn test_generate_rust_threading() {
         let qobject = create_parsed_qobject();
-        let qobject_idents = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
+        let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
         let namespace_ident = NamespaceName::from(&qobject);
 
         let generated = generate(
-            &qobject_idents,
+            &qobject_names,
             &namespace_ident,
             &TypeNames::mock(),
             &format_ident!("qobject"),

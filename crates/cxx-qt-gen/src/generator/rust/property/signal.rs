@@ -14,10 +14,10 @@ use crate::{
     parser::signals::ParsedSignal,
 };
 
-pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Option<ParsedSignal> {
+pub fn generate(idents: &QPropertyNames, qobject_names: &QObjectNames) -> Option<ParsedSignal> {
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
-    let cpp_class_rust = &qobject_idents.name.rust_unqualified();
+    let cpp_class_rust = &qobject_names.name.rust_unqualified();
     if let Some(NameState::Auto(notify)) = &idents.notify {
         let notify_rust = notify.rust_unqualified();
         let notify_cpp_str = notify.cxx_unqualified();
@@ -36,7 +36,7 @@ pub fn generate(idents: &QPropertyNames, qobject_idents: &QObjectNames) -> Optio
         Some(ParsedSignal::from_property_method(
             method,
             notify.clone(),
-            qobject_idents.name.rust_unqualified().clone(),
+            qobject_names.name.rust_unqualified().clone(),
             docs,
         ))
     } else {
