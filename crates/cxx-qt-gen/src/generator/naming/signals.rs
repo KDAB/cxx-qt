@@ -107,19 +107,10 @@ mod tests {
 
     #[test]
     fn test_parsed_signal() {
-        let qsignal = ParsedSignal {
-            method: parse_quote! {
-                fn data_changed(self: Pin<&mut MyObject>);
-            },
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::new(format_ident!("data_changed")).with_cxx_name("dataChanged".to_owned()),
-            safe: true,
-            inherit: false,
-            private: false,
-            docs: vec![],
+        let method = parse_quote! {
+            fn data_changed(self: Pin<&mut MyObject>);
         };
+        let qsignal = ParsedSignal::mock_with_method(&method);
 
         let names = QSignalNames::from(&qsignal);
         assert_eq!(names.name.cxx_unqualified(), "dataChanged");
@@ -137,20 +128,11 @@ mod tests {
 
     #[test]
     fn test_parsed_signal_existing_cxx_name() {
-        let qsignal = ParsedSignal {
-            method: parse_quote! {
-                #[cxx_name = "baseName"]
-                fn existing_signal(self: Pin<&mut MyObject>);
-            },
-            qobject_ident: format_ident!("MyObject"),
-            mutable: true,
-            parameters: vec![],
-            name: Name::new(format_ident!("existing_signal")).with_cxx_name("baseName".to_owned()),
-            safe: true,
-            inherit: false,
-            private: false,
-            docs: vec![],
+        let method = parse_quote! {
+            #[cxx_name = "baseName"]
+            fn existing_signal(self: Pin<&mut MyObject>);
         };
+        let qsignal = ParsedSignal::mock_with_method(&method);
 
         let names = QSignalNames::from(&qsignal);
         assert_eq!(names.name.cxx_unqualified(), "baseName");

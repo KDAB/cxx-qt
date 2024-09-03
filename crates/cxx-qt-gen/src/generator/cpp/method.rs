@@ -132,11 +132,8 @@ mod tests {
 
     use crate::generator::cpp::property::tests::{require_header, require_pair};
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::naming::Name;
-    use crate::parser::parameter::ParsedFunctionParameter;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
-    use quote::format_ident;
     use std::collections::HashSet;
     use syn::{parse_quote, ForeignItemFn};
 
@@ -150,40 +147,19 @@ mod tests {
             parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; };
         let method5: ForeignItemFn = parse_quote! { fn cpp_method(self: &MyObject); };
         let invokables = vec![
-            ParsedMethod::from_method_and_params(&method1, vec![]),
-            ParsedMethod::from_method_and_params(
-                &method2,
-                vec![ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { i32 },
-                }],
-            ),
-            ParsedMethod::mut_from_method_and_params(
-                &method3,
-                vec![ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { &QColor },
-                }],
-            ),
-            ParsedMethod {
-                specifiers: {
-                    let mut specifiers = HashSet::new();
-                    specifiers.insert(ParsedQInvokableSpecifiers::Final);
-                    specifiers.insert(ParsedQInvokableSpecifiers::Override);
-                    specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
-                    specifiers
-                },
-                ..ParsedMethod::from_method_and_params(
-                    &method4,
-                    vec![ParsedFunctionParameter {
-                        ident: format_ident!("param"),
-                        ty: parse_quote! { i32 },
-                    }],
-                )
-            },
+            ParsedMethod::mock_qinvokable(&method1),
+            ParsedMethod::mock_qinvokable(&method2),
+            ParsedMethod::mock_qinvokable(&method3).make_mutable(),
+            ParsedMethod::mock_qinvokable(&method4).with_specifiers({
+                let mut specifiers = HashSet::new();
+                specifiers.insert(ParsedQInvokableSpecifiers::Final);
+                specifiers.insert(ParsedQInvokableSpecifiers::Override);
+                specifiers.insert(ParsedQInvokableSpecifiers::Virtual);
+                specifiers
+            }),
             ParsedMethod {
                 is_qinvokable: false,
-                ..ParsedMethod::from_method_and_params(&method5, vec![])
+                ..ParsedMethod::mock_qinvokable(&method5)
             },
         ];
         let qobject_idents = create_qobjectname();
@@ -310,25 +286,7 @@ mod tests {
         let method_declaration: ForeignItemFn =
             parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; };
 
-        let method = ParsedMethod {
-            method: method_declaration.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: false,
-            safe: true,
-            parameters: vec![ParsedFunctionParameter {
-                ident: format_ident!("param"),
-                ty: parse_quote! { i32 },
-            }],
-            specifiers: HashSet::new(),
-            is_qinvokable: true,
-            name: Name::from_rust_ident_and_attrs(
-                &method_declaration.sig.ident,
-                &method_declaration.attrs,
-                None,
-                None,
-            )
-            .unwrap(),
-        };
+        let method = ParsedMethod::mock_qinvokable(&method_declaration);
         let invokables = vec![&method];
         let qobject_idents = create_qobjectname();
 

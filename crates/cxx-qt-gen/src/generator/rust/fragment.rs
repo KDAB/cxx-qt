@@ -6,7 +6,7 @@
 use proc_macro2::TokenStream;
 use syn::{Item, Result};
 
-#[derive(Default)]
+#[derive(Default, Eq, PartialEq, Debug)]
 pub struct GeneratedRustFragment {
     /// Module for the CXX bridge
     pub cxx_mod_contents: Vec<Item>,

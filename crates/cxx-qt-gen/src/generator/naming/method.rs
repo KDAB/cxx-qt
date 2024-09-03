@@ -40,26 +40,13 @@ mod tests {
     use syn::{parse_quote, ForeignItemFn};
 
     use super::*;
-    use quote::format_ident;
-
-    use std::collections::HashSet;
 
     #[test]
     fn test_from_impl_method() {
         let method: ForeignItemFn = parse_quote! {
             fn my_invokable(self: &MyObject);
         };
-        let parsed = ParsedMethod {
-            method: method.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: false,
-            safe: true,
-            parameters: vec![],
-            specifiers: HashSet::new(),
-            is_qinvokable: true,
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-        };
+        let parsed = ParsedMethod::mock_qinvokable(&method);
 
         let invokable = QMethodName::try_from(&parsed).unwrap();
         assert_eq!(

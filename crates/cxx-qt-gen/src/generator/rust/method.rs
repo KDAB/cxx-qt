@@ -75,11 +75,7 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
-    use crate::naming::Name;
-    use crate::parser::parameter::ParsedFunctionParameter;
     use crate::tests::assert_tokens_eq;
-    use quote::format_ident;
-    use std::collections::HashSet;
     use syn::{parse_quote, ForeignItemFn};
 
     #[test]
@@ -91,79 +87,10 @@ mod tests {
         let method4: ForeignItemFn =
             parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; };
         let invokables = vec![
-            ParsedMethod {
-                method: method1.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: false,
-                safe: true,
-                parameters: vec![],
-                specifiers: HashSet::new(),
-                is_qinvokable: true,
-                name: Name::from_rust_ident_and_attrs(
-                    &method1.sig.ident,
-                    &method1.attrs,
-                    None,
-                    None,
-                )
-                .unwrap(),
-            },
-            ParsedMethod {
-                method: method2.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: false,
-                safe: true,
-                parameters: vec![ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { i32 },
-                }],
-                specifiers: HashSet::new(),
-                is_qinvokable: true,
-                name: Name::from_rust_ident_and_attrs(
-                    &method2.sig.ident,
-                    &method2.attrs,
-                    None,
-                    None,
-                )
-                .unwrap(),
-            },
-            ParsedMethod {
-                method: method3.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: true,
-                safe: true,
-                parameters: vec![ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { &QColor },
-                }],
-                specifiers: HashSet::new(),
-                is_qinvokable: true,
-                name: Name::from_rust_ident_and_attrs(
-                    &method3.sig.ident,
-                    &method3.attrs,
-                    None,
-                    None,
-                )
-                .unwrap(),
-            },
-            ParsedMethod {
-                method: method4.clone(),
-                qobject_ident: format_ident!("MyObject"),
-                mutable: false,
-                safe: false,
-                parameters: vec![ParsedFunctionParameter {
-                    ident: format_ident!("param"),
-                    ty: parse_quote! { *mut T },
-                }],
-                specifiers: HashSet::new(),
-                is_qinvokable: true,
-                name: Name::from_rust_ident_and_attrs(
-                    &method4.sig.ident,
-                    &method4.attrs,
-                    None,
-                    None,
-                )
-                .unwrap(),
-            },
+            ParsedMethod::mock_qinvokable(&method1),
+            ParsedMethod::mock_qinvokable(&method2),
+            ParsedMethod::mock_qinvokable(&method3).make_mutable(),
+            ParsedMethod::mock_qinvokable(&method4).make_unsafe(),
         ];
         let qobject_idents = create_qobjectname();
 

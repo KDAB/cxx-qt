@@ -13,8 +13,6 @@ use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
 
 use crate::parser::{check_safety, separate_docs};
 use crate::syntax::{foreignmod, types};
-#[cfg(test)]
-use quote::format_ident;
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -55,6 +53,35 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
+    #[cfg(test)]
+    pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
+        Self {
+            is_qinvokable: true,
+            ..Self::parse(method.clone(), Safety::Safe).unwrap()
+        }
+    }
+
+    #[cfg(test)]
+    pub fn make_mutable(self) -> Self {
+        Self {
+            mutable: true,
+            ..self
+        }
+    }
+
+    #[cfg(test)]
+    pub fn make_unsafe(self) -> Self {
+        Self {
+            safe: false,
+            ..self
+        }
+    }
+
+    #[cfg(test)]
+    pub fn with_specifiers(self, specifiers: HashSet<ParsedQInvokableSpecifiers>) -> Self {
+        Self { specifiers, ..self }
+    }
+
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 
@@ -106,35 +133,6 @@ impl ParsedMethod {
             specifiers,
             is_qinvokable,
             name: fields.name,
-        }
-    }
-
-    #[cfg(test)]
-    pub fn from_method_and_params(
-        method: &ForeignItemFn,
-        parameters: Vec<ParsedFunctionParameter>,
-    ) -> Self {
-        ParsedMethod {
-            method: method.clone(),
-            qobject_ident: format_ident!("MyObject"),
-            mutable: false,
-            safe: true,
-            parameters,
-            specifiers: HashSet::new(),
-            is_qinvokable: true,
-            name: Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)
-                .unwrap(),
-        }
-    }
-
-    #[cfg(test)]
-    pub fn mut_from_method_and_params(
-        method: &ForeignItemFn,
-        parameters: Vec<ParsedFunctionParameter>,
-    ) -> Self {
-        ParsedMethod {
-            mutable: true,
-            ..ParsedMethod::from_method_and_params(method, parameters)
         }
     }
 }

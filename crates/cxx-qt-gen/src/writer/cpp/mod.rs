@@ -35,6 +35,41 @@ pub fn write_cpp(generated: &GeneratedCppBlocks) -> CppFragment {
         source: clang_format_with_style(&source, &ClangFormatStyle::File).unwrap_or(source),
     }
 }
+/// Extract the header from a given CppFragment
+pub fn pair_as_header(pair: &CppFragment) -> Option<String> {
+    match pair {
+        CppFragment::Pair { header, source: _ } => Some(header.clone()),
+        CppFragment::Header(header) => Some(header.clone()),
+        CppFragment::Source(_) => None,
+    }
+}
+
+/// Extract the source from a given CppFragment
+pub fn pair_as_source(pair: &CppFragment) -> Option<String> {
+    match pair {
+        CppFragment::Pair { header: _, source } => Some(source.clone()),
+        CppFragment::Header(_) => None,
+        CppFragment::Source(source) => Some(source.clone()),
+    }
+}
+
+pub fn extract_extern_qt(
+    generated: &GeneratedCppBlocks,
+    mut filter_fn: impl FnMut(&CppFragment) -> Option<String>,
+) -> String {
+    generated
+        .extern_cxx_qt
+        .iter()
+        .flat_map(|block| {
+            block
+                .fragments
+                .iter()
+                .filter_map(&mut filter_fn)
+                .collect::<Vec<String>>()
+        })
+        .collect::<Vec<String>>()
+        .join("\n")
+}
 
 #[cfg(test)]
 mod tests {

@@ -5,18 +5,10 @@
 
 use std::collections::BTreeSet;
 
-use crate::generator::cpp::{fragment::CppFragment, GeneratedCppBlocks};
+use crate::generator::cpp::GeneratedCppBlocks;
+use crate::writer::cpp::{extract_extern_qt, pair_as_header};
 use crate::writer::{self, cpp::namespaced};
 use indoc::formatdoc;
-
-/// Extract the header from a given CppFragment
-fn pair_as_header(pair: &CppFragment) -> Option<String> {
-    match pair {
-        CppFragment::Pair { header, source: _ } => Some(header.clone()),
-        CppFragment::Header(header) => Some(header.clone()),
-        CppFragment::Source(_) => None,
-    }
-}
 
 /// With a given block name, join the given items and add them under the block
 fn create_block(block: &str, items: &[String]) -> String {
@@ -162,18 +154,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
             .collect::<Vec<String>>()
             .join("\n")
     };
-    let extern_cxx_qt = generated
-        .extern_cxx_qt
-        .iter()
-        .flat_map(|block| {
-            block
-                .fragments
-                .iter()
-                .filter_map(pair_as_header)
-                .collect::<Vec<String>>()
-        })
-        .collect::<Vec<String>>()
-        .join("\n");
+    let extern_cxx_qt = extract_extern_qt(generated, pair_as_header);
 
     formatdoc! {r#"
         #pragma once
