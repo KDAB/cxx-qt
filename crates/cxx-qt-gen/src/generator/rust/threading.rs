@@ -14,7 +14,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::{Error, Result};
 
 use super::fragment::RustFragmentPair;
 
@@ -22,9 +22,20 @@ pub fn generate(
     qobject_names: &QObjectNames,
     namespace_ident: &NamespaceName,
     type_names: &TypeNames,
-    module_ident: &Ident, // TODO: Potential to remove this if the info is stored in qobject_names already?
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
+
+    let module_ident = if let Some(ident) = qobject_names.name.module_ident() {
+        ident
+    } else {
+        return Err(Error::new_spanned(
+            qobject_names.name.rust_unqualified(),
+            format!(
+                "No Module name for {}!",
+                qobject_names.name.rust_unqualified()
+            ),
+        ));
+    };
 
     let cpp_struct_ident = qobject_names.name.rust_unqualified();
     let cxx_qt_thread_ident = &qobject_names.cxx_qt_thread_class;
@@ -161,21 +172,13 @@ mod tests {
 
     use crate::parser::qobject::tests::create_parsed_qobject;
 
-    use quote::format_ident;
-
     #[test]
     fn test_generate_rust_threading() {
         let qobject = create_parsed_qobject();
         let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
         let namespace_ident = NamespaceName::from(&qobject);
 
-        let generated = generate(
-            &qobject_names,
-            &namespace_ident,
-            &TypeNames::mock(),
-            &format_ident!("qobject"),
-        )
-        .unwrap();
+        let generated = generate(&qobject_names, &namespace_ident, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

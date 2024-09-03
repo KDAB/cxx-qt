@@ -46,13 +46,7 @@ impl GeneratedRustBlocks {
             structures
                 .qobjects
                 .iter()
-                .map(|qobject| {
-                    GeneratedRustFragment::from_qobject(
-                        qobject,
-                        &parser.type_names,
-                        &parser.passthrough_module.ident,
-                    )
-                })
+                .map(|qobject| GeneratedRustFragment::from_qobject(qobject, &parser.type_names))
                 .collect::<Result<Vec<GeneratedRustFragment>>>()?,
         );
         fragments.extend(
@@ -61,11 +55,7 @@ impl GeneratedRustBlocks {
                 .extern_cxxqt_blocks
                 .iter()
                 .map(|extern_cxx_block| {
-                    GeneratedRustFragment::from_extern_cxx_qt(
-                        extern_cxx_block,
-                        &parser.type_names,
-                        &parser.passthrough_module.ident,
-                    )
+                    GeneratedRustFragment::from_extern_cxx_qt(extern_cxx_block, &parser.type_names)
                 })
                 .collect::<Result<Vec<GeneratedRustFragment>>>()?,
         );

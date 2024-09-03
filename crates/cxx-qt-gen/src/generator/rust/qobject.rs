@@ -20,14 +20,13 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::Result;
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
     pub fn from_qobject(
         structured_qobject: &StructuredQObject,
         type_names: &TypeNames,
-        module_ident: &Ident,
     ) -> Result<Self> {
         let qobject = structured_qobject.declaration;
         // Create the base object
@@ -45,7 +44,6 @@ impl GeneratedRustFragment {
             &qobject.properties,
             &qobject_names,
             type_names,
-            module_ident,
             structured_qobject,
         )?);
         generated.append(&mut generate_rust_methods(
@@ -60,7 +58,6 @@ impl GeneratedRustFragment {
             &structured_qobject.signals,
             &qobject_names,
             type_names,
-            module_ident,
         )?);
 
         // If this type is a singleton then we need to add an include
@@ -86,7 +83,6 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
-                module_ident,
             )?);
         }
 
@@ -107,7 +103,6 @@ impl GeneratedRustFragment {
             &qobject_names,
             &namespace_idents,
             type_names,
-            module_ident,
         )?);
 
         generated.append(&mut cxxqttype::generate(&qobject_names, type_names)?);
@@ -182,7 +177,6 @@ mod tests {
     use crate::generator::structuring::Structures;
     use crate::parser::Parser;
     use crate::tests::assert_tokens_eq;
-    use quote::format_ident;
     use syn::{parse_quote, ItemMod};
 
     #[test]
@@ -203,7 +197,6 @@ mod tests {
         assert!(GeneratedRustFragment::from_qobject(
             structures.qobjects.first().unwrap(),
             &parser.type_names,
-            &format_ident!("ffi"),
         )
         .is_ok());
     }
@@ -217,7 +210,6 @@ mod tests {
         let rust = GeneratedRustFragment::from_qobject(
             structures.qobjects.first().unwrap(),
             &parser.type_names,
-            &format_ident!("ffi"),
         )
         .unwrap();
         assert_eq!(rust.cxx_mod_contents.len(), 6);

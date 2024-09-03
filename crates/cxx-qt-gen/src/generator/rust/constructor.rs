@@ -183,11 +183,22 @@ pub fn generate(
     qobject_names: &QObjectNames,
     namespace: &NamespaceName,
     type_names: &TypeNames,
-    module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     if constructors.is_empty() {
         return Ok(generate_default_constructor(qobject_names, namespace));
     }
+
+    let module_ident = if let Some(ident) = qobject_names.name.module_ident() {
+        ident
+    } else {
+        return Err(Error::new_spanned(
+            qobject_names.name.rust_unqualified(),
+            format!(
+                "No Module name for {}!",
+                qobject_names.name.rust_unqualified()
+            ),
+        ));
+    };
 
     let mut result = GeneratedRustFragment::default();
     let namespace_internals = &namespace.internal;
@@ -468,14 +479,7 @@ mod tests {
 
         type_names.mock_insert("QString", None, None, None);
         type_names.mock_insert("QObject", None, None, None);
-        generate(
-            constructors,
-            &mock_name(),
-            &mock_namespace(),
-            &type_names,
-            &format_ident!("qobject"),
-        )
-        .unwrap()
+        generate(constructors, &mock_name(), &mock_namespace(), &type_names).unwrap()
     }
 
     #[test]
@@ -808,7 +812,6 @@ mod tests {
             &mock_name(),
             &mock_namespace(),
             &TypeNames::mock(),
-            &format_ident!("ffi"),
         );
 
         assert!(result.is_err());

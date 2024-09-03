@@ -237,6 +237,14 @@ impl Name {
         self.namespace.as_deref()
     }
 
+    pub fn module_ident(&self) -> Option<&Ident> {
+        if let Some(path) = &self.module {
+            path.get_ident()
+        } else {
+            None
+        }
+    }
+
     /// Get the fully qualified name of the type in C++.
     ///
     /// This is the namespace followed by the unqualified name.

@@ -16,18 +16,26 @@ use crate::{
     parser::signals::ParsedSignal,
 };
 use quote::quote;
-use syn::{parse_quote, FnArg, Ident, Result, Type};
+use syn::{parse_quote, Error, FnArg, Ident, Result, Type};
 
 pub fn generate_rust_signal(
     signal: &ParsedSignal,
     qobject_name: &Name,
     type_names: &TypeNames,
-    module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let idents = QSignalNames::from(signal);
     let idents_helper = QSignalHelperNames::new(&idents, qobject_name)?;
 
     let qobject_name_rust = qobject_name.rust_unqualified();
+
+    let module_ident = if let Some(ident) = qobject_name.module_ident() {
+        ident
+    } else {
+        return Err(Error::new_spanned(
+            qobject_name.rust_unqualified(),
+            format!("No Module name for {}!", qobject_name.rust_unqualified()),
+        ));
+    };
 
     let signal_name_cpp = idents.name.cxx_unqualified();
     let connect_ident_rust = idents.connect_name.rust_unqualified();
@@ -230,7 +238,6 @@ pub fn generate_rust_signals(
     signals: &Vec<&ParsedSignal>,
     qobject_names: &QObjectNames,
     type_names: &TypeNames,
-    module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
 
@@ -240,7 +247,6 @@ pub fn generate_rust_signals(
             signal,
             &qobject_names.name,
             type_names,
-            module_ident,
         )?);
     }
 
@@ -298,7 +304,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     pub fn connect_ready<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_ready(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(Box::new(closure)),
                             conn_type,
@@ -318,7 +324,7 @@ mod tests {
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     pub fn on_ready<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_ready(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -384,18 +390,11 @@ mod tests {
         let type_names = TypeNames::mock();
 
         let qobject_names = create_qobjectname();
-        let generated = generate_rust_signals(
-            &vec![&qsignal],
-            &qobject_names,
-            &type_names,
-            &format_ident!("ffi"),
-        )
-        .unwrap();
+        let generated =
+            generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names).unwrap();
 
         let qobject_name = type_names.lookup(&qsignal.qobject_ident).unwrap().clone();
-        let other_generated =
-            generate_rust_signal(&qsignal, &qobject_name, &type_names, &format_ident!("ffi"))
-                .unwrap();
+        let other_generated = generate_rust_signal(&qsignal, &qobject_name, &type_names).unwrap();
 
         assert_eq!(generated, other_generated);
 
@@ -425,13 +424,8 @@ mod tests {
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
-        let generated = generate_rust_signals(
-            &vec![&qsignal],
-            &qobject_names,
-            &type_names,
-            &format_ident!("ffi"),
-        )
-        .unwrap();
+        let generated =
+            generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 3);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 8);
@@ -483,7 +477,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     pub fn connect_data_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, i32, cxx::UniquePtr<QColor>) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_data_changed(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_data_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuredataChanged>::new(Box::new(closure)),
                             conn_type,
@@ -503,7 +497,7 @@ mod tests {
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     pub fn on_data_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, i32, cxx::UniquePtr<QColor>) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_data_changed(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_data_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuredataChanged>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -574,13 +568,8 @@ mod tests {
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("T", None, None, None);
-        let generated = generate_rust_signals(
-            &vec![&qsignal],
-            &qobject_names,
-            &type_names,
-            &format_ident!("ffi"),
-        )
-        .unwrap();
+        let generated =
+            generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 3);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 8);
@@ -632,7 +621,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     pub fn connect_unsafe_signal<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, *mut T) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_unsafe_signal(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_signal(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureunsafeSignal>::new(Box::new(closure)),
                             conn_type,
@@ -652,7 +641,7 @@ mod tests {
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     pub fn on_unsafe_signal<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, *mut T) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_unsafe_signal(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_signal(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureunsafeSignal>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -722,13 +711,8 @@ mod tests {
         };
         let qobject_names = create_qobjectname();
 
-        let generated = generate_rust_signals(
-            &vec![&qsignal],
-            &qobject_names,
-            &TypeNames::mock(),
-            &format_ident!("ffi"),
-        )
-        .unwrap();
+        let generated =
+            generate_rust_signals(&vec![&qsignal], &qobject_names, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 3);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 8);
@@ -780,7 +764,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     pub fn connect_existing_signal<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_existing_signal(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_existing_signal(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurebaseName>::new(Box::new(closure)),
                             conn_type,
@@ -800,7 +784,7 @@ mod tests {
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     pub fn on_existing_signal<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_existing_signal(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_existing_signal(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurebaseName>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -870,9 +854,7 @@ mod tests {
         let type_names = TypeNames::mock();
 
         let qobject_name = type_names.lookup(&qsignal.qobject_ident).unwrap().clone();
-        let generated =
-            generate_rust_signal(&qsignal, &qobject_name, &type_names, &format_ident!("ffi"))
-                .unwrap();
+        let generated = generate_rust_signal(&qsignal, &qobject_name, &type_names).unwrap();
 
         common_asserts(&generated.cxx_mod_contents, &generated.cxx_qt_mod_contents);
     }
