@@ -51,8 +51,8 @@ pub fn generate_rust_methods(
                     //
                     // CXX ends up generating the source, then we generate the matching header.
                     #[cxx_name = #wrapper_ident_cpp]
+                    // Namespace is not needed here
                     #[doc(hidden)]
-                    // TODO: Add #[namespace] of the QObject
                     #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }
             }],
