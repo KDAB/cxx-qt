@@ -9,7 +9,7 @@
 
 #include <QtCore/QMetaObject>
 
-#include "../../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 // The layout has changed between Qt 5 and Qt 6
 //
@@ -24,15 +24,17 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n491
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n411
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::size_t),
-                                                     sizeof(::std::size_t),
-                                                     sizeof(::std::size_t),
-                                                     sizeof(double) };
-assert_alignment_and_size(QVariant, alignof(double), arr, arr.size());
+assert_alignment_and_size(QVariant, {
+  ::std::size_t a0;
+  ::std::size_t a1;
+  ::std::size_t a2;
+  double a3;
+});
 #else
-constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(::std::uint32_t),
-                                                     sizeof(double) };
-assert_alignment_and_size(QVariant, alignof(double), arr, arr.size());
+assert_alignment_and_size(QVariant, {
+  ::std::uint32_t a0;
+  double a1;
+});
 #endif
 
 static_assert(!::std::is_trivially_copy_assignable<QVariant>::value);

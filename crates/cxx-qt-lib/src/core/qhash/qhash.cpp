@@ -6,15 +6,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qhash.h"
 
-#include "../../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 #define CXX_QT_QHASH_ASSERTS(keyTypeName, valueTypeName, combinedName)         \
-  constexpr static ::std::array<::std::size_t, 1> arr_##combinedName{ sizeof(  \
-    ::std::size_t) };                                                          \
-  assert_alignment_and_size(QHash_##combinedName,                              \
-                            alignof(::std::size_t),                            \
-                            arr_##combinedName,                                \
-                            arr_##combinedName.size());                        \
+  assert_alignment_and_size(QHash_##combinedName, { ::std::size_t a0; });      \
                                                                                \
   static_assert(                                                               \
     !::std::is_trivially_copy_assignable<QHash_##combinedName>::value);        \

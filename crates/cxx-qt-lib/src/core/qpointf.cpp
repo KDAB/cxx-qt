@@ -7,15 +7,16 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qpointf.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 // QPointF has two "qreal" members - xp and yp
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qpoint.h?h=v5.15.6-lts-lgpl#n271
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qpoint.h?h=v6.2.4#n313
-constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(double),
-                                                     sizeof(double) };
-assert_alignment_and_size(QPointF, alignof(double), arr, arr.size());
+assert_alignment_and_size(QPointF, {
+  double a0;
+  double a1;
+});
 
 static_assert(::std::is_trivially_copyable<QPointF>::value,
               "QPointF should be trivially copyable");

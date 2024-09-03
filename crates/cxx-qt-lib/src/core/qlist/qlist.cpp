@@ -6,25 +6,22 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qlist.h"
 
-#include "../../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-#define CXX_QT_QLIST_ALIGN_AND_SIZE(typeName, name)                            \
-  constexpr static ::std::array<::std::size_t, 3> arr_##name{                  \
-    sizeof(::std::size_t), sizeof(::std::size_t), sizeof(::std::size_t)        \
-  };                                                                           \
-  assert_alignment_and_size(                                                   \
-    QList_##name, alignof(::std::size_t), arr_##name, arr_##name.size());
+#define CXX_QT_QLIST_ALIGN_AND_SIZE(name)                                      \
+  assert_alignment_and_size(QList_##name, {                                    \
+    ::std::size_t a0;                                                          \
+    ::std::size_t a1;                                                          \
+    ::std::size_t a2;                                                          \
+  });
 #else
-#define CXX_QT_QLIST_ALIGN_AND_SIZE(typeName, name)                            \
-  constexpr static ::std::array<::std::size_t, 1> arr_##name{ sizeof(          \
-    ::std::size_t) };                                                          \
-  assert_alignment_and_size(                                                   \
-    QList_##name, alignof(::std::size_t), arr_##name, arr_##name.size());
+#define CXX_QT_QLIST_ALIGN_AND_SIZE(name)                                      \
+  assert_alignment_and_size(QList_##name, { ::std::size_t a0; });
 #endif
 
 #define CXX_QT_QLIST_ASSERTS(typeName, name)                                   \
-  CXX_QT_QLIST_ALIGN_AND_SIZE(typeName, name);                                 \
+  CXX_QT_QLIST_ALIGN_AND_SIZE(name);                                           \
                                                                                \
   static_assert(!::std::is_trivially_copy_assignable<QList_##name>::value);    \
   static_assert(!::std::is_trivially_copy_constructible<QList_##name>::value); \

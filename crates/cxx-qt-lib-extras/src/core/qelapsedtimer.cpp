@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib-extras/qelapsedtimer.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 #include <cstdint>
 
@@ -15,12 +15,10 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qelapsedtimer.h#n57
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qelapsedtimer.h?h=v6.2.4#n89
-constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(::std::int64_t),
-                                                     sizeof(::std::int64_t) };
-assert_alignment_and_size(QElapsedTimer,
-                          alignof(::std::int64_t),
-                          arr,
-                          arr.size());
+assert_alignment_and_size(QElapsedTimer, {
+  ::std::int64_t a0;
+  ::std::int64_t a1;
+});
 
 static_assert(::std::is_trivially_copyable<QElapsedTimer>::value,
               "QElapsedTimer must be trivially copyable!");

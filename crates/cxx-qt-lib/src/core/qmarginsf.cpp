@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qmarginsf.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 #include <cstdint>
 
@@ -14,10 +14,11 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qmargins.h?h=v5.15.6-lts-lgpl#n314
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qmargins.h?h=v6.2.4#n329
-constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(double),
-                                                     sizeof(double),
-                                                     sizeof(double),
-                                                     sizeof(double) };
-assert_alignment_and_size(QMarginsF, alignof(double), arr, arr.size());
+assert_alignment_and_size(QMarginsF, {
+  double a0;
+  double a1;
+  double a2;
+  double a3;
+});
 
 static_assert(::std::is_trivially_copyable<QMarginsF>::value);

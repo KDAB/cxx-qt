@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qdatetime.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 // QDateTime has a single member, which is a union, with the largest member
 // being a pointer
@@ -16,8 +16,7 @@
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n394
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n255
-constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
-assert_alignment_and_size(QDateTime, alignof(::std::size_t), arr, arr.size());
+assert_alignment_and_size(QDateTime, { ::std::size_t a0; });
 
 static_assert(!::std::is_trivially_copy_assignable<QDateTime>::value);
 static_assert(!::std::is_trivially_copy_constructible<QDateTime>::value);

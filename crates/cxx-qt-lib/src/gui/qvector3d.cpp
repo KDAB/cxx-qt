@@ -7,16 +7,17 @@
 
 #include "cxx-qt-lib/qvector3d.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 // QVector2D has two float members - xp and yp
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/math3d/qvector3d.h?h=v5.15.6-lts-lgpl#n141
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/math3d/qvectornd.h?h=v6.2.4#n334
-constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(float),
-                                                     sizeof(float),
-                                                     sizeof(float) };
-assert_alignment_and_size(QVector3D, alignof(float), arr, arr.size());
+assert_alignment_and_size(QVector3D, {
+  float a0;
+  float a1;
+  float a2;
+});
 
 static_assert(::std::is_trivially_copyable<QVector3D>::value,
               "QVector3D should be trivially copyable");

@@ -6,7 +6,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qbytearray.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 // The layout has changed between Qt 5 and Qt 6
 //
@@ -18,13 +18,13 @@
 // DataPointer is then a QByteArrayData, which is a QArrayDataPointer<char>
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qarraydatapointer.h?h=v6.2.4#n390
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(::std::size_t),
-                                                     sizeof(::std::size_t),
-                                                     sizeof(::std::size_t) };
-assert_alignment_and_size(QByteArray, alignof(::std::size_t), arr, arr.size());
+assert_alignment_and_size(QByteArray, {
+  ::std::size_t a0;
+  ::std::size_t a1;
+  ::std::size_t a2;
+});
 #else
-constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
-assert_alignment_and_size(QByteArray, alignof(::std::size_t), arr, arr.size());
+assert_alignment_and_size(QByteArray, { ::std::size_t a0; });
 #endif
 
 static_assert(!::std::is_trivially_copy_assignable<QByteArray>::value);

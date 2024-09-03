@@ -49,6 +49,12 @@ fn write_headers() {
     println!("cargo::rerun-if-changed=include/common.h");
     std::fs::copy("include/common.h", header_dir().join("common.h"))
         .expect("Failed to copy header file!");
+    println!("cargo::rerun-if-changed=include/assertion_utils.h");
+    std::fs::copy(
+        "include/assertion_utils.h",
+        header_dir().join("assertion_utils.h"),
+    )
+    .expect("Failed to copy header file!");
 
     write_headers_in("core");
     if qt_gui_enabled() {
@@ -334,7 +340,6 @@ fn main() {
         cc.file("src/qt_types.cpp");
         println!("cargo:rerun-if-changed=src/qt_types.cpp");
     });
-    println!("cargo:rerun-if-changed=src/assertion_utils.h");
 
     builder.build();
 }

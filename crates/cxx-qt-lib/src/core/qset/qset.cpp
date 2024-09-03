@@ -6,13 +6,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qset.h"
 
-#include "../../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 #define CXX_QT_QSET_ASSERTS(typeName, name)                                    \
-  constexpr static ::std::array<::std::size_t, 1> arr_##name{ sizeof(          \
-    ::std::size_t) };                                                          \
-  assert_alignment_and_size(                                                   \
-    QSet_##name, alignof(::std::size_t), arr_##name, arr_##name.size());       \
+  assert_alignment_and_size(QSet_##name, { ::std::size_t a0; });               \
                                                                                \
   static_assert(!::std::is_trivially_copy_assignable<QSet_##name>::value);     \
   static_assert(!::std::is_trivially_copy_constructible<QSet_##name>::value);  \

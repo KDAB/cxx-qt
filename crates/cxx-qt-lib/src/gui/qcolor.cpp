@@ -9,18 +9,21 @@
 #include "cxx-qt-lib/qcolor.h"
 #include "cxx-qt-lib/qstring.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 // QColor has an enum with six values and a union with the largest being five
 // ushorts. This results in std::int32_t + (5 * std::uint16) = 14, then due to
 // compiler padding this results in a sizeof 16.
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v5.15.6-lts-lgpl#n262
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qcolor.h?h=v6.2.4#n237
-constexpr static ::std::array<::std::size_t, 6> arr{
-  sizeof(::std::int32_t),  sizeof(::std::uint16_t), sizeof(::std::uint16_t),
-  sizeof(::std::uint16_t), sizeof(::std::uint16_t), sizeof(::std::uint16_t)
-};
-assert_alignment_and_size(QColor, alignof(::std::int32_t), arr, arr.size());
+assert_alignment_and_size(QColor, {
+  ::std::int32_t a0;
+  ::std::uint16_t a1;
+  ::std::uint16_t a2;
+  ::std::uint16_t a3;
+  ::std::uint16_t a4;
+  ::std::uint16_t a5;
+});
 
 // QColor still had copy & move constructors in Qt 5 but they were basically
 // trivial.
