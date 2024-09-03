@@ -34,12 +34,12 @@ mod inheritance {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "dataWrapper"]
+        #[cxx_name = "data"]
         #[doc(hidden)]
         fn data(self: &MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
     }
     extern "Rust" {
-        #[cxx_name = "hasChildrenWrapper"]
+        #[cxx_name = "hasChildren"]
         #[doc(hidden)]
         fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
     }
@@ -71,7 +71,6 @@ mod inheritance {
         fn cxx_qt_ffi_my_object_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
-impl cxx_qt::Locking for inheritance::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cxx-qt/locking.h>
-#include <cxx-qt/maybelockguard.h>
 #include <cxx-qt/threading.h>
 #include <cxx-qt/type.h>
 
@@ -18,43 +16,29 @@ class MyObject
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
   , public ::rust::cxxqt1::CxxQtThreading<MyObject>
-  , public virtual ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
   virtual ~MyObject() = default;
 
 public:
-  void cppMethod() const;
-  Q_INVOKABLE void invokable() const;
-  Q_INVOKABLE void invokableMutable();
+  void cppMethod() const noexcept;
+  Q_INVOKABLE void invokable() const noexcept;
+  Q_INVOKABLE void invokableMutable() noexcept;
   Q_INVOKABLE void invokableParameters(QColor const& opaque,
                                        QPoint const& trivial,
-                                       ::std::int32_t primitive) const;
-  Q_INVOKABLE ::std::unique_ptr<Opaque> invokableReturnOpaque();
-  Q_INVOKABLE QPoint invokableReturnTrivial();
-  Q_INVOKABLE void invokableFinal() const final;
-  Q_INVOKABLE void invokableOverride() const override;
-  Q_INVOKABLE virtual void invokableVirtual() const;
+                                       ::std::int32_t primitive) const noexcept;
+  Q_INVOKABLE ::std::unique_ptr<Opaque> invokableReturnOpaque() noexcept;
+  Q_INVOKABLE QPoint invokableReturnTrivial() noexcept;
+  Q_INVOKABLE void invokableFinal() const noexcept final;
+  Q_INVOKABLE void invokableOverride() const noexcept override;
+  Q_INVOKABLE virtual void invokableVirtual() const noexcept;
   Q_INVOKABLE void invokableResultTuple() const;
   Q_INVOKABLE ::rust::String invokableResultType() const;
   explicit MyObject(::std::int32_t arg0, QString const& arg1);
   explicit MyObject();
 
 private:
-  void cppMethodWrapper() const noexcept;
-  void invokableWrapper() const noexcept;
-  void invokableMutableWrapper() noexcept;
-  void invokableParametersWrapper(QColor const& opaque,
-                                  QPoint const& trivial,
-                                  ::std::int32_t primitive) const noexcept;
-  ::std::unique_ptr<Opaque> invokableReturnOpaqueWrapper() noexcept;
-  QPoint invokableReturnTrivialWrapper() noexcept;
-  void invokableFinalWrapper() const noexcept;
-  void invokableOverrideWrapper() const noexcept;
-  void invokableVirtualWrapper() const noexcept;
-  void invokableResultTupleWrapper() const;
-  ::rust::String invokableResultTypeWrapper() const;
   explicit MyObject(
     ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
   explicit MyObject(

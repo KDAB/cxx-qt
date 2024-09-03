@@ -78,7 +78,7 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "myInvokableWrapper"]
+        #[cxx_name = "myInvokable"]
         #[doc(hidden)]
         fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
@@ -135,7 +135,6 @@ mod ffi {
         ) -> Pin<&mut InternalObject>;
     }
 }
-impl cxx_qt::Locking for ffi::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
@@ -155,7 +154,6 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
         ffi::cxx_qt_ffi_my_object_rust_mut(self)
     }
 }
-impl cxx_qt::Locking for ffi::MyRenamedObject {}
 #[doc(hidden)]
 pub fn create_rs_internal_object() -> std::boxed::Box<InternalObject> {
     std::boxed::Box::new(core::default::Default::default())

@@ -36,8 +36,6 @@ fn main() {
     // ensure src/lib write_headers is consistent
     for (file_contents, file_name) in [
         (include_str!("include/connection.h"), "connection.h"),
-        (include_str!("include/locking.h"), "locking.h"),
-        (include_str!("include/maybelockguard.h"), "maybelockguard.h"),
         (include_str!("include/signalhandler.h"), "signalhandler.h"),
         (include_str!("include/thread.h"), "thread.h"),
         (include_str!("include/threading.h"), "threading.h"),

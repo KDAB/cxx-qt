@@ -36,10 +36,8 @@ template<typename T>
 class CxxQtThread final
 {
 public:
-  CxxQtThread(::std::shared_ptr<CxxQtGuardedPointer<T>> obj,
-              ::std::shared_ptr<::std::recursive_mutex> rustObjMutex)
+  CxxQtThread(::std::shared_ptr<CxxQtGuardedPointer<T>> obj)
     : m_obj(obj)
-    , m_rustObjMutex(rustObjMutex)
   {
   }
 
@@ -61,17 +59,12 @@ public:
 
     // Construct the lambda
     auto obj = m_obj;
-    auto rustObjMutex = m_rustObjMutex;
     auto lambda = [obj = ::std::move(obj),
-                   rustObjMutex = ::std::move(rustObjMutex),
                    func = ::std::move(func),
                    arg = ::std::move(arg)]() mutable {
       // Ensure that we can read the pointer and it's not being written to
       const auto guard = ::std::shared_lock(obj->mutex);
       if (obj->ptr) {
-        // Ensure that the rustObj is locked
-        const ::std::lock_guard<::std::recursive_mutex> guardRustObj(
-          *rustObjMutex);
         func(*obj->ptr, ::std::move(arg));
       } else {
         qWarning()
@@ -89,7 +82,6 @@ public:
 
 private:
   ::std::shared_ptr<CxxQtGuardedPointer<T>> m_obj;
-  ::std::shared_ptr<::std::recursive_mutex> m_rustObjMutex;
 };
 
 template<typename T>

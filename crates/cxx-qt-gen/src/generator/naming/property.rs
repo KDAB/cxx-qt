@@ -53,9 +53,7 @@ impl NameState {
 pub struct QPropertyNames {
     pub name: Name,
     pub getter: NameState,
-    pub getter_wrapper: Option<Name>,
     pub setter: Option<NameState>,
-    pub setter_wrapper: Option<Name>,
     pub notify: Option<NameState>,
     pub reset: Option<Name>,
 }
@@ -103,18 +101,6 @@ impl QPropertyNames {
             })
             .transpose()?;
 
-        let setter_wrapper = if let Some(NameState::Auto(ref setter)) = setter {
-            Some(wrapper_name_from_function_name(setter))
-        } else {
-            None
-        };
-
-        let getter_wrapper = if let NameState::Auto(ref getter) = getter {
-            Some(wrapper_name_from_function_name(getter))
-        } else {
-            None
-        };
-
         let reset = flags
             .reset
             .as_ref()
@@ -122,9 +108,7 @@ impl QPropertyNames {
             .transpose()?;
 
         Ok(Self {
-            getter_wrapper,
             getter,
-            setter_wrapper,
             setter,
             notify,
             reset,
@@ -156,13 +140,6 @@ fn setter_name_from_property(name: &Name) -> Name {
             "set{}",
             name.cxx_unqualified().to_case(Case::Pascal)
         ))
-}
-
-/// For a given function name generate the Rust and C++ wrapper names
-fn wrapper_name_from_function_name(name: &Name) -> Name {
-    name.clone()
-        .with_rust_name(format_ident!("{}_wrapper", name.rust_unqualified().clone()))
-        .with_cxx_name(format!("{}Wrapper", name.cxx_unqualified()))
 }
 
 /// For a given property name generate the notify signal name

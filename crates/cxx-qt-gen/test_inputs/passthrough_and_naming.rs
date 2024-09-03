@@ -135,8 +135,6 @@ pub mod ffi {
         type SecondObject = super::SecondObjectRust;
     }
 
-    unsafe impl !cxx_qt::Locking for SecondObject {}
-
     unsafe extern "RustQt" {
         #[my_attribute]
         #[qsignal]

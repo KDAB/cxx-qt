@@ -84,30 +84,6 @@ impl Name {
         }
     }
 
-    /// For a given Name generate the Rust and C++ wrapper names
-    ///
-    /// Note: If no cxx_name is set explicitly, this will ause a camel-case version of the rust name
-    pub fn wrapper_from(&self) -> Self {
-        const CXX_WRAPPER_SUFFIX: &str = "Wrapper";
-        const RUST_WRAPPER_SUFFIX: &str = "_wrapper";
-
-        let rust_name = self.rust.clone();
-        let cxx = self.cxx.clone();
-
-        let cxx_name = if let Some(name) = cxx {
-            format!("{name}{CXX_WRAPPER_SUFFIX}")
-        } else {
-            let camel_case_name = rust_name.to_string().to_case(Case::Camel);
-            format!("{camel_case_name}{CXX_WRAPPER_SUFFIX}")
-        };
-
-        Self {
-            rust: format_ident!("{rust_name}{RUST_WRAPPER_SUFFIX}"),
-            cxx: Some(cxx_name),
-            ..self.clone()
-        }
-    }
-
     /// Parse a name from an an identifier and a list of attributes.
     ///
     /// This variant assumes that the name is contained in an `extern "Rust"` block.

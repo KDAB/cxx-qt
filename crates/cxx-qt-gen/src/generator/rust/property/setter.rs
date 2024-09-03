@@ -25,10 +25,8 @@ pub fn generate(
 ) -> Result<Option<RustFragmentPair>> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
 
-    if let (Some(NameState::Auto(setter)), Some(setter_wrapper)) =
-        (&idents.setter, &idents.setter_wrapper)
-    {
-        let setter_wrapper_cpp = setter_wrapper.cxx_unqualified();
+    if let Some(NameState::Auto(setter)) = &idents.setter {
+        let setter_cpp = setter.cxx_unqualified();
 
         let setter_rust = setter.rust_unqualified();
         let ident = &idents.name.rust_unqualified();
@@ -56,7 +54,7 @@ pub fn generate(
         Ok(Some(RustFragmentPair {
             cxx_bridge: vec![quote! {
                 extern "Rust" {
-                    #[cxx_name = #setter_wrapper_cpp]
+                    #[cxx_name = #setter_cpp]
                     // Namespace is not needed here
                     #has_unsafe fn #setter_rust(self: Pin<&mut #cpp_class_name_rust>, value: #cxx_ty);
                 }

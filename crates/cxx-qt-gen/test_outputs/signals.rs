@@ -35,7 +35,7 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "invokableWrapper"]
+        #[cxx_name = "invokable"]
         #[doc(hidden)]
         fn invokable(self: Pin<&mut MyObject>);
     }
@@ -420,7 +420,6 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurenewData>,
     [usize; 2]
 );
-impl cxx_qt::Locking for ffi::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())

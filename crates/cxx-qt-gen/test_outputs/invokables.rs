@@ -41,57 +41,57 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "cppMethodWrapper"]
+        #[cxx_name = "cppMethod"]
         #[doc(hidden)]
         fn cpp_method(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableWrapper"]
+        #[cxx_name = "invokable"]
         #[doc(hidden)]
         fn invokable(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableMutableWrapper"]
+        #[cxx_name = "invokableMutable"]
         #[doc(hidden)]
         fn invokable_mutable(self: Pin<&mut MyObject>);
     }
     extern "Rust" {
-        #[cxx_name = "invokableParametersWrapper"]
+        #[cxx_name = "invokableParameters"]
         #[doc(hidden)]
         fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
     }
     extern "Rust" {
-        #[cxx_name = "invokableReturnOpaqueWrapper"]
+        #[cxx_name = "invokableReturnOpaque"]
         #[doc(hidden)]
         fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
     }
     extern "Rust" {
-        #[cxx_name = "invokableReturnTrivialWrapper"]
+        #[cxx_name = "invokableReturnTrivial"]
         #[doc(hidden)]
         fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
     }
     extern "Rust" {
-        #[cxx_name = "invokableFinalWrapper"]
+        #[cxx_name = "invokableFinal"]
         #[doc(hidden)]
         fn invokable_final(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableOverrideWrapper"]
+        #[cxx_name = "invokableOverride"]
         #[doc(hidden)]
         fn invokable_override(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableVirtualWrapper"]
+        #[cxx_name = "invokableVirtual"]
         #[doc(hidden)]
         fn invokable_virtual(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableResultTupleWrapper"]
+        #[cxx_name = "invokableResultTuple"]
         #[doc(hidden)]
         fn invokable_result_tuple(self: &MyObject) -> Result<()>;
     }
     extern "Rust" {
-        #[cxx_name = "invokableResultTypeWrapper"]
+        #[cxx_name = "invokableResultType"]
         #[doc(hidden)]
         fn invokable_result_type(self: &MyObject) -> Result<String>;
     }
@@ -269,7 +269,6 @@ impl cxx_qt::Threading for ffi::MyObject {
 pub struct MyObjectCxxQtThreadQueuedFn {
     inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut ffi::MyObject>) + Send>,
 }
-impl cxx_qt::Locking for ffi::MyObject {}
 #[doc(hidden)]
 pub fn route_arguments_my_object_0<'a>(
     arg0: i32,

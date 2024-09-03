@@ -90,18 +90,6 @@ impl GeneratedRustFragment {
             )?);
         }
 
-        // If this type has locking enabling then implement the trait
-        //
-        // This could be implemented using an auto trait in the future once stable
-        // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
-        if structured_qobject.locking {
-            let qualified_impl =
-                type_names.rust_qualified(qobject_idents.name.rust_unqualified())?;
-            generated.cxx_qt_mod_contents.push(syn::parse_quote! {
-                impl cxx_qt::Locking for #qualified_impl {}
-            });
-        }
-
         generated.append(&mut constructor::generate(
             &structured_qobject.constructors,
             &qobject_idents,

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cxx-qt/locking.h>
-#include <cxx-qt/maybelockguard.h>
 #include <cxx-qt/type.h>
 
 class MyObject;
@@ -11,7 +9,6 @@ class MyObject;
 class MyObject
   : public QAbstractItemModel
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public virtual ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
@@ -19,8 +16,9 @@ public:
 
 public:
   Q_INVOKABLE QVariant data(QModelIndex const& _index,
-                            ::std::int32_t _role) const override;
-  Q_INVOKABLE bool hasChildren(QModelIndex const& _parent) const override;
+                            ::std::int32_t _role) const noexcept override;
+  Q_INVOKABLE bool hasChildren(
+    QModelIndex const& _parent) const noexcept override;
   template<class... Args>
   bool hasChildrenCxxQtInherit(Args... args) const
   {
@@ -32,11 +30,6 @@ public:
     return QAbstractItemModel::fetchMore(args...);
   }
   explicit MyObject(QObject* parent = nullptr);
-
-private:
-  QVariant dataWrapper(QModelIndex const& _index,
-                       ::std::int32_t _role) const noexcept;
-  bool hasChildrenWrapper(QModelIndex const& _parent) const noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

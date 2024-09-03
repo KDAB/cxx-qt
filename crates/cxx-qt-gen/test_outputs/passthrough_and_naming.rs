@@ -83,11 +83,11 @@ pub mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "getPropertyNameWrapper"]
+        #[cxx_name = "getPropertyName"]
         unsafe fn property_name<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
-        #[cxx_name = "setPropertyNameWrapper"]
+        #[cxx_name = "setPropertyName"]
         fn set_property_name(self: Pin<&mut MyObject>, value: i32);
     }
     unsafe extern "C++" {
@@ -124,7 +124,7 @@ pub mod ffi {
         );
     }
     extern "Rust" {
-        #[cxx_name = "invokableNameWrapper"]
+        #[cxx_name = "invokableName"]
         #[doc(hidden)]
         fn invokable_name(self: Pin<&mut MyObject>);
     }
@@ -187,11 +187,11 @@ pub mod ffi {
         type SecondObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "getPropertyNameWrapper"]
+        #[cxx_name = "getPropertyName"]
         unsafe fn property_name<'a>(self: &'a SecondObject) -> &'a i32;
     }
     extern "Rust" {
-        #[cxx_name = "setPropertyNameWrapper"]
+        #[cxx_name = "setPropertyName"]
         fn set_property_name(self: Pin<&mut SecondObject>, value: i32);
     }
     unsafe extern "C++" {
@@ -228,7 +228,7 @@ pub mod ffi {
         );
     }
     extern "Rust" {
-        #[cxx_name = "invokableNameWrapper"]
+        #[cxx_name = "invokableName"]
         #[doc(hidden)]
         fn invokable_name(self: Pin<&mut SecondObject>);
     }
@@ -556,7 +556,6 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureready>,
     [usize; 2]
 );
-impl cxx_qt::Locking for ffi::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
@@ -739,7 +738,6 @@ impl ::cxx_qt::CxxQtType for ffi::SecondObject {
         ffi::cxx_qt_ffi_second_object_rust_mut(self)
     }
 }
-impl cxx_qt::Locking for ffi::MyRustName {}
 #[doc(hidden)]
 pub fn create_rs_third_object_rust() -> std::boxed::Box<ThirdObjectRust> {
     std::boxed::Box::new(core::default::Default::default())

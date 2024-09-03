@@ -68,27 +68,8 @@ impl<'a> Structures<'a> {
                     }
                     qobject.threading = true;
                 }
-                TraitKind::DisableLocking => {
-                    if !qobject.locking {
-                        return Err(Error::new_spanned(
-                            &imp.declaration,
-                            format!(
-                                "Locking already disabled on QObject {qobject}!",
-                                qobject = imp.qobject
-                            ),
-                        ));
-                    }
-                    qobject.locking = false;
-                }
                 // TODO: Check for duplicate declarations?
                 TraitKind::Constructor(ref constructor) => qobject.constructors.push(constructor),
-            }
-
-            if !qobject.locking && qobject.threading {
-                return Err(Error::new_spanned(
-                    &imp.declaration,
-                    "QObject cannot have cxx_qt::Threading enabled and cxx_qt::Locking disabled!",
-                ));
             }
         }
         Ok(())
@@ -368,21 +349,6 @@ mod tests {
         assert_structuring_error([
             parse_quote! {impl cxx_qt::Threading for MyObject {}},
             parse_quote! {impl cxx_qt::Threading for MyObject {}},
-        ]);
-
-        assert_structuring_error([
-            parse_quote! {unsafe impl !cxx_qt::Locking for MyObject {}},
-            parse_quote! {unsafe impl !cxx_qt::Locking for MyObject {}},
-        ]);
-
-        assert_structuring_error([
-            parse_quote! {unsafe impl !cxx_qt::Locking for MyObject {}},
-            parse_quote! {impl cxx_qt::Threading for MyObject {}},
-        ]);
-
-        assert_structuring_error([
-            parse_quote! {impl cxx_qt::Threading for MyObject {}},
-            parse_quote! {unsafe impl !cxx_qt::Locking for MyObject {}},
         ]);
     }
 }

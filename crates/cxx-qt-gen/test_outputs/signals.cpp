@@ -50,8 +50,6 @@ QTimer_timeoutConnect(
     &cxx_qt::my_object::QTimer::timeout,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::QTimer> guard(
-        self);
       closure.template operator()<cxx_qt::my_object::QTimer&>(self);
     },
     type);
@@ -108,8 +106,6 @@ MyObject_readyConnect(
     &cxx_qt::my_object::MyObject::ready,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
-        self);
       closure.template operator()<cxx_qt::my_object::MyObject&>(self);
     },
     type);
@@ -180,8 +176,6 @@ MyObject_dataChangedConnect(
                                         ::std::unique_ptr<Opaque> second,
                                         QPoint third,
                                         QPoint const& fourth) mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
-        self);
       closure.template operator()<cxx_qt::my_object::MyObject&,
                                   ::std::int32_t,
                                   ::std::unique_ptr<Opaque>,
@@ -259,8 +253,6 @@ MyObject_newDataConnect(
                                         ::std::unique_ptr<Opaque> second,
                                         QPoint third,
                                         QPoint const& fourth) mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
-        self);
       closure.template operator()<cxx_qt::my_object::MyObject&,
                                   ::std::int32_t,
                                   ::std::unique_ptr<Opaque>,
@@ -276,13 +268,6 @@ MyObject_newDataConnect(
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 namespace cxx_qt::my_object {
-void
-MyObject::invokable()
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  invokableWrapper();
-}
-
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<MyObjectRust>(
