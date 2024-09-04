@@ -131,7 +131,8 @@ impl ParsedQObject {
     ) -> Result<Option<QmlElementMetadata>> {
         // Find if there is a qml_element attribute
         if let Some(attr) = attribute_take_path(attrs, &["qml_element"]) {
-            // Extract the name of the qml_element
+            // Extract the name of the qml_element from macro, else use the c++ name
+            // This will use the name provided by cxx_name if that attr was present
             let name = match attr.meta {
                 Meta::NameValue(name_value) => expr_to_string(&name_value.value)?,
                 _ => name.cxx_unqualified(),

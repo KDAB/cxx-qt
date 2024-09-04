@@ -237,6 +237,7 @@ impl Name {
         self.namespace.as_deref()
     }
 
+    /// Returns the Ident of this names module if it exists, otherwise returns none
     pub fn module_ident(&self) -> Option<&Ident> {
         if let Some(path) = &self.module {
             path.get_ident()
@@ -245,6 +246,7 @@ impl Name {
         }
     }
 
+    /// Returns the Ident of this names module if it exists, otherwise errors
     pub fn require_module_ident(&self) -> Result<&Ident> {
         if let Some(ident) = self.module_ident() {
             Ok(ident)
