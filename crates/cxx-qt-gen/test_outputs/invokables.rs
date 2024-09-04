@@ -25,7 +25,7 @@ mod ffi {
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     unsafe extern "C++" {
-        include!("cxx-qt-gen/invokables.cxxqt.h");
+        include!("directory/file_ident.cxxqt.h");
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]

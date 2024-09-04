@@ -19,7 +19,7 @@ mod inheritance {
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     unsafe extern "C++" {
-        include!("cxx-qt-gen/inheritance.cxxqt.h");
+        include!("directory/file_ident.cxxqt.h");
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]

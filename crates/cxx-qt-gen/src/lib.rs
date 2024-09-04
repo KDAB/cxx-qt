@@ -159,12 +159,15 @@ mod tests {
         let parser = Parser::from(syn::parse_str(input).unwrap()).unwrap();
 
         let generated_cpp = GeneratedCppBlocks::from(&parser).unwrap();
-        let (mut header, mut source) = require_pair(&write_cpp(&generated_cpp)).unwrap();
+        let (mut header, mut source) =
+            require_pair(&write_cpp(&generated_cpp, "directory/file_ident")).unwrap();
         header = sanitize_code(header);
         source = sanitize_code(source);
 
         let generated_rust = GeneratedRustBlocks::from(&parser).unwrap();
-        let rust = sanitize_code(format_rs_source(&write_rust(&generated_rust).to_string()));
+        let rust = sanitize_code(format_rs_source(
+            &write_rust(&generated_rust, Some("directory/file_ident")).to_string(),
+        ));
 
         // CODECOV_EXCLUDE_START
         if !update_expected(test_name, &rust, &header, &source) {

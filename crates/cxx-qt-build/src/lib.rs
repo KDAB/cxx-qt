@@ -89,38 +89,42 @@ impl GeneratedCpp {
             tokens.extend(attr.into_token_stream());
         }
 
+        // Match upstream where they use the file name and folders as the ident
+        //
+        // We need the relative path here as we want the folders
+        relative_path
+            .as_ref()
+            // Remove the .rs extension
+            .with_extension("")
+            .to_str()
+            .unwrap()
+            .clone_into(&mut file_ident);
+
         // Loop through the items looking for any CXX or CXX-Qt blocks
+        let mut found_bridge = false;
         for item in &file.items {
             match item {
                 CxxQtItem::Cxx(m) => {
                     // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if !file_ident.is_empty() {
+                    if found_bridge {
                         panic!(
                             "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
                             The file {} has more than one of these.",
                             rust_file_path.display());
                     }
+                    found_bridge = true;
 
-                    // Match upstream where they use the file name and folders as the ident
-                    //
-                    // We need the relative path here as we want the folders
-                    relative_path
-                        .as_ref()
-                        // Remove the .rs extension
-                        .with_extension("")
-                        .to_str()
-                        .unwrap()
-                        .clone_into(&mut file_ident);
                     tokens.extend(m.into_token_stream());
                 }
                 CxxQtItem::CxxQt(m) => {
                     // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if !file_ident.is_empty() {
+                    if found_bridge {
                         panic!(
                             "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
                             The file {} has more than one of these.",
                             rust_file_path.display());
                     }
+                    found_bridge = true;
 
                     let parser = Parser::from(m.clone())
                         .map_err(GeneratedError::from)
@@ -128,22 +132,14 @@ impl GeneratedCpp {
                     let generated_cpp = GeneratedCppBlocks::from(&parser)
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
-                    // TODO: we'll have to extend the C++ data here rather than overwriting
-                    // assuming we share the same file
-                    cxx_qt = Some(write_cpp(&generated_cpp));
-
                     let generated_rust = GeneratedRustBlocks::from(&parser)
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
-                    let rust_tokens = write_rust(&generated_rust);
 
-                    // Use the relative path with the cxx_file_stem
-                    file_ident = relative_path
-                        .as_ref()
-                        .with_file_name(parser.cxx_file_stem())
-                        .to_str()
-                        .unwrap()
-                        .clone_into(&mut file_ident);
+                    // TODO: we'll have to extend the C++ data here rather than overwriting
+                    // assuming we share the same file
+                    cxx_qt = Some(write_cpp(&generated_cpp, &file_ident));
+                    let rust_tokens = write_rust(&generated_rust, Some(&file_ident));
 
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.

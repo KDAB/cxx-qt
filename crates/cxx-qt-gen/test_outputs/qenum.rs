@@ -12,6 +12,9 @@ mod ffi {
         #[rust_name = "CxxQtQMetaObjectConnection"]
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
+    unsafe extern "C++" {
+        include!("directory/file_ident.cxxqt.h");
+    }
     #[repr(i32)]
     enum MyEnum {
         A,
@@ -60,9 +63,6 @@ mod ffi {
     extern "C++" {
         #[namespace = "cxx_qt::my_object"]
         type MyRenamedEnum;
-    }
-    unsafe extern "C++" {
-        include!("cxx-qt-gen/qenum.cxxqt.h");
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]

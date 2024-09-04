@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/inheritance.cxxqt.h"
+#include "directory/file_ident.cxxqt.h"
 
 MyObject::MyObject(QObject* parent)
   : QAbstractItemModel(parent)
