@@ -30,6 +30,7 @@ pub mod qobject {
         #[qml_element]
         #[qproperty(i32, number)]
         #[qproperty(QString, string)]
+        #[namespace = "my_object"]
         type MyObject = super::MyObjectRust;
     }
     // ANCHOR_END: book_rustobj_struct_signature

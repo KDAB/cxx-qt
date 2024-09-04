@@ -188,16 +188,19 @@ mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "myGetterWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn my_getter(self: &MyObject) -> i32;
     }
     extern "Rust" {
         #[cxx_name = "MyCustomSetterWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn my_setter(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
         #[cxx_name = "myResetFnWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn myResetFn(self: Pin<&mut MyObject>);
     }

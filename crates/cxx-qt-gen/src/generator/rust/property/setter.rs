@@ -53,11 +53,19 @@ pub fn generate(
             quote! {}
         };
 
+        let namespace = qobject_idents.name.namespace();
+        let cxx_namespace = if namespace.is_none() {
+            quote! {}
+        } else {
+            quote! { #[namespace = #namespace ] }
+        };
+
         Ok(Some(RustFragmentPair {
             cxx_bridge: vec![quote! {
                 extern "Rust" {
                     #[cxx_name = #setter_wrapper_cpp]
                     // Namespace is not needed here
+                    #cxx_namespace
                     #has_unsafe fn #setter_rust(self: Pin<&mut #cpp_class_name_rust>, value: #cxx_ty);
                 }
             }],

@@ -155,6 +155,7 @@ fn generate_qobject_definitions(
             },
             quote! {
                 extern "Rust" {
+                    #namespace
                     type #rust_struct_name_rust;
                 }
             },
