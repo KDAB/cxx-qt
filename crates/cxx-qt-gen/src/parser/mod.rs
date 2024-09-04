@@ -200,6 +200,20 @@ mod tests {
     }
 
     #[test]
+    fn test_bridge_cxx_file_stem() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge(cxx_file_stem = "stem")]
+            mod ffi {
+                extern "Rust" {
+                    fn test();
+                }
+            }
+        };
+        let parser = Parser::from(module);
+        assert!(parser.is_err());
+    }
+
+    #[test]
     fn test_incorrect_bridge_args() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge(a, b, c)]
