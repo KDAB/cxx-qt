@@ -95,6 +95,7 @@ pub mod qobject {
         /// On a background thread, add a given number of rows to the QAbstractListModel
         /// Use a standard delay of 250ms per item
         #[qinvokable]
+        #[cxx_virtual]
         fn add_on_thread(self: Pin<&mut CustomBaseClass>, counter: i32);
     }
 
@@ -199,6 +200,26 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_override]
         fn row_count(self: &CustomBaseClass, _parent: &QModelIndex) -> i32;
+    }
+
+    unsafe extern "RustQt" {
+        #[qobject]
+        #[qml_element]
+        #[base = "CustomBaseClass"]
+        type TransitiveInheritance = super::TransitiveInheritanceRust;
+
+        #[qinvokable]
+        #[cxx_override]
+        fn add_on_thread(self: Pin<&mut TransitiveInheritance>, counter: i32);
+
+        #[inherit]
+        /// On a background thread, add a given number of rows to the QAbstractListModel with a
+        /// configurable delay
+        fn add_on_thread_delayed(
+            self: Pin<&mut TransitiveInheritance>,
+            counter: i32,
+            delay_ms: u64,
+        );
     }
 }
 
@@ -369,3 +390,15 @@ impl qobject::CustomBaseClass {
     }
 }
 // ANCHOR_END: book_macro_code
+
+/// This struct demonstrates that CXX-Qt QObjects can derive from other CXX-Qt QObjects
+/// It derives from CustomBaseClass and overrides the length of the standard delay.
+#[derive(Default)]
+pub struct TransitiveInheritanceRust {}
+
+impl qobject::TransitiveInheritance {
+    /// This function adds values on a thread with a shortened delay of 20ms.
+    fn add_on_thread(self: Pin<&mut Self>, counter: i32) {
+        self.add_on_thread_delayed(counter, 20);
+    }
+}

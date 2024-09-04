@@ -9,6 +9,10 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
+    readonly property var activeModel: tabs.currentIndex === 0 ? customBaseClass : transitiveInheritance
+    readonly property var activeListView: tabs.currentIndex === 0 ? customBaseList : transitiveList
+
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -16,34 +20,34 @@ Page {
             ToolButton {
                 text: qsTr("Add Row")
 
-                onClicked: customBaseClass.add()
+                onClicked: root.activeModel.add()
             }
 
             ToolButton {
                 text: qsTr("Add in background")
 
-                onClicked: customBaseClass.addOnThread(5)
+                onClicked: root.activeModel.addOnThread(5)
             }
 
             ToolButton {
-                enabled: listView.currentIndex > -1 && listView.count > 0
+                enabled: root.activeListView.currentIndex > -1 && root.activeListView.count > 0
                 text: qsTr("Double Selected")
 
-                onClicked: customBaseClass.multiply(listView.currentIndex, 2.0)
+                onClicked: root.activeModel.multiply(root.activeListView.currentIndex, 2.0)
             }
 
             ToolButton {
-                enabled: listView.currentIndex > -1 && listView.count > 0
+                enabled: root.activeListView.currentIndex > -1 && root.activeListView.count > 0
                 text: qsTr("Remove Selected")
 
-                onClicked: customBaseClass.remove(listView.currentIndex)
+                onClicked: root.activeModel.remove(root.activeListView.currentIndex)
             }
 
             ToolButton {
-                enabled: listView.count > 0
+                enabled: root.activeListView.count > 0
                 text: qsTr("Clear")
 
-                onClicked: customBaseClass.clear()
+                onClicked: root.activeModel.clear()
             }
 
             Item {
@@ -51,29 +55,70 @@ Page {
             }
 
             Label {
-                text: qsTr("Count: %1").arg(listView.count)
+                text: qsTr("Count: %1").arg(root.activeListView.count)
             }
         }
     }
 
-    ScrollView {
-        id: scrollView
+    ColumnLayout {
+        id: content
         anchors.fill: parent
-        clip: true
-        ScrollBar.vertical.policy: ScrollBar.vertical.size === 1.0 ? ScrollBar.AlwaysOff : ScrollBar.AlwaysOn
 
-        ListView {
-            id: listView
-            currentIndex: -1
-            model: CustomBaseClass {
-                id: customBaseClass
+        TabBar {
+            id: tabs
+            Layout.fillWidth: true
+            TabButton {
+                text: qsTr("Default Model")
             }
-            delegate: ItemDelegate {
-                highlighted: ListView.isCurrentItem
-                text: model.id + ": " + model.value
-                width: ListView.view.width
+            TabButton {
+                text: qsTr("Shorter Delay")
+            }
+        }
 
-                onClicked: ListView.view.currentIndex = index
+        StackLayout {
+            Layout.fillHeight: true
+            Layout.fillWidth: true
+
+            currentIndex: tabs.currentIndex
+
+            ScrollView {
+                clip: true
+                ScrollBar.vertical.policy: ScrollBar.vertical.size === 1.0 ? ScrollBar.AlwaysOff : ScrollBar.AlwaysOn
+
+                ListView {
+                    id: customBaseList
+                    currentIndex: -1
+                    model: CustomBaseClass {
+                        id: customBaseClass
+                    }
+                    delegate: ItemDelegate {
+                        highlighted: ListView.isCurrentItem
+                        text: model.id + ": " + model.value
+                        width: ListView.view.width
+
+                        onClicked: ListView.view.currentIndex = index
+                    }
+                }
+            }
+
+            ScrollView {
+                clip: true
+                ScrollBar.vertical.policy: ScrollBar.vertical.size === 1.0 ? ScrollBar.AlwaysOff : ScrollBar.AlwaysOn
+
+                ListView {
+                    id: transitiveList
+                    currentIndex: -1
+                    model: TransitiveInheritance {
+                        id: transitiveInheritance
+                    }
+                    delegate: ItemDelegate {
+                        highlighted: ListView.isCurrentItem
+                        text: model.id + ": " + model.value
+                        width: ListView.view.width
+
+                        onClicked: ListView.view.currentIndex = index
+                    }
+                }
             }
         }
     }
@@ -81,11 +126,11 @@ Page {
     // ANCHOR: book_qenum_access
     BusyIndicator {
         anchors {
-            right: scrollView.right
-            bottom: scrollView.bottom
+            right: content.right
+            bottom: content.bottom
             margins: 15
         }
-        running: customBaseClass.state === CustomBaseClass.Running
+        running: root.activeModel.state === CustomBaseClass.Running
     }
     // ANCHOR_END: book_qenum_access
 }
