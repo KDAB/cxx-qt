@@ -71,6 +71,7 @@ impl GeneratedCpp {
     pub fn new(
         rust_file_path: impl AsRef<Path>,
         relative_path: impl AsRef<Path>,
+        include_prefix: &str,
     ) -> Result<Self, Diagnostic> {
         let to_diagnostic = |err| Diagnostic::new(rust_file_path.as_ref().to_owned(), err);
 
@@ -81,7 +82,6 @@ impl GeneratedCpp {
             .map_err(to_diagnostic)?;
 
         let mut cxx_qt = None;
-        let mut file_ident: String = "".to_owned();
         let mut tokens = proc_macro2::TokenStream::new();
 
         // Add any attributes in the file into the tokenstream
@@ -92,13 +92,15 @@ impl GeneratedCpp {
         // Match upstream where they use the file name and folders as the ident
         //
         // We need the relative path here as we want the folders
-        relative_path
+        let file_ident = relative_path
             .as_ref()
             // Remove the .rs extension
             .with_extension("")
-            .to_str()
-            .unwrap()
-            .clone_into(&mut file_ident);
+            .to_string_lossy()
+            .to_string();
+
+        // The include path we inject needs any prefix (eg the crate name) too
+        let include_ident = format!("{include_prefix}/{file_ident}");
 
         // Loop through the items looking for any CXX or CXX-Qt blocks
         let mut found_bridge = false;
@@ -138,8 +140,8 @@ impl GeneratedCpp {
 
                     // TODO: we'll have to extend the C++ data here rather than overwriting
                     // assuming we share the same file
-                    cxx_qt = Some(write_cpp(&generated_cpp, &file_ident));
-                    let rust_tokens = write_rust(&generated_rust, Some(&file_ident));
+                    cxx_qt = Some(write_cpp(&generated_cpp, &include_ident));
+                    let rust_tokens = write_rust(&generated_rust, Some(&include_ident));
 
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.
@@ -270,7 +272,7 @@ fn generate_cxxqt_cpp_files(
         let path = manifest_dir.join(rs_path);
         println!("cargo:rerun-if-changed={}", path.to_string_lossy());
 
-        let generated_code = match GeneratedCpp::new(&path, rs_path) {
+        let generated_code = match GeneratedCpp::new(&path, rs_path, include_prefix) {
             Ok(v) => v,
             Err(diagnostic) => {
                 diagnostic.report();
