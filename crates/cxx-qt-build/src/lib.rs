@@ -277,7 +277,7 @@ fn generate_cxxqt_cpp_files(
                 std::process::exit(1);
             }
         };
-        generated_file_paths.push(generated_code.write_to_directories(cxx_qt_dir, &header_dir));
+        generated_file_paths.push(generated_code.write_to_directories(&cxx_qt_dir, &header_dir));
     }
 
     generated_file_paths
@@ -674,6 +674,10 @@ impl CxxQtBuilder {
         } in &self.qobject_headers
         {
             let moc_products = qtbuild.moc(path, moc_arguments.clone());
+            // Include the moc folder
+            if let Some(dir) = moc_products.cpp.parent() {
+                self.cc_builder.include(dir);
+            }
             self.cc_builder.file(moc_products.cpp);
         }
     }
@@ -745,6 +749,31 @@ impl CxxQtBuilder {
 
             let mut qml_metatypes_json = Vec::new();
 
+            // Check that all rust files are within the same directory
+            //
+            // Note we need to do this as moc generates an inputFile which only
+            // includes the file name, qmltyperegistrar then uses this for the
+            // include path (and doesn't consider any prefix).
+            //
+            // This can also be observed when using qt_add_qml_module, if a class
+            // has a QML_ELEMENT the file must be in the same directory as the
+            // CMakeLists and cannot be a relative path to a sub directory.
+            let dirs = qml_module
+                .rust_files
+                .iter()
+                .map(|file| {
+                    file.parent()
+                        .unwrap()
+                        .file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .to_string()
+                })
+                .collect::<HashSet<String>>();
+            if dirs.len() > 1 {
+                panic!("Only one directory is support per QmlModule for rust_files");
+            }
+
             for files in generate_cxxqt_cpp_files(
                 &qml_module.rust_files,
                 &generated_header_dir,
@@ -753,11 +782,21 @@ impl CxxQtBuilder {
                 self.cc_builder.file(files.plain_cpp);
                 if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header)
                 {
+                    // Ensure that the generated QObject header is in the include path
+                    // so that qmltyperegistar can include them later
+                    if let Some(dir) = qobject_header.parent() {
+                        self.cc_builder.include(dir);
+                    }
+
                     self.cc_builder.file(&qobject);
                     let moc_products = qtbuild.moc(
                         qobject_header,
                         MocArguments::default().uri(qml_module.uri.clone()),
                     );
+                    // Include the moc folder
+                    if let Some(dir) = moc_products.cpp.parent() {
+                        self.cc_builder.include(dir);
+                    }
                     self.cc_builder.file(moc_products.cpp);
                     qml_metatypes_json.push(moc_products.metatypes_json);
                 }
@@ -783,6 +822,12 @@ impl CxxQtBuilder {
                 // The plugin_init file already takes care of loading the resources associated with this
                 // RCC file.
                 .file(qml_module_registration_files.rcc);
+
+            // Add any include paths the qml module registration needs
+            // this is most likely the moc folder for the plugin
+            if let Some(include_path) = qml_module_registration_files.include_path {
+                self.cc_builder.include(include_path);
+            }
 
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
                 self.cc_builder.file(qmlcachegen_file);
