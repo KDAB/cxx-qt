@@ -12,10 +12,12 @@ mod inheritance {
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]
+        #[allow(dead_code)]
         type ConnectionType = cxx_qt::ConnectionType;
         #[doc(hidden)]
         #[namespace = "rust::cxxqt1"]
         #[rust_name = "CxxQtQMetaObjectConnection"]
+        #[allow(dead_code)]
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
     }
     unsafe extern "C++" {

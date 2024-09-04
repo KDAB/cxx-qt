@@ -102,11 +102,7 @@ mod tests {
             cxx_mod: parse_quote! {
                 mod ffi {}
             },
-            cxx_mod_contents: vec![parse_quote! {
-                unsafe extern "C++" {
-                    include!("myobject.cxxqt.h");
-                }
-            }],
+            cxx_mod_contents: vec![],
             namespace: "cxx_qt::my_object".to_owned(),
             fragments: vec![GeneratedRustFragment {
                 cxx_mod_contents: vec![
@@ -144,11 +140,7 @@ mod tests {
             cxx_mod: parse_quote! {
                 mod ffi {}
             },
-            cxx_mod_contents: vec![parse_quote! {
-                unsafe extern "C++" {
-                    include!("multiobject.cxxqt.h");
-                }
-            }],
+            cxx_mod_contents: vec![],
             namespace: "cxx_qt".to_owned(),
             fragments: vec![
                 GeneratedRustFragment {
@@ -221,11 +213,13 @@ mod tests {
                     #[doc(hidden)]
                     #[namespace = "Qt"]
                     #[rust_name = "CxxQtConnectionType"]
+                    #[allow(dead_code)]
                     type ConnectionType = cxx_qt::ConnectionType;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqt1"]
                     #[rust_name = "CxxQtQMetaObjectConnection"]
+                    #[allow(dead_code)]
                     type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
                 }
 
@@ -267,11 +261,13 @@ mod tests {
                     #[doc(hidden)]
                     #[namespace = "Qt"]
                     #[rust_name = "CxxQtConnectionType"]
+                    #[allow(dead_code)]
                     type ConnectionType = cxx_qt::ConnectionType;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqt1"]
                     #[rust_name = "CxxQtQMetaObjectConnection"]
+                    #[allow(dead_code)]
                     type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
                 }
 
