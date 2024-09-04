@@ -30,7 +30,7 @@ using MyObjectCxxQtSignalHandlermyOnChanged =
   ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsmyOnChanged*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
-#include "cxx-qt-gen/properties.cxx.h"
+#include "directory/file_ident.cxx.h"
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection

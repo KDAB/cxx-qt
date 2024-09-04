@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/qenum.cxxqt.h"
+#include "directory/file_ident.cxxqt.h"
 
 namespace cxx_qt::my_object {
 MyObject::MyObject(QObject* parent)
