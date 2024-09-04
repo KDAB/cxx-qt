@@ -25,8 +25,6 @@ The `extern "RustQt"` section of a CXX bridge declares Rust types and signatures
 
 The CXX code generator uses your `extern "Rust"` section(s) to produce a C++ header file containing the corresponding C++ declarations. The generated header has the same file name as the input rust file but with `.cxxqt.h` file extension.
 
-> Note that once there is support for `source_file` or similar in the `Span` macro we want to support copying the file name like CXX.
-
 A bridge module may contain zero or more `extern "RustQt"` blocks.
 
 This complements the [`extern "Rust"` CXX section](https://cxx.rs/extern-rust.html)
