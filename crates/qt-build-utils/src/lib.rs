@@ -984,11 +984,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
         std::fs::create_dir_all(&output_folder).expect("Could not create qrc dir");
         let output_path = output_folder.join(format!(
             "{}.cpp",
-            input_path
-                .file_name()
-                .unwrap()
-                .to_string_lossy()
-                .to_string(),
+            input_path.file_name().unwrap().to_string_lossy(),
         ));
 
         let cmd = Command::new(self.rcc_executable.as_ref().unwrap())

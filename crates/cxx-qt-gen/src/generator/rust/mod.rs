@@ -100,8 +100,6 @@ mod tests {
 
     use super::*;
 
-    use crate::tests::assert_tokens_eq;
-
     #[test]
     fn test_generated_rust_blocks() {
         let module: ItemMod = parse_quote! {
@@ -117,15 +115,7 @@ mod tests {
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
         assert!(rust.cxx_mod.content.is_none());
-        assert_eq!(rust.cxx_mod_contents.len(), 1);
-        assert_tokens_eq(
-            &rust.cxx_mod_contents[0],
-            quote! {
-                unsafe extern "C++" {
-                    include!("cxx-qt-gen/ffi.cxxqt.h");
-                }
-            },
-        );
+        assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "");
         assert_eq!(rust.fragments.len(), 1);
     }
@@ -145,7 +135,7 @@ mod tests {
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
         assert!(rust.cxx_mod.content.is_none());
-        assert_eq!(rust.cxx_mod_contents.len(), 1);
+        assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "cxx_qt");
         assert_eq!(rust.fragments.len(), 1);
     }
