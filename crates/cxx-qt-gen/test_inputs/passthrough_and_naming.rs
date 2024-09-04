@@ -1,5 +1,5 @@
 #[attrA]
-#[cxx_qt::bridge(namespace = "cxx_qt::multi_object", cxx_file_stem = "multi_object")]
+#[cxx_qt::bridge(namespace = "cxx_qt::multi_object")]
 #[attrB]
 pub mod ffi {
     // ItemConst

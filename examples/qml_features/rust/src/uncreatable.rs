@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows how a QML_UNCREATABLE QObject can be used
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge(cxx_file_stem = "rust_uncreatable")]
+#[cxx_qt::bridge]
 pub mod ffi {
     extern "RustQt" {
         #[qobject]

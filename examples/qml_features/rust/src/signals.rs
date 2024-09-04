@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows how a Q_SIGNAL can be used
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge(cxx_file_stem = "rust_signals")]
+#[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");

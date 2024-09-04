@@ -31,7 +31,7 @@ It is currently not possible to add a `#[qenum(...)]` to any `extern "C++Qt"` `Q
 Example:
 
 ```rust,ignore,noplayground
-#[cxx_qt::bridge(cxx_file_stem="custom_base_class")]
+#[cxx_qt::bridge]
 pub mod qobject {
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_qenum_in_qobject}}
 

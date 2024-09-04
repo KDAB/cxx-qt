@@ -1,6 +1,6 @@
 #!/usr/bin/
 // Test for qtitem and qtfile, for code coverage
-#[cxx_qt::bridge(cxx_file_stem = "shebang")]
+#[cxx_qt::bridge]
 mod ffi {
     extern "RustQt" {
         #[qobject]

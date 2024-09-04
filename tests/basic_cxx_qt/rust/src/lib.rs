@@ -8,7 +8,7 @@ mod data;
 mod empty;
 mod types;
 
-#[cxx_qt::bridge(cxx_file_stem = "my_object", namespace = "cxx_qt::my_object")]
+#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 mod qobject {
     #[namespace = ""]
     unsafe extern "C++" {

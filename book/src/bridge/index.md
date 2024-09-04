@@ -19,26 +19,6 @@ This Rust module will then function like a normal CXX bridge, whilst also suppor
 
 > Don't forget to add the Rust source file to the `CxxQtBuilder` in your `build.rs` script. For instructions, see the [Getting Started guide](../getting-started/5-cmake-integration.md).
 
-The `#[cxx_qt::bridge]` macro supports two options in its attribute:
+The `#[cxx_qt::bridge]` macro supports the options in its attribute:
 
-- [`cxx_file_stem`](#cxx_file_stem)
 - [`namespace`](./attributes.md#namespace)
-
-## cxx_file_stem
-
-By default, the name of the generated C++ header file will be the name of the module, followed by `.cxxqt.h` (and `.cxx.h` for CXX files).
-
-This can cause issues as the module is normally called `ffi` or `qobject`, so collisions would occur.
-
-The `cxx_file_stem` option allows a file name to be specified to avoid collisions.
-
-```rust,ignore
-{{#include ../../../examples/qml_features/rust/src/types.rs:book_cxx_file_stem}}
-```
-
-> Currently, `cxx-qt-gen` writes all generated header files into a single folder.
-> Therefore, you need to be careful to not produce two header files with the same filename.
-
-> We want to use the name of the Rust source file that the macro is located in (the same as CXX).
-> However, this requires [inspection APIs from `proc_macro::Span`](https://github.com/rust-lang/rust/issues/54725)
-> which is currently a nightly feature.

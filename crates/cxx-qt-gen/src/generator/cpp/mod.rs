@@ -34,8 +34,6 @@ pub struct GeneratedCppBlocks {
     pub forward_declares: Vec<String>,
     /// Additional includes for the CXX bridge
     pub includes: BTreeSet<String>,
-    /// Stem of the CXX header to include
-    pub cxx_file_stem: String,
     /// Generated QObjects
     pub qobjects: Vec<GeneratedCppQObject>,
     /// Generated extern C++Qt blocks
@@ -65,7 +63,6 @@ impl GeneratedCppBlocks {
         Ok(GeneratedCppBlocks {
             forward_declares,
             includes,
-            cxx_file_stem: parser.cxx_file_stem(),
             qobjects: structures
                 .qobjects
                 .iter()
@@ -118,7 +115,7 @@ mod tests {
     #[test]
     fn test_generated_cpp_blocks() {
         let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(cxx_file_stem = "ffi")]
+            #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
                     #[qobject]
@@ -129,26 +126,6 @@ mod tests {
         let parser = Parser::from(module).unwrap();
 
         let cpp = GeneratedCppBlocks::from(&parser).unwrap();
-        assert_eq!(cpp.cxx_file_stem, "ffi");
-        assert_eq!(cpp.qobjects.len(), 1);
-        assert_eq!(cpp.qobjects[0].name.namespace(), None);
-    }
-
-    #[test]
-    fn test_generated_cpp_blocks_cxx_file_stem() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(cxx_file_stem = "my_object")]
-            mod ffi {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let parser = Parser::from(module).unwrap();
-
-        let cpp = GeneratedCppBlocks::from(&parser).unwrap();
-        assert_eq!(cpp.cxx_file_stem, "my_object");
         assert_eq!(cpp.qobjects.len(), 1);
         assert_eq!(cpp.qobjects[0].name.namespace(), None);
     }
@@ -156,7 +133,7 @@ mod tests {
     #[test]
     fn test_generated_cpp_blocks_namespace() {
         let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(cxx_file_stem = "ffi", namespace = "cxx_qt")]
+            #[cxx_qt::bridge(namespace = "cxx_qt")]
             mod ffi {
                 extern "RustQt" {
                     #[qobject]
