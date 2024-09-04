@@ -95,7 +95,6 @@ mod tests {
         GeneratedCppBlocks {
             forward_declares: vec![],
             includes: BTreeSet::default(),
-            cxx_file_stem: "cxx_file_stem".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
@@ -226,7 +225,6 @@ mod tests {
         GeneratedCppBlocks {
             forward_declares: vec![],
             includes: BTreeSet::default(),
-            cxx_file_stem: "cxx_file_stem".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {

@@ -1,4 +1,4 @@
-#[cxx_qt::bridge(cxx_file_stem = "inheritance")]
+#[cxx_qt::bridge]
 mod inheritance {
     extern "C++" {
         include!("cxx-qt-lib/qmodelindex.h");

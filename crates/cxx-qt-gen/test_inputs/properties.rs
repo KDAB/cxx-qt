@@ -1,4 +1,4 @@
-#[cxx_qt::bridge(cxx_file_stem = "properties", namespace = "cxx_qt::my_object")]
+#[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 mod ffi {
     #[namespace = ""]
     unsafe extern "C++" {

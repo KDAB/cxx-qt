@@ -9,7 +9,7 @@
 // ANCHOR: book_bridge_macro
 
 /// The bridge definition for our QObject
-#[cxx_qt::bridge(cxx_file_stem = "cxxqt_object")]
+#[cxx_qt::bridge]
 pub mod qobject {
     // ANCHOR_END: book_bridge_macro
 

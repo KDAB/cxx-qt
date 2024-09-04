@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows a custom base class and inheritance can be used
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge(cxx_file_stem = "custom_base_class")]
+#[cxx_qt::bridge]
 pub mod qobject {
     // ANCHOR: book_base_include
     unsafe extern "C++" {

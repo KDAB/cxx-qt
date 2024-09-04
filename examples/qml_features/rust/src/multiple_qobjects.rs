@@ -6,7 +6,7 @@
 //! This example shows how multiple QObjects can be defined in one module
 
 /// A CXX-Qt bridge which shows multiple QObjects can be defined in one module
-#[cxx_qt::bridge(cxx_file_stem = "multiple_qobjects")]
+#[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qcolor.h");

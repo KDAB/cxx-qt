@@ -29,6 +29,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
                 // Rename to CxxQtConnectionType so the developer can define it
                 // in their bridges without an invisible conflict
                 #[rust_name = "CxxQtConnectionType"]
+                // If no signals are used this won't be used
+                #[allow(dead_code)]
                 type ConnectionType = cxx_qt::ConnectionType;
 
                 #[doc(hidden)]
@@ -36,6 +38,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
                 // Rename to CxxQtQMetaObjectConnection so the developer can define it
                 // in their bridges without an invisible conflict
                 #[rust_name = "CxxQtQMetaObjectConnection"]
+                // If no signals are used this won't be used
+                #[allow(dead_code)]
                 type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
             }
         },
