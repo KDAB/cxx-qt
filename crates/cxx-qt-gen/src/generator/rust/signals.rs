@@ -16,7 +16,7 @@ use crate::{
     parser::signals::ParsedSignal,
 };
 use quote::quote;
-use syn::{parse_quote, Error, FnArg, Ident, Result, Type};
+use syn::{parse_quote, FnArg, Ident, Result, Type};
 
 pub fn generate_rust_signal(
     signal: &ParsedSignal,
@@ -28,14 +28,7 @@ pub fn generate_rust_signal(
 
     let qobject_name_rust = qobject_name.rust_unqualified();
 
-    let module_ident = if let Some(ident) = qobject_name.module_ident() {
-        ident
-    } else {
-        return Err(Error::new_spanned(
-            qobject_name.rust_unqualified(),
-            format!("No Module name for {}!", qobject_name.rust_unqualified()),
-        ));
-    };
+    let module_ident = qobject_name.require_module_ident()?;
 
     let signal_name_cpp = idents.name.cxx_unqualified();
     let connect_ident_rust = idents.connect_name.rust_unqualified();

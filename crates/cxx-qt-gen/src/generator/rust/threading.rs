@@ -14,7 +14,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Error, Result};
+use syn::Result;
 
 use super::fragment::RustFragmentPair;
 
@@ -25,17 +25,7 @@ pub fn generate(
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
-    let module_ident = if let Some(ident) = qobject_names.name.module_ident() {
-        ident
-    } else {
-        return Err(Error::new_spanned(
-            qobject_names.name.rust_unqualified(),
-            format!(
-                "No Module name for {}!",
-                qobject_names.name.rust_unqualified()
-            ),
-        ));
-    };
+    let module_ident = qobject_names.name.require_module_ident()?;
 
     let cpp_struct_ident = qobject_names.name.rust_unqualified();
     let cxx_qt_thread_ident = &qobject_names.cxx_qt_thread_class;

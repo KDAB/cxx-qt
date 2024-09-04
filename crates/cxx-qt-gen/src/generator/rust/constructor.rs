@@ -188,17 +188,7 @@ pub fn generate(
         return Ok(generate_default_constructor(qobject_names, namespace));
     }
 
-    let module_ident = if let Some(ident) = qobject_names.name.module_ident() {
-        ident
-    } else {
-        return Err(Error::new_spanned(
-            qobject_names.name.rust_unqualified(),
-            format!(
-                "No Module name for {}!",
-                qobject_names.name.rust_unqualified()
-            ),
-        ));
-    };
+    let module_ident = qobject_names.name.require_module_ident()?;
 
     let mut result = GeneratedRustFragment::default();
     let namespace_internals = &namespace.internal;
