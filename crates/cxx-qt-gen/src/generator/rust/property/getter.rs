@@ -34,11 +34,17 @@ pub fn generate(
         let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
         let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;
 
+        let cxx_namespace = qobject_names.namespace_tokens();
+
         Ok(Some(RustFragmentPair {
             cxx_bridge: vec![quote! {
                 extern "Rust" {
                     #[cxx_name = #getter_wrapper_cpp]
-                    // Namespace is not needed here
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #cxx_namespace
                     unsafe fn #getter_rust<'a>(self: &'a #cpp_class_name_rust) -> &'a #cxx_ty;
                 }
             }],

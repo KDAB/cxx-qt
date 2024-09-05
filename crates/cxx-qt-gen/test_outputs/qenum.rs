@@ -75,10 +75,12 @@ mod ffi {
         type MyObject;
     }
     extern "Rust" {
+        #[namespace = "cxx_qt::my_object"]
         type MyObjectRust;
     }
     extern "Rust" {
         #[cxx_name = "myInvokableWrapper"]
+        #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
@@ -111,6 +113,7 @@ mod ffi {
         type MyRenamedObject;
     }
     extern "Rust" {
+        #[namespace = "cxx_qt::my_object"]
         type InternalObject;
     }
     extern "Rust" {

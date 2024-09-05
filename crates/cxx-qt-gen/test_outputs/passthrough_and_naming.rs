@@ -80,14 +80,17 @@ pub mod ffi {
         type MyObject;
     }
     extern "Rust" {
+        #[namespace = "cxx_qt::multi_object"]
         type MyObjectRust;
     }
     extern "Rust" {
         #[cxx_name = "getPropertyNameWrapper"]
+        #[namespace = "cxx_qt::multi_object"]
         unsafe fn property_name<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "setPropertyNameWrapper"]
+        #[namespace = "cxx_qt::multi_object"]
         fn set_property_name(self: Pin<&mut MyObject>, value: i32);
     }
     unsafe extern "C++" {
@@ -125,6 +128,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "invokableNameWrapper"]
+        #[namespace = "cxx_qt::multi_object"]
         #[doc(hidden)]
         fn invokable_name(self: Pin<&mut MyObject>);
     }
@@ -182,14 +186,17 @@ pub mod ffi {
         type SecondObject;
     }
     extern "Rust" {
+        #[namespace = "second_object"]
         type SecondObjectRust;
     }
     extern "Rust" {
         #[cxx_name = "getPropertyNameWrapper"]
+        #[namespace = "second_object"]
         unsafe fn property_name<'a>(self: &'a SecondObject) -> &'a i32;
     }
     extern "Rust" {
         #[cxx_name = "setPropertyNameWrapper"]
+        #[namespace = "second_object"]
         fn set_property_name(self: Pin<&mut SecondObject>, value: i32);
     }
     unsafe extern "C++" {
@@ -227,6 +234,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "invokableNameWrapper"]
+        #[namespace = "second_object"]
         #[doc(hidden)]
         fn invokable_name(self: Pin<&mut SecondObject>);
     }
@@ -287,6 +295,7 @@ pub mod ffi {
         type MyRustName;
     }
     extern "Rust" {
+        #[namespace = "my_namespace"]
         type ThirdObjectRust;
     }
     extern "Rust" {
