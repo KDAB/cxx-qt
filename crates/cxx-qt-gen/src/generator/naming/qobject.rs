@@ -64,12 +64,13 @@ impl QObjectNames {
         )
     }
 
+    /// Returns the tokens of the namespace attribute to be added to a rust line, or no tokens if this instance has no namespace
+    /// attribute looks like `#[namespace = "namespace::here"]`
     pub fn namespace_tokens(&self) -> TokenStream {
-        let namespace = self.name.namespace();
-        if namespace.is_none() {
-            quote! {}
-        } else {
+        if let Some(namespace) = self.name.namespace() {
             quote! { #[namespace = #namespace ] }
+        } else {
+            quote! {}
         }
     }
 }

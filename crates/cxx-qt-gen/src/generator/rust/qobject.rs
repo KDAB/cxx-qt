@@ -34,10 +34,7 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = Self::default();
 
-        generated.append(&mut generate_qobject_definitions(
-            &qobject_names,
-            &namespace_idents.namespace,
-        )?);
+        generated.append(&mut generate_qobject_definitions(&qobject_idents)?);
 
         // Generate methods for the properties, invokables, signals
         generated.append(&mut generate_rust_properties(
@@ -112,21 +109,14 @@ impl GeneratedRustFragment {
 }
 
 /// Generate the C++ and Rust CXX definitions for the QObject
-fn generate_qobject_definitions(
-    qobject_idents: &QObjectNames,
-    namespace: &str,
-) -> Result<GeneratedRustFragment> {
+fn generate_qobject_definitions(qobject_idents: &QObjectNames) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
 
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust_unqualified();
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
-    let namespace = if !namespace.is_empty() {
-        Some(quote! { #[namespace=#namespace] })
-    } else {
-        None
-    };
+    let namespace = qobject_idents.namespace_tokens();
     let cxx_name = if cpp_class_name_rust.to_string() == *cpp_class_name_cpp {
         quote! {}
     } else {
@@ -155,7 +145,11 @@ fn generate_qobject_definitions(
             },
             quote! {
                 extern "Rust" {
-                    #namespace // Needed for namespacing QObjects
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #namespace
                     type #rust_struct_name_rust;
                 }
             },

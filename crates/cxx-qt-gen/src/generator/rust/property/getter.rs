@@ -40,7 +40,11 @@ pub fn generate(
             cxx_bridge: vec![quote! {
                 extern "Rust" {
                     #[cxx_name = #getter_wrapper_cpp]
-                    #cxx_namespace // Needed so QObjects can have a namespace
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #cxx_namespace
                     unsafe fn #getter_rust<'a>(self: &'a #cpp_class_name_rust) -> &'a #cxx_ty;
                 }
             }],

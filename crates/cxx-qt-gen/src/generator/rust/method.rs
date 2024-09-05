@@ -53,7 +53,11 @@ pub fn generate_rust_methods(
                     //
                     // CXX ends up generating the source, then we generate the matching header.
                     #[cxx_name = #wrapper_ident_cpp]
-                    #cxx_namespace // Needed so QObjects can have a namespace
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #cxx_namespace
                     #[doc(hidden)]
                     #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }
