@@ -7,7 +7,8 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use convert_case::{Case, Casing};
-use quote::format_ident;
+use proc_macro2::TokenStream;
+use quote::{format_ident, quote};
 use syn::{Ident, Result};
 
 /// Names for parts of a Q_OBJECT
@@ -61,6 +62,15 @@ impl QObjectNames {
             "cxx_qt_ffi_{ident}_{suffix}",
             ident = self.name.cxx_unqualified().to_case(Case::Snake)
         )
+    }
+
+    pub fn namespace_tokens(&self) -> TokenStream {
+        let namespace = self.name.namespace();
+        if namespace.is_none() {
+            quote! {}
+        } else {
+            quote! { #[namespace = #namespace ] }
+        }
     }
 }
 

@@ -155,7 +155,7 @@ fn generate_qobject_definitions(
             },
             quote! {
                 extern "Rust" {
-                    #namespace
+                    #namespace // Needed for namespacing QObjects
                     type #rust_struct_name_rust;
                 }
             },
@@ -233,6 +233,7 @@ mod tests {
             &rust.cxx_mod_contents[1],
             quote! {
                 extern "Rust" {
+                    #[namespace = "cxx_qt"]
                     type MyObjectRust;
                 }
             },
