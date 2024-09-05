@@ -34,7 +34,7 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = Self::default();
 
-        generated.append(&mut generate_qobject_definitions(&qobject_idents)?);
+        generated.append(&mut generate_qobject_definitions(&qobject_names)?);
 
         // Generate methods for the properties, invokables, signals
         generated.append(&mut generate_rust_properties(

@@ -42,7 +42,7 @@ pub fn generate_rust_methods(
             std::mem::swap(&mut unsafe_call, &mut None);
         }
 
-        let cxx_namespace = qobject_idents.namespace_tokens();
+        let cxx_namespace = qobject_names.namespace_tokens();
 
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote_spanned! {

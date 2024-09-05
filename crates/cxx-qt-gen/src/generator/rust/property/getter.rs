@@ -34,7 +34,7 @@ pub fn generate(
         let qualified_ty = syn_type_cxx_bridge_to_qualified(cxx_ty, type_names)?;
         let qualified_impl = type_names.rust_qualified(cpp_class_name_rust)?;
 
-        let cxx_namespace = qobject_idents.namespace_tokens();
+        let cxx_namespace = qobject_names.namespace_tokens();
 
         Ok(Some(RustFragmentPair {
             cxx_bridge: vec![quote! {

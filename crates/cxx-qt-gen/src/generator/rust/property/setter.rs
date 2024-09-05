@@ -53,7 +53,7 @@ pub fn generate(
             quote! {}
         };
 
-        let cxx_namespace = qobject_idents.namespace_tokens();
+        let cxx_namespace = qobject_names.namespace_tokens();
 
         Ok(Some(RustFragmentPair {
             cxx_bridge: vec![quote! {
