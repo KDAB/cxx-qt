@@ -6,8 +6,8 @@
 use crate::parser::method::MethodFields;
 use crate::parser::{check_safety, separate_docs};
 use crate::syntax::{attribute::attribute_take_path, safety::Safety};
+use core::ops::Deref;
 use quote::format_ident;
-use std::ops::Deref;
 use syn::{Attribute, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]

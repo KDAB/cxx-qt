@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety};
-use std::ops::Deref;
+use core::ops::Deref;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
 
 use crate::parser::method::MethodFields;

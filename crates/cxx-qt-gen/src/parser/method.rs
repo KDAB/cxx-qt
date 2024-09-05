@@ -8,8 +8,8 @@ use crate::{
     parser::parameter::ParsedFunctionParameter,
     syntax::{attribute::attribute_take_path, safety::Safety},
 };
+use core::ops::Deref;
 use std::collections::HashSet;
-use std::ops::Deref;
 use syn::{Error, ForeignItemFn, Ident, Result};
 
 use crate::parser::check_safety;
