@@ -85,7 +85,7 @@ impl Parser {
                             } else if name_value.path.is_ident("cxx_file_stem") {
                                 return Err(Error::new(
                                     meta.span(),
-                                    "cxx_file_stem is unsupported: TODO new system message",
+                                    "cxx_file_stem is unsupported, instead the input file name will be used",
                                 ));
                             }
                         }
