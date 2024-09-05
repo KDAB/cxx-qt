@@ -119,6 +119,7 @@ impl<'a> Structures<'a> {
 mod tests {
     use super::*;
     // use crate::tests::assert_parse_errors;
+    use crate::tests::assert_parse_errors;
     use crate::Parser;
     use quote::format_ident;
     use syn::{parse_quote, ItemMod};
@@ -354,74 +355,72 @@ mod tests {
         ]);
     }
 
-    // TODO: figure out how to do this since the reference to parser is a problem
-    // #[test]
-    // fn test_create_invalid_structures() {
-    //     assert_parse_errors! {
-    //         |module| {
-    //             let parser = Parser::from(module).unwrap();
-    //             Structures::new(&parser.cxx_qt_data)
-    //         } =>
-    //
-    //         {
-    //             // Unknown QObject
-    //             #[cxx_qt::bridge]
-    //             mod ffi {
-    //                 extern "RustQt" {
-    //                     #[qobject]
-    //                     type MyObject = super::MyObjectRust;
-    //                 }
-    //
-    //                 unsafe extern "RustQt" {
-    //                     #[qsignal]
-    //                     fn ready(self: Pin<&mut UnknownObject>);
-    //                 }
-    //             }
-    //         }
-    //
-    //         {
-    //             // Invalid QObject for QEnum
-    //             #[cxx_qt::bridge]
-    //             mod ffi {
-    //                 #[qenum(MyObject)]
-    //                 enum MyEnum {
-    //                     A,
-    //                 }
-    //             }
-    //         }
-    //
-    //         {
-    //             // Undeclared QObject for method
-    //             #[cxx_qt::bridge]
-    //             mod ffi {
-    //                 unsafe extern "RustQt" {
-    //                     #[qinvokable]
-    //                     fn test_fn(self: Pin<&mut MyObject>);
-    //                 }
-    //             }
-    //         }
-    //
-    //         {
-    //             // Undeclared QObject for signal
-    //             #[cxx_qt::bridge]
-    //             mod ffi {
-    //                 unsafe extern "RustQt" {
-    //                     #[qsignal]
-    //                     fn test_fn(self: Pin<&mut MyObject>);
-    //                 }
-    //             }
-    //         }
-    //
-    //         {
-    //             // Undeclared QObject for inherited method
-    //             #[cxx_qt::bridge]
-    //             mod ffi {
-    //                 unsafe extern "RustQt" {
-    //                     #[inherit]
-    //                     fn test_fn(self: Pin<&mut MyObject>);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    #[test]
+    fn test_create_invalid_structures() {
+        assert_parse_errors! {
+            |module| {
+                Structures::new(&Parser::from(module).unwrap().cxx_qt_data).map(|_| ())
+            } =>
+
+            {
+                // Unknown QObject
+                #[cxx_qt::bridge]
+                mod ffi {
+                    extern "RustQt" {
+                        #[qobject]
+                        type MyObject = super::MyObjectRust;
+                    }
+
+                    unsafe extern "RustQt" {
+                        #[qsignal]
+                        fn ready(self: Pin<&mut UnknownObject>);
+                    }
+                }
+            }
+
+            {
+                // Invalid QObject for QEnum
+                #[cxx_qt::bridge]
+                mod ffi {
+                    #[qenum(MyObject)]
+                    enum MyEnum {
+                        A,
+                    }
+                }
+            }
+
+            {
+                // Undeclared QObject for method
+                #[cxx_qt::bridge]
+                mod ffi {
+                    unsafe extern "RustQt" {
+                        #[qinvokable]
+                        fn test_fn(self: Pin<&mut MyObject>);
+                    }
+                }
+            }
+
+            {
+                // Undeclared QObject for signal
+                #[cxx_qt::bridge]
+                mod ffi {
+                    unsafe extern "RustQt" {
+                        #[qsignal]
+                        fn test_fn(self: Pin<&mut MyObject>);
+                    }
+                }
+            }
+
+            {
+                // Undeclared QObject for inherited method
+                #[cxx_qt::bridge]
+                mod ffi {
+                    unsafe extern "RustQt" {
+                        #[inherit]
+                        fn test_fn(self: Pin<&mut MyObject>);
+                    }
+                }
+            }
+        }
+    }
 }

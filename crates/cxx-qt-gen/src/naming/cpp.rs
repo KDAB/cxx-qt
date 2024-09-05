@@ -356,9 +356,12 @@ mod tests {
 
     #[test]
     fn test_invalid_types() {
-        let type_names = TypeNames::default();
+        let mut type_names = TypeNames::default();
         assert_parse_errors! {
-            |ty| syn_type_to_cpp_type(&ty, &type_names) =>
+            |ty| {
+                type_names.mock_insert("A", None, Some("A1"), None);
+                syn_type_to_cpp_type(&ty, &type_names)
+            } =>
 
             { (A) }
             { Option<A> }
