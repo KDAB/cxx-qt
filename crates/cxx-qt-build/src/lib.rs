@@ -773,7 +773,11 @@ impl CxxQtBuilder {
                 })
                 .collect::<HashSet<String>>();
             if dirs.len() > 1 {
-                panic!("Only one directory is support per QmlModule for rust_files");
+                panic!(
+                    "Only one directory is supported per QmlModule for rust_files.\n\
+                    This is due to Qt bug https://bugreports.qt.io/browse/QTBUG-93443\n\
+                    Found directories: {dirs:?}"
+                );
             }
 
             for files in generate_cxxqt_cpp_files(
