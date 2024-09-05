@@ -55,12 +55,21 @@ impl QObjectNames {
         }
     }
 
-    /// For a given ident generate the mangled threading suffix ident
-    pub fn cxx_qt_ffi_method(&self, suffix: &str) -> Ident {
-        format_ident!(
+    /// For a given C++ function, generate a free function name specific to this class.
+    /// This is then used can be used to wrap the free function as a new member function through
+    /// CXX.
+    pub fn cxx_qt_ffi_method(&self, cxx_name: &str) -> Name {
+        let ident = format_ident!(
             "cxx_qt_ffi_{ident}_{suffix}",
-            ident = self.name.cxx_unqualified().to_case(Case::Snake)
-        )
+            ident = self.name.cxx_unqualified().to_case(Case::Snake),
+            suffix = cxx_name.to_case(Case::Snake)
+        );
+        let mut name = Name::new(ident);
+        if let Some(module) = self.name.module() {
+            name = name.with_module(module.clone());
+        }
+        name.with_namespace("rust::cxxqt1".to_owned())
+            .with_cxx_name(cxx_name.to_owned())
     }
 }
 
@@ -105,15 +114,24 @@ pub mod tests {
         );
 
         assert_eq!(
-            names.cxx_qt_ffi_method("threading_clone"),
-            "cxx_qt_ffi_my_object_threading_clone"
+            names.cxx_qt_ffi_method("threading_clone").into_cxx_parts(),
+            (
+                format_ident!("cxx_qt_ffi_my_object_threading_clone"),
+                vec![
+                    syn::parse_quote! { #[cxx_name="threading_clone"] },
+                    syn::parse_quote! { #[namespace="rust::cxxqt1"] },
+                ],
+                syn::parse_quote! { qobject::cxx_qt_ffi_my_object_threading_clone}
+            )
         );
+        // These have the same values for namespace, and Rust module, so no need to
+        // assert those again
         assert_eq!(
-            names.cxx_qt_ffi_method("threading_drop"),
+            names.cxx_qt_ffi_method("threading_drop").rust_unqualified(),
             "cxx_qt_ffi_my_object_threading_drop"
         );
         assert_eq!(
-            names.cxx_qt_ffi_method("queue_boxed_fn"),
+            names.cxx_qt_ffi_method("queue_boxed_fn").rust_unqualified(),
             "cxx_qt_ffi_my_object_queue_boxed_fn"
         );
     }

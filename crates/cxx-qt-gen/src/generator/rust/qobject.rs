@@ -98,11 +98,7 @@ impl GeneratedRustFragment {
             module_ident,
         )?);
 
-        generated.append(&mut cxxqttype::generate(
-            &qobject_idents,
-            type_names,
-            module_ident,
-        )?);
+        generated.append(&mut cxxqttype::generate(&qobject_idents, type_names)?);
 
         Ok(generated)
     }
@@ -258,10 +254,10 @@ mod tests {
             &rust.cxx_mod_contents[4],
             quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[cxx_name = "unsafeRust"]
                     #[namespace = "rust::cxxqt1"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_my_object_rust(outer: &MyObject) -> &MyObjectRust;
+                    fn cxx_qt_ffi_my_object_unsafe_rust(outer: &MyObject) -> &MyObjectRust;
                 }
             },
         );
@@ -269,10 +265,10 @@ mod tests {
             &rust.cxx_mod_contents[5],
             quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[cxx_name = "unsafeRustMut"]
                     #[namespace = "rust::cxxqt1"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_my_object_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+                    fn cxx_qt_ffi_my_object_unsafe_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
                 }
             },
         );

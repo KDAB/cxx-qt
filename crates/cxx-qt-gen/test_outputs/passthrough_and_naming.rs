@@ -162,16 +162,18 @@ pub mod ffi {
         fn create_rs_my_object_rust() -> Box<MyObjectRust>;
     }
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[cxx_name = "unsafeRust"]
         #[namespace = "rust::cxxqt1"]
-        #[doc(hidden)]
-        fn cxx_qt_ffi_my_object_rust(outer: &MyObject) -> &MyObjectRust;
+        fn cxx_qt_ffi_my_object_unsafe_rust(outer: &MyObject) -> &MyObjectRust;
     }
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[cxx_name = "unsafeRustMut"]
         #[namespace = "rust::cxxqt1"]
-        #[doc(hidden)]
-        fn cxx_qt_ffi_my_object_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+        fn cxx_qt_ffi_my_object_unsafe_rust_mut(
+            outer: Pin<&mut MyObject>,
+        ) -> Pin<&mut MyObjectRust>;
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]
@@ -266,16 +268,16 @@ pub mod ffi {
         fn create_rs_second_object_rust() -> Box<SecondObjectRust>;
     }
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[cxx_name = "unsafeRust"]
         #[namespace = "rust::cxxqt1"]
-        #[doc(hidden)]
-        fn cxx_qt_ffi_second_object_rust(outer: &SecondObject) -> &SecondObjectRust;
+        fn cxx_qt_ffi_second_object_unsafe_rust(outer: &SecondObject) -> &SecondObjectRust;
     }
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[cxx_name = "unsafeRustMut"]
         #[namespace = "rust::cxxqt1"]
-        #[doc(hidden)]
-        fn cxx_qt_ffi_second_object_rust_mut(
+        fn cxx_qt_ffi_second_object_unsafe_rust_mut(
             outer: Pin<&mut SecondObject>,
         ) -> Pin<&mut SecondObjectRust>;
     }
@@ -301,16 +303,16 @@ pub mod ffi {
         fn create_rs_third_object_rust() -> Box<ThirdObjectRust>;
     }
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[cxx_name = "unsafeRust"]
         #[namespace = "rust::cxxqt1"]
-        #[doc(hidden)]
-        fn cxx_qt_ffi_my_cxx_name_rust(outer: &MyRustName) -> &ThirdObjectRust;
+        fn cxx_qt_ffi_my_cxx_name_unsafe_rust(outer: &MyRustName) -> &ThirdObjectRust;
     }
     unsafe extern "C++" {
+        #[doc(hidden)]
         #[cxx_name = "unsafeRustMut"]
         #[namespace = "rust::cxxqt1"]
-        #[doc(hidden)]
-        fn cxx_qt_ffi_my_cxx_name_rust_mut(
+        fn cxx_qt_ffi_my_cxx_name_unsafe_rust_mut(
             outer: Pin<&mut MyRustName>,
         ) -> Pin<&mut ThirdObjectRust>;
     }
@@ -563,16 +565,16 @@ pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
 impl ::core::ops::Deref for ffi::MyObject {
     type Target = MyObjectRust;
     fn deref(&self) -> &Self::Target {
-        ffi::cxx_qt_ffi_my_object_rust(self)
+        ffi::cxx_qt_ffi_my_object_unsafe_rust(self)
     }
 }
 impl ::cxx_qt::CxxQtType for ffi::MyObject {
     type Rust = MyObjectRust;
     fn rust(&self) -> &Self::Rust {
-        ffi::cxx_qt_ffi_my_object_rust(self)
+        ffi::cxx_qt_ffi_my_object_unsafe_rust(self)
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-        ffi::cxx_qt_ffi_my_object_rust_mut(self)
+        ffi::cxx_qt_ffi_my_object_unsafe_rust_mut(self)
     }
 }
 impl ffi::SecondObject {
@@ -726,16 +728,16 @@ pub fn create_rs_second_object_rust() -> std::boxed::Box<SecondObjectRust> {
 impl ::core::ops::Deref for ffi::SecondObject {
     type Target = SecondObjectRust;
     fn deref(&self) -> &Self::Target {
-        ffi::cxx_qt_ffi_second_object_rust(self)
+        ffi::cxx_qt_ffi_second_object_unsafe_rust(self)
     }
 }
 impl ::cxx_qt::CxxQtType for ffi::SecondObject {
     type Rust = SecondObjectRust;
     fn rust(&self) -> &Self::Rust {
-        ffi::cxx_qt_ffi_second_object_rust(self)
+        ffi::cxx_qt_ffi_second_object_unsafe_rust(self)
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-        ffi::cxx_qt_ffi_second_object_rust_mut(self)
+        ffi::cxx_qt_ffi_second_object_unsafe_rust_mut(self)
     }
 }
 #[doc(hidden)]
@@ -745,16 +747,16 @@ pub fn create_rs_third_object_rust() -> std::boxed::Box<ThirdObjectRust> {
 impl ::core::ops::Deref for ffi::MyRustName {
     type Target = ThirdObjectRust;
     fn deref(&self) -> &Self::Target {
-        ffi::cxx_qt_ffi_my_cxx_name_rust(self)
+        ffi::cxx_qt_ffi_my_cxx_name_unsafe_rust(self)
     }
 }
 impl ::cxx_qt::CxxQtType for ffi::MyRustName {
     type Rust = ThirdObjectRust;
     fn rust(&self) -> &Self::Rust {
-        ffi::cxx_qt_ffi_my_cxx_name_rust(self)
+        ffi::cxx_qt_ffi_my_cxx_name_unsafe_rust(self)
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-        ffi::cxx_qt_ffi_my_cxx_name_rust_mut(self)
+        ffi::cxx_qt_ffi_my_cxx_name_unsafe_rust_mut(self)
     }
 }
 impl ffi::QPushButton {

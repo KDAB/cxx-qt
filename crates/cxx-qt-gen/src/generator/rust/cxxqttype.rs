@@ -8,39 +8,43 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::Result;
 
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
     qobject_ident: &QObjectNames,
     type_names: &TypeNames,
-    module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
     let cpp_struct_ident = &qobject_ident.name.rust_unqualified();
     let rust_struct_ident = &qobject_ident.rust_struct.rust_unqualified();
-    let rust_fn = qobject_ident.cxx_qt_ffi_method("rust");
-    let rust_mut_fn = qobject_ident.cxx_qt_ffi_method("rust_mut");
+
+    let (rust_fn_name, rust_fn_attrs, rust_fn_qualified) = qobject_ident
+        .cxx_qt_ffi_method("unsafeRust")
+        .into_cxx_parts();
+
+    let (rust_mut_fn_name, rust_mut_fn_attrs, rust_mut_fn_qualified) = qobject_ident
+        .cxx_qt_ffi_method("unsafeRustMut")
+        .into_cxx_parts();
+
     let qualified_impl = type_names.rust_qualified(cpp_struct_ident)?;
 
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
             quote! {
                 unsafe extern "C++" {
-                    #[cxx_name = "unsafeRust"]
-                    #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn #rust_fn(outer: &#cpp_struct_ident) -> &#rust_struct_ident;
+                    #(#rust_fn_attrs)*
+                    fn #rust_fn_name(outer: &#cpp_struct_ident) -> &#rust_struct_ident;
                 }
             },
             quote! {
                 unsafe extern "C++" {
-                    #[cxx_name = "unsafeRustMut"]
-                    #[namespace = "rust::cxxqt1"]
                     #[doc(hidden)]
-                    fn #rust_mut_fn(outer: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
+                    #(#rust_mut_fn_attrs)*
+                    fn #rust_mut_fn_name(outer: Pin<&mut #cpp_struct_ident>) -> Pin<&mut #rust_struct_ident>;
                 }
             },
         ],
@@ -50,7 +54,7 @@ pub fn generate(
                     type Target = #rust_struct_ident;
 
                     fn deref(&self) -> &Self::Target {
-                        #module_ident::#rust_fn(self)
+                        #rust_fn_qualified(self)
                     }
                 }
             },
@@ -59,11 +63,11 @@ pub fn generate(
                     type Rust = #rust_struct_ident;
 
                     fn rust(&self) -> &Self::Rust {
-                        #module_ident::#rust_fn(self)
+                        #rust_fn_qualified(self)
                     }
 
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        #module_ident::#rust_mut_fn(self)
+                        #rust_mut_fn_qualified(self)
                     }
                 }
             },
@@ -88,19 +92,12 @@ mod tests {
 
     use crate::parser::qobject::tests::create_parsed_qobject;
 
-    use quote::format_ident;
-
     #[test]
     fn test_generate_rust_cxxqttype() {
         let qobject = create_parsed_qobject();
         let qobject_idents = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
 
-        let generated = generate(
-            &qobject_idents,
-            &TypeNames::mock(),
-            &format_ident!("qobject"),
-        )
-        .unwrap();
+        let generated = generate(&qobject_idents, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
@@ -111,10 +108,10 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[cxx_name = "unsafeRust"]
                     #[namespace = "rust::cxxqt1"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_my_object_rust(outer: &MyObject) -> &MyObjectRust;
+                    fn cxx_qt_ffi_my_object_unsafe_rust(outer: &MyObject) -> &MyObjectRust;
                 }
             },
         );
@@ -122,10 +119,10 @@ mod tests {
             &generated.cxx_mod_contents[1],
             quote! {
                 unsafe extern "C++" {
+                    #[doc(hidden)]
                     #[cxx_name = "unsafeRustMut"]
                     #[namespace = "rust::cxxqt1"]
-                    #[doc(hidden)]
-                    fn cxx_qt_ffi_my_object_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+                    fn cxx_qt_ffi_my_object_unsafe_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
                 }
             },
         );
@@ -138,7 +135,7 @@ mod tests {
                     type Target = MyObjectRust;
 
                     fn deref(&self) -> &Self::Target {
-                        qobject::cxx_qt_ffi_my_object_rust(self)
+                        qobject::cxx_qt_ffi_my_object_unsafe_rust(self)
                     }
                 }
             },
@@ -150,11 +147,11 @@ mod tests {
                     type Rust = MyObjectRust;
 
                     fn rust(&self) -> &Self::Rust {
-                        qobject::cxx_qt_ffi_my_object_rust(self)
+                        qobject::cxx_qt_ffi_my_object_unsafe_rust(self)
                     }
 
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        qobject::cxx_qt_ffi_my_object_rust_mut(self)
+                        qobject::cxx_qt_ffi_my_object_unsafe_rust_mut(self)
                     }
                 }
             },

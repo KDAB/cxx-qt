@@ -213,6 +213,32 @@ impl Name {
         self.namespace.as_deref()
     }
 
+    /// Get the module of the type in Rust
+    /// This is usually the name of the bridge module.
+    pub fn module(&self) -> Option<&Path> {
+        self.module.as_ref()
+    }
+
+    /// Destructure the Name into the parts needed to generate a CXX bridge
+    /// 1. The ident of the function
+    /// 2. Any attributes like cxx_name and namespace
+    /// 3. The rust_qualified path to access the function (if not needed use _ during destructuring)
+    pub fn into_cxx_parts(self) -> (Ident, Vec<Attribute>, Path) {
+        let rust_qualified = self.rust_qualified().clone();
+        let cxx_name: Option<Attribute> = self.cxx.map(|cxx| {
+            syn::parse_quote! { #[cxx_name = #cxx] }
+        });
+        let namespace = self
+            .namespace
+            .map(|namespace| syn::parse_quote! { #[namespace=#namespace] });
+
+        (
+            self.rust,
+            cxx_name.into_iter().chain(namespace).collect(),
+            rust_qualified,
+        )
+    }
+
     /// Get the fully qualified name of the type in C++.
     ///
     /// This is the namespace followed by the unqualified name.
