@@ -14,6 +14,7 @@
 #include "basic_cxx_qt/src/empty.cxxqt.h"
 #include "basic_cxx_qt/src/lib.cxxqt.h"
 #include "basic_cxx_qt/src/types.cxxqt.h"
+#include "basic_cxx_qt/src/naming.cxxqt.h"
 
 class CxxQtTest : public QObject
 {
@@ -24,9 +25,15 @@ private Q_SLOTS:
   void test_basic_interaction()
   {
     cxx_qt::my_object::MyObject obj;
+    object_namespace::RenamedObject obj2;
+    bridge_namespace::NamedObject obj3;
 
     obj.sayHi(QStringLiteral("Hello World!"), 32);
 
+    const auto value1 = obj2.getDouble();
+    QCOMPARE(value1, 50);
+
+    obj3.sayHi(QStringLiteral("Hello World!"), 32);
     // Check that an invokable can be called and the return value is correct
     const auto value = obj.doubleNumber(32);
     qInfo() << "Double of 32 is:" << value;

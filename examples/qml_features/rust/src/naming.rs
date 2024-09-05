@@ -4,9 +4,10 @@ use std::pin::Pin;
 pub mod qobject {
     unsafe extern "RustQt" {
         #[qobject]
-        #[qml_element = "RenamedObject"]
+        #[qml_element]
         #[qproperty(i32, num)]
-        // #[cxx_name = "RenamedObject"]
+        #[cxx_name = "RenamedObject"]
+        #[namespace = "my_namespace"]
         type NamedObject = super::NamedObjectRust;
     }
 
