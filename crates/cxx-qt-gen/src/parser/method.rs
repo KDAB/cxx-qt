@@ -41,6 +41,8 @@ pub struct ParsedMethod {
     pub specifiers: HashSet<ParsedQInvokableSpecifiers>,
     /// Whether the method is qinvokable
     pub is_qinvokable: bool,
+    // No docs field since the docs should be on the method implementation outside the bridge
+    // This means any docs on the bridge declaration would be ignored
 }
 
 impl ParsedMethod {
