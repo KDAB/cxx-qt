@@ -24,3 +24,4 @@ pub mod singleton;
 pub mod threading;
 pub mod types;
 pub mod uncreatable;
+mod naming;
