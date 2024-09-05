@@ -5,28 +5,15 @@
 
 use crate::parser::method::MethodFields;
 use crate::parser::{check_safety, separate_docs};
-use crate::{
-    naming::Name,
-    parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::attribute_take_path, safety::Safety},
-};
+use crate::syntax::{attribute::attribute_take_path, safety::Safety};
+use core::ops::Deref;
 use quote::format_ident;
 use syn::{Attribute, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
-    /// The original [syn::ForeignItemFn] of the inherited method declaration
-    pub method: ForeignItemFn,
-    /// The type of the self argument
-    pub qobject_ident: Ident,
-    /// whether the inherited method is marked as mutable
-    pub mutable: bool,
-    /// Whether the method is safe to call.
-    pub safe: bool,
-    /// the parameters of the method, without the `self` argument
-    pub parameters: Vec<ParsedFunctionParameter>,
-    /// the name of the function in Rust, as well as C++
-    pub name: Name,
+    /// The common fields which are available on all callable types
+    pub method_fields: MethodFields,
     /// All the docs (each line) of the inherited method
     pub docs: Vec<Attribute>,
 }
@@ -36,29 +23,28 @@ impl ParsedInheritedMethod {
         check_safety(&method, &safety)?;
 
         let docs = separate_docs(&mut method);
-        let invokable_fields = MethodFields::parse(&method, docs)?;
+        let mut fields = MethodFields::parse(method)?;
 
         // This block seems unnecessary but since attrs are passed through on generator/rust/inherit.rs a duplicate attr would occur without it
-        attribute_take_path(&mut method.attrs, &["cxx_name"]);
+        attribute_take_path(&mut fields.method.attrs, &["cxx_name"]);
 
-        Ok(Self::from_invokable_fields(invokable_fields, method))
-    }
-
-    fn from_invokable_fields(fields: MethodFields, method: ForeignItemFn) -> Self {
-        Self {
-            method,
-            qobject_ident: fields.qobject_ident,
-            mutable: fields.mutable,
-            safe: fields.safe,
-            parameters: fields.parameters,
-            name: fields.name,
-            docs: fields.docs,
-        }
+        Ok(Self {
+            method_fields: fields,
+            docs,
+        })
     }
 
     /// the name of the wrapper function in C++
     pub fn wrapper_ident(&self) -> Ident {
         format_ident!("{}CxxQtInherit", self.name.cxx_unqualified())
+    }
+}
+
+impl Deref for ParsedInheritedMethod {
+    type Target = MethodFields;
+
+    fn deref(&self) -> &Self::Target {
+        &self.method_fields
     }
 }
 

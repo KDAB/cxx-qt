@@ -251,6 +251,7 @@ mod tests {
     use super::*;
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
+    use crate::parser::method::MethodFields;
     use crate::tests::assert_tokens_eq;
     use quote::{format_ident, quote};
     use syn::{parse_quote, ForeignItemFn, Item};
@@ -378,7 +379,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
-        let qsignal = ParsedSignal::mock_with_method(&method);
+        let qsignal = ParsedSignal::mock(&method);
 
         let type_names = TypeNames::mock();
 
@@ -412,7 +413,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
-        let qsignal = ParsedSignal::mock_with_method(&method);
+        let qsignal = ParsedSignal::mock(&method);
         let qobject_names = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
@@ -553,10 +554,7 @@ mod tests {
         let method = parse_quote! {
             unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
         };
-        let qsignal = ParsedSignal {
-            safe: false,
-            ..ParsedSignal::mock_with_method(&method)
-        };
+        let qsignal = ParsedSignal::mock(&method);
         let qobject_names = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
@@ -700,7 +698,7 @@ mod tests {
         };
         let qsignal = ParsedSignal {
             inherit: true,
-            ..ParsedSignal::mock_with_method(&method)
+            ..ParsedSignal::mock(&method)
         };
         let qobject_names = create_qobjectname();
 
@@ -838,10 +836,14 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
+        let mock = ParsedSignal::mock(&method);
         let qsignal = ParsedSignal {
-            name: Name::new(format_ident!("ready")),
+            method_fields: MethodFields {
+                name: Name::new(format_ident!("ready")),
+                ..mock.method_fields
+            },
             private: true,
-            ..ParsedSignal::mock_with_method(&method)
+            ..mock
         };
 
         let type_names = TypeNames::mock();
