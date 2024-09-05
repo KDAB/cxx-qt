@@ -6,7 +6,6 @@
 use syn::ForeignItemFn;
 
 use crate::naming::Name;
-use crate::syntax::attribute::attribute_take_path;
 use crate::syntax::safety::Safety;
 use crate::{
     generator::naming::property::{NameState, QPropertyNames},

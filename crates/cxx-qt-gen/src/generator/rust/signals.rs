@@ -252,7 +252,6 @@ mod tests {
 
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::parser::method::MethodFields;
-    use crate::syntax::safety::Safety;
     use crate::tests::assert_tokens_eq;
     use quote::{format_ident, quote};
     use syn::{parse_quote, ForeignItemFn, Item};
@@ -555,10 +554,7 @@ mod tests {
         let method = parse_quote! {
             unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
         };
-        let qsignal = ParsedSignal {
-            safe: false,
-            ..ParsedSignal::mock_with_method(&method)
-        };
+        let qsignal = ParsedSignal::mock(&method);
         let qobject_names = create_qobjectname();
 
         let mut type_names = TypeNames::mock();
