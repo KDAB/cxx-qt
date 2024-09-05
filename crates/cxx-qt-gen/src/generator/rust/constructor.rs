@@ -180,24 +180,25 @@ fn unsafe_if(condition: bool) -> Option<TokenStream> {
 
 pub fn generate(
     constructors: &[&Constructor],
-    qobject_idents: &QObjectNames,
+    qobject_names: &QObjectNames,
     namespace: &NamespaceName,
     type_names: &TypeNames,
-    module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     if constructors.is_empty() {
-        return Ok(generate_default_constructor(qobject_idents, namespace));
+        return Ok(generate_default_constructor(qobject_names, namespace));
     }
+
+    let module_ident = qobject_names.name.require_module_ident()?;
 
     let mut result = GeneratedRustFragment::default();
     let namespace_internals = &namespace.internal;
 
-    let qobject_name = qobject_idents.name.cxx_unqualified();
-    let qobject_name_rust = qobject_idents.name.rust_unqualified();
+    let qobject_name = qobject_names.name.cxx_unqualified();
+    let qobject_name_rust = qobject_names.name.rust_unqualified();
     let qobject_name_rust_qualified = type_names.rust_qualified(qobject_name_rust)?;
     let qobject_name_snake = qobject_name.to_string().to_case(Case::Snake);
 
-    let rust_struct_name_rust = qobject_idents.rust_struct.rust_unqualified();
+    let rust_struct_name_rust = qobject_names.rust_struct.rust_unqualified();
 
     for (index, constructor) in constructors.iter().enumerate() {
         let lifetime = constructor.lifetime.as_ref().map(|lifetime| {
@@ -468,14 +469,7 @@ mod tests {
 
         type_names.mock_insert("QString", None, None, None);
         type_names.mock_insert("QObject", None, None, None);
-        generate(
-            constructors,
-            &mock_name(),
-            &mock_namespace(),
-            &type_names,
-            &format_ident!("qobject"),
-        )
-        .unwrap()
+        generate(constructors, &mock_name(), &mock_namespace(), &type_names).unwrap()
     }
 
     #[test]
@@ -808,7 +802,6 @@ mod tests {
             &mock_name(),
             &mock_namespace(),
             &TypeNames::mock(),
-            &format_ident!("ffi"),
         );
 
         assert!(result.is_err());

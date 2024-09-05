@@ -19,11 +19,11 @@ use syn::{Result, Type};
 
 pub fn generate(
     idents: &QPropertyNames,
-    qobject_idents: &QObjectNames,
+    qobject_names: &QObjectNames,
     cxx_ty: &Type,
     type_names: &TypeNames,
 ) -> Result<Option<RustFragmentPair>> {
-    let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
+    let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
     if let (Some(NameState::Auto(setter)), Some(setter_wrapper)) =
         (&idents.setter, &idents.setter_wrapper)

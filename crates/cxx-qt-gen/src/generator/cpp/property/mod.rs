@@ -26,7 +26,7 @@ pub fn generate_cpp_properties(
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let mut signals = vec![];
-    let qobject_ident = qobject_idents.name.cxx_unqualified();
+    let name = &qobject_idents.name;
 
     for property in properties {
         // Cache the idents as they are used in multiple places
@@ -37,7 +37,7 @@ pub fn generate_cpp_properties(
             .metaobjects
             .push(meta::generate(&idents, &property.flags, &cxx_ty));
 
-        if let Some(getter) = getter::generate(&idents, &qobject_ident, &cxx_ty) {
+        if let Some(getter) = getter::generate(&idents, name, &cxx_ty) {
             generated.methods.push(getter);
         }
 
@@ -45,7 +45,7 @@ pub fn generate_cpp_properties(
             generated.private_methods.push(getter_wrapper);
         }
 
-        if let Some(setter) = setter::generate(&idents, &qobject_ident, &cxx_ty) {
+        if let Some(setter) = setter::generate(&idents, name, &cxx_ty) {
             generated.methods.push(setter)
         }
 
@@ -53,7 +53,7 @@ pub fn generate_cpp_properties(
             generated.private_methods.push(setter_wrapper)
         }
 
-        if let Some(notify) = signal::generate(&idents, qobject_idents) {
+        if let Some(notify) = signal::generate(&idents, name) {
             signals.push(notify)
         }
     }

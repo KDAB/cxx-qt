@@ -20,47 +20,44 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::Result;
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
     pub fn from_qobject(
         structured_qobject: &StructuredQObject,
         type_names: &TypeNames,
-        module_ident: &Ident,
     ) -> Result<Self> {
         let qobject = structured_qobject.declaration;
         // Create the base object
-        let qobject_idents = QObjectNames::from_qobject(qobject, type_names)?;
+        let qobject_names = QObjectNames::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = Self::default();
 
         generated.append(&mut generate_qobject_definitions(
-            &qobject_idents,
+            &qobject_names,
             &namespace_idents.namespace,
         )?);
 
         // Generate methods for the properties, invokables, signals
         generated.append(&mut generate_rust_properties(
             &qobject.properties,
-            &qobject_idents,
+            &qobject_names,
             type_names,
-            module_ident,
             structured_qobject,
         )?);
         generated.append(&mut generate_rust_methods(
             &structured_qobject.methods,
-            &qobject_idents,
+            &qobject_names,
         )?);
         generated.append(&mut inherit::generate(
-            &qobject_idents,
+            &qobject_names,
             &structured_qobject.inherited_methods,
         )?);
         generated.append(&mut generate_rust_signals(
             &structured_qobject.signals,
-            &qobject_idents,
+            &qobject_names,
             type_names,
-            module_ident,
         )?);
 
         // If this type is a singleton then we need to add an include
@@ -83,10 +80,9 @@ impl GeneratedRustFragment {
         // If this type has threading enabled then add generation
         if structured_qobject.threading {
             generated.append(&mut threading::generate(
-                &qobject_idents,
+                &qobject_names,
                 &namespace_idents,
                 type_names,
-                module_ident,
             )?);
         }
 
@@ -96,7 +92,7 @@ impl GeneratedRustFragment {
         // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
         if structured_qobject.locking {
             let qualified_impl =
-                type_names.rust_qualified(qobject_idents.name.rust_unqualified())?;
+                type_names.rust_qualified(qobject_names.name.rust_unqualified())?;
             generated.cxx_qt_mod_contents.push(syn::parse_quote! {
                 impl cxx_qt::Locking for #qualified_impl {}
             });
@@ -104,13 +100,12 @@ impl GeneratedRustFragment {
 
         generated.append(&mut constructor::generate(
             &structured_qobject.constructors,
-            &qobject_idents,
+            &qobject_names,
             &namespace_idents,
             type_names,
-            module_ident,
         )?);
 
-        generated.append(&mut cxxqttype::generate(&qobject_idents, type_names)?);
+        generated.append(&mut cxxqttype::generate(&qobject_names, type_names)?);
 
         Ok(generated)
     }
@@ -182,7 +177,6 @@ mod tests {
     use crate::generator::structuring::Structures;
     use crate::parser::Parser;
     use crate::tests::assert_tokens_eq;
-    use quote::format_ident;
     use syn::{parse_quote, ItemMod};
 
     #[test]
@@ -203,7 +197,6 @@ mod tests {
         assert!(GeneratedRustFragment::from_qobject(
             structures.qobjects.first().unwrap(),
             &parser.type_names,
-            &format_ident!("ffi"),
         )
         .is_ok());
     }
@@ -217,7 +210,6 @@ mod tests {
         let rust = GeneratedRustFragment::from_qobject(
             structures.qobjects.first().unwrap(),
             &parser.type_names,
-            &format_ident!("ffi"),
         )
         .unwrap();
         assert_eq!(rust.cxx_mod_contents.len(), 6);

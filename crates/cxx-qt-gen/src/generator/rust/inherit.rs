@@ -12,11 +12,11 @@ use quote::{quote, quote_spanned};
 use syn::{spanned::Spanned, Item, Result};
 
 pub fn generate(
-    qobject_ident: &QObjectNames,
+    qobject_names: &QObjectNames,
     methods: &[&ParsedInheritedMethod],
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
-    let qobject_name = qobject_ident.name.rust_unqualified();
+    let qobject_name = qobject_names.name.rust_unqualified();
 
     let mut bridges = methods
         .iter()
