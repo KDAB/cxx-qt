@@ -302,6 +302,14 @@ fn static_lib_name() -> String {
     format!("{}-cxxqt-generated", crate_name())
 }
 
+fn qml_module_static_lib_name(module_uri: &str) -> String {
+    format!(
+        "{}-qml-module-{}-cxxqt-generated",
+        crate_name(),
+        module_name_from_uri(module_uri)
+    )
+}
+
 fn panic_duplicate_file_and_qml_module(
     path: impl AsRef<Path>,
     uri: &str,
@@ -744,7 +752,9 @@ impl CxxQtBuilder {
         qtbuild: &mut qt_build_utils::QtBuild,
         generated_header_dir: impl AsRef<Path>,
         header_prefix: &str,
-    ) {
+    ) -> Vec<String> {
+        let mut qml_libraries = vec![];
+
         for qml_module in &self.qml_modules {
             dir::clean(dir::module_target(&qml_module.uri))
                 .expect("Failed to clean qml module export directory!");
@@ -780,30 +790,40 @@ impl CxxQtBuilder {
                 );
             }
 
+            // Use a separate cc_builder per QML module so we don't have collisions
+            //
+            // TODO: for now we copy the global CxxQtBuilder cc_builder
+            // this means that any includes/files etc on these are in this builder
+            // but we cannot have separate builds until we can configure includes,
+            // qt modules, files, cc_builder options etc in the QmlModule itself
+            let mut cc_builder = self.cc_builder.clone();
+            qtbuild.cargo_link_libraries(&mut cc_builder);
+
+            let mut moc_include_paths = HashSet::new();
             for files in generate_cxxqt_cpp_files(
                 &qml_module.rust_files,
                 &generated_header_dir,
                 header_prefix,
             ) {
-                self.cc_builder.file(files.plain_cpp);
+                cc_builder.file(files.plain_cpp);
                 if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header)
                 {
                     // Ensure that the generated QObject header is in the include path
                     // so that qmltyperegistar can include them later
                     if let Some(dir) = qobject_header.parent() {
-                        self.cc_builder.include(dir);
+                        moc_include_paths.insert(dir.to_path_buf());
                     }
 
-                    self.cc_builder.file(&qobject);
+                    cc_builder.file(&qobject);
                     let moc_products = qtbuild.moc(
                         qobject_header,
                         MocArguments::default().uri(qml_module.uri.clone()),
                     );
                     // Include the moc folder
                     if let Some(dir) = moc_products.cpp.parent() {
-                        self.cc_builder.include(dir);
+                        moc_include_paths.insert(dir.to_path_buf());
                     }
-                    self.cc_builder.file(moc_products.cpp);
+                    cc_builder.file(moc_products.cpp);
                     qml_metatypes_json.push(moc_products.metatypes_json);
                 }
             }
@@ -820,7 +840,7 @@ impl CxxQtBuilder {
                 &qml_module.qml_files,
                 &qml_module.qrc_files,
             );
-            self.cc_builder
+            cc_builder
                 .file(qml_module_registration_files.qmltyperegistrar)
                 .file(qml_module_registration_files.plugin)
                 // In comparison to the other RCC files, we don't need to link this with whole-archive or
@@ -832,14 +852,19 @@ impl CxxQtBuilder {
             // Add any include paths the qml module registration needs
             // this is most likely the moc folder for the plugin
             if let Some(include_path) = qml_module_registration_files.include_path {
-                self.cc_builder.include(include_path);
+                moc_include_paths.insert(include_path);
+            }
+
+            // Ensure that all include paths from moc folders that are required
+            for include_path in &moc_include_paths {
+                cc_builder.include(include_path);
             }
 
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
-                self.cc_builder.file(qmlcachegen_file);
+                cc_builder.file(qmlcachegen_file);
             }
             // This is required, as described here: plugin_builder
-            self.cc_builder.define("QT_STATICPLUGIN", None);
+            cc_builder.define("QT_STATICPLUGIN", None);
 
             // If any of the files inside the qml module change, then trigger a rerun
             for path in qml_module.qml_files.iter().chain(
@@ -864,7 +889,17 @@ impl CxxQtBuilder {
                 &qml_module_registration_files.plugin_init,
                 dir::module_target(&qml_module.uri).join("plugin_init.o"),
             );
+
+            // Build the QML module as a library
+            if cc_builder.get_files().count() > 0 {
+                let qml_library_name = qml_module_static_lib_name(&qml_module.uri);
+                cc_builder.compile(&qml_library_name);
+
+                qml_libraries.push(qml_library_name);
+            }
         }
+
+        qml_libraries
     }
 
     fn setup_qt5_compatibility(&mut self, qtbuild: &qt_build_utils::QtBuild) {
@@ -1053,12 +1088,17 @@ impl CxxQtBuilder {
 
         // Bridges for QML modules are handled separately because
         // the metatypes_json generated by moc needs to be passed to qmltyperegistrar
-        self.build_qml_modules(
+        let qml_libraries = self.build_qml_modules(
             &init_builder,
             &mut qtbuild,
             &header_root,
             &self.include_prefix.clone(),
         );
+
+        // Link all of the qml libraries
+        for qml_library in &qml_libraries {
+            println!("cargo:rustc-link-lib={qml_library}");
+        }
 
         let mut initializers = self.generate_cpp_from_qrc_files(&mut qtbuild);
         initializers.extend(dependencies::initializer_paths(
