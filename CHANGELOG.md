@@ -53,7 +53,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cxx-qt-lib-headers` and `cxx-qt-lib-extras-headers` are now merged into their respective base crates
 - `BuildOpts` are replaced by the `Interface` type which does not need to be reiterated by downstream dependencies
 - Locking has been removed from the generated QObjects. Qt/User C++ code is responsible for upholding Rusts Safety guarantees.
-    - The `cxx_qt::Locking` trait is no longer available. 
+  - The `cxx_qt::Locking` trait is no longer available.
 
 ## [0.6.1](https://github.com/KDAB/cxx-qt/compare/v0.6.0...v0.6.1) - 2024-04-19
 
