@@ -12,13 +12,12 @@ use crate::{
     parser::externcxxqt::ParsedExternCxxQt,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::Result;
 
 impl GeneratedRustFragment {
     pub fn from_extern_cxx_qt(
         extern_cxxqt_block: &ParsedExternCxxQt,
         type_names: &TypeNames,
-        module_ident: &Ident,
     ) -> Result<Self> {
         let mut generated = Self::default();
 
@@ -43,12 +42,7 @@ impl GeneratedRustFragment {
         for signal in &extern_cxxqt_block.signals {
             let qobject_name = type_names.lookup(&signal.qobject_ident)?;
 
-            generated.append(&mut generate_rust_signal(
-                signal,
-                qobject_name,
-                type_names,
-                module_ident,
-            )?);
+            generated.append(&mut generate_rust_signal(signal, qobject_name, type_names)?);
         }
 
         Ok(generated)

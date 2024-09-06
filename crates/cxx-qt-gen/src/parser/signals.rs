@@ -3,12 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{
-    naming::Name,
-    parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety},
-};
-use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Visibility};
+use crate::syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety};
+use core::ops::Deref;
+use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
 
 use crate::parser::method::MethodFields;
 use crate::parser::{check_safety, separate_docs};
@@ -16,18 +13,8 @@ use crate::parser::{check_safety, separate_docs};
 #[derive(Clone)]
 /// Describes an individual Signal
 pub struct ParsedSignal {
-    /// The original [syn::ForeignItemFn] of the signal declaration
-    pub method: ForeignItemFn,
-    /// The type of the self argument
-    pub qobject_ident: Ident,
-    /// whether the signal is marked as mutable
-    pub mutable: bool,
-    /// Whether the method is safe to call.
-    pub safe: bool,
-    /// The parameters of the signal
-    pub parameters: Vec<ParsedFunctionParameter>,
-    /// The name of the signal
-    pub name: Name,
+    /// The common fields which are available on all callable types
+    pub method_fields: MethodFields,
     /// If the signal is defined in the base class
     pub inherit: bool,
     /// Whether the signal is private
@@ -37,29 +24,9 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
-    /// Builds a signal from a given property method
-    pub fn from_property_method(
-        method: ForeignItemFn,
-        name: Name,
-        qobject_ident: Ident,
-        docs: Vec<Attribute>,
-    ) -> Self {
-        Self {
-            method,
-            qobject_ident,
-            mutable: true,
-            safe: true,
-            parameters: vec![],
-            name,
-            inherit: false,
-            private: false,
-            docs,
-        }
-    }
-
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
-    pub fn mock_with_method(method: &ForeignItemFn) -> Self {
+    pub fn mock(method: &ForeignItemFn) -> Self {
         Self::parse(method.clone(), Safety::Safe).unwrap()
     }
 
@@ -67,54 +34,43 @@ impl ParsedSignal {
         check_safety(&method, &safety)?;
 
         let docs = separate_docs(&mut method);
-        let invokable_fields = MethodFields::parse(&method, docs)?;
+        let mut fields = MethodFields::parse(method)?;
 
-        if invokable_fields.name.namespace().is_some() {
+        if fields.name.namespace().is_some() {
             return Err(Error::new_spanned(
-                method.sig.ident,
+                fields.method.sig.ident,
                 "Signals cannot have a namespace attribute!",
             ));
         }
 
-        if !invokable_fields.mutable {
+        if !fields.mutable {
             return Err(Error::new(
-                method.span(),
+                fields.method.span(),
                 "signals must be mutable, use Pin<&mut T> instead of T for the self type",
             ));
         }
 
-        let inherit = attribute_take_path(&mut method.attrs, &["inherit"]).is_some();
-        let private = if let Visibility::Restricted(vis_restricted) = &method.vis {
+        let inherit = attribute_take_path(&mut fields.method.attrs, &["inherit"]).is_some();
+        let private = if let Visibility::Restricted(vis_restricted) = &fields.method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
         } else {
             false
         };
 
-        Ok(Self::from_invokable_fields(
-            invokable_fields,
-            method,
+        Ok(Self {
+            method_fields: fields,
             inherit,
             private,
-        ))
+            docs,
+        })
     }
+}
 
-    fn from_invokable_fields(
-        fields: MethodFields,
-        method: ForeignItemFn,
-        inherit: bool,
-        private: bool,
-    ) -> Self {
-        Self {
-            method,
-            qobject_ident: fields.qobject_ident,
-            mutable: fields.mutable,
-            safe: fields.safe,
-            parameters: fields.parameters,
-            name: fields.name,
-            inherit,
-            private,
-            docs: fields.docs,
-        }
+impl Deref for ParsedSignal {
+    type Target = MethodFields;
+
+    fn deref(&self) -> &Self::Target {
+        &self.method_fields
     }
 }
 
@@ -124,6 +80,7 @@ mod tests {
 
     use super::*;
 
+    use crate::naming::Name;
     use crate::parser::tests::f64_type;
     use quote::format_ident;
 

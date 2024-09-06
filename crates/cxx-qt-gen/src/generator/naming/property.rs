@@ -11,7 +11,7 @@ use quote::format_ident;
 use syn::{Ident, Result};
 
 use crate::generator::structuring::StructuredQObject;
-use std::ops::Deref;
+use core::ops::Deref;
 
 #[derive(Debug)]
 pub enum NameState {

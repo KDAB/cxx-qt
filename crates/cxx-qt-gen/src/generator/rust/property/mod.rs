@@ -17,13 +17,12 @@ use crate::{
     naming::TypeNames,
     parser::property::ParsedQProperty,
 };
-use syn::{Ident, Result};
+use syn::Result;
 
 pub fn generate_rust_properties(
     properties: &Vec<ParsedQProperty>,
-    qobject_idents: &QObjectNames,
+    qobject_names: &QObjectNames,
     type_names: &TypeNames,
-    module_ident: &Ident,
     structured_qobject: &StructuredQObject,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
@@ -32,7 +31,7 @@ pub fn generate_rust_properties(
     for property in properties {
         let idents = QPropertyNames::try_from_property(property, structured_qobject)?;
 
-        if let Some(getter) = getter::generate(&idents, qobject_idents, &property.ty, type_names)? {
+        if let Some(getter) = getter::generate(&idents, qobject_names, &property.ty, type_names)? {
             generated
                 .cxx_mod_contents
                 .append(&mut getter.cxx_bridge_as_items()?);
@@ -41,7 +40,7 @@ pub fn generate_rust_properties(
                 .append(&mut getter.implementation_as_items()?);
         };
 
-        if let Some(setter) = setter::generate(&idents, qobject_idents, &property.ty, type_names)? {
+        if let Some(setter) = setter::generate(&idents, qobject_names, &property.ty, type_names)? {
             generated
                 .cxx_mod_contents
                 .append(&mut setter.cxx_bridge_as_items()?);
@@ -50,16 +49,15 @@ pub fn generate_rust_properties(
                 .append(&mut setter.implementation_as_items()?);
         }
 
-        if let Some(notify) = signal::generate(&idents, qobject_idents) {
+        if let Some(notify) = signal::generate(&idents, qobject_names) {
             signals.push(notify)
         }
     }
 
     generated.append(&mut generate_rust_signals(
         &signals.iter().collect(),
-        qobject_idents,
+        qobject_names,
         type_names,
-        module_ident,
     )?);
 
     Ok(generated)
@@ -94,7 +92,7 @@ mod tests {
                 flags: QPropertyFlags::default(),
             },
         ];
-        let qobject_idents = create_qobjectname();
+        let qobject_names = create_qobjectname();
 
         let obj = ParsedQObject::mock();
 
@@ -105,9 +103,8 @@ mod tests {
         type_names.mock_insert("QColor", None, None, None);
         let generated = generate_rust_properties(
             &properties,
-            &qobject_idents,
+            &qobject_names,
             &type_names,
-            &format_ident!("ffi"),
             &structured_qobject,
         )
         .unwrap();
@@ -327,7 +324,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     pub fn connect_trivial_property_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_trivial_property_changed(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_trivial_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuretrivialPropertyChanged>::new(Box::new(closure)),
                             conn_type,
@@ -347,7 +344,7 @@ mod tests {
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     pub fn on_trivial_property_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_trivial_property_changed(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_trivial_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuretrivialPropertyChanged>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -452,7 +449,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     pub fn connect_opaque_property_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_opaque_property_changed(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_opaque_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureopaquePropertyChanged>::new(Box::new(closure)),
                             conn_type,
@@ -472,7 +469,7 @@ mod tests {
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     pub fn on_opaque_property_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_opaque_property_changed(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_opaque_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureopaquePropertyChanged>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -577,7 +574,7 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     pub fn connect_unsafe_property_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_unsafe_property_changed(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureunsafePropertyChanged>::new(Box::new(closure)),
                             conn_type,
@@ -597,7 +594,7 @@ mod tests {
                     #[doc = "Note that this method uses a AutoConnection connection type."]
                     pub fn on_unsafe_property_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static>(self: core::pin::Pin<&mut qobject::MyObject>, mut closure: F) -> cxx_qt::QMetaObjectConnectionGuard
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_unsafe_property_changed(
+                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureunsafePropertyChanged>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,

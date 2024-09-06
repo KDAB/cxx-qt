@@ -5,7 +5,7 @@
 
 use convert_case::{Case, Casing};
 use quote::format_ident;
-use syn::{spanned::Spanned, Attribute, Ident, Path, Result};
+use syn::{spanned::Spanned, Attribute, Error, Ident, Path, Result};
 
 use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
 
@@ -239,6 +239,22 @@ impl Name {
         )
     }
 
+    /// Returns the Ident of this names module if it exists, otherwise errors
+    ///
+    /// TODO: This should be deprecated! It is mostly used to access other members in the same
+    /// module as the QObject.
+    /// Preferrable, these other members should have full Name instances and use rust_qualified()
+    pub fn require_module(&self) -> Result<&Path> {
+        if let Some(ident) = self.module() {
+            Ok(ident)
+        } else {
+            Err(Error::new_spanned(
+                self.rust_unqualified(),
+                format!("No Module name for {}!", self.rust_unqualified()),
+            ))
+        }
+    }
+
     /// Get the fully qualified name of the type in C++.
     ///
     /// This is the namespace followed by the unqualified name.
@@ -296,5 +312,13 @@ mod tests {
 
         assert_eq!(old_namespace, Some("my_namespace".into()));
         assert!(name.namespace.is_none())
+    }
+
+    #[test]
+    fn test_require_without_module() {
+        let mut name = Name::mock("my_object");
+        name.module = None;
+        assert!(name.module().is_none());
+        assert!(name.require_module().is_err());
     }
 }

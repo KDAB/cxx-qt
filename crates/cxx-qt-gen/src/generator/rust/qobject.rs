@@ -20,47 +20,41 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::Result;
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
     pub fn from_qobject(
         structured_qobject: &StructuredQObject,
         type_names: &TypeNames,
-        module_ident: &Ident,
     ) -> Result<Self> {
         let qobject = structured_qobject.declaration;
         // Create the base object
-        let qobject_idents = QObjectNames::from_qobject(qobject, type_names)?;
+        let qobject_names = QObjectNames::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = Self::default();
 
-        generated.append(&mut generate_qobject_definitions(
-            &qobject_idents,
-            &namespace_idents.namespace,
-        )?);
+        generated.append(&mut generate_qobject_definitions(&qobject_names)?);
 
         // Generate methods for the properties, invokables, signals
         generated.append(&mut generate_rust_properties(
             &qobject.properties,
-            &qobject_idents,
+            &qobject_names,
             type_names,
-            module_ident,
             structured_qobject,
         )?);
         generated.append(&mut generate_rust_methods(
             &structured_qobject.methods,
-            &qobject_idents,
+            &qobject_names,
         )?);
         generated.append(&mut inherit::generate(
-            &qobject_idents,
+            &qobject_names,
             &structured_qobject.inherited_methods,
         )?);
         generated.append(&mut generate_rust_signals(
             &structured_qobject.signals,
-            &qobject_idents,
+            &qobject_names,
             type_names,
-            module_ident,
         )?);
 
         // If this type is a singleton then we need to add an include
@@ -83,43 +77,34 @@ impl GeneratedRustFragment {
         // If this type has threading enabled then add generation
         if structured_qobject.threading {
             generated.append(&mut threading::generate(
-                &qobject_idents,
+                &qobject_names,
                 &namespace_idents,
                 type_names,
-                module_ident,
             )?);
         }
 
         generated.append(&mut constructor::generate(
             &structured_qobject.constructors,
-            &qobject_idents,
+            &qobject_names,
             &namespace_idents,
             type_names,
-            module_ident,
         )?);
 
-        generated.append(&mut cxxqttype::generate(&qobject_idents, type_names)?);
+        generated.append(&mut cxxqttype::generate(&qobject_names, type_names)?);
 
         Ok(generated)
     }
 }
 
 /// Generate the C++ and Rust CXX definitions for the QObject
-fn generate_qobject_definitions(
-    qobject_idents: &QObjectNames,
-    namespace: &str,
-) -> Result<GeneratedRustFragment> {
+fn generate_qobject_definitions(qobject_idents: &QObjectNames) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
 
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust_unqualified();
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
-    let namespace = if !namespace.is_empty() {
-        Some(quote! { #[namespace=#namespace] })
-    } else {
-        None
-    };
+    let namespace = qobject_idents.namespace_tokens();
     let cxx_name = if cpp_class_name_rust.to_string() == *cpp_class_name_cpp {
         quote! {}
     } else {
@@ -148,6 +133,11 @@ fn generate_qobject_definitions(
             },
             quote! {
                 extern "Rust" {
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #namespace
                     type #rust_struct_name_rust;
                 }
             },
@@ -170,7 +160,6 @@ mod tests {
     use crate::generator::structuring::Structures;
     use crate::parser::Parser;
     use crate::tests::assert_tokens_eq;
-    use quote::format_ident;
     use syn::{parse_quote, ItemMod};
 
     #[test]
@@ -191,7 +180,6 @@ mod tests {
         assert!(GeneratedRustFragment::from_qobject(
             structures.qobjects.first().unwrap(),
             &parser.type_names,
-            &format_ident!("ffi"),
         )
         .is_ok());
     }
@@ -205,7 +193,6 @@ mod tests {
         let rust = GeneratedRustFragment::from_qobject(
             structures.qobjects.first().unwrap(),
             &parser.type_names,
-            &format_ident!("ffi"),
         )
         .unwrap();
         assert_eq!(rust.cxx_mod_contents.len(), 6);
@@ -228,6 +215,7 @@ mod tests {
             &rust.cxx_mod_contents[1],
             quote! {
                 extern "Rust" {
+                    #[namespace = "cxx_qt"]
                     type MyObjectRust;
                 }
             },

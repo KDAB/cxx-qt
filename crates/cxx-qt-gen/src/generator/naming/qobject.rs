@@ -7,7 +7,8 @@ use crate::{
     parser::qobject::ParsedQObject,
 };
 use convert_case::{Case, Casing};
-use quote::format_ident;
+use proc_macro2::TokenStream;
+use quote::{format_ident, quote};
 use syn::{Ident, Result};
 
 /// Names for parts of a Q_OBJECT
@@ -70,6 +71,16 @@ impl QObjectNames {
         }
         name.with_namespace("rust::cxxqt1".to_owned())
             .with_cxx_name(cxx_name.to_owned())
+    }
+
+    /// Returns the tokens of the namespace attribute to be added to a rust line, or no tokens if this instance has no namespace
+    /// attribute looks like `#[namespace = "namespace::here"]`
+    pub fn namespace_tokens(&self) -> TokenStream {
+        if let Some(namespace) = self.name.namespace() {
+            quote! { #[namespace = #namespace ] }
+        } else {
+            quote! {}
+        }
     }
 }
 

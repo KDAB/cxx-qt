@@ -110,7 +110,7 @@ mod tests {
         let method = parse_quote! {
             fn data_changed(self: Pin<&mut MyObject>);
         };
-        let qsignal = ParsedSignal::mock_with_method(&method);
+        let qsignal = ParsedSignal::mock(&method);
 
         let names = QSignalNames::from(&qsignal);
         assert_eq!(names.name.cxx_unqualified(), "dataChanged");
@@ -132,7 +132,7 @@ mod tests {
             #[cxx_name = "baseName"]
             fn existing_signal(self: Pin<&mut MyObject>);
         };
-        let qsignal = ParsedSignal::mock_with_method(&method);
+        let qsignal = ParsedSignal::mock(&method);
 
         let names = QSignalNames::from(&qsignal);
         assert_eq!(names.name.cxx_unqualified(), "baseName");

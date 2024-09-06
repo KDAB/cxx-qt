@@ -13,19 +13,18 @@ use syn::Result;
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
-    qobject_ident: &QObjectNames,
+    qobject_names: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
-    let cpp_struct_ident = &qobject_ident.name.rust_unqualified();
-    let rust_struct_ident = &qobject_ident.rust_struct.rust_unqualified();
-
-    let (rust_fn_name, rust_fn_attrs, rust_fn_qualified) = qobject_ident
+    let cpp_struct_ident = &qobject_names.name.rust_unqualified();
+    let rust_struct_ident = &qobject_names.rust_struct.rust_unqualified();
+    let (rust_fn_name, rust_fn_attrs, rust_fn_qualified) = qobject_names
         .cxx_qt_ffi_method("unsafeRust")
         .into_cxx_parts();
 
-    let (rust_mut_fn_name, rust_mut_fn_attrs, rust_mut_fn_qualified) = qobject_ident
+    let (rust_mut_fn_name, rust_mut_fn_attrs, rust_mut_fn_qualified) = qobject_names
         .cxx_qt_ffi_method("unsafeRustMut")
         .into_cxx_parts();
 
@@ -95,9 +94,9 @@ mod tests {
     #[test]
     fn test_generate_rust_cxxqttype() {
         let qobject = create_parsed_qobject();
-        let qobject_idents = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
+        let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
 
-        let generated = generate(&qobject_idents, &TypeNames::mock()).unwrap();
+        let generated = generate(&qobject_names, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

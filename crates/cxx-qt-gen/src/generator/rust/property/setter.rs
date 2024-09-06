@@ -19,11 +19,11 @@ use syn::{Result, Type};
 
 pub fn generate(
     idents: &QPropertyNames,
-    qobject_idents: &QObjectNames,
+    qobject_names: &QObjectNames,
     cxx_ty: &Type,
     type_names: &TypeNames,
 ) -> Result<Option<RustFragmentPair>> {
-    let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
+    let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
     if let Some(NameState::Auto(setter)) = &idents.setter {
         let setter_cpp = setter.cxx_unqualified();
@@ -51,11 +51,17 @@ pub fn generate(
             quote! {}
         };
 
+        let cxx_namespace = qobject_names.namespace_tokens();
+
         Ok(Some(RustFragmentPair {
             cxx_bridge: vec![quote! {
                 extern "Rust" {
                     #[cxx_name = #setter_cpp]
-                    // Namespace is not needed here
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #cxx_namespace
                     #has_unsafe fn #setter_rust(self: Pin<&mut #cpp_class_name_rust>, value: #cxx_ty);
                 }
             }],

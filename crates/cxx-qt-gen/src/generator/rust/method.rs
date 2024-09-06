@@ -16,10 +16,10 @@ use syn::{spanned::Spanned, Result};
 
 pub fn generate_rust_methods(
     invokables: &Vec<&ParsedMethod>,
-    qobject_idents: &QObjectNames,
+    qobject_names: &QObjectNames,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
-    let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
+    let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
     for &invokable in invokables {
         // TODO: once we aren't using qobject::T in the extern "RustQt"
@@ -40,6 +40,8 @@ pub fn generate_rust_methods(
             std::mem::swap(&mut unsafe_call, &mut None);
         }
 
+        let cxx_namespace = qobject_names.namespace_tokens();
+
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote_spanned! {
                 invokable.method.span() =>
@@ -49,7 +51,11 @@ pub fn generate_rust_methods(
                     //
                     // CXX ends up generating the source, then we generate the matching header.
                     #[cxx_name = #invokable_ident_cpp]
-                    // Namespace is not needed here
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #cxx_namespace
                     #[doc(hidden)]
                     #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }
@@ -90,10 +96,10 @@ mod tests {
             ParsedMethod::mock_qinvokable(&method3).make_mutable(),
             ParsedMethod::mock_qinvokable(&method4).make_unsafe(),
         ];
-        let qobject_idents = create_qobjectname();
+        let qobject_names = create_qobjectname();
 
         let generated =
-            generate_rust_methods(&invokables.iter().collect(), &qobject_idents).unwrap();
+            generate_rust_methods(&invokables.iter().collect(), &qobject_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 0);

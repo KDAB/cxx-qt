@@ -99,16 +99,15 @@ impl ParsedQObject {
             ));
         }
 
-        // Find any QML metadata
-        let qml_metadata =
-            Self::parse_qml_metadata(&declaration.ident_left, &mut declaration.attrs)?;
-
         let name = Name::from_ident_and_attrs(
             &declaration.ident_left,
             &declaration.attrs,
             namespace,
             Some(module),
         )?;
+
+        // Find any QML metadata
+        let qml_metadata = Self::parse_qml_metadata(&name, &mut declaration.attrs)?;
 
         // Parse any properties in the type
         // and remove the #[qproperty] attribute
@@ -127,15 +126,16 @@ impl ParsedQObject {
     }
 
     fn parse_qml_metadata(
-        qobject_ident: &Ident,
+        name: &Name,
         attrs: &mut Vec<Attribute>,
     ) -> Result<Option<QmlElementMetadata>> {
         // Find if there is a qml_element attribute
         if let Some(attr) = attribute_take_path(attrs, &["qml_element"]) {
-            // Extract the name of the qml_element
+            // Extract the name of the qml_element from macro, else use the c++ name
+            // This will use the name provided by cxx_name if that attr was present
             let name = match attr.meta {
                 Meta::NameValue(name_value) => expr_to_string(&name_value.value)?,
-                _ => qobject_ident.to_string(),
+                _ => name.cxx_unqualified(),
             };
 
             // Determine if this element is uncreatable
@@ -282,6 +282,17 @@ pub mod tests {
         assert_eq!(properties[1].ty, f64_type());
     }
 
+    fn assert_qml_name(obj: ParsedQObject, str_name: &str) {
+        assert_eq!(
+            obj.qml_metadata,
+            Some(QmlElementMetadata {
+                name: str_name.to_string(),
+                uncreatable: false,
+                singleton: false,
+            })
+        );
+    }
+
     #[test]
     fn test_qml_metadata() {
         let item: ForeignTypeIdentAlias = parse_quote! {
@@ -290,14 +301,7 @@ pub mod tests {
             type MyObject = super::MyObjectRust;
         };
         let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
-        assert_eq!(
-            qobject.qml_metadata,
-            Some(QmlElementMetadata {
-                name: "MyObject".to_string(),
-                uncreatable: false,
-                singleton: false,
-            })
-        );
+        assert_qml_name(qobject, "MyObject");
     }
 
     #[test]
@@ -308,14 +312,19 @@ pub mod tests {
             type MyObject = super::MyObjectRust;
         };
         let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
-        assert_eq!(
-            qobject.qml_metadata,
-            Some(QmlElementMetadata {
-                name: "OtherName".to_string(),
-                uncreatable: false,
-                singleton: false,
-            })
-        );
+        assert_qml_name(qobject, "OtherName");
+    }
+
+    #[test]
+    fn test_qml_metadata_cxx_name() {
+        let item: ForeignTypeIdentAlias = parse_quote! {
+            #[qobject]
+            #[qml_element]
+            #[cxx_name = "RenamedObject"]
+            type MyObject = super::MyObjectRust;
+        };
+        let qobject = ParsedQObject::parse(item, None, &format_ident!("qobject")).unwrap();
+        assert_qml_name(qobject, "RenamedObject");
     }
 
     #[test]

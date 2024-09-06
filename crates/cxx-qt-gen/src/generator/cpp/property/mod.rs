@@ -44,7 +44,7 @@ pub fn generate_cpp_properties(
             generated.methods.push(setter)
         }
 
-        if let Some(notify) = signal::generate(&idents, qobject_idents) {
+        if let Some(notify) = signal::generate(&idents, &qobject_idents.name) {
             signals.push(notify)
         }
     }

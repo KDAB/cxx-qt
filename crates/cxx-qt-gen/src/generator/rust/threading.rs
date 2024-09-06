@@ -14,32 +14,35 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::Result;
 
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
-    qobject_ident: &QObjectNames,
+    qobject_names: &QObjectNames,
     namespace_ident: &NamespaceName,
     type_names: &TypeNames,
-    module_ident: &Ident,
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
-    let cpp_struct_ident = qobject_ident.name.rust_unqualified();
-    let cxx_qt_thread_ident = &qobject_ident.cxx_qt_thread_class;
-    let cxx_qt_thread_queued_fn_ident = &qobject_ident.cxx_qt_thread_queued_fn_struct;
-    let (thread_queue_name, thread_queue_attrs, thread_queue_qualified) = qobject_ident
+    let module_ident = qobject_names.name.require_module()?;
+
+    let cpp_struct_ident = qobject_names.name.rust_unqualified();
+    let cxx_qt_thread_ident = &qobject_names.cxx_qt_thread_class;
+    let cxx_qt_thread_queued_fn_ident = &qobject_names.cxx_qt_thread_queued_fn_struct;
+
+    let (thread_queue_name, thread_queue_attrs, thread_queue_qualified) = qobject_names
         .cxx_qt_ffi_method("cxxQtThreadQueue")
         .into_cxx_parts();
-    let (thread_clone_name, thread_clone_attrs, thread_clone_qualified) = qobject_ident
+    let (thread_clone_name, thread_clone_attrs, thread_clone_qualified) = qobject_names
         .cxx_qt_ffi_method("cxxQtThreadClone")
         .into_cxx_parts();
-    let (thread_drop_name, thread_drop_attrs, thread_drop_qualified) = qobject_ident
+    let (thread_drop_name, thread_drop_attrs, thread_drop_qualified) = qobject_names
         .cxx_qt_ffi_method("cxxQtThreadDrop")
         .into_cxx_parts();
     let (thread_fn_name, thread_fn_attrs, thread_fn_qualified) =
-        qobject_ident.cxx_qt_ffi_method("qtThread").into_cxx_parts();
+        qobject_names.cxx_qt_ffi_method("qtThread").into_cxx_parts();
+
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
@@ -166,21 +169,13 @@ mod tests {
 
     use crate::parser::qobject::tests::create_parsed_qobject;
 
-    use quote::format_ident;
-
     #[test]
     fn test_generate_rust_threading() {
         let qobject = create_parsed_qobject();
-        let qobject_idents = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
+        let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
         let namespace_ident = NamespaceName::from(&qobject);
 
-        let generated = generate(
-            &qobject_idents,
-            &namespace_ident,
-            &TypeNames::mock(),
-            &format_ident!("qobject"),
-        )
-        .unwrap();
+        let generated = generate(&qobject_names, &namespace_ident, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
