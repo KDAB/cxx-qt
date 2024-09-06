@@ -22,7 +22,6 @@ pub struct StructuredQObject<'a> {
     pub inherited_methods: Vec<&'a ParsedInheritedMethod>,
     pub signals: Vec<&'a ParsedSignal>,
     pub constructors: Vec<&'a Constructor>,
-    pub locking: bool,
     pub threading: bool,
 }
 
@@ -48,7 +47,6 @@ impl<'a> StructuredQObject<'a> {
             inherited_methods: vec![],
             signals: vec![],
             constructors: vec![],
-            locking: true,
             threading: false,
         }
     }

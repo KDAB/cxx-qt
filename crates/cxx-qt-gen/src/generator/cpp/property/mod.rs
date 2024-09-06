@@ -26,7 +26,6 @@ pub fn generate_cpp_properties(
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let mut signals = vec![];
-    let name = &qobject_idents.name;
 
     for property in properties {
         // Cache the idents as they are used in multiple places
@@ -37,23 +36,15 @@ pub fn generate_cpp_properties(
             .metaobjects
             .push(meta::generate(&idents, &property.flags, &cxx_ty));
 
-        if let Some(getter) = getter::generate(&idents, name, &cxx_ty) {
+        if let Some(getter) = getter::generate(&idents, &cxx_ty) {
             generated.methods.push(getter);
         }
 
-        if let Some(getter_wrapper) = getter::generate_wrapper(&idents, &cxx_ty) {
-            generated.private_methods.push(getter_wrapper);
-        }
-
-        if let Some(setter) = setter::generate(&idents, name, &cxx_ty) {
+        if let Some(setter) = setter::generate(&idents, &cxx_ty) {
             generated.methods.push(setter)
         }
 
-        if let Some(setter_wrapper) = setter::generate_wrapper(&idents, &cxx_ty) {
-            generated.private_methods.push(setter_wrapper)
-        }
-
-        if let Some(notify) = signal::generate(&idents, name) {
+        if let Some(notify) = signal::generate(&idents, &qobject_idents.name) {
             signals.push(notify)
         }
     }
@@ -186,15 +177,14 @@ pub mod tests {
         )
         .unwrap();
 
-        // should be a pair
-        let result = require_header(&generated.methods[0]);
-        assert!(result.is_err());
-
-        let result = require_pair(&generated.private_methods[0]);
+        // should be a header
+        let result = require_pair(&generated.methods[0]);
         assert!(result.is_err());
 
         let result = require_source(&generated.methods[0]);
         assert!(result.is_err());
+
+        assert!(generated.private_methods.is_empty());
     }
 
     #[test]
@@ -233,20 +223,9 @@ pub mod tests {
 
         // Methods
         assert_eq!(generated.methods.len(), 1);
-        let (header, source) = require_pair(&generated.methods[0]).unwrap();
+        let header = require_header(&generated.methods[0]).unwrap();
 
-        assert_str_eq!(header, "::std::int32_t const& getNum() const;");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            ::std::int32_t const&
-            MyObject::getNum() const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                return getNumWrapper();
-            }
-            "#}
-        );
+        assert_str_eq!(header, "::std::int32_t const& getNum() const noexcept;");
     }
 
     #[test]
@@ -339,70 +318,29 @@ pub mod tests {
         // methods
         assert_eq!(generated.methods.len(), 6);
 
-        let (header, source) = require_pair(&generated.methods[0]).unwrap();
-        assert_str_eq!(header, "::std::int32_t const& getTrivialProperty() const;");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            ::std::int32_t const&
-            MyObject::getTrivialProperty() const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                return getTrivialPropertyWrapper();
-            }
-            "#}
-        );
-
-        let (header, source) = require_pair(&generated.methods[1]).unwrap();
+        let header = require_header(&generated.methods[0]).unwrap();
         assert_str_eq!(
             header,
-            "Q_SLOT void setTrivialProperty(::std::int32_t const& value);"
-        );
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-                void
-                MyObject::setTrivialProperty(::std::int32_t const& value)
-                {
-                    const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                    setTrivialPropertyWrapper(value);
-                }
-                "#}
+            "::std::int32_t const& getTrivialProperty() const noexcept;"
         );
 
-        let (header, source) = require_pair(&generated.methods[2]).unwrap();
+        let header = require_header(&generated.methods[1]).unwrap();
+        assert_str_eq!(
+            header,
+            "Q_SLOT void setTrivialProperty(::std::int32_t value) noexcept;"
+        );
+
+        let header = require_header(&generated.methods[2]).unwrap();
 
         assert_str_eq!(
             header,
-            "::std::unique_ptr<QColor> const& getOpaqueProperty() const;"
-        );
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            ::std::unique_ptr<QColor> const&
-            MyObject::getOpaqueProperty() const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                return getOpaquePropertyWrapper();
-            }
-            "#}
+            "::std::unique_ptr<QColor> const& getOpaqueProperty() const noexcept;"
         );
 
-        let (header, source) = require_pair(&generated.methods[3]).unwrap();
+        let header = require_header(&generated.methods[3]).unwrap();
         assert_str_eq!(
             header,
-            "Q_SLOT void setOpaqueProperty(::std::unique_ptr<QColor> const& value);"
-        );
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::setOpaqueProperty(::std::unique_ptr<QColor> const& value)
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                setOpaquePropertyWrapper(value);
-            }
-            "#}
+            "Q_SLOT void setOpaqueProperty(::std::unique_ptr<QColor> value) noexcept;"
         );
 
         let header = require_header(&generated.methods[4]).unwrap();
@@ -413,6 +351,8 @@ pub mod tests {
 
         assert_eq!(generated.fragments.len(), 2);
         let (header, source) = require_pair(&generated.fragments[0]).unwrap();
+        // This call just exists to ensure full coverage on require_header:
+        assert!(require_header(&generated.fragments[0]).is_err());
 
         assert_str_eq!(
             header,
@@ -460,7 +400,6 @@ pub mod tests {
                     &MyObject::trivialPropertyChanged,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);
@@ -517,7 +456,6 @@ pub mod tests {
                     &MyObject::opaquePropertyChanged,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);
@@ -527,32 +465,7 @@ pub mod tests {
         );
 
         // private methods
-        assert_eq!(generated.private_methods.len(), 4);
-        let header = require_header(&generated.private_methods[0]).unwrap();
-        assert_str_eq!(
-            header,
-            "::std::int32_t const& getTrivialPropertyWrapper() const noexcept;"
-        );
-
-        let header = require_header(&generated.private_methods[1]).unwrap();
-        assert_str_eq!(
-            header,
-            "void setTrivialPropertyWrapper(::std::int32_t value) noexcept;"
-        );
-
-        let header = require_header(&generated.private_methods[2]).unwrap();
-
-        assert_str_eq!(
-            header,
-            "::std::unique_ptr<QColor> const& getOpaquePropertyWrapper() const noexcept;"
-        );
-
-        let header = require_header(&generated.private_methods[3]).unwrap();
-
-        assert_str_eq!(
-            header,
-            "void setOpaquePropertyWrapper(::std::unique_ptr<QColor> value) noexcept;"
-        );
+        assert_eq!(generated.private_methods.len(), 0);
     }
 
     #[test]
@@ -585,42 +498,20 @@ pub mod tests {
 
         // methods
         assert_eq!(generated.methods.len(), 3);
-        let (header, source) = require_pair(&generated.methods[0]).unwrap();
 
-        assert_str_eq!(header, "A1 const& getMappedProperty() const;");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            A1 const&
-            MyObject::getMappedProperty() const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                return getMappedPropertyWrapper();
-            }
-            "#}
-        );
-        let (header, source) = require_pair(&generated.methods[1]).unwrap();
+        let header = require_header(&generated.methods[0]).unwrap();
+        assert_str_eq!(header, "A1 const& getMappedProperty() const noexcept;");
 
-        assert_str_eq!(header, "Q_SLOT void setMappedProperty(A1 const& value);");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-                void
-                MyObject::setMappedProperty(A1 const& value)
-                {
-                    const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                    setMappedPropertyWrapper(value);
-                }
-                "#}
-        );
+        let header = require_header(&generated.methods[1]).unwrap();
+
+        assert_str_eq!(header, "Q_SLOT void setMappedProperty(A1 value) noexcept;");
+
         let header = require_header(&generated.methods[2]).unwrap();
-
         assert_str_eq!(header, "Q_SIGNAL void mappedPropertyChanged();");
 
         assert_eq!(generated.fragments.len(), 1);
 
         let (header, source) = require_pair(&generated.fragments[0]).unwrap();
-
         assert_str_eq!(
             header,
             indoc! {r#"
@@ -667,7 +558,6 @@ pub mod tests {
                     &MyObject::mappedPropertyChanged,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);
@@ -677,15 +567,6 @@ pub mod tests {
         );
 
         // private methods
-        assert_eq!(generated.private_methods.len(), 2);
-        let header = require_header(&generated.private_methods[0]).unwrap();
-
-        assert_str_eq!(
-            header,
-            "A1 const& getMappedPropertyWrapper() const noexcept;"
-        );
-
-        let header = require_header(&generated.private_methods[1]).unwrap();
-        assert_str_eq!(header, "void setMappedPropertyWrapper(A1 value) noexcept;");
+        assert_eq!(generated.private_methods.len(), 0);
     }
 }

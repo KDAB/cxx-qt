@@ -254,8 +254,6 @@ mod tests {
         let expected = indoc! {r#"
 #pragma once
 
-#include <cxx-qt/locking.h>
-#include <cxx-qt/maybelockguard.h>
 #include <cxx-qt/type.h>
 
 class MyObject;
@@ -267,7 +265,7 @@ class MyObject;
 
 
 
-class MyObject : public MyBase, public ::rust::cxxqt1::CxxQtType<MyObjectRust>, public ::rust::cxxqt1::CxxQtLocking
+class MyObject : public MyBase, public ::rust::cxxqt1::CxxQtType<MyObjectRust>
 {
 
 public:

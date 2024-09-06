@@ -6,7 +6,7 @@
 use crate::generator::rust::get_params_tokens;
 use crate::{
     generator::{
-        naming::{method::QMethodName, qobject::QObjectNames},
+        naming::qobject::QObjectNames,
         rust::fragment::{GeneratedRustFragment, RustFragmentPair},
     },
     parser::method::ParsedMethod,
@@ -22,12 +22,10 @@ pub fn generate_rust_methods(
     let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
     for &invokable in invokables {
-        let idents = QMethodName::try_from(invokable)?;
-        let wrapper_ident_cpp = idents.wrapper.cxx_unqualified();
-        let invokable_ident_rust = &idents.name.rust_unqualified();
-
         // TODO: once we aren't using qobject::T in the extern "RustQt"
         // we can just pass through the original ExternFn block and add the attribute?
+        let invokable_ident_cpp = invokable.name.cxx_unqualified();
+        let invokable_ident_rust = invokable.name.rust_unqualified();
 
         let parameter_signatures = get_params_tokens(
             invokable.mutable,
@@ -52,7 +50,7 @@ pub fn generate_rust_methods(
                     // Note that we are exposing a Rust method on the C++ type to C++
                     //
                     // CXX ends up generating the source, then we generate the matching header.
-                    #[cxx_name = #wrapper_ident_cpp]
+                    #[cxx_name = #invokable_ident_cpp]
                     // Needed for QObjects to have a namespace on their type or extern block
                     //
                     // A Namespace from cxx_qt::bridge would be automatically applied to all children
@@ -111,7 +109,7 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "voidInvokableWrapper"]
+                    #[cxx_name = "voidInvokable"]
                     #[doc(hidden)]
                     fn void_invokable(self: &MyObject);
                 }
@@ -123,7 +121,7 @@ mod tests {
             &generated.cxx_mod_contents[1],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "trivialInvokableWrapper"]
+                    #[cxx_name = "trivialInvokable"]
                     #[doc(hidden)]
                     fn trivial_invokable(self: &MyObject, param: i32) -> i32;
                 }
@@ -135,7 +133,7 @@ mod tests {
             &generated.cxx_mod_contents[2],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "opaqueInvokableWrapper"]
+                    #[cxx_name = "opaqueInvokable"]
                     #[doc(hidden)]
                     fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
                 }
@@ -147,7 +145,7 @@ mod tests {
             &generated.cxx_mod_contents[3],
             quote! {
                 extern "Rust" {
-                    #[cxx_name = "unsafeInvokableWrapper"]
+                    #[cxx_name = "unsafeInvokable"]
                     #[doc(hidden)]
                     unsafe fn unsafe_invokable(self:&MyObject, param: *mut T) -> *mut T;
                 }

@@ -3,8 +3,6 @@
 #include <QtCore/QObject>
 #include <QtQml/QQmlEngine>
 #include <cstdint>
-#include <cxx-qt/locking.h>
-#include <cxx-qt/maybelockguard.h>
 #include <cxx-qt/type.h>
 
 namespace cxx_qt::my_object {
@@ -78,7 +76,6 @@ namespace cxx_qt::my_object {
 class MyObject
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
@@ -101,13 +98,10 @@ public:
   virtual ~MyObject() = default;
 
 public:
-  Q_INVOKABLE void myInvokable(cxx_qt::my_object::MyEnum qenum,
-                               my_namespace::MyOtherEnum other_qenum) const;
+  Q_INVOKABLE void myInvokable(
+    cxx_qt::my_object::MyEnum qenum,
+    my_namespace::MyOtherEnum other_qenum) const noexcept;
   explicit MyObject(QObject* parent = nullptr);
-
-private:
-  void myInvokableWrapper(cxx_qt::my_object::MyEnum qenum,
-                          my_namespace::MyOtherEnum other_qenum) const noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
@@ -120,7 +114,6 @@ namespace cxx_qt::my_object {
 class CxxName
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<InternalObject>
-  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:

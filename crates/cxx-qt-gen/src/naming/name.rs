@@ -84,30 +84,6 @@ impl Name {
         }
     }
 
-    /// For a given Name generate the Rust and C++ wrapper names
-    ///
-    /// Note: If no cxx_name is set explicitly, this will ause a camel-case version of the rust name
-    pub fn wrapper_from(&self) -> Self {
-        const CXX_WRAPPER_SUFFIX: &str = "Wrapper";
-        const RUST_WRAPPER_SUFFIX: &str = "_wrapper";
-
-        let rust_name = self.rust.clone();
-        let cxx = self.cxx.clone();
-
-        let cxx_name = if let Some(name) = cxx {
-            format!("{name}{CXX_WRAPPER_SUFFIX}")
-        } else {
-            let camel_case_name = rust_name.to_string().to_case(Case::Camel);
-            format!("{camel_case_name}{CXX_WRAPPER_SUFFIX}")
-        };
-
-        Self {
-            rust: format_ident!("{rust_name}{RUST_WRAPPER_SUFFIX}"),
-            cxx: Some(cxx_name),
-            ..self.clone()
-        }
-    }
-
     /// Parse a name from an an identifier and a list of attributes.
     ///
     /// This variant assumes that the name is contained in an `extern "Rust"` block.
@@ -237,18 +213,39 @@ impl Name {
         self.namespace.as_deref()
     }
 
-    /// Returns the Ident of this names module if it exists, otherwise returns none
-    pub fn module_ident(&self) -> Option<&Ident> {
-        if let Some(path) = &self.module {
-            path.get_ident()
-        } else {
-            None
-        }
+    /// Get the module of the type in Rust
+    /// This is usually the name of the bridge module.
+    pub fn module(&self) -> Option<&Path> {
+        self.module.as_ref()
+    }
+
+    /// Destructure the Name into the parts needed to generate a CXX bridge
+    /// 1. The ident of the function
+    /// 2. Any attributes like cxx_name and namespace
+    /// 3. The rust_qualified path to access the function (if not needed use _ during destructuring)
+    pub fn into_cxx_parts(self) -> (Ident, Vec<Attribute>, Path) {
+        let rust_qualified = self.rust_qualified().clone();
+        let cxx_name: Option<Attribute> = self.cxx.map(|cxx| {
+            syn::parse_quote! { #[cxx_name = #cxx] }
+        });
+        let namespace = self
+            .namespace
+            .map(|namespace| syn::parse_quote! { #[namespace=#namespace] });
+
+        (
+            self.rust,
+            cxx_name.into_iter().chain(namespace).collect(),
+            rust_qualified,
+        )
     }
 
     /// Returns the Ident of this names module if it exists, otherwise errors
-    pub fn require_module_ident(&self) -> Result<&Ident> {
-        if let Some(ident) = self.module_ident() {
+    ///
+    /// TODO: This should be deprecated! It is mostly used to access other members in the same
+    /// module as the QObject.
+    /// Preferrable, these other members should have full Name instances and use rust_qualified()
+    pub fn require_module(&self) -> Result<&Path> {
+        if let Some(ident) = self.module() {
             Ok(ident)
         } else {
             Err(Error::new_spanned(
@@ -321,7 +318,7 @@ mod tests {
     fn test_require_without_module() {
         let mut name = Name::mock("my_object");
         name.module = None;
-        assert!(name.module_ident().is_none());
-        assert!(name.require_module_ident().is_err());
+        assert!(name.module().is_none());
+        assert!(name.require_module().is_err());
     }
 }

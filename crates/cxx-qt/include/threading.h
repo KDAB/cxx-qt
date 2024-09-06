@@ -10,13 +10,12 @@
 #include <memory>
 #include <mutex>
 
-#include <cxx-qt/locking.h>
 #include <cxx-qt/thread.h>
 
 namespace rust::cxxqt1 {
 
 template<typename T>
-class CxxQtThreading : public CxxQtLocking
+class CxxQtThreading
 {
 public:
   explicit CxxQtThreading(T* obj)
@@ -30,13 +29,17 @@ public:
     m_cxxQtThreadObj->ptr = nullptr;
   }
 
-  CxxQtThread<T> qtThread() const
-  {
-    return CxxQtThread<T>(m_cxxQtThreadObj, m_rustObjMutex);
-  }
+  CxxQtThread<T> qtThread() const { return CxxQtThread<T>(m_cxxQtThreadObj); }
 
 private:
   ::std::shared_ptr<CxxQtGuardedPointer<T>> m_cxxQtThreadObj;
 };
+
+template<typename T>
+CxxQtThread<T>
+qtThread(const T& qobject)
+{
+  return static_cast<const CxxQtThreading<T>&>(qobject).qtThread();
+}
 
 }

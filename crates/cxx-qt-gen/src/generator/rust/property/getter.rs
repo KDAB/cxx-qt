@@ -23,11 +23,9 @@ pub fn generate(
     cxx_ty: &Type,
     type_names: &TypeNames,
 ) -> Result<Option<RustFragmentPair>> {
-    if let (NameState::Auto(getter), Some(getter_wrapper)) =
-        (&idents.getter, &idents.getter_wrapper)
-    {
-        let cpp_class_name_rust = qobject_names.name.rust_unqualified();
-        let getter_wrapper_cpp = getter_wrapper.cxx_unqualified();
+    if let NameState::Auto(getter) = &idents.getter {
+        let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
+        let getter_cpp = getter.cxx_unqualified();
         let getter_rust = getter.rust_unqualified();
         let ident = idents.name.rust_unqualified();
         let ident_str = ident.to_string();
@@ -39,7 +37,7 @@ pub fn generate(
         Ok(Some(RustFragmentPair {
             cxx_bridge: vec![quote! {
                 extern "Rust" {
-                    #[cxx_name = #getter_wrapper_cpp]
+                    #[cxx_name = #getter_cpp]
                     // Needed for QObjects to have a namespace on their type or extern block
                     //
                     // A Namespace from cxx_qt::bridge would be automatically applied to all children

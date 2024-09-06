@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cxx-qt/locking.h>
-#include <cxx-qt/maybelockguard.h>
 #include <cxx-qt/signalhandler.h>
 #include <cxx-qt/type.h>
 
@@ -74,7 +72,6 @@ namespace cxx_qt::my_object {
 class MyObject
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
@@ -98,47 +95,28 @@ public:
   virtual ~MyObject() = default;
 
 public:
-  ::std::int32_t const& getPrimitive() const;
-  Q_SLOT void setPrimitive(::std::int32_t const& value);
-  QPoint const& getTrivial() const;
-  Q_SLOT void setTrivial(QPoint const& value);
-  ::std::int32_t const& getReadonlyProp() const;
-  ::std::int32_t const& getCustomOnChangedProp() const;
-  Q_SLOT void setCustomOnChangedProp(::std::int32_t const& value);
-  ::std::int32_t const& getConstProp() const;
-  ::std::int32_t const& getResettableProp() const;
-  Q_SLOT void setResettableProp(::std::int32_t const& value);
-  ::std::int32_t const& getRequiredProp() const;
-  Q_SLOT void setRequiredProp(::std::int32_t const& value);
-  ::std::int32_t const& getFinalProp() const;
-  Q_SLOT void setFinalProp(::std::int32_t const& value);
+  ::std::int32_t const& getPrimitive() const noexcept;
+  Q_SLOT void setPrimitive(::std::int32_t value) noexcept;
+  QPoint const& getTrivial() const noexcept;
+  Q_SLOT void setTrivial(QPoint value) noexcept;
+  ::std::int32_t const& getReadonlyProp() const noexcept;
+  ::std::int32_t const& getCustomOnChangedProp() const noexcept;
+  Q_SLOT void setCustomOnChangedProp(::std::int32_t value) noexcept;
+  ::std::int32_t const& getConstProp() const noexcept;
+  ::std::int32_t const& getResettableProp() const noexcept;
+  Q_SLOT void setResettableProp(::std::int32_t value) noexcept;
+  ::std::int32_t const& getRequiredProp() const noexcept;
+  Q_SLOT void setRequiredProp(::std::int32_t value) noexcept;
+  ::std::int32_t const& getFinalProp() const noexcept;
+  Q_SLOT void setFinalProp(::std::int32_t value) noexcept;
   Q_SIGNAL void primitiveChanged();
   Q_SIGNAL void trivialChanged();
   Q_SIGNAL void customFunctionPropChanged();
-  ::std::int32_t myGetter() const;
-  void MyCustomSetter(::std::int32_t value);
-  void myResetFn();
+  ::std::int32_t myGetter() const noexcept;
+  void MyCustomSetter(::std::int32_t value) noexcept;
+  void myResetFn() noexcept;
   Q_SIGNAL void myOnChanged();
   explicit MyObject(QObject* parent = nullptr);
-
-private:
-  ::std::int32_t const& getPrimitiveWrapper() const noexcept;
-  void setPrimitiveWrapper(::std::int32_t value) noexcept;
-  QPoint const& getTrivialWrapper() const noexcept;
-  void setTrivialWrapper(QPoint value) noexcept;
-  ::std::int32_t const& getReadonlyPropWrapper() const noexcept;
-  ::std::int32_t const& getCustomOnChangedPropWrapper() const noexcept;
-  void setCustomOnChangedPropWrapper(::std::int32_t value) noexcept;
-  ::std::int32_t const& getConstPropWrapper() const noexcept;
-  ::std::int32_t const& getResettablePropWrapper() const noexcept;
-  void setResettablePropWrapper(::std::int32_t value) noexcept;
-  ::std::int32_t const& getRequiredPropWrapper() const noexcept;
-  void setRequiredPropWrapper(::std::int32_t value) noexcept;
-  ::std::int32_t const& getFinalPropWrapper() const noexcept;
-  void setFinalPropWrapper(::std::int32_t value) noexcept;
-  ::std::int32_t myGetterWrapper() const noexcept;
-  void MyCustomSetterWrapper(::std::int32_t value) noexcept;
-  void myResetFnWrapper() noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

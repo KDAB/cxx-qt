@@ -83,18 +83,6 @@ impl GeneratedRustFragment {
             )?);
         }
 
-        // If this type has locking enabling then implement the trait
-        //
-        // This could be implemented using an auto trait in the future once stable
-        // https://doc.rust-lang.org/beta/unstable-book/language-features/auto-traits.html
-        if structured_qobject.locking {
-            let qualified_impl =
-                type_names.rust_qualified(qobject_names.name.rust_unqualified())?;
-            generated.cxx_qt_mod_contents.push(syn::parse_quote! {
-                impl cxx_qt::Locking for #qualified_impl {}
-            });
-        }
-
         generated.append(&mut constructor::generate(
             &structured_qobject.constructors,
             &qobject_names,
@@ -254,9 +242,10 @@ mod tests {
             &rust.cxx_mod_contents[4],
             quote! {
                 unsafe extern "C++" {
-                    #[cxx_name = "unsafeRust"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust(self: &MyObject) -> &MyObjectRust;
+                    #[cxx_name = "unsafeRust"]
+                    #[namespace = "rust::cxxqt1"]
+                    fn cxx_qt_ffi_my_object_unsafe_rust(outer: &MyObject) -> &MyObjectRust;
                 }
             },
         );
@@ -264,9 +253,10 @@ mod tests {
             &rust.cxx_mod_contents[5],
             quote! {
                 unsafe extern "C++" {
-                    #[cxx_name = "unsafeRustMut"]
                     #[doc(hidden)]
-                    fn cxx_qt_ffi_rust_mut(self: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+                    #[cxx_name = "unsafeRustMut"]
+                    #[namespace = "rust::cxxqt1"]
+                    fn cxx_qt_ffi_my_object_unsafe_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
                 }
             },
         );

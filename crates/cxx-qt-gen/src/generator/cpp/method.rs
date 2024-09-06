@@ -5,42 +5,26 @@
 
 use crate::generator::cpp::get_cpp_params;
 use crate::{
-    generator::{
-        cpp::{
-            fragment::{CppFragment, CppNamedType},
-            qobject::GeneratedCppQObjectBlocks,
-        },
-        naming::{method::QMethodName, qobject::QObjectNames},
+    generator::cpp::{
+        fragment::{CppFragment, CppNamedType},
+        qobject::GeneratedCppQObjectBlocks,
     },
     naming::cpp::{syn_return_type_to_cpp_except, syn_type_to_cpp_return_type},
     naming::TypeNames,
     parser::method::{ParsedMethod, ParsedQInvokableSpecifiers},
 };
-use indoc::formatdoc;
 use syn::Result;
 
 pub fn generate_cpp_methods(
     invokables: &Vec<&ParsedMethod>,
-    qobject_idents: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
-    let qobject_ident = qobject_idents.name.cxx_unqualified();
     for &invokable in invokables {
-        let idents = QMethodName::try_from(invokable)?;
         let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;
 
         let parameters: Vec<CppNamedType> = get_cpp_params(&invokable.method, type_names)?;
 
-        let body = format!(
-            "{ident}({parameter_names})",
-            ident = idents.wrapper.cxx_unqualified(),
-            parameter_names = parameters
-                .iter()
-                .map(|parameter| parameter.ident.as_str())
-                .collect::<Vec<&str>>()
-                .join(", "),
-        );
         let parameter_types = parameters
             .iter()
             .map(|parameter| format!("{ty} {ident}", ident = parameter.ident, ty = parameter.ty))
@@ -62,64 +46,26 @@ pub fn generate_cpp_methods(
                 ParsedQInvokableSpecifiers::Virtual => is_virtual = "virtual ",
             });
 
+        let is_qinvokable = invokable
+            .is_qinvokable
+            .then_some("Q_INVOKABLE ")
+            .unwrap_or_default();
+
         // Matching return type or void
-        let return_type = if let Some(return_cxx_ty) = &return_cxx_ty {
+        let return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
             return_cxx_ty
         } else {
             "void"
         };
-
-        generated.methods.push(CppFragment::Pair {
-            header: format!(
-                "{is_qinvokable}{is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const}{is_final}{is_override};",
-                return_cxx_ty = return_type,
-                ident = idents.name.cxx_unqualified(),
-                parameter_types = parameter_types,
-                is_qinvokable = if invokable.is_qinvokable {
-                    "Q_INVOKABLE "
-                } else {
-                    ""
-                },
-                is_final = is_final,
-                is_override = is_override,
-                is_virtual = is_virtual,
-            ),
-            source: formatdoc! {
-                r#"
-                    {return_cxx_ty}
-                    {qobject_ident}::{ident}({parameter_types}){is_const}
-                    {{
-                        const ::rust::cxxqt1::MaybeLockGuard<{qobject_ident}> guard(*this);
-                        {body};
-                    }}
-                    "#,
-                return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
-                    return_cxx_ty
-                } else {
-                    "void"
-                },
-                ident = idents.name.cxx_unqualified(),
-                body = if return_cxx_ty.is_some() {
-                    format!("return {body}", body = body)
-                } else {
-                    body
-                },
-            },
-        });
 
         // Note that we are generating a header to match the extern "Rust" method
         // in Rust for our invokable.
         //
         // CXX generates the source and we just need the matching header.
         let has_noexcept = syn_return_type_to_cpp_except(&invokable.method.sig.output);
-        generated.private_methods.push(CppFragment::Header(format!(
-            "{return_cxx_ty} {ident}({parameter_types}){is_const} {has_noexcept};",
-            return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
-                return_cxx_ty
-            } else {
-                "void"
-            },
-            ident = idents.wrapper.cxx_unqualified(),
+        generated.methods.push(CppFragment::Header(format!(
+            "{is_qinvokable}{is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const} {has_noexcept}{is_final}{is_override};",
+            ident = invokable.name.cxx_unqualified(),
         )));
     }
 
@@ -130,9 +76,7 @@ pub fn generate_cpp_methods(
 mod tests {
     use super::*;
 
-    use crate::generator::cpp::property::tests::{require_header, require_pair};
-    use crate::generator::naming::qobject::tests::create_qobjectname;
-    use indoc::indoc;
+    use crate::generator::cpp::property::tests::require_header;
     use pretty_assertions::assert_str_eq;
     use std::collections::HashSet;
     use syn::{parse_quote, ForeignItemFn};
@@ -162,123 +106,39 @@ mod tests {
                 ..ParsedMethod::mock_qinvokable(&method5)
             },
         ];
-        let qobject_idents = create_qobjectname();
-
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
 
-        let generated =
-            generate_cpp_methods(&invokables.iter().collect(), &qobject_idents, &type_names)
-                .unwrap();
+        let generated = generate_cpp_methods(&invokables.iter().collect(), &type_names).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 5);
 
-        let (header, source) = require_pair(&generated.methods[0]).unwrap();
-        assert_str_eq!(header, "Q_INVOKABLE void voidInvokable() const;");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::voidInvokable() const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                voidInvokableWrapper();
-            }
-            "#}
-        );
+        let header = require_header(&generated.methods[0]).unwrap();
+        assert_str_eq!(header, "Q_INVOKABLE void voidInvokable() const noexcept;");
 
-        let (header, source) = require_pair(&generated.methods[1]).unwrap();
+        let header = require_header(&generated.methods[1]).unwrap();
         assert_str_eq!(
             header,
-            "Q_INVOKABLE ::std::int32_t trivialInvokable(::std::int32_t param) const;"
-        );
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            ::std::int32_t
-            MyObject::trivialInvokable(::std::int32_t param) const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                return trivialInvokableWrapper(param);
-            }
-            "#}
+            "Q_INVOKABLE ::std::int32_t trivialInvokable(::std::int32_t param) const noexcept;"
         );
 
-        let (header, source) = require_pair(&generated.methods[2]).unwrap();
+        let header = require_header(&generated.methods[2]).unwrap();
         assert_str_eq!(
             header,
-            "Q_INVOKABLE ::std::unique_ptr<QColor> opaqueInvokable(QColor const& param);"
-        );
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            ::std::unique_ptr<QColor>
-            MyObject::opaqueInvokable(QColor const& param)
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                return opaqueInvokableWrapper(param);
-            }
-            "#}
+            "Q_INVOKABLE ::std::unique_ptr<QColor> opaqueInvokable(QColor const& param) noexcept;"
         );
 
-        let (header, source) = require_pair(&generated.methods[3]).unwrap();
+        let header = require_header(&generated.methods[3]).unwrap();
         assert_str_eq!(
             header,
-            "Q_INVOKABLE virtual ::std::int32_t specifiersInvokable(::std::int32_t param) const final override;"
-        );
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            ::std::int32_t
-            MyObject::specifiersInvokable(::std::int32_t param) const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                return specifiersInvokableWrapper(param);
-            }
-            "#}
+            "Q_INVOKABLE virtual ::std::int32_t specifiersInvokable(::std::int32_t param) const noexcept final override;"
         );
 
-        let (header, source) = require_pair(&generated.methods[4]).unwrap();
-        assert_str_eq!(header, "void cppMethod() const;");
-        assert_str_eq!(
-            source,
-            indoc! {r#"
-            void
-            MyObject::cppMethod() const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                cppMethodWrapper();
-            }
-            "#}
-        );
+        let header = require_header(&generated.methods[4]).unwrap();
+        assert_str_eq!(header, "void cppMethod() const noexcept;");
 
-        // private methods
-        assert_eq!(generated.private_methods.len(), 5);
-
-        let header = require_header(&generated.private_methods[0]).unwrap();
-        assert_str_eq!(header, "void voidInvokableWrapper() const noexcept;");
-
-        let header = require_header(&generated.private_methods[1]).unwrap();
-        assert_str_eq!(
-            header,
-            "::std::int32_t trivialInvokableWrapper(::std::int32_t param) const noexcept;"
-        );
-
-        let header = require_header(&generated.private_methods[2]).unwrap();
-        assert_str_eq!(
-            header,
-            "::std::unique_ptr<QColor> opaqueInvokableWrapper(QColor const& param) noexcept;"
-        );
-
-        let header = require_header(&generated.private_methods[3]).unwrap();
-        assert_str_eq!(
-            header,
-            "::std::int32_t specifiersInvokableWrapper(::std::int32_t param) const noexcept;"
-        );
-
-        let header = require_header(&generated.private_methods[4]).unwrap();
-        assert_str_eq!(header, "void cppMethodWrapper() const noexcept;");
+        assert_eq!(generated.private_methods.len(), 0);
     }
 
     #[test]
@@ -288,38 +148,23 @@ mod tests {
 
         let method = ParsedMethod::mock_qinvokable(&method_declaration);
         let invokables = vec![&method];
-        let qobject_idents = create_qobjectname();
 
         let mut type_names = TypeNames::default();
         type_names.mock_insert("A", None, Some("A1"), None);
         type_names.mock_insert("B", None, Some("B2"), None);
 
-        let generated = generate_cpp_methods(&invokables, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_methods(&invokables, &type_names).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 1);
 
-        let (header, source) = require_pair(&generated.methods[0]).unwrap();
-        assert_str_eq!(header, "Q_INVOKABLE B2 trivialInvokable(A1 param) const;");
+        let header = require_header(&generated.methods[0]).unwrap();
         assert_str_eq!(
-            source,
-            indoc! {r#"
-            B2
-            MyObject::trivialInvokable(A1 param) const
-            {
-                const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-                return trivialInvokableWrapper(param);
-            }
-            "#}
+            header,
+            "Q_INVOKABLE B2 trivialInvokable(A1 param) const noexcept;"
         );
 
         // private methods
-        assert_eq!(generated.private_methods.len(), 1);
-
-        let header = require_header(&generated.private_methods[0]).unwrap();
-        assert_str_eq!(
-            header,
-            "B2 trivialInvokableWrapper(A1 param) const noexcept;"
-        );
+        assert_eq!(generated.private_methods.len(), 0);
     }
 }

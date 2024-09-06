@@ -188,7 +188,7 @@ pub fn generate(
         return Ok(generate_default_constructor(qobject_names, namespace));
     }
 
-    let module_ident = qobject_names.name.require_module_ident()?;
+    let module_ident = qobject_names.name.require_module()?;
 
     let mut result = GeneratedRustFragment::default();
     let namespace_internals = &namespace.internal;

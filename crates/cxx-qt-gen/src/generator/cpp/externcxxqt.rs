@@ -32,10 +32,6 @@ pub fn generate(
             let qobject_name = type_names.lookup(&signal.qobject_ident)?;
             let data = generate_cpp_signal(signal, qobject_name, type_names)?;
             block.includes = data.includes;
-            // Ensure that we include MaybeLockGuard<T> that is used in multiple places
-            block
-                .includes
-                .insert("#include <cxx-qt/maybelockguard.h>".to_owned());
             block.forward_declares = data.forward_declares;
             block.fragments = data.fragments;
             debug_assert!(data.methods.is_empty());

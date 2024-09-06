@@ -50,8 +50,6 @@ MyObject_primitiveChangedConnect(
     &cxx_qt::my_object::MyObject::primitiveChanged,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
-        self);
       closure.template operator()<cxx_qt::my_object::MyObject&>(self);
     },
     type);
@@ -108,8 +106,6 @@ MyObject_trivialChangedConnect(
     &cxx_qt::my_object::MyObject::trivialChanged,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
-        self);
       closure.template operator()<cxx_qt::my_object::MyObject&>(self);
     },
     type);
@@ -168,8 +164,6 @@ MyObject_customFunctionPropChangedConnect(
     &cxx_qt::my_object::MyObject::customFunctionPropChanged,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
-        self);
       closure.template operator()<cxx_qt::my_object::MyObject&>(self);
     },
     type);
@@ -224,8 +218,6 @@ MyObject_myOnChangedConnect(
     &cxx_qt::my_object::MyObject::myOnChanged,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::my_object::MyObject> guard(
-        self);
       closure.template operator()<cxx_qt::my_object::MyObject&>(self);
     },
     type);
@@ -233,130 +225,10 @@ MyObject_myOnChangedConnect(
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 namespace cxx_qt::my_object {
-::std::int32_t const&
-MyObject::getPrimitive() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getPrimitiveWrapper();
-}
-
-void
-MyObject::setPrimitive(::std::int32_t const& value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  setPrimitiveWrapper(value);
-}
-
-QPoint const&
-MyObject::getTrivial() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getTrivialWrapper();
-}
-
-void
-MyObject::setTrivial(QPoint const& value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  setTrivialWrapper(value);
-}
-
-::std::int32_t const&
-MyObject::getReadonlyProp() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getReadonlyPropWrapper();
-}
-
-::std::int32_t const&
-MyObject::getCustomOnChangedProp() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getCustomOnChangedPropWrapper();
-}
-
-void
-MyObject::setCustomOnChangedProp(::std::int32_t const& value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  setCustomOnChangedPropWrapper(value);
-}
-
-::std::int32_t const&
-MyObject::getConstProp() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getConstPropWrapper();
-}
-
-::std::int32_t const&
-MyObject::getResettableProp() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getResettablePropWrapper();
-}
-
-void
-MyObject::setResettableProp(::std::int32_t const& value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  setResettablePropWrapper(value);
-}
-
-::std::int32_t const&
-MyObject::getRequiredProp() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getRequiredPropWrapper();
-}
-
-void
-MyObject::setRequiredProp(::std::int32_t const& value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  setRequiredPropWrapper(value);
-}
-
-::std::int32_t const&
-MyObject::getFinalProp() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getFinalPropWrapper();
-}
-
-void
-MyObject::setFinalProp(::std::int32_t const& value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  setFinalPropWrapper(value);
-}
-
-::std::int32_t
-MyObject::myGetter() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return myGetterWrapper();
-}
-
-void
-MyObject::MyCustomSetter(::std::int32_t value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  MyCustomSetterWrapper(value);
-}
-
-void
-MyObject::myResetFn()
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  myResetFnWrapper();
-}
-
 MyObject::MyObject(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<MyObjectRust>(
       ::cxx_qt::my_object::cxx_qt_my_object::createRs())
-  , ::rust::cxxqt1::CxxQtLocking()
 {
 }
 

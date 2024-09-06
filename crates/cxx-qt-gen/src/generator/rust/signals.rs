@@ -28,7 +28,7 @@ pub fn generate_rust_signal(
 
     let qobject_name_rust = qobject_name.rust_unqualified();
 
-    let module_ident = qobject_name.require_module_ident()?;
+    let module_ident = qobject_name.require_module()?;
 
     let signal_name_cpp = idents.name.cxx_unqualified();
     let connect_ident_rust = idents.connect_name.rust_unqualified();

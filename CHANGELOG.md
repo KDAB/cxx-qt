@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - A new QuickControls module, which exposes `QQuickStyle`. This module is enabled by default and is behind the `qt_quickcontrols` feature.
 - Add support for specifying read write and notify in qproperty macro, including support for custom user defined functions
 - Add support for the constant, required, reset and final flags in the qproperty macro
+- QObject subclasses can now inherit from other CXX-Qt generated QObject classes
 
 ### Changed
 
@@ -51,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `qt_gui` and `qt_qml` features from `cxx-qt-build` they are only used in `cxx-qt-lib(-headers)` now
 - `cxx-qt-lib-headers` and `cxx-qt-lib-extras-headers` are now merged into their respective base crates
 - `BuildOpts` are replaced by the `Interface` type which does not need to be reiterated by downstream dependencies
+- Locking has been removed from the generated QObjects. Qt/User C++ code is responsible for upholding Rusts Safety guarantees.
+  - The `cxx_qt::Locking` trait is no longer available.
 
 ## [0.6.1](https://github.com/KDAB/cxx-qt/compare/v0.6.0...v0.6.1) - 2024-04-19
 

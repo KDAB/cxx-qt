@@ -1,3 +1,4 @@
+use indoc::formatdoc;
 // SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
@@ -10,31 +11,10 @@ use crate::{parser::constructor::Constructor, syntax::path::path_compare_str};
 #[derive(Debug, PartialEq, Eq)]
 pub enum TraitKind {
     Threading,
-    DisableLocking,
     Constructor(Constructor),
 }
 
 impl TraitKind {
-    fn parse_disable_locking(not: &Option<Token![!]>, path: &Path, imp: &ItemImpl) -> Result<Self> {
-        if imp.unsafety.is_none() {
-            return Err(Error::new_spanned(
-                path,
-                "cxx_qt::Locking must be an unsafe impl",
-            ));
-        }
-
-        if not.is_none() {
-            return Err(Error::new_spanned(
-                path,
-                "cxx_qt::Locking is enabled by default, use `impl !cxx_qt::Locking` to disable it.",
-            ));
-        }
-
-        // TODO: Check that threading isn't also enabled
-
-        Ok(Self::DisableLocking)
-    }
-
     fn parse_threading(not: &Option<Token![!]>, path: &Path, imp: &ItemImpl) -> Result<Self> {
         if let Some(unsafety) = imp.unsafety.as_ref() {
             return Err(Error::new_spanned(
@@ -62,17 +42,22 @@ impl TraitKind {
             .as_ref()
             .ok_or_else(|| Error::new_spanned(imp.clone(), "Expected trait impl!"))?;
 
-        if path_compare_str(path, &["cxx_qt", "Locking"]) {
-            Self::parse_disable_locking(not, path, imp)
-        } else if path_compare_str(path, &["cxx_qt", "Threading"]) {
+        if path_compare_str(path, &["cxx_qt", "Threading"]) {
             Self::parse_threading(not, path, imp)
         } else if path_compare_str(path, &["cxx_qt", "Constructor"]) {
             Self::parse_constructor(imp)
         } else {
             // TODO: Give suggestions on which trait might have been meant
             Err(Error::new_spanned(
-                    path,
-                    "Unsupported trait!\nCXX-Qt currently only supports:\n- cxx_qt::Threading\n- cxx_qt::Constructor\n- cxx_qt::Locking\nNote that the trait must always be fully-qualified."
+                path,
+                formatdoc! {"
+                    Unsupported trait!
+                    CXX-Qt currently only supports:
+                      - cxx_qt::Threading
+                      - cxx_qt::Constructor
+                      - (cxx_qt::Locking has been removed as of CXX-Qt 0.7)
+                    Note that the trait must always be fully-qualified.
+                    "},
             ))
         }
     }
@@ -136,16 +121,6 @@ mod tests {
     }
 
     #[test]
-    fn parse_disable_locking() {
-        let imp = parse_quote! {
-            unsafe impl !cxx_qt::Locking for MyObject {}
-        };
-        let marker = TraitImpl::parse(imp).unwrap();
-        assert_eq!(marker.qobject, format_ident!("MyObject"));
-        assert_eq!(marker.kind, TraitKind::DisableLocking);
-    }
-
-    #[test]
     fn parse_constructor() {
         let imp = parse_quote! {
             impl cxx_qt::Constructor<(i32, i32)> for MyObject {}
@@ -167,13 +142,8 @@ mod tests {
             // Threading cannot be negated
             { impl !cxx_qt::Threading for QObject {} }
 
-            // Locking must be unsafe
-            { impl !cxx_qt::Locking for QObject {} }
-            // Locking must always be negated
-            { unsafe impl cxx_qt::Locking for QObject {} }
-
             // Invalid QObject name
-            { impl cxx_qt::Locking for my::path {} }
+            { impl cxx_qt::Threading for my::path {} }
             // Invalid trait name
             { impl cxx_qt::AnotherTrait for QObject {} }
             // Invalid Path to self type

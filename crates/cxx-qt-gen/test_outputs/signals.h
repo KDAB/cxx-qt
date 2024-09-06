@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cxx-qt/locking.h>
-#include <cxx-qt/maybelockguard.h>
 #include <cxx-qt/signalhandler.h>
 #include <cxx-qt/type.h>
 
@@ -70,23 +68,19 @@ namespace cxx_qt::my_object {
 class MyObject
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
   virtual ~MyObject() = default;
 
 public:
-  Q_INVOKABLE void invokable();
+  Q_INVOKABLE void invokable() noexcept;
   Q_SIGNAL void ready();
   Q_SIGNAL void dataChanged(::std::int32_t first,
                             ::std::unique_ptr<Opaque> second,
                             QPoint third,
                             QPoint const& fourth);
   explicit MyObject(QObject* parent = nullptr);
-
-private:
-  void invokableWrapper() noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

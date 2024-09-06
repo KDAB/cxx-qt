@@ -176,7 +176,6 @@ pub fn generate_cpp_signal(
                     &{qobject_ident_namespaced}::{signal_ident},
                     &self,
                     [&, closure = ::std::move(closure)]({parameters_named_types}) mutable {{
-                        const ::rust::cxxqt1::MaybeLockGuard<{qobject_ident_namespaced}> guard(self);
                         closure.template operator()<{parameter_types_with_self}>({parameter_values_with_self});
                     }},
                     type);
@@ -289,7 +288,6 @@ mod tests {
                     &MyObject::dataChanged,
                     &self,
                     [&, closure = ::std::move(closure)](::std::int32_t trivial, ::std::unique_ptr<QColor> opaque) mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&, ::std::int32_t, ::std::unique_ptr<QColor>>(self, ::std::move(trivial), ::std::move(opaque));
                     },
                     type);
@@ -366,7 +364,6 @@ mod tests {
                     &MyObject::dataChanged,
                     &self,
                     [&, closure = ::std::move(closure)](A1 mapped) mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&, A1>(self, ::std::move(mapped));
                     },
                     type);
@@ -442,7 +439,6 @@ mod tests {
                     &MyObject::baseName,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);
@@ -519,7 +515,6 @@ mod tests {
                     &MyObject::signalRustName,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(self);
                         closure.template operator()<MyObject&>(self);
                     },
                     type);
@@ -597,7 +592,6 @@ mod tests {
                     &mynamespace::ObjCpp::signalCxxName,
                     &self,
                     [&, closure = ::std::move(closure)]() mutable {
-                        const ::rust::cxxqt1::MaybeLockGuard<mynamespace::ObjCpp> guard(self);
                         closure.template operator()<mynamespace::ObjCpp&>(self);
                     },
                     type);

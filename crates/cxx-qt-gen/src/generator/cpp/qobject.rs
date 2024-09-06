@@ -6,9 +6,8 @@
 use crate::{
     generator::{
         cpp::{
-            constructor, cxxqttype, fragment::CppFragment, inherit, locking,
-            method::generate_cpp_methods, property::generate_cpp_properties, qenum,
-            signal::generate_cpp_signals, threading,
+            constructor, cxxqttype, fragment::CppFragment, inherit, method::generate_cpp_methods,
+            property::generate_cpp_properties, qenum, signal::generate_cpp_signals, threading,
         },
         naming::{namespace::NamespaceName, qobject::QObjectNames},
         structuring::StructuredQObject,
@@ -114,12 +113,6 @@ impl GeneratedCppQObject {
             has_qobject_macro: qobject.has_qobject_macro,
         };
 
-        // Ensure that we include MaybeLockGuard<T> that is used in multiple places
-        generated
-            .blocks
-            .includes
-            .insert("#include <cxx-qt/maybelockguard.h>".to_owned());
-
         // Build the base class
         let base_class = qobject.base_class.clone().unwrap_or_else(|| {
             // If there is a QObject macro then assume the base class is QObject
@@ -149,7 +142,6 @@ impl GeneratedCppQObject {
         )?);
         generated.blocks.append(&mut generate_cpp_methods(
             &structured_qobject.methods,
-            &qobject_idents,
             type_names,
         )?);
         generated.blocks.append(&mut generate_cpp_signals(
@@ -173,15 +165,7 @@ impl GeneratedCppQObject {
         //
         // Note that threading also includes locking C++ generation
         if structured_qobject.threading {
-            // The parser phase should check that this is true
-            debug_assert!(structured_qobject.locking);
-
             let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
-            generated.blocks.append(&mut blocks);
-            class_initializers.push(initializer);
-            // If this type has locking enabled then add generation
-        } else if structured_qobject.locking {
-            let (initializer, mut blocks) = locking::generate()?;
             generated.blocks.append(&mut blocks);
             class_initializers.push(initializer);
         }
@@ -227,13 +211,12 @@ mod tests {
         assert_eq!(cpp.rust_struct.cxx_unqualified(), "MyObjectRust");
         assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
 
-        assert_eq!(cpp.blocks.base_classes.len(), 3);
+        assert_eq!(cpp.blocks.base_classes.len(), 2);
         assert_eq!(cpp.blocks.base_classes[0], "QObject");
         assert_eq!(
             cpp.blocks.base_classes[1],
             "::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
-        assert_eq!(cpp.blocks.base_classes[2], "::rust::cxxqt1::CxxQtLocking");
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 
@@ -256,13 +239,12 @@ mod tests {
             GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::mock())
                 .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
-        assert_eq!(cpp.blocks.base_classes.len(), 3);
+        assert_eq!(cpp.blocks.base_classes.len(), 2);
         assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
         assert_eq!(
             cpp.blocks.base_classes[1],
             "::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
-        assert_eq!(cpp.blocks.base_classes[2], "::rust::cxxqt1::CxxQtLocking");
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
 

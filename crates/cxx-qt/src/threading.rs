@@ -23,8 +23,8 @@ pub struct CxxQtThread<T>
 where
     T: Threading,
 {
-    // The layout is two std::shared_ptr
-    _space: MaybeUninit<[usize; 4]>,
+    // The layout is one std::shared_ptr, which is two pointers in size
+    _space: MaybeUninit<[usize; 2]>,
     _value: PhantomData<T>,
 }
 

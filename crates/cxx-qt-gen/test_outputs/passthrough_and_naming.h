@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cxx-qt/locking.h>
-#include <cxx-qt/maybelockguard.h>
 #include <cxx-qt/signalhandler.h>
 #include <cxx-qt/type.h>
 
@@ -108,7 +106,6 @@ namespace cxx_qt::multi_object {
 class MyObject
   : public QStringListModel
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:
@@ -118,17 +115,12 @@ public:
   virtual ~MyObject() = default;
 
 public:
-  ::std::int32_t const& getPropertyName() const;
-  Q_SLOT void setPropertyName(::std::int32_t const& value);
+  ::std::int32_t const& getPropertyName() const noexcept;
+  Q_SLOT void setPropertyName(::std::int32_t value) noexcept;
   Q_SIGNAL void propertyNameChanged();
-  Q_INVOKABLE void invokableName();
+  Q_INVOKABLE void invokableName() noexcept;
   Q_SIGNAL void ready();
   explicit MyObject(QObject* parent = nullptr);
-
-private:
-  ::std::int32_t const& getPropertyNameWrapper() const noexcept;
-  void setPropertyNameWrapper(::std::int32_t value) noexcept;
-  void invokableNameWrapper() noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
@@ -167,17 +159,12 @@ public:
   virtual ~SecondObject() = default;
 
 public:
-  ::std::int32_t const& getPropertyName() const;
-  Q_SLOT void setPropertyName(::std::int32_t const& value);
+  ::std::int32_t const& getPropertyName() const noexcept;
+  Q_SLOT void setPropertyName(::std::int32_t value) noexcept;
   Q_SIGNAL void propertyNameChanged();
-  Q_INVOKABLE void invokableName();
+  Q_INVOKABLE void invokableName() noexcept;
   Q_SIGNAL void ready();
   explicit SecondObject(QObject* parent = nullptr);
-
-private:
-  ::std::int32_t const& getPropertyNameWrapper() const noexcept;
-  void setPropertyNameWrapper(::std::int32_t value) noexcept;
-  void invokableNameWrapper() noexcept;
 };
 
 static_assert(::std::is_base_of<QObject, SecondObject>::value,
@@ -190,7 +177,6 @@ namespace my_namespace {
 class MyCxxName
   : public QObject
   , public ::rust::cxxqt1::CxxQtType<ThirdObjectRust>
-  , public ::rust::cxxqt1::CxxQtLocking
 {
   Q_OBJECT
 public:

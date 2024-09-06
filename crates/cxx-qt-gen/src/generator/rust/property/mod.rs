@@ -120,7 +120,7 @@ mod tests {
             &generated.cxx_mod_contents[0],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "getTrivialPropertyWrapper"]
+                    #[cxx_name = "getTrivialProperty"]
                     unsafe fn trivial_property<'a>(self: &'a MyObject) -> &'a i32;
                 }
             },
@@ -143,7 +143,7 @@ mod tests {
             &generated.cxx_mod_contents[1],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "setTrivialPropertyWrapper"]
+                    #[cxx_name = "setTrivialProperty"]
                     fn set_trivial_property(self: Pin<&mut MyObject>, value: i32);
                 }
             },
@@ -173,7 +173,7 @@ mod tests {
             &generated.cxx_mod_contents[2],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "getOpaquePropertyWrapper"]
+                    #[cxx_name = "getOpaqueProperty"]
                     unsafe fn opaque_property<'a>(self: &'a MyObject) -> &'a UniquePtr<QColor>;
                 }
             },
@@ -196,7 +196,7 @@ mod tests {
             &generated.cxx_mod_contents[3],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "setOpaquePropertyWrapper"]
+                    #[cxx_name = "setOpaqueProperty"]
                     fn set_opaque_property(self: Pin<&mut MyObject>, value: UniquePtr<QColor>);
                 }
             },
@@ -226,7 +226,7 @@ mod tests {
             &generated.cxx_mod_contents[4],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "getUnsafePropertyWrapper"]
+                    #[cxx_name = "getUnsafeProperty"]
                     unsafe fn unsafe_property<'a>(self: &'a MyObject) -> &'a *mut T;
                 }
             },
@@ -249,7 +249,7 @@ mod tests {
             &generated.cxx_mod_contents[5],
             parse_quote! {
                 extern "Rust" {
-                    #[cxx_name = "setUnsafePropertyWrapper"]
+                    #[cxx_name = "setUnsafeProperty"]
                     unsafe fn set_unsafe_property(self: Pin<&mut MyObject>, value: *mut T);
                 }
             },

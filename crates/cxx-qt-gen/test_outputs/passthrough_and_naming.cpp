@@ -47,7 +47,6 @@ QPushButton_clickedConnect(
     &QPushButton::clicked,
     &self,
     [&, closure = ::std::move(closure)](bool checked) mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<QPushButton> guard(self);
       closure.template operator()<QPushButton&, bool>(self,
                                                       ::std::move(checked));
     },
@@ -105,8 +104,6 @@ ExternObjectCpp_dataReadyConnect(
     &mynamespace::ExternObjectCpp::dataReady,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<mynamespace::ExternObjectCpp> guard(
-        self);
       closure.template operator()<mynamespace::ExternObjectCpp&>(self);
     },
     type);
@@ -163,8 +160,6 @@ ExternObjectCpp_errorOccurredConnect(
     &mynamespace::ExternObjectCpp::errorOccurred,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<mynamespace::ExternObjectCpp> guard(
-        self);
       closure.template operator()<mynamespace::ExternObjectCpp&>(self);
     },
     type);
@@ -222,8 +217,6 @@ MyObject_propertyNameChangedConnect(
     &cxx_qt::multi_object::MyObject::propertyNameChanged,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::multi_object::MyObject>
-        guard(self);
       closure.template operator()<cxx_qt::multi_object::MyObject&>(self);
     },
     type);
@@ -278,8 +271,6 @@ MyObject_readyConnect(
     &cxx_qt::multi_object::MyObject::ready,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<cxx_qt::multi_object::MyObject>
-        guard(self);
       closure.template operator()<cxx_qt::multi_object::MyObject&>(self);
     },
     type);
@@ -287,32 +278,10 @@ MyObject_readyConnect(
 } // namespace cxx_qt::multi_object::rust::cxxqtgen1
 
 namespace cxx_qt::multi_object {
-::std::int32_t const&
-MyObject::getPropertyName() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  return getPropertyNameWrapper();
-}
-
-void
-MyObject::setPropertyName(::std::int32_t const& value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  setPropertyNameWrapper(value);
-}
-
-void
-MyObject::invokableName()
-{
-  const ::rust::cxxqt1::MaybeLockGuard<MyObject> guard(*this);
-  invokableNameWrapper();
-}
-
 MyObject::MyObject(QObject* parent)
   : QStringListModel(parent)
   , ::rust::cxxqt1::CxxQtType<MyObjectRust>(
       ::cxx_qt::multi_object::cxx_qt_my_object::createRs())
-  , ::rust::cxxqt1::CxxQtLocking()
 {
 }
 
@@ -368,8 +337,6 @@ SecondObject_propertyNameChangedConnect(
     &second_object::SecondObject::propertyNameChanged,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<second_object::SecondObject> guard(
-        self);
       closure.template operator()<second_object::SecondObject&>(self);
     },
     type);
@@ -426,8 +393,6 @@ SecondObject_readyConnect(
     &second_object::SecondObject::ready,
     &self,
     [&, closure = ::std::move(closure)]() mutable {
-      const ::rust::cxxqt1::MaybeLockGuard<second_object::SecondObject> guard(
-        self);
       closure.template operator()<second_object::SecondObject&>(self);
     },
     type);
@@ -435,27 +400,6 @@ SecondObject_readyConnect(
 } // namespace second_object::rust::cxxqtgen1
 
 namespace second_object {
-::std::int32_t const&
-SecondObject::getPropertyName() const
-{
-  const ::rust::cxxqt1::MaybeLockGuard<SecondObject> guard(*this);
-  return getPropertyNameWrapper();
-}
-
-void
-SecondObject::setPropertyName(::std::int32_t const& value)
-{
-  const ::rust::cxxqt1::MaybeLockGuard<SecondObject> guard(*this);
-  setPropertyNameWrapper(value);
-}
-
-void
-SecondObject::invokableName()
-{
-  const ::rust::cxxqt1::MaybeLockGuard<SecondObject> guard(*this);
-  invokableNameWrapper();
-}
-
 SecondObject::SecondObject(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<SecondObjectRust>(
@@ -470,7 +414,6 @@ MyCxxName::MyCxxName(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<ThirdObjectRust>(
       ::my_namespace::cxx_qt_my_rust_name::createRs())
-  , ::rust::cxxqt1::CxxQtLocking()
 {
 }
 

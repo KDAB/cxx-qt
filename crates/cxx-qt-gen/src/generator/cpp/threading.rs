@@ -24,7 +24,7 @@ pub fn generate(qobject_idents: &QObjectNames) -> Result<(String, GeneratedCppQO
     result.methods.push(CppFragment::Source(formatdoc! {
         r#"
         static_assert(alignof({cxx_qt_thread_ident}) <= alignof(::std::size_t), "unexpected aligment");
-        static_assert(sizeof({cxx_qt_thread_ident}) == sizeof(::std::size_t[4]), "unexpected size");
+        static_assert(sizeof({cxx_qt_thread_ident}) == sizeof(::std::size_t[2]), "unexpected size");
         "#
     }));
 
@@ -78,7 +78,7 @@ mod tests {
             source,
             indoc! {r#"
             static_assert(alignof(MyObjectCxxQtThread) <= alignof(::std::size_t), "unexpected aligment");
-            static_assert(sizeof(MyObjectCxxQtThread) == sizeof(::std::size_t[4]), "unexpected size");
+            static_assert(sizeof(MyObjectCxxQtThread) == sizeof(::std::size_t[2]), "unexpected size");
             "#}
         );
 
