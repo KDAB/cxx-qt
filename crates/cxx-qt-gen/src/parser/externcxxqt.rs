@@ -16,7 +16,7 @@ use syn::ForeignItemType;
 #[derive(Default)]
 pub struct ParsedExternCxxQt {
     /// Attributes for the extern "C++Qt" block
-    pub attrs: Vec<Attribute>,
+    pub attrs: Vec<Attribute>, // TODO: these should only be checked ones
     /// Whether this block has an unsafe token
     pub unsafety: Option<Token![unsafe]>,
     /// Items which can be passed into the extern "C++Qt" block

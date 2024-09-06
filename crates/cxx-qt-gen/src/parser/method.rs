@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::{check_safety, has_invalid_attrs};
+use crate::syntax::{foreignmod, types};
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
@@ -10,10 +12,8 @@ use crate::{
 };
 use core::ops::Deref;
 use std::collections::HashSet;
+use syn::spanned::Spanned;
 use syn::{Error, ForeignItemFn, Ident, Result};
-
-use crate::parser::check_safety;
-use crate::syntax::{foreignmod, types};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -46,6 +46,8 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
+    const ALLOWED_ATTRS: [&'static str; 3] = ["cxx_name", "rust_name", "qinvokable"];
+
     #[cfg(test)]
     pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
         Self {
@@ -87,6 +89,7 @@ impl ParsedMethod {
         let mut fields = MethodFields::parse(method)?;
 
         if fields.name.namespace().is_some() {
+            // Can potentially be removed due to addition above?
             return Err(Error::new_spanned(
                 fields.method.sig.ident,
                 "Methods / QInvokables cannot have a namespace attribute",
@@ -107,6 +110,13 @@ impl ParsedMethod {
             if attribute_take_path(&mut fields.method.attrs, specifier.as_str_slice()).is_some() {
                 specifiers.insert(specifier); // Should a fn be able to be Override AND Virtual?
             }
+        }
+
+        if has_invalid_attrs(&fields.method.attrs, &Self::ALLOWED_ATTRS) {
+            return Err(Error::new(
+                fields.method.span(),
+                "Only cxx_name, rust_name and qinvokable are allowed on methods!",
+            ));
         }
 
         Ok(Self {

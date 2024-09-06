@@ -63,7 +63,7 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
             })?;
 
             Ok(Some(parse_quote! {
-                #(#attrs)*
+                #(#attrs)* // TODO: Should these be checked at this point? Passthrough of random attrs could cause problems
                 #visibility #type_token #ident;
             }))
         } else {
@@ -85,7 +85,7 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
 #[derive(Clone)]
 pub struct ForeignTypeIdentAlias {
     /// Attributes on the alias
-    pub attrs: Vec<Attribute>,
+    pub attrs: Vec<Attribute>, // TODO: should these be checked at this point?
     /// The left side of the alias
     pub ident_left: Ident,
     /// The right side of the alias

@@ -6,6 +6,7 @@
 use super::qnamespace::ParsedQNamespace;
 use super::trait_impl::TraitImpl;
 use crate::naming::cpp::err_unsupported_item;
+use crate::parser::has_invalid_attrs;
 use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
 use crate::syntax::foreignmod::ForeignTypeIdentAlias;
 use crate::syntax::path::path_compare_str;
@@ -17,7 +18,8 @@ use crate::{
     },
     syntax::expr::expr_to_string,
 };
-use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result};
+use syn::spanned::Spanned;
+use syn::{Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result};
 use syn::{ItemMacro, Meta};
 
 pub struct ParsedCxxQtData {
@@ -47,6 +49,8 @@ pub struct ParsedCxxQtData {
 }
 
 impl ParsedCxxQtData {
+    const ALLOWED_ATTRS: [&'static str; 1] = ["namespace"];
+
     /// Create a ParsedCxxQtData from a given module and namespace
     pub fn new(module_ident: Ident, namespace: Option<String>) -> Self {
         Self {
@@ -130,6 +134,13 @@ impl ParsedCxxQtData {
             .map(|index| expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value))
             .transpose()?
             .or_else(|| self.namespace.clone());
+
+        if has_invalid_attrs(&foreign_mod.attrs, &Self::ALLOWED_ATTRS) {
+            return Err(Error::new(
+                foreign_mod.span(),
+                "Only the namespace attribute is allowed on RustQt blocsk!",
+            ));
+        }
 
         let safe_call = if foreign_mod.unsafety.is_some() {
             Safety::Safe

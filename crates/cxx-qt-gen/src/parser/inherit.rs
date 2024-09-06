@@ -4,11 +4,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::method::MethodFields;
-use crate::parser::{check_safety, separate_docs};
+use crate::parser::{check_safety, has_invalid_attrs, separate_docs};
 use crate::syntax::{attribute::attribute_take_path, safety::Safety};
 use core::ops::Deref;
 use quote::format_ident;
-use syn::{Attribute, ForeignItemFn, Ident, Result};
+use syn::spanned::Spanned;
+use syn::{Attribute, Error, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
@@ -19,8 +20,17 @@ pub struct ParsedInheritedMethod {
 }
 
 impl ParsedInheritedMethod {
+    const ALLOWED_ATTRS: [&'static str; 4] = ["cxx_name", "rust_name", "qinvokable", "doc"];
+
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
+
+        if has_invalid_attrs(&method.attrs, &Self::ALLOWED_ATTRS) {
+            return Err(Error::new(
+                method.span(),
+                "Only cxx_name and rust_name are allowed on inherited methods!",
+            ));
+        }
 
         let docs = separate_docs(&mut method);
         let mut fields = MethodFields::parse(method)?;

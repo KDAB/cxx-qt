@@ -337,7 +337,7 @@ impl TypeNames {
     fn populate(
         &mut self,
         ident: &Ident,
-        attrs: &[Attribute],
+        attrs: &[Attribute], // TODO: Should these be only valid attrs relevant to name?
         parent_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {

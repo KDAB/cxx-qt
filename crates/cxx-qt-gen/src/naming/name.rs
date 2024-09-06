@@ -106,7 +106,7 @@ impl Name {
     /// See also: [Self::from_ident_and_attrs]
     pub fn from_rust_ident_and_attrs(
         ident: &Ident,
-        attrs: &[Attribute],
+        attrs: &[Attribute], // TODO: Should these be only valid attrs relevant to name?
         parent_namespace: Option<&str>,
         module: Option<&Ident>,
     ) -> Result<Self> {
@@ -128,7 +128,7 @@ impl Name {
     /// inheriting the namespace from the parent.
     pub fn from_ident_and_attrs(
         ident: &Ident,
-        attrs: &[Attribute],
+        attrs: &[Attribute], // TODO: Should these be only valid attrs relevant to name?
         parent_namespace: Option<&str>,
         module: Option<&Ident>,
     ) -> Result<Self> {

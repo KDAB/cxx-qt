@@ -16,6 +16,7 @@ pub mod qobject;
 pub mod signals;
 pub mod trait_impl;
 
+use crate::syntax::path::path_compare_str;
 use crate::syntax::safety::Safety;
 use crate::{
     // Used for error handling when resolving the namespace of the qenum.
@@ -50,6 +51,19 @@ pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
         docs.push(doc);
     }
     docs
+}
+
+/// Returns true if the attrs passed contain any attributes not in the allowed list, using path_compare_str
+pub fn has_invalid_attrs(attrs: &[Attribute], allowed: &[&str]) -> bool {
+    !attrs
+        .iter()
+        .filter(|attr| {
+            !allowed
+                .iter()
+                .any(|string| path_compare_str(attr.meta.path(), &[string]))
+        })
+        .collect::<Vec<&Attribute>>()
+        .is_empty()
 }
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
@@ -97,6 +111,15 @@ impl Parser {
             return Err(Error::new(
                 module.span(),
                 "Tried to parse a module which doesn't have a cxx_qt::bridge attribute!",
+            ));
+        }
+
+        // Only attribute allowed on a module being parsed is cxx_qt::bridge
+        // If a namespace is needed it is supplied like #[cxx_qt::bridge(namespace = "...")]
+        if !module.attrs.is_empty() {
+            return Err(Error::new(
+                module.span(),
+                "No other attributes are allowed on a cxx_qt::bridge!",
             ));
         }
 
@@ -198,20 +221,6 @@ mod tests {
         assert_eq!(parser.passthrough_module, expected_module);
         assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
-    }
-
-    #[test]
-    fn test_bridge_cxx_file_stem() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(cxx_file_stem = "stem")]
-            mod ffi {
-                extern "Rust" {
-                    fn test();
-                }
-            }
-        };
-        let parser = Parser::from(module);
-        assert!(parser.is_err());
     }
 
     #[test]
@@ -350,6 +359,15 @@ mod tests {
             }
             {
                 // No cxx_qt bridge on module
+                mod ffi {
+                    extern "Rust" {
+                        fn test();
+                    }
+                }
+            }
+            {
+                // Cxx_file_stem is deprecated
+                #[cxx_qt::bridge(cxx_file_stem = "stem")]
                 mod ffi {
                     extern "Rust" {
                         fn test();

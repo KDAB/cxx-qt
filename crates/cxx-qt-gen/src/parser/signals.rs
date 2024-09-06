@@ -8,7 +8,7 @@ use core::ops::Deref;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
 
 use crate::parser::method::MethodFields;
-use crate::parser::{check_safety, separate_docs};
+use crate::parser::{check_safety, has_invalid_attrs, separate_docs};
 
 #[derive(Clone)]
 /// Describes an individual Signal
@@ -24,6 +24,8 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
+    const ALLOWED_ATTRS: [&'static str; 4] = ["cxx_name", "rust_name", "inherit", "doc"];
+
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
     pub fn mock(method: &ForeignItemFn) -> Self {
@@ -33,10 +35,18 @@ impl ParsedSignal {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 
+        if has_invalid_attrs(&method.attrs, &Self::ALLOWED_ATTRS) {
+            return Err(Error::new(
+                method.span(),
+                "Only cxx_name, rust_name and inherit are allowed on QSignals!",
+            ));
+        }
+
         let docs = separate_docs(&mut method);
         let mut fields = MethodFields::parse(method)?;
 
         if fields.name.namespace().is_some() {
+            // Can potentially be removed due to addition above?
             return Err(Error::new_spanned(
                 fields.method.sig.ident,
                 "Signals cannot have a namespace attribute!",

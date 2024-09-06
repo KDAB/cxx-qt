@@ -12,7 +12,7 @@ use syn::{AttrStyle, Attribute, Result};
 /// Representation of a CxxQtFile as Syn items
 pub struct CxxQtFile {
     /// A vector of [syn::Attribute] in the file
-    pub attrs: Vec<Attribute>,
+    pub attrs: Vec<Attribute>, // TODO: Should these be checked at this point?
     /// A vector of [CxxQtItem] items in the file
     pub items: Vec<CxxQtItem>,
 }

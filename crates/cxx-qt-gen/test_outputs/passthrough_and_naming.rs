@@ -1,6 +1,4 @@
 #[cxx::bridge(namespace = "cxx_qt::multi_object")]
-#[attrA]
-#[attrB]
 pub mod ffi {
     const MAX: u16 = 65535;
     enum Event {
@@ -23,13 +21,11 @@ pub mod ffi {
     #[namespace = "namespace"]
     extern "C" {}
     #[namespace = "namespace"]
-    #[custom_attr = "test"]
     extern "C" {}
     unsafe extern "C++" {}
     #[namespace = "namespace"]
     unsafe extern "C++" {}
     #[namespace = "namespace"]
-    #[custom_attr = "test"]
     unsafe extern "C++" {}
     macro_rules! macro1 {
         () => {

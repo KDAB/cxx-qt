@@ -13,6 +13,7 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 
+use crate::parser::has_invalid_attrs;
 use syn::{Attribute, Error, Expr, Ident, Meta, Result};
 
 /// Metadata for registering QML element
@@ -46,6 +47,8 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
+    const ALLOWED_ATTRS: [&'static str; 5] =
+        ["cxx_name", "rust_name", "namespace", "derive", "docs"]; // Other attrs like qml metadata are parsed using attribute_take so are removed
     #[cfg(test)]
     pub fn mock() -> Self {
         ParsedQObject {
@@ -108,6 +111,13 @@ impl ParsedQObject {
         // and remove the #[qproperty] attribute
         let properties = Self::parse_property_attributes(&mut declaration.attrs)?;
         let inner = declaration.ident_right.clone();
+
+        if has_invalid_attrs(&declaration.attrs, &Self::ALLOWED_ATTRS) {
+            return Err(Error::new_spanned(
+                declaration.ident_left,
+                "Only cxx_name, rust_name and namespace are allowed on QObjects!",
+            ));
+        }
 
         Ok(Self {
             base_class,
