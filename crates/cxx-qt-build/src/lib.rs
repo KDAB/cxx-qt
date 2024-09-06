@@ -774,12 +774,12 @@ impl CxxQtBuilder {
                 .rust_files
                 .iter()
                 .map(|file| {
-                    file.parent()
-                        .unwrap()
-                        .file_name()
-                        .unwrap()
-                        .to_string_lossy()
-                        .to_string()
+                    if let Some(parent) = file.parent() {
+                        parent.to_string_lossy().to_string()
+                    } else {
+                        // Fallback to an empty string if there is no parent path
+                        String::new()
+                    }
                 })
                 .collect::<HashSet<String>>();
             if dirs.len() > 1 {
