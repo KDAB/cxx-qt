@@ -22,5 +22,4 @@ impl cxx_qt::Trait for A {} // explicit CXX-Qt trait implementation of Trait for
 - [CxxQtType](https://docs.rs/cxx-qt/latest/cxx_qt/trait.CxxQtType.html) - trait to reach the Rust implementation of a `QObject`
 - [Constructor](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) - custom constructor
 - [Initialize](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Initialize.html) - execute Rust code when the object is constructed
-- [Locking](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Locking.html) - marker trait whether locking is enabled
 - [Threading](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Threading.html) - marker trait whether CXX-Qt threading should be enabled
