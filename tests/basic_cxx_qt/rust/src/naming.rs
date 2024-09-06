@@ -1,5 +1,5 @@
 use cxx_qt::CxxQtType;
-// SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Ben Ford <ben.ford@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
@@ -35,7 +35,6 @@ mod qobject {
     }
 }
 
-
 pub struct NamedObjectRust {
     number: i32,
     string: QString,
@@ -56,9 +55,7 @@ pub struct NamedObject2Rust {
 
 impl Default for NamedObject2Rust {
     fn default() -> Self {
-        Self {
-            number: 25,
-        }
+        Self { number: 25 }
     }
 }
 

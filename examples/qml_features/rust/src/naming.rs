@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Ben Ford <ben.ford@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
 use std::pin::Pin;
 
 #[cxx_qt::bridge(cxx_file_stem = "rust_naming")]
@@ -21,7 +25,7 @@ pub mod qobject {
 
 #[derive(Default)]
 pub struct NamedObjectRust {
-    pub(crate) num: i32
+    pub(crate) num: i32,
 }
 
 impl qobject::NamedObject {
