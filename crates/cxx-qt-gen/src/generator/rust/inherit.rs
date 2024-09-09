@@ -45,14 +45,12 @@ pub fn generate(
             if method.safe {
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }
-
-            let attrs = &method.method.attrs;
             let doc_comments = &method.docs;
 
             syn::parse2(quote_spanned! {
                 method.method.span() =>
                 #unsafe_block extern "C++" {
-                    #(#attrs)*
+                    // TODO: should namespace be added here?
                     #[cxx_name = #cxx_name_string]
                     #(#doc_comments)*
                     #unsafe_call fn #ident(#self_param, #(#parameters),*) #return_type;

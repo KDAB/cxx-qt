@@ -5,7 +5,7 @@
 
 use crate::parser::method::MethodFields;
 use crate::parser::{check_attribute_validity, check_safety, separate_docs};
-use crate::syntax::{attribute::attribute_take_path, safety::Safety};
+use crate::syntax::safety::Safety;
 use core::ops::Deref;
 use quote::format_ident;
 use syn::{Attribute, ForeignItemFn, Ident, Result};
@@ -24,15 +24,10 @@ impl ParsedInheritedMethod {
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
         check_attribute_validity(&method.attrs, &Self::ALLOWED_ATTRS)?;
-
         let docs = separate_docs(&mut method);
-        let mut fields = MethodFields::parse(method)?;
-
-        // This block seems unnecessary but since attrs are passed through on generator/rust/inherit.rs a duplicate attr would occur without it
-        attribute_take_path(&mut fields.method.attrs, &["cxx_name"]);
 
         Ok(Self {
-            method_fields: fields,
+            method_fields: MethodFields::parse(method)?,
             docs,
         })
     }

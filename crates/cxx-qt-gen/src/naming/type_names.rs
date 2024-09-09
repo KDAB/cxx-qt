@@ -5,10 +5,9 @@
 
 use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
 
-use quote::format_ident;
+use quote::{format_ident, quote};
 use syn::{
-    parse_quote, token::Brace, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct,
-    Path, Result,
+    parse_quote, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct, Path, Result,
 };
 
 use crate::{
@@ -168,16 +167,18 @@ impl TypeNames {
         }
 
         for extern_cxxqt in &cxx_qt_data.extern_cxxqt_blocks {
-            // TODO: Refactor, this is a hack to reconstruct the original ItemForeignMod
-            let foreign_mod = ItemForeignMod {
-                attrs: extern_cxxqt.attrs.clone(),
-                unsafety: None,
-                brace_token: Brace::default(),
-                items: extern_cxxqt.passthrough_items.clone(),
-                abi: syn::Abi {
-                    extern_token: syn::parse_quote!(extern),
-                    name: None,
-                },
+            let namespace = if let Some(namespace) = &extern_cxxqt.namespace {
+                quote! { #[namespace = #namespace ] }
+            } else {
+                quote! {}
+            };
+
+            let items = extern_cxxqt.passthrough_items.clone();
+            let foreign_mod: ItemForeignMod = parse_quote! {
+                #namespace
+                extern "C++" {
+                    #(#items)*
+                }
             };
             self.populate_from_foreign_mod_item(&foreign_mod, bridge_namespace, module_ident)?;
         }

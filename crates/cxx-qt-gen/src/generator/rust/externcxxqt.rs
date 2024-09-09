@@ -21,13 +21,18 @@ impl GeneratedRustFragment {
     ) -> Result<Self> {
         let mut generated = Self::default();
 
+        let namespace = if let Some(namespace) = &extern_cxxqt_block.namespace {
+            quote! { #[namespace = #namespace ] }
+        } else {
+            quote! {}
+        };
+
         // Add the pass through blocks
-        let attrs = &extern_cxxqt_block.attrs;
         let unsafety = &extern_cxxqt_block.unsafety;
         let items = &extern_cxxqt_block.passthrough_items;
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
-                #(#attrs)*
+                #namespace
                 #unsafety extern "C++" {
                     #(#items)*
                 }

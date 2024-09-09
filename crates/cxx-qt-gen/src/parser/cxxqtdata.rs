@@ -404,7 +404,7 @@ mod tests {
         assert!(result.is_none());
 
         assert_eq!(cxx_qt_data.extern_cxxqt_blocks.len(), 1);
-        assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].attrs.len(), 1);
+        assert!(cxx_qt_data.extern_cxxqt_blocks[0].namespace.is_some());
         assert_eq!(
             cxx_qt_data.extern_cxxqt_blocks[0].passthrough_items.len(),
             1

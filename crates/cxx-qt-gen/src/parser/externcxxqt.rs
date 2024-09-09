@@ -7,17 +7,18 @@ use crate::{
     parser::signals::ParsedSignal,
     syntax::{attribute::attribute_find_path, safety::Safety},
 };
-use syn::{spanned::Spanned, Attribute, Error, ForeignItem, ItemForeignMod, Result, Token};
+use syn::{spanned::Spanned, Error, ForeignItem, ItemForeignMod, Result, Token};
 
 use crate::parser::check_attribute_validity;
+use crate::syntax::expr::expr_to_string;
 #[cfg(test)]
 use syn::ForeignItemType;
 
 /// Representation of an extern "C++Qt" block
 #[derive(Default)]
 pub struct ParsedExternCxxQt {
-    /// Attributes for the extern "C++Qt" block
-    pub attrs: Vec<Attribute>,
+    /// The namespace of the type in C++.
+    pub namespace: Option<String>,
     /// Whether this block has an unsafe token
     pub unsafety: Option<Token![unsafe]>,
     /// Items which can be passed into the extern "C++Qt" block
@@ -32,8 +33,17 @@ impl ParsedExternCxxQt {
     pub fn parse(mut foreign_mod: ItemForeignMod) -> Result<Self> {
         check_attribute_validity(&foreign_mod.attrs, &Self::ALLOWED_ATTRS)?;
 
+        let namespace = if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"])
+        {
+            Some(expr_to_string(
+                &foreign_mod.attrs[index].meta.require_name_value()?.value,
+            )?)
+        } else {
+            None
+        };
+
         let mut extern_cxx_block = ParsedExternCxxQt {
-            attrs: foreign_mod.attrs.clone(),
+            namespace,
             unsafety: foreign_mod.unsafety,
             ..Default::default()
         };
@@ -125,7 +135,7 @@ mod tests {
         })
         .unwrap();
 
-        assert_eq!(extern_cxx_qt.attrs.len(), 1);
+        assert!(extern_cxx_qt.namespace.is_some());
         assert_eq!(extern_cxx_qt.passthrough_items.len(), 2);
         assert_eq!(extern_cxx_qt.signals.len(), 1);
         assert!(extern_cxx_qt.unsafety.is_some());
@@ -151,7 +161,7 @@ mod tests {
         })
         .unwrap();
 
-        assert_eq!(extern_cxx_qt.attrs.len(), 0);
+        assert!(extern_cxx_qt.namespace.is_none());
         assert_eq!(extern_cxx_qt.passthrough_items.len(), 1);
         // Check that the attribute is removed
         let foreign_ty = extern_cxx_qt.get_passthrough_foreign_type();
