@@ -7,7 +7,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qsize.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 #include <cstdint>
 
@@ -16,9 +16,10 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qsize.h?h=v5.15.6-lts-lgpl#n104
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qsize.h?h=v6.2.4#n113
-constexpr static ::std::array<::std::size_t, 2> arr{ sizeof(::std::int32_t),
-                                                     sizeof(::std::int32_t) };
-assert_alignment_and_size(QSize, alignof(::std::int32_t), arr, arr.size());
+assert_alignment_and_size(QSize, {
+  ::std::int32_t a0;
+  ::std::int32_t a1;
+});
 
 static_assert(::std::is_trivially_copyable<QSize>::value,
               "QSize must be trivially copyable!");

@@ -6,12 +6,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #include "cxx-qt-lib/qimage.h"
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 #include <string>
 
 // A QImage inherits from QPaintDevice.
 
-#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 // QPaintDevice in Qt5 contains two things:
 // 1. ushort painters; (due to the following field this has padding to make it
 // 64-bit long)
@@ -20,18 +19,21 @@
 // 3. QImageData *d;
 // For a total of 3 pointers in length.
 // Because of the added v-table, it's a total of 4 pointers in size.
-constexpr static ::std::array<::std::size_t, 4> arr{ sizeof(::std::uint16_t),
-                                                     sizeof(::std::size_t),
-                                                     sizeof(::std::size_t),
-                                                     sizeof(::std::size_t) };
-assert_alignment_and_size(QImage, alignof(::std::size_t), arr, arr.size());
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+assert_alignment_and_size(QImage, {
+  ::std::uint16_t a0;
+  ::std::size_t a1;
+  ::std::size_t a2;
+  ::std::size_t a3;
+});
 #else
 // In Qt6 the QPaintDevice doesn't contain the `reserved` pointer, making it 1
 // pointer smaller
-constexpr static ::std::array<::std::size_t, 3> arr{ sizeof(::std::uint16_t),
-                                                     sizeof(::std::size_t),
-                                                     sizeof(::std::size_t) };
-assert_alignment_and_size(QImage, alignof(::std::size_t), arr, arr.size());
+assert_alignment_and_size(QImage, {
+  ::std::uint16_t a0;
+  ::std::size_t a1;
+  ::std::size_t a2;
+});
 #endif
 
 namespace rust {

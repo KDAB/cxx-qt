@@ -7,15 +7,14 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qtime.h"
 
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 #include <cstdint>
 // QTime has one int member
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v5.15.6-lts-lgpl#n242
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/time/qdatetime.h?h=v6.2.4#n217
-constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::int32_t) };
-assert_alignment_and_size(QTime, alignof(::std::int32_t), arr, arr.size());
+assert_alignment_and_size(QTime, { ::std::int32_t a0; });
 
 static_assert(::std::is_trivially_copyable<QTime>::value,
               "QTime must be trivially copyable!");

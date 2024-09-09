@@ -7,15 +7,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #include "cxx-qt-lib/qpainterpath.h"
-#include "../assertion_utils.h"
+#include <cxx-qt-lib/assertion_utils.h>
 
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qpainterpath.h?h=v5.15.6-lts-lgpl#n227
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/gui/painting/qpainterpath.h?h=v6.2.4#n200
-constexpr static ::std::array<::std::size_t, 1> arr{ sizeof(::std::size_t) };
-assert_alignment_and_size(QPainterPath,
-                          alignof(::std::size_t),
-                          arr,
-                          arr.size());
+assert_alignment_and_size(QPainterPath, { ::std::size_t a0; });
 
 static_assert(QTypeInfo<QPainterPath>::isRelocatable);
 
