@@ -70,7 +70,7 @@ pub fn check_attribute_validity<'a>(attrs: &'a [Attribute], allowed: &[&str]) ->
         Err(Error::new(
             disallowed[0].span(),
             format!(
-                "Invalid attribute found! The only attributes allowed on this item are\n{allowed}",
+                "Unsupported attribute! The only attributes allowed on this item are\n{allowed}",
                 allowed = allowed.join(", ")
             ),
         ))
