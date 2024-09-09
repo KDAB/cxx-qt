@@ -85,7 +85,7 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
 #[derive(Clone)]
 pub struct ForeignTypeIdentAlias {
     /// Attributes on the alias
-    pub attrs: Vec<Attribute>, // TODO: should these be checked at this point?
+    pub attrs: Vec<Attribute>,
     /// The left side of the alias
     pub ident_left: Ident,
     /// The right side of the alias
@@ -95,6 +95,7 @@ pub struct ForeignTypeIdentAlias {
 impl Parse for ForeignTypeIdentAlias {
     fn parse(input: ParseStream) -> Result<Self> {
         let attrs = input.call(Attribute::parse_outer)?;
+        // TODO: Potentially check attr validity here?
 
         // Note that visibility is ignored for now
         let _: Visibility = input.parse()?;

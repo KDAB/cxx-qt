@@ -99,7 +99,6 @@ fn parse_meta(meta: Meta) -> Result<(Ident, Option<Ident>)> {
 }
 
 impl ParsedQProperty {
-    // TODO: Ensure this should already be the checked QProperty attr
     pub fn parse(attr: Attribute) -> Result<Self> {
         attr.parse_args_with(|input: ParseStream| -> Result<Self> {
             let ty = input.parse()?;

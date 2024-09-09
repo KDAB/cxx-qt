@@ -13,7 +13,7 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 
-use crate::parser::has_invalid_attrs;
+use crate::parser::check_attribute_validity;
 use syn::{Attribute, Error, Expr, Ident, Meta, Result};
 
 /// Metadata for registering QML element
@@ -112,12 +112,7 @@ impl ParsedQObject {
         let properties = Self::parse_property_attributes(&mut declaration.attrs)?;
         let inner = declaration.ident_right.clone();
 
-        if has_invalid_attrs(&declaration.attrs, &Self::ALLOWED_ATTRS) {
-            return Err(Error::new_spanned(
-                declaration.ident_left,
-                "Only cxx_name, rust_name and namespace are allowed on QObjects!",
-            ));
-        }
+        check_attribute_validity(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
 
         Ok(Self {
             base_class,

@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{check_safety, has_invalid_attrs};
+use crate::parser::{check_attribute_validity, check_safety};
 use crate::syntax::{foreignmod, types};
 use crate::{
     naming::Name,
@@ -12,8 +12,7 @@ use crate::{
 };
 use core::ops::Deref;
 use std::collections::HashSet;
-use syn::spanned::Spanned;
-use syn::{Error, ForeignItemFn, Ident, Result};
+use syn::{ForeignItemFn, Ident, Result};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -88,14 +87,6 @@ impl ParsedMethod {
 
         let mut fields = MethodFields::parse(method)?;
 
-        if fields.name.namespace().is_some() {
-            // Can potentially be removed due to addition above?
-            return Err(Error::new_spanned(
-                fields.method.sig.ident,
-                "Methods / QInvokables cannot have a namespace attribute",
-            ));
-        }
-
         // Determine if the method is invokable
         let is_qinvokable =
             attribute_take_path(&mut fields.method.attrs, &["qinvokable"]).is_some();
@@ -112,12 +103,7 @@ impl ParsedMethod {
             }
         }
 
-        if has_invalid_attrs(&fields.method.attrs, &Self::ALLOWED_ATTRS) {
-            return Err(Error::new(
-                fields.method.span(),
-                "Only cxx_name, rust_name and qinvokable are allowed on methods!",
-            ));
-        }
+        check_attribute_validity(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         Ok(Self {
             method_fields: fields,

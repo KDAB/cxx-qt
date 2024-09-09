@@ -9,6 +9,7 @@ use crate::{
 };
 use syn::{spanned::Spanned, Attribute, Error, ForeignItem, ItemForeignMod, Result, Token};
 
+use crate::parser::check_attribute_validity;
 #[cfg(test)]
 use syn::ForeignItemType;
 
@@ -16,7 +17,7 @@ use syn::ForeignItemType;
 #[derive(Default)]
 pub struct ParsedExternCxxQt {
     /// Attributes for the extern "C++Qt" block
-    pub attrs: Vec<Attribute>, // TODO: these should only be checked ones
+    pub attrs: Vec<Attribute>,
     /// Whether this block has an unsafe token
     pub unsafety: Option<Token![unsafe]>,
     /// Items which can be passed into the extern "C++Qt" block
@@ -26,7 +27,11 @@ pub struct ParsedExternCxxQt {
 }
 
 impl ParsedExternCxxQt {
+    const ALLOWED_ATTRS: [&'static str; 1] = ["namespace"];
+
     pub fn parse(mut foreign_mod: ItemForeignMod) -> Result<Self> {
+        check_attribute_validity(&foreign_mod.attrs, &Self::ALLOWED_ATTRS)?;
+
         let mut extern_cxx_block = ParsedExternCxxQt {
             attrs: foreign_mod.attrs.clone(),
             unsafety: foreign_mod.unsafety,

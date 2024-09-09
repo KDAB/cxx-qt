@@ -53,17 +53,28 @@ pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
     docs
 }
 
-/// Returns true if the attrs passed contain any attributes not in the allowed list, using path_compare_str
-pub fn has_invalid_attrs(attrs: &[Attribute], allowed: &[&str]) -> bool {
-    !attrs
+/// Returns an error if the attributes passed contain an attribute not in the whitelist provided
+pub fn check_attribute_validity<'a>(attrs: &'a [Attribute], allowed: &[&str]) -> Result<()> {
+    let disallowed = attrs
         .iter()
         .filter(|attr| {
             !allowed
                 .iter()
                 .any(|string| path_compare_str(attr.meta.path(), &[string]))
         })
-        .collect::<Vec<&Attribute>>()
-        .is_empty()
+        .collect::<Vec<&Attribute>>();
+
+    if disallowed.is_empty() {
+        Ok(())
+    } else {
+        Err(Error::new(
+            disallowed[0].span(),
+            format!(
+                "Invalid attribute found! The only attributes allowed on this item are\n{allowed}",
+                allowed = allowed.join(", ")
+            ),
+        ))
+    }
 }
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
