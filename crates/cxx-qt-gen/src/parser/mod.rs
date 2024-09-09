@@ -91,12 +91,15 @@ pub struct Parser {
 }
 
 impl Parser {
+    const ALLOWED_ATTRS: [&'static str; 1] = ["doc"];
+
+
     fn parse_mod_attributes(module: &mut ItemMod) -> Result<Option<String>> {
         let mut namespace = None;
 
         // Remove the cxx_qt::bridge attribute
         if let Some(attr) = attribute_take_path(&mut module.attrs, &["cxx_qt", "bridge"]) {
-            // If we are no #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
+            // If we are not #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
             if !matches!(attr.meta, Meta::Path(_)) {
                 let nested =
                     attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)?;
@@ -125,14 +128,9 @@ impl Parser {
             ));
         }
 
-        // Only attribute allowed on a module being parsed is cxx_qt::bridge
+        // Only attributes allowed on a module being parsed is cxx_qt::bridge and docs
         // If a namespace is needed it is supplied like #[cxx_qt::bridge(namespace = "...")]
-        if !module.attrs.is_empty() {
-            return Err(Error::new(
-                module.span(),
-                "No other attributes are allowed on a cxx_qt::bridge!",
-            ));
-        }
+        check_attribute_validity(&module.attrs, &Self::ALLOWED_ATTRS)?;
 
         Ok(namespace)
     }
