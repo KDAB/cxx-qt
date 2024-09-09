@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety};
+use crate::syntax::{attribute::attribute_get_path, path::path_compare_str, safety::Safety};
 use core::ops::Deref;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
 
@@ -24,7 +24,7 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
-    const ALLOWED_ATTRS: [&'static str; 4] = ["cxx_name", "rust_name", "inherit", "doc"];
+    const ALLOWED_ATTRS: [&'static str; 5] = ["cxx_name", "rust_name", "inherit", "doc", "qsignal"];
 
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
@@ -33,11 +33,12 @@ impl ParsedSignal {
     }
 
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
+        // FIND ONLY
         check_safety(&method, &safety)?;
         check_attribute_validity(&method.attrs, &Self::ALLOWED_ATTRS)?;
 
         let docs = separate_docs(&mut method);
-        let mut fields = MethodFields::parse(method)?;
+        let fields = MethodFields::parse(method)?;
 
         if !fields.mutable {
             return Err(Error::new(
@@ -46,7 +47,7 @@ impl ParsedSignal {
             ));
         }
 
-        let inherit = attribute_take_path(&mut fields.method.attrs, &["inherit"]).is_some();
+        let inherit = attribute_get_path(&fields.method.attrs, &["inherit"]).is_some();
         let private = if let Visibility::Restricted(vis_restricted) = &fields.method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
         } else {
@@ -146,12 +147,9 @@ mod tests {
             #[inherit]
             fn ready(self: Pin<&mut MyObject>);
         };
-        let signal = ParsedSignal::parse(method, Safety::Safe).unwrap();
+        let signal = ParsedSignal::parse(method.clone(), Safety::Safe).unwrap();
 
-        let expected_method: ForeignItemFn = parse_quote! {
-            fn ready(self: Pin<&mut MyObject>);
-        };
-        assert_eq!(signal.method, expected_method);
+        assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);

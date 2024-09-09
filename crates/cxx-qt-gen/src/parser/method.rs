@@ -8,7 +8,7 @@ use crate::syntax::{foreignmod, types};
 use crate::{
     naming::Name,
     parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::attribute_take_path, safety::Safety},
+    syntax::{attribute::attribute_get_path, safety::Safety},
 };
 use core::ops::Deref;
 use std::collections::HashSet;
@@ -45,7 +45,14 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
-    const ALLOWED_ATTRS: [&'static str; 3] = ["cxx_name", "rust_name", "qinvokable"];
+    const ALLOWED_ATTRS: [&'static str; 6] = [
+        "cxx_name",
+        "rust_name",
+        "qinvokable",
+        "cxx_final",
+        "cxx_override",
+        "cxx_virtual",
+    ];
 
     #[cfg(test)]
     pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
@@ -84,12 +91,12 @@ impl ParsedMethod {
 
     pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
+        check_attribute_validity(&method.attrs, &Self::ALLOWED_ATTRS)?;
 
-        let mut fields = MethodFields::parse(method)?;
+        let fields = MethodFields::parse(method)?;
 
         // Determine if the method is invokable
-        let is_qinvokable =
-            attribute_take_path(&mut fields.method.attrs, &["qinvokable"]).is_some();
+        let is_qinvokable = attribute_get_path(&fields.method.attrs, &["qinvokable"]).is_some();
 
         // Parse any C++ specifiers
         let mut specifiers = HashSet::new();
@@ -98,12 +105,10 @@ impl ParsedMethod {
             ParsedQInvokableSpecifiers::Override,
             ParsedQInvokableSpecifiers::Virtual,
         ] {
-            if attribute_take_path(&mut fields.method.attrs, specifier.as_str_slice()).is_some() {
+            if attribute_get_path(&fields.method.attrs, specifier.as_str_slice()).is_some() {
                 specifiers.insert(specifier); // Should a fn be able to be Override AND Virtual?
             }
         }
-
-        check_attribute_validity(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         Ok(Self {
             method_fields: fields,

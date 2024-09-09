@@ -5,15 +5,15 @@
 
 use crate::{
     naming::Name,
-    parser::property::ParsedQProperty,
+    parser::{check_attribute_validity, property::ParsedQProperty},
     syntax::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
+        path::path_compare_str,
     },
 };
 #[cfg(test)]
 use quote::format_ident;
 
-use crate::parser::check_attribute_validity;
 use syn::{Attribute, Error, Expr, Ident, Meta, Result};
 
 /// Metadata for registering QML element
@@ -47,8 +47,19 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
-    const ALLOWED_ATTRS: [&'static str; 5] =
-        ["cxx_name", "rust_name", "namespace", "derive", "docs"]; // Other attrs like qml metadata are parsed using attribute_take so are removed
+    const ALLOWED_ATTRS: [&'static str; 11] = [
+        "cxx_name",
+        "rust_name",
+        "namespace",
+        "derive",
+        "docs",
+        "qobject",
+        "base",
+        "qml_element",
+        "qml_uncreatable",
+        "qml_singleton",
+        "qproperty",
+    ];
     #[cfg(test)]
     pub fn mock() -> Self {
         ParsedQObject {
@@ -88,8 +99,6 @@ impl ParsedQObject {
             .transpose()?;
 
         // Ensure that if there is no qobject macro that a base class is specificed
-        //
-        // Note this assumes the check above
         if !has_qobject_macro && base_class.is_none() {
             return Err(Error::new_spanned(
                 declaration.ident_left,
@@ -105,14 +114,12 @@ impl ParsedQObject {
         )?;
 
         // Find any QML metadata
-        let qml_metadata = Self::parse_qml_metadata(&name, &mut declaration.attrs)?;
+        let qml_metadata = Self::parse_qml_metadata(&name, &declaration.attrs)?;
 
         // Parse any properties in the type
         // and remove the #[qproperty] attribute
         let properties = Self::parse_property_attributes(&mut declaration.attrs)?;
         let inner = declaration.ident_right.clone();
-
-        check_attribute_validity(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
 
         Ok(Self {
             base_class,
@@ -125,24 +132,21 @@ impl ParsedQObject {
         })
     }
 
-    fn parse_qml_metadata(
-        name: &Name,
-        attrs: &mut Vec<Attribute>,
-    ) -> Result<Option<QmlElementMetadata>> {
+    fn parse_qml_metadata(name: &Name, attrs: &[Attribute]) -> Result<Option<QmlElementMetadata>> {
         // Find if there is a qml_element attribute
-        if let Some(attr) = attribute_take_path(attrs, &["qml_element"]) {
+        if let Some(attr) = attribute_get_path(attrs, &["qml_element"]) {
             // Extract the name of the qml_element from macro, else use the c++ name
             // This will use the name provided by cxx_name if that attr was present
-            let name = match attr.meta {
+            let name = match &attr.meta {
                 Meta::NameValue(name_value) => expr_to_string(&name_value.value)?,
                 _ => name.cxx_unqualified(),
             };
 
             // Determine if this element is uncreatable
-            let uncreatable = attribute_take_path(attrs, &["qml_uncreatable"]).is_some();
+            let uncreatable = attribute_get_path(attrs, &["qml_uncreatable"]).is_some();
 
             // Determine if this element is a singleton
-            let singleton = attribute_take_path(attrs, &["qml_singleton"]).is_some();
+            let singleton = attribute_get_path(attrs, &["qml_singleton"]).is_some();
 
             return Ok(Some(QmlElementMetadata {
                 name,
@@ -155,17 +159,14 @@ impl ParsedQObject {
     }
 
     fn parse_property_attributes(attrs: &mut Vec<Attribute>) -> Result<Vec<ParsedQProperty>> {
-        let mut properties = vec![];
-
-        // Note that once extract_if is stable, this would allow for comparing all the
-        // elements once using path_compare_str and then building ParsedQProperty
-        // from the extracted elements.
+        // Once extract_if is stable, this would allow comparing all the elements using
+        // path_compare_str and building ParsedQProperty from the extracted elements.
         // https://doc.rust-lang.org/nightly/std/vec/struct.Vec.html#method.extract_if
-        while let Some(attr) = attribute_take_path(attrs, &["qproperty"]) {
-            properties.push(ParsedQProperty::parse(attr)?);
-        }
-
-        Ok(properties)
+        attrs
+            .drain(..)
+            .filter(|attr| path_compare_str(attr.meta.path(), &["qproperty"]))
+            .map(ParsedQProperty::parse)
+            .collect::<Result<Vec<_>>>()
     }
 }
 

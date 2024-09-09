@@ -7,7 +7,7 @@ use super::qnamespace::ParsedQNamespace;
 use super::trait_impl::TraitImpl;
 use crate::naming::cpp::err_unsupported_item;
 use crate::parser::check_attribute_validity;
-use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
+use crate::syntax::attribute::attribute_get_path;
 use crate::syntax::foreignmod::ForeignTypeIdentAlias;
 use crate::syntax::path::path_compare_str;
 use crate::syntax::safety::Safety;
@@ -48,8 +48,6 @@ pub struct ParsedCxxQtData {
 }
 
 impl ParsedCxxQtData {
-    const ALLOWED_ATTRS: [&'static str; 1] = ["namespace"];
-
     /// Create a ParsedCxxQtData from a given module and namespace
     pub fn new(module_ident: Ident, namespace: Option<String>) -> Self {
         Self {
@@ -79,8 +77,8 @@ impl ParsedCxxQtData {
         }
     }
 
-    fn parse_enum(&mut self, mut item: ItemEnum) -> Result<Option<Item>> {
-        if let Some(qenum_attribute) = attribute_take_path(&mut item.attrs, &["qenum"]) {
+    fn parse_enum(&mut self, item: ItemEnum) -> Result<Option<Item>> {
+        if let Some(qenum_attribute) = attribute_get_path(&item.attrs, &["qenum"]) {
             // A Meta::Path indicates no arguments were provided to the enum
             // It only contains the "qenum" path and nothing else.
             let qobject: Option<Ident> = if let Meta::Path(_) = qenum_attribute.meta {
@@ -129,12 +127,12 @@ impl ParsedCxxQtData {
     }
 
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
-        let namespace = attribute_find_path(&foreign_mod.attrs, &["namespace"])
-            .map(|index| expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value))
+        check_attribute_validity(&foreign_mod.attrs, &["namespace"])?;
+
+        let namespace = attribute_get_path(&foreign_mod.attrs, &["namespace"])
+            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
             .transpose()?
             .or_else(|| self.namespace.clone());
-
-        check_attribute_validity(&foreign_mod.attrs, &Self::ALLOWED_ATTRS)?;
 
         let safe_call = if foreign_mod.unsafety.is_some() {
             Safety::Safe
@@ -144,16 +142,16 @@ impl ParsedCxxQtData {
 
         for item in foreign_mod.items.drain(..) {
             match item {
-                ForeignItem::Fn(mut foreign_fn) => {
+                ForeignItem::Fn(foreign_fn) => {
                     // Test if the function is a signal
-                    if attribute_take_path(&mut foreign_fn.attrs, &["qsignal"]).is_some() {
+                    if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
                         let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
                         self.signals.push(parsed_signal_method);
 
                         // Test if the function is an inheritance method
                         //
                         // Note that we need to test for qsignal first as qsignals have their own inherit meaning
-                    } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
+                    } else if attribute_get_path(&foreign_fn.attrs, &["inherit"]).is_some() {
                         let parsed_inherited_method =
                             ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
 

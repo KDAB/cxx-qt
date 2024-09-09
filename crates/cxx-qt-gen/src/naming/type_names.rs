@@ -13,7 +13,7 @@ use syn::{
 use crate::{
     parser::qobject::ParsedQObject,
     syntax::{
-        attribute::attribute_find_path, expr::expr_to_string,
+        attribute::attribute_get_path, expr::expr_to_string,
         foreignmod::foreign_mod_to_foreign_item_types,
     },
 };
@@ -194,10 +194,8 @@ impl TypeNames {
     ) -> Result<()> {
         // Retrieve a namespace from the mod or the bridge
         let block_namespace =
-            if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
-                Some(expr_to_string(
-                    &foreign_mod.attrs[index].meta.require_name_value()?.value,
-                )?)
+            if let Some(attr) = attribute_get_path(&foreign_mod.attrs, &["namespace"]) {
+                Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
             } else {
                 bridge_namespace.map(str::to_owned)
             };

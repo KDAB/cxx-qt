@@ -30,6 +30,7 @@ impl GeneratedRustFragment {
         // Add the pass through blocks
         let unsafety = &extern_cxxqt_block.unsafety;
         let items = &extern_cxxqt_block.passthrough_items;
+
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
                 #namespace

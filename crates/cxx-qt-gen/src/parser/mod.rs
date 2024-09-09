@@ -19,7 +19,6 @@ pub mod trait_impl;
 use crate::syntax::path::path_compare_str;
 use crate::syntax::safety::Safety;
 use crate::{
-    // Used for error handling when resolving the namespace of the qenum.
     naming::TypeNames,
     syntax::{attribute::attribute_take_path, expr::expr_to_string},
 };
@@ -46,23 +45,24 @@ fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
 ///
 /// Note: This modifies the method by removing those doc attributes
 pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
-    let mut docs = vec![];
-    while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
-        docs.push(doc);
-    }
-    docs
+    method
+        .attrs
+        .iter()
+        .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
+        .cloned()
+        .collect()
 }
 
 /// Returns an error if the attributes passed contain an attribute not in the whitelist provided
-pub fn check_attribute_validity<'a>(attrs: &'a [Attribute], allowed: &[&str]) -> Result<()> {
-    let disallowed = attrs
+pub fn check_attribute_validity(attrs: &[Attribute], allowed: &[&str]) -> Result<()> {
+    let disallowed: Vec<&Attribute> = attrs
         .iter()
         .filter(|attr| {
             !allowed
                 .iter()
                 .any(|string| path_compare_str(attr.meta.path(), &[string]))
         })
-        .collect::<Vec<&Attribute>>();
+        .collect();
 
     if disallowed.is_empty() {
         Ok(())
@@ -70,8 +70,8 @@ pub fn check_attribute_validity<'a>(attrs: &'a [Attribute], allowed: &[&str]) ->
         Err(Error::new(
             disallowed[0].span(),
             format!(
-                "Unsupported attribute! The only attributes allowed on this item are\n{allowed}",
-                allowed = allowed.join(", ")
+                "Unsupported attribute! The only attributes allowed on this item are\n{}",
+                allowed.join(", ")
             ),
         ))
     }
@@ -99,6 +99,7 @@ impl Parser {
 
         // Remove the cxx_qt::bridge attribute
         if let Some(attr) = attribute_take_path(&mut module.attrs, &["cxx_qt", "bridge"]) {
+            // TODO: Also maybe necessary since the multipath attr doesn't rlly work with current fn
             // If we are not #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
             if !matches!(attr.meta, Meta::Path(_)) {
                 let nested =
@@ -130,7 +131,7 @@ impl Parser {
 
         // Only attributes allowed on a module being parsed is cxx_qt::bridge and docs
         // If a namespace is needed it is supplied like #[cxx_qt::bridge(namespace = "...")]
-        check_attribute_validity(&module.attrs, &Self::ALLOWED_ATTRS)?;
+        check_attribute_validity(&module.attrs, &["doc"])?;
 
         Ok(namespace)
     }

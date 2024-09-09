@@ -4,15 +4,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    parser::signals::ParsedSignal,
-    syntax::{attribute::attribute_find_path, safety::Safety},
+    parser::{check_attribute_validity, signals::ParsedSignal},
+    syntax::{attribute::attribute_get_path, expr::expr_to_string, safety::Safety},
 };
-use syn::{spanned::Spanned, Error, ForeignItem, ItemForeignMod, Result, Token};
-
-use crate::parser::check_attribute_validity;
-use crate::syntax::expr::expr_to_string;
 #[cfg(test)]
 use syn::ForeignItemType;
+use syn::{spanned::Spanned, Error, ForeignItem, ItemForeignMod, Result, Token};
 
 /// Representation of an extern "C++Qt" block
 #[derive(Default)]
@@ -28,19 +25,14 @@ pub struct ParsedExternCxxQt {
 }
 
 impl ParsedExternCxxQt {
-    const ALLOWED_ATTRS: [&'static str; 1] = ["namespace"];
-
     pub fn parse(mut foreign_mod: ItemForeignMod) -> Result<Self> {
-        check_attribute_validity(&foreign_mod.attrs, &Self::ALLOWED_ATTRS)?;
+        check_attribute_validity(&foreign_mod.attrs, &["namespace"])?;
 
-        let namespace = if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"])
-        {
-            Some(expr_to_string(
-                &foreign_mod.attrs[index].meta.require_name_value()?.value,
-            )?)
-        } else {
-            None
-        };
+        let namespace = attribute_get_path(&foreign_mod.attrs, &["namespace"])
+            .map(|attr| -> Result<String> {
+                expr_to_string(&attr.meta.require_name_value()?.value)
+            })
+            .transpose()?;
 
         let mut extern_cxx_block = ParsedExternCxxQt {
             namespace,
@@ -57,12 +49,9 @@ impl ParsedExternCxxQt {
         // Parse any signals, other items are passed through
         for item in foreign_mod.items.drain(..) {
             match item {
-                ForeignItem::Fn(mut foreign_fn) => {
+                ForeignItem::Fn(foreign_fn) => {
                     // Test if the function is a signal
-                    if let Some(index) = attribute_find_path(&foreign_fn.attrs, &["qsignal"]) {
-                        // Remove the signals attribute
-                        foreign_fn.attrs.remove(index);
-
+                    if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
                         let mut signal = ParsedSignal::parse(foreign_fn, safe_call)?;
                         // extern "C++Qt" signals are always inherit = true
                         // as they always exist on an existing QObject
@@ -74,12 +63,9 @@ impl ParsedExternCxxQt {
                             .push(ForeignItem::Fn(foreign_fn));
                     }
                 }
-                ForeignItem::Type(mut foreign_ty) => {
+                ForeignItem::Type(foreign_ty) => {
                     // Test that there is a #[qobject] attribute on any type
-                    if let Some(index) = attribute_find_path(&foreign_ty.attrs, &["qobject"]) {
-                        // Remove the #[qobject] attribute
-                        foreign_ty.attrs.remove(index);
-
+                    if attribute_get_path(&foreign_ty.attrs, &["qobject"]).is_some() {
                         // Pass through the item as it's the same
                         extern_cxx_block
                             .passthrough_items
@@ -164,8 +150,7 @@ mod tests {
         assert!(extern_cxx_qt.namespace.is_none());
         assert_eq!(extern_cxx_qt.passthrough_items.len(), 1);
         // Check that the attribute is removed
-        let foreign_ty = extern_cxx_qt.get_passthrough_foreign_type();
-        assert!(foreign_ty.unwrap().attrs.is_empty());
+        assert!(extern_cxx_qt.get_passthrough_foreign_type().is_ok());
 
         assert_eq!(extern_cxx_qt.signals.len(), 0);
         assert!(extern_cxx_qt.unsafety.is_none());

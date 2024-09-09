@@ -19,9 +19,11 @@ pub struct ParsedInheritedMethod {
 }
 
 impl ParsedInheritedMethod {
-    const ALLOWED_ATTRS: [&'static str; 4] = ["cxx_name", "rust_name", "qinvokable", "doc"];
+    const ALLOWED_ATTRS: [&'static str; 5] =
+        ["cxx_name", "rust_name", "qinvokable", "doc", "inherit"];
 
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
+        // FIND ONLY
         check_safety(&method, &safety)?;
         check_attribute_validity(&method.attrs, &Self::ALLOWED_ATTRS)?;
         let docs = separate_docs(&mut method);

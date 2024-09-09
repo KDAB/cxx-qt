@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::check_attribute_validity;
+use crate::syntax::attribute::attribute_get_path;
 use syn::{ItemMacro, LitStr, Result};
-
-use crate::syntax::attribute::attribute_take_path;
 
 pub struct ParsedQNamespace {
     /// The name of the namespace
@@ -15,7 +15,8 @@ pub struct ParsedQNamespace {
 }
 
 impl ParsedQNamespace {
-    pub fn parse(mut mac: ItemMacro) -> Result<Self> {
+    pub fn parse(mac: ItemMacro) -> Result<Self> {
+        check_attribute_validity(&mac.attrs, &["qml_element"])?;
         let namespace_literal: LitStr = syn::parse2(mac.mac.tokens)?;
         let namespace = namespace_literal.value();
         if namespace.contains(char::is_whitespace) {
@@ -31,14 +32,7 @@ impl ParsedQNamespace {
             ));
         }
 
-        let qml_element = attribute_take_path(&mut mac.attrs, &["qml_element"]).is_some();
-
-        if let Some(attr) = mac.attrs.first() {
-            return Err(syn::Error::new_spanned(
-                attr,
-                "qnamespace! macro must not have any attributes other than qml_element!",
-            ));
-        }
+        let qml_element = attribute_get_path(&mac.attrs, &["qml_element"]).is_some();
 
         if let Some(ident) = mac.ident {
             return Err(syn::Error::new_spanned(
