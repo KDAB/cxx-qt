@@ -238,7 +238,7 @@ mod tests {
             #[cxx_qt::bridge]
             mod ffi {
                 extern "RustQt" {
-                    #[base = "MyBase"]
+                    #[base = MyBase]
                     type MyObject = super::MyObjectRust;
                 }
             }

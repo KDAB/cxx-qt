@@ -9,7 +9,7 @@ mod inheritance {
 
     extern "RustQt" {
         #[qobject]
-        #[base = "QAbstractItemModel"]
+        #[base = QAbstractItemModel]
         type MyObject = super::MyObjectRust;
     }
 

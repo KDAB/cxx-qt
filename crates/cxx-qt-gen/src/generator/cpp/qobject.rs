@@ -234,7 +234,7 @@ mod tests {
             mod ffi {
                 extern "RustQt" {
                     #[qobject]
-                    #[base = "QStringListModel"]
+                    #[base = QStringListModel]
                     type MyObject = super::MyObjectRust;
                 }
             }

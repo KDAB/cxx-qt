@@ -12,7 +12,7 @@ use crate::{
 };
 use quote::format_ident;
 
-use syn::{Attribute, Error, Ident, Meta, Result};
+use syn::{Attribute, Error, Expr, Ident, Meta, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -72,19 +72,33 @@ impl ParsedQObject {
         let has_qobject_macro = attribute_take_path(&mut declaration.attrs, &["qobject"]).is_some();
 
         // Find if there is any base class
+        // let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
+        //     .map(|attr| {
+        //         let string = expr_to_string(&attr.meta.require_name_value()?.value)?;
+        //         if string.is_empty() {
+        //             // Ensure that the base class attribute is not empty, as this is not valid in both cases
+        //             // - when there is a qobject macro it is not valid
+        //             // - when there is not a qobject macro it is not valid
+        //             return Err(Error::new_spanned(
+        //                 attr,
+        //                 "The #[base] attribute cannot be empty!",
+        //             ));
+        //         }
+        //         Ok(string)
+        //     })
+        //     .transpose()?;
+
         let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
-            .map(|attr| {
-                let string = expr_to_string(&attr.meta.require_name_value()?.value)?;
-                if string.is_empty() {
-                    // Ensure that the base class attribute is not empty, as this is not valid in both cases
-                    // - when there is a qobject macro it is not valid
-                    // - when there is not a qobject macro it is not valid
-                    return Err(Error::new_spanned(
-                        attr,
-                        "The #[base] attribute cannot be empty!",
-                    ));
+            .map(|attr| -> Result<Name> {
+                let expr = &attr.meta.require_name_value()?.value;
+                if let Expr::Path(path_expr) = expr {
+                    Ok(Name::new(path_expr.path.require_ident()?.clone()))
+                } else {
+                    Err(Error::new_spanned(
+                        expr,
+                        "Base must be a identifier and cannot be empty!",
+                    ))
                 }
-                Ok(string)
             })
             .transpose()?;
 
@@ -105,10 +119,6 @@ impl ParsedQObject {
             Some(module),
         )?;
 
-        let base_name = base_class
-            .clone()
-            .map(|name_str| Name::new(format_ident!("{name_str}")));
-
         // Find any QML metadata
         let qml_metadata = Self::parse_qml_metadata(&name, &mut declaration.attrs)?;
 
@@ -118,7 +128,7 @@ impl ParsedQObject {
         let inner = declaration.ident_right.clone();
 
         Ok(Self {
-            base_class: base_name,
+            base_class,
             declaration,
             name,
             rust_type: inner,
@@ -207,7 +217,7 @@ pub mod tests {
         };
         assert!(qobject.has_qobject_macro);
         let qobject = parse_qobject! {
-            #[base="Thing"]
+            #[base=Thing]
             type MyObject = super::MyObjectRust;
         };
         assert!(!qobject.has_qobject_macro);
@@ -230,7 +240,7 @@ pub mod tests {
     fn test_from_struct_base_class() {
         let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
             #[qobject]
-            #[base = "QStringListModel"]
+            #[base = QStringListModel]
             type MyObject = super::MyObjectRust;
         };
 

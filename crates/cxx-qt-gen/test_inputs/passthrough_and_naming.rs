@@ -115,7 +115,7 @@ pub mod ffi {
 
     extern "RustQt" {
         #[qobject]
-        #[base = "QStringListModel"]
+        #[base = QStringListModel]
         #[qproperty(i32, property_name)]
         type MyObject = super::MyObjectRust;
     }
