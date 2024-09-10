@@ -4,8 +4,8 @@
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust::cxxqt1 {
 template<>
-SignalHandler<::rust::cxxqtgen1::QPushButtonCxxQtSignalParamsclicked*>::
-  ~SignalHandler() noexcept
+SignalHandler<::cxx_qt::multi_object::rust::cxxqtgen1::
+                QPushButtonCxxQtSignalParamsclicked*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
@@ -17,42 +17,44 @@ SignalHandler<::rust::cxxqtgen1::QPushButtonCxxQtSignalParamsclicked*>::
 template<>
 template<>
 void
-SignalHandler<::rust::cxxqtgen1::QPushButtonCxxQtSignalParamsclicked*>::
-operator()<QPushButton&, bool>(QPushButton& self, bool checked)
+SignalHandler<::cxx_qt::multi_object::rust::cxxqtgen1::
+                QPushButtonCxxQtSignalParamsclicked*>::
+operator()<cxx_qt::multi_object::QPushButton&, bool>(
+  cxx_qt::multi_object::QPushButton& self,
+  bool checked)
 {
   call_QPushButton_signal_handler_clicked(*this, self, ::std::move(checked));
 }
 
-static_assert(
-  alignof(
-    SignalHandler<::rust::cxxqtgen1::QPushButtonCxxQtSignalParamsclicked*>) <=
-    alignof(::std::size_t),
-  "unexpected aligment");
-static_assert(
-  sizeof(
-    SignalHandler<::rust::cxxqtgen1::QPushButtonCxxQtSignalParamsclicked*>) ==
-    sizeof(::std::size_t[2]),
-  "unexpected size");
+static_assert(alignof(SignalHandler<::cxx_qt::multi_object::rust::cxxqtgen1::
+                                      QPushButtonCxxQtSignalParamsclicked*>) <=
+                alignof(::std::size_t),
+              "unexpected aligment");
+static_assert(sizeof(SignalHandler<::cxx_qt::multi_object::rust::cxxqtgen1::
+                                     QPushButtonCxxQtSignalParamsclicked*>) ==
+                sizeof(::std::size_t[2]),
+              "unexpected size");
 } // namespace rust::cxxqt1
 
-namespace rust::cxxqtgen1 {
+namespace cxx_qt::multi_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
 QPushButton_clickedConnect(
-  QPushButton& self,
-  ::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked closure,
+  cxx_qt::multi_object::QPushButton& self,
+  ::cxx_qt::multi_object::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked
+    closure,
   ::Qt::ConnectionType type)
 {
   return ::QObject::connect(
     &self,
-    &QPushButton::clicked,
+    &cxx_qt::multi_object::QPushButton::clicked,
     &self,
     [&, closure = ::std::move(closure)](bool checked) mutable {
-      closure.template operator()<QPushButton&, bool>(self,
-                                                      ::std::move(checked));
+      closure.template operator()<cxx_qt::multi_object::QPushButton&, bool>(
+        self, ::std::move(checked));
     },
     type);
 }
-} // namespace rust::cxxqtgen1
+} // namespace cxx_qt::multi_object::rust::cxxqtgen1
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480

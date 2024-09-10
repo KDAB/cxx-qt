@@ -115,8 +115,11 @@ impl ParsedCxxQtData {
                     return Ok(None);
                 }
                 "C++Qt" => {
-                    self.extern_cxxqt_blocks
-                        .push(ParsedExternCxxQt::parse(foreign_mod)?);
+                    self.extern_cxxqt_blocks.push(ParsedExternCxxQt::parse(
+                        foreign_mod,
+                        &self.module_ident,
+                        self.namespace.as_deref(),
+                    )?);
                     return Ok(None);
                 }
                 _others => {}
@@ -403,10 +406,7 @@ mod tests {
 
         assert_eq!(cxx_qt_data.extern_cxxqt_blocks.len(), 1);
         assert!(cxx_qt_data.extern_cxxqt_blocks[0].namespace.is_some());
-        assert_eq!(
-            cxx_qt_data.extern_cxxqt_blocks[0].passthrough_items.len(),
-            1
-        );
+        assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].qobjects.len(), 1);
         assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].signals.len(), 1);
         assert!(cxx_qt_data.extern_cxxqt_blocks[0].unsafety.is_some());
     }

@@ -181,6 +181,10 @@ impl TypeNames {
                 }
             };
             self.populate_from_foreign_mod_item(&foreign_mod, bridge_namespace, module_ident)?;
+
+            for qobject in extern_cxxqt.qobjects.iter() {
+                self.insert(qobject.name.clone())?;
+            }
         }
 
         Ok(())

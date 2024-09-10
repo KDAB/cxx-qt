@@ -6,6 +6,7 @@
 pub mod constructor;
 pub mod cxxqtdata;
 pub mod externcxxqt;
+mod externqobject;
 pub mod inherit;
 pub mod method;
 pub mod parameter;

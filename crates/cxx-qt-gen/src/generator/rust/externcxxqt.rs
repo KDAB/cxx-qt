@@ -30,12 +30,42 @@ impl GeneratedRustFragment {
         // Add the pass through blocks
         let unsafety = &extern_cxxqt_block.unsafety;
         let items = &extern_cxxqt_block.passthrough_items;
+        let types = &extern_cxxqt_block
+            .qobjects
+            .iter()
+            .map(|ty| {
+                let namespace = if let Some(namespace) = &ty.name.namespace() {
+                    quote! { #[namespace = #namespace ] }
+                } else {
+                    quote! {}
+                };
+                let cpp_name = &ty.name.cxx_unqualified();
+                let rust_name = &ty.name.rust_unqualified();
+                let vis = &ty.declaration.vis;
+                let ident = &ty.name.rust_unqualified();
+                let cxx_name = if &rust_name.to_string() == cpp_name {
+                    quote! {}
+                } else {
+                    let cxx_name = cpp_name.to_string();
+                    quote! {
+                        #[cxx_name = #cxx_name]
+                    }
+                };
+                quote! {
+                    #namespace
+                    #cxx_name
+                    #vis type #ident;
+                }
+            })
+            .collect::<Vec<_>>();
 
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
                 #namespace
                 #unsafety extern "C++" {
                     #(#items)*
+
+                    #(#types)*
                 }
             }],
             implementation: vec![],
