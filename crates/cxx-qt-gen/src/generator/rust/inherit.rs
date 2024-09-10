@@ -76,7 +76,7 @@ mod tests {
         method: ForeignItemFn,
         safety: Safety,
     ) -> Result<GeneratedRustFragment> {
-        let method = ParsedInheritedMethod::parse(method, safety).unwrap();
+        let method = ParsedInheritedMethod::parse(method, safety)?;
         let inherited_methods = vec![&method];
         generate(&create_qobjectname(), &inherited_methods)
     }

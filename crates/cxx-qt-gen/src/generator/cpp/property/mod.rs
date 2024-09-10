@@ -95,7 +95,7 @@ pub mod tests {
     }
 
     fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = ParsedQProperty::parse(input.attrs.remove(0))?;
 
         let properties = vec![property];
 

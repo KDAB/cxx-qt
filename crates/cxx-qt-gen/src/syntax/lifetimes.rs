@@ -89,19 +89,19 @@ mod tests {
 
     #[test]
     fn extract_no_lifetimes() {
-        assert_no_lifetimes! { () };
-        assert_no_lifetimes! { T };
-        assert_no_lifetimes! { T<A> };
-        assert_no_lifetimes! { *mut X };
-        assert_no_lifetimes! { *const X };
-        assert_no_lifetimes! { Pin<*mut T> };
-        assert_no_lifetimes! { &T };
-        assert_no_lifetimes! { &mut T };
-        assert_no_lifetimes! { [T] };
-        assert_no_lifetimes! { [T;4] };
-        assert_no_lifetimes! { (X, Y) };
-        assert_no_lifetimes! { (Y) };
-        assert_no_lifetimes! { std::collections::Vec<i32> };
+        assert_no_lifetimes! { () }
+        assert_no_lifetimes! { T }
+        assert_no_lifetimes! { T<A> }
+        assert_no_lifetimes! { *mut X }
+        assert_no_lifetimes! { *const X }
+        assert_no_lifetimes! { Pin<*mut T> }
+        assert_no_lifetimes! { &T }
+        assert_no_lifetimes! { &mut T }
+        assert_no_lifetimes! { [T] }
+        assert_no_lifetimes! { [T;4] }
+        assert_no_lifetimes! { (X, Y) }
+        assert_no_lifetimes! { (Y) }
+        assert_no_lifetimes! { std::collections::Vec<i32> }
     }
 
     macro_rules! assert_lifetimes {
@@ -115,18 +115,18 @@ mod tests {
 
     #[test]
     fn assert_lifetimes() {
-        assert_lifetimes! { ['a] &'a T };
-        assert_lifetimes! { ['a] [&'a T] };
-        assert_lifetimes! { ['a] [&'a T;5] };
+        assert_lifetimes! { ['a] &'a T }
+        assert_lifetimes! { ['a] [&'a T] }
+        assert_lifetimes! { ['a] [&'a T;5] }
 
-        assert_lifetimes! { ['a, 'a] (&'a A, &'a mut B) };
-        assert_lifetimes! { ['a, 'a] &'a A<'a> };
+        assert_lifetimes! { ['a, 'a] (&'a A, &'a mut B) }
+        assert_lifetimes! { ['a, 'a] &'a A<'a> }
 
-        assert_lifetimes! { ['a, 'b] &'b &'a mut T };
-        assert_lifetimes! { ['a, 'b] Pin<&'a X, &'b mut Y> };
-        assert_lifetimes! { ['a, 'b] (&'a A, &'b mut B) };
+        assert_lifetimes! { ['a, 'b] &'b &'a mut T }
+        assert_lifetimes! { ['a, 'b] Pin<&'a X, &'b mut Y> }
+        assert_lifetimes! { ['a, 'b] (&'a A, &'b mut B) }
 
-        assert_lifetimes! { ['lifetime] A<'lifetime> };
+        assert_lifetimes! { ['lifetime] A<'lifetime> }
     }
 
     macro_rules! assert_unsupported_type {
@@ -137,13 +137,13 @@ mod tests {
 
     #[test]
     fn extract_lifetimes_unsupported_types() {
-        assert_unsupported_type! { dyn Foo };
-        assert_unsupported_type! { &dyn Foo };
-        assert_unsupported_type! { fn(A) };
-        assert_unsupported_type! { fn(i64) -> i32 };
-        assert_unsupported_type! { Vec<T = A> };
-        assert_unsupported_type! { fn(A, B) -> C };
-        assert_unsupported_type! { <T as Send>::Associated };
-        assert_unsupported_type! { impl Fn(A,B) };
+        assert_unsupported_type! { dyn Foo }
+        assert_unsupported_type! { &dyn Foo }
+        assert_unsupported_type! { fn(A) }
+        assert_unsupported_type! { fn(i64) -> i32 }
+        assert_unsupported_type! { Vec<T = A> }
+        assert_unsupported_type! { fn(A, B) -> C }
+        assert_unsupported_type! { <T as Send>::Associated }
+        assert_unsupported_type! { impl Fn(A,B) }
     }
 }
