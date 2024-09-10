@@ -9,7 +9,7 @@ using MyObjectCxxQtThread = ::rust::cxxqt1::CxxQtThread<MyObject>;
 
 } // namespace cxx_qt::my_object
 
-#include "cxx-qt-gen/ffi.cxx.h"
+#include "directory/file_ident.cxx.h"
 
 namespace cxx_qt::my_object {
 class MyObject

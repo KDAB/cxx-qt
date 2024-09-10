@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/ffi.cxxqt.h"
+#include "directory/file_ident.cxxqt.h"
 
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480

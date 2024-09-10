@@ -9,7 +9,7 @@
 #include <QtCore/QPoint>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qpoint.cxx.h"
+#include "qt_types_standalone/src/qpoint.cxx.h"
 
 class QPointTest : public QObject
 {

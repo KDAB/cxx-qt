@@ -68,7 +68,11 @@ struct GeneratedCpp {
 
 impl GeneratedCpp {
     /// Generate QObject and cxx header/source C++ file contents
-    pub fn new(rust_file_path: impl AsRef<Path>) -> Result<Self, Diagnostic> {
+    pub fn new(
+        rust_file_path: impl AsRef<Path>,
+        relative_path: impl AsRef<Path>,
+        include_prefix: &str,
+    ) -> Result<Self, Diagnostic> {
         let to_diagnostic = |err| Diagnostic::new(rust_file_path.as_ref().to_owned(), err);
 
         let rust_file_path = rust_file_path.as_ref();
@@ -78,7 +82,6 @@ impl GeneratedCpp {
             .map_err(to_diagnostic)?;
 
         let mut cxx_qt = None;
-        let mut file_ident: String = "".to_owned();
         let mut tokens = proc_macro2::TokenStream::new();
 
         // Add any attributes in the file into the tokenstream
@@ -86,40 +89,44 @@ impl GeneratedCpp {
             tokens.extend(attr.into_token_stream());
         }
 
+        // Match upstream where they use the file name and folders as the ident
+        //
+        // We need the relative path here as we want the folders
+        let file_ident = relative_path
+            .as_ref()
+            // Remove the .rs extension
+            .with_extension("")
+            .to_string_lossy()
+            .to_string();
+
+        // The include path we inject needs any prefix (eg the crate name) too
+        let include_ident = format!("{include_prefix}/{file_ident}");
+
         // Loop through the items looking for any CXX or CXX-Qt blocks
+        let mut found_bridge = false;
         for item in &file.items {
             match item {
                 CxxQtItem::Cxx(m) => {
                     // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if !file_ident.is_empty() {
+                    if found_bridge {
                         panic!(
                             "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
                             The file {} has more than one of these.",
                             rust_file_path.display());
                     }
+                    found_bridge = true;
 
-                    // Match upstream where they use the file name as the ident
-                    //
-                    // TODO: what happens if there are folders?
-                    //
-                    // TODO: ideally CXX-Qt would also use the file name
-                    // https://github.com/KDAB/cxx-qt/pull/200/commits/4861c92e66c3a022d3f0dedd9f8fd20db064b42b
-                    rust_file_path
-                        .file_stem()
-                        .unwrap()
-                        .to_str()
-                        .unwrap()
-                        .clone_into(&mut file_ident);
                     tokens.extend(m.into_token_stream());
                 }
                 CxxQtItem::CxxQt(m) => {
                     // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if !file_ident.is_empty() {
+                    if found_bridge {
                         panic!(
                             "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
                             The file {} has more than one of these.",
                             rust_file_path.display());
                     }
+                    found_bridge = true;
 
                     let parser = Parser::from(m.clone())
                         .map_err(GeneratedError::from)
@@ -127,15 +134,14 @@ impl GeneratedCpp {
                     let generated_cpp = GeneratedCppBlocks::from(&parser)
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
-                    // TODO: we'll have to extend the C++ data here rather than overwriting
-                    // assuming we share the same file
-                    cxx_qt = Some(write_cpp(&generated_cpp));
-
                     let generated_rust = GeneratedRustBlocks::from(&parser)
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
-                    let rust_tokens = write_rust(&generated_rust);
-                    file_ident.clone_from(&parser.cxx_file_stem);
+
+                    // TODO: we'll have to extend the C++ data here rather than overwriting
+                    // assuming we share the same file
+                    cxx_qt = Some(write_cpp(&generated_cpp, &include_ident));
+                    let rust_tokens = write_rust(&generated_rust, Some(&include_ident));
 
                     // We need to do this and can't rely on the macro, as we need to generate the
                     // CXX bridge Rust code that is then fed into the cxx_gen generation.
@@ -168,10 +174,6 @@ impl GeneratedCpp {
     ) -> GeneratedCppFilePaths {
         let cpp_directory = cpp_directory.as_ref();
         let header_directory = header_directory.as_ref();
-        for directory in [cpp_directory, header_directory] {
-            std::fs::create_dir_all(directory)
-                .expect("Could not create directory to write cxx-qt generated files");
-        }
 
         let mut cpp_file_paths = GeneratedCppFilePaths {
             plain_cpp: PathBuf::new(),
@@ -184,6 +186,10 @@ impl GeneratedCpp {
                 header_directory.display(),
                 self.file_ident
             ));
+            if let Some(directory) = header_path.parent() {
+                std::fs::create_dir_all(directory)
+                    .expect("Could not create directory to write cxx-qt generated files");
+            }
             let mut header =
                 File::create(&header_path).expect("Could not create cxx-qt header file");
             let header_generated = match cxx_qt_generated {
@@ -201,6 +207,10 @@ impl GeneratedCpp {
                 cpp_directory.display(),
                 self.file_ident
             ));
+            if let Some(directory) = cpp_path.parent() {
+                std::fs::create_dir_all(directory)
+                    .expect("Could not create directory to write cxx-qt generated files");
+            }
             let mut cpp = File::create(&cpp_path).expect("Could not create cxx-qt source file");
             let source_generated = match cxx_qt_generated {
                 CppFragment::Pair { header: _, source } => source,
@@ -217,6 +227,10 @@ impl GeneratedCpp {
             header_directory.display(),
             self.file_ident
         ));
+        if let Some(directory) = header_path.parent() {
+            std::fs::create_dir_all(directory)
+                .expect("Could not create directory to write cxx-qt generated header files");
+        }
         let mut header = File::create(header_path).expect("Could not create cxx header file");
         header
             .write_all(&self.cxx.header)
@@ -227,6 +241,10 @@ impl GeneratedCpp {
             cpp_directory.display(),
             self.file_ident
         ));
+        if let Some(directory) = cpp_path.parent() {
+            std::fs::create_dir_all(directory)
+                .expect("Could not create directory to write cxx-qt generated source files");
+        }
         let mut cpp = File::create(&cpp_path).expect("Could not create cxx source file");
         cpp.write_all(&self.cxx.implementation)
             .expect("Could not write cxx source file");
@@ -251,18 +269,17 @@ fn generate_cxxqt_cpp_files(
 
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
-        let cpp_directory = cxx_qt_dir.join("src");
         let path = manifest_dir.join(rs_path);
         println!("cargo:rerun-if-changed={}", path.to_string_lossy());
 
-        let generated_code = match GeneratedCpp::new(&path) {
+        let generated_code = match GeneratedCpp::new(&path, rs_path, include_prefix) {
             Ok(v) => v,
             Err(diagnostic) => {
                 diagnostic.report();
                 std::process::exit(1);
             }
         };
-        generated_file_paths.push(generated_code.write_to_directories(cpp_directory, &header_dir));
+        generated_file_paths.push(generated_code.write_to_directories(&cxx_qt_dir, &header_dir));
     }
 
     generated_file_paths
@@ -659,6 +676,10 @@ impl CxxQtBuilder {
         } in &self.qobject_headers
         {
             let moc_products = qtbuild.moc(path, moc_arguments.clone());
+            // Include the moc folder
+            if let Some(dir) = moc_products.cpp.parent() {
+                self.cc_builder.include(dir);
+            }
             self.cc_builder.file(moc_products.cpp);
         }
     }
@@ -703,11 +724,6 @@ impl CxxQtBuilder {
                 });
             } else {
                 println!("cargo::rustc-link-arg={}", obj_file.to_string_lossy());
-                // The linker argument order matters!
-                // We need to link the object file first, then link the static library.
-                // Otherwise, the linker will be unable to find the symbols in the static library file.
-                // See also: https://stackoverflow.com/questions/45135/why-does-the-order-in-which-libraries-are-linked-sometimes-cause-errors-in-gcc
-                println!("cargo::rustc-link-arg=-l{}", static_lib_name());
             }
         } else {
             panic!(
@@ -730,20 +746,67 @@ impl CxxQtBuilder {
 
             let mut qml_metatypes_json = Vec::new();
 
+            // Check that all rust files are within the same directory
+            //
+            // Note we need to do this as moc generates an inputFile which only
+            // includes the file name, qmltyperegistrar then uses this for the
+            // include path (and doesn't consider any prefix).
+            //
+            // This can also be observed when using qt_add_qml_module, if a class
+            // has a QML_ELEMENT the file must be in the same directory as the
+            // CMakeLists and cannot be a relative path to a sub directory.
+            let dirs = qml_module
+                .rust_files
+                .iter()
+                .map(|file| {
+                    if let Some(parent) = file.parent() {
+                        parent.to_string_lossy().to_string()
+                    } else {
+                        // Fallback to an empty string if there is no parent path
+                        String::new()
+                    }
+                })
+                .collect::<HashSet<String>>();
+            if dirs.len() > 1 {
+                panic!(
+                    "Only one directory is supported per QmlModule for rust_files.\n\
+                    This is due to Qt bug https://bugreports.qt.io/browse/QTBUG-93443\n\
+                    Found directories: {dirs:?}"
+                );
+            }
+
+            // TODO: for now we use the global CxxQtBuilder cc_builder
+            // this means that any includes/files etc on these are in this builder
+            // but we cannot have separate builds until we can configure includes,
+            // qt modules, files, cc_builder options etc in the QmlModule itself
+            let cc_builder = &mut self.cc_builder;
+            qtbuild.cargo_link_libraries(cc_builder);
+
+            let mut moc_include_paths = HashSet::new();
             for files in generate_cxxqt_cpp_files(
                 &qml_module.rust_files,
                 &generated_header_dir,
                 header_prefix,
             ) {
-                self.cc_builder.file(files.plain_cpp);
+                cc_builder.file(files.plain_cpp);
                 if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header)
                 {
-                    self.cc_builder.file(&qobject);
+                    // Ensure that the generated QObject header is in the include path
+                    // so that qmltyperegistar can include them later
+                    if let Some(dir) = qobject_header.parent() {
+                        moc_include_paths.insert(dir.to_path_buf());
+                    }
+
+                    cc_builder.file(&qobject);
                     let moc_products = qtbuild.moc(
                         qobject_header,
                         MocArguments::default().uri(qml_module.uri.clone()),
                     );
-                    self.cc_builder.file(moc_products.cpp);
+                    // Include the moc folder
+                    if let Some(dir) = moc_products.cpp.parent() {
+                        moc_include_paths.insert(dir.to_path_buf());
+                    }
+                    cc_builder.file(moc_products.cpp);
                     qml_metatypes_json.push(moc_products.metatypes_json);
                 }
             }
@@ -760,7 +823,7 @@ impl CxxQtBuilder {
                 &qml_module.qml_files,
                 &qml_module.qrc_files,
             );
-            self.cc_builder
+            cc_builder
                 .file(qml_module_registration_files.qmltyperegistrar)
                 .file(qml_module_registration_files.plugin)
                 // In comparison to the other RCC files, we don't need to link this with whole-archive or
@@ -769,11 +832,22 @@ impl CxxQtBuilder {
                 // RCC file.
                 .file(qml_module_registration_files.rcc);
 
+            // Add any include paths the qml module registration needs
+            // this is most likely the moc folder for the plugin
+            if let Some(include_path) = qml_module_registration_files.include_path {
+                moc_include_paths.insert(include_path);
+            }
+
+            // Ensure that all include paths from moc folders that are required
+            for include_path in &moc_include_paths {
+                cc_builder.include(include_path);
+            }
+
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
-                self.cc_builder.file(qmlcachegen_file);
+                cc_builder.file(qmlcachegen_file);
             }
             // This is required, as described here: plugin_builder
-            self.cc_builder.define("QT_STATICPLUGIN", None);
+            cc_builder.define("QT_STATICPLUGIN", None);
 
             // If any of the files inside the qml module change, then trigger a rerun
             for path in qml_module.qml_files.iter().chain(
@@ -1007,6 +1081,14 @@ impl CxxQtBuilder {
         // Only compile if we have added files to the builder
         // otherwise we end up with no static library but ask cargo to link to it which causes an error
         if self.cc_builder.get_files().count() > 0 {
+            // The linker argument order matters!
+            // We need to link the object file first, then link the static library.
+            // Otherwise, the linker will be unable to find the symbols in the static library file.
+            // See also: https://stackoverflow.com/questions/45135/why-does-the-order-in-which-libraries-are-linked-sometimes-cause-errors-in-gcc
+            if !dir::is_exporting() {
+                println!("cargo::rustc-link-arg=-l{}", static_lib_name());
+            }
+
             self.cc_builder.compile(&static_lib_name());
         }
 

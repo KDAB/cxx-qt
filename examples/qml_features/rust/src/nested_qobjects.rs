@@ -11,7 +11,7 @@
 
 /// A CXX-Qt bridge which shows how a pointer from one Rust defined QObject to another Rust defined QObject can be used
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge(cxx_file_stem = "nested_qobjects")]
+#[cxx_qt::bridge]
 pub mod qobject {
     // ANCHOR: book_extern_block
     extern "RustQt" {

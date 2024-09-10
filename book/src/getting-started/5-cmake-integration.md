@@ -38,10 +38,10 @@ You can add as much C++ code as you want in addition to this.
 
 For every `#[cxx_qt::bridge]` that we define in Rust, CXX-Qt will generate a corresponding C++ header file.
 To include any of the generated files, use the crates name as the include directory.
-The name of the header file will be the name of the Rust module of your `#[cxx_qt::bridge]`, followed by `.cxxqt.h`.
-So in our case: `#include <qml_minimal/qobject.cxxqt.h>`
+The name of the header file will be the folder names, combined with the input rust file name of your `#[cxx_qt::bridge]`, followed by `.cxxqt.h`.
+So in our case: `#include <qml_minimal/src/cxxqt_object.cxxqt.h>`
 
-> Note that the [`cxx_file_stem`](../bridge/index.md#cxx_file_stem) option can be specified in the bridge macro to choose the file name.
+> Note any folders relative to the cargo manifest are considered hence the `src` folder.
 
 Including the generated header allows us to access the `MyObject` C++ class, just like any other C++ class.
 Inherit from it, connect signals and slots to it, put it in a QVector, do whatever you want with it.

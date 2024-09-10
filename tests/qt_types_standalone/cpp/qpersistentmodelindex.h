@@ -11,7 +11,7 @@
 #include <QtGui/QStandardItemModel>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qpersistentmodelindex.cxx.h"
+#include "qt_types_standalone/src/qpersistentmodelindex.cxx.h"
 
 class QPersistentModelIndexTest : public QObject
 {

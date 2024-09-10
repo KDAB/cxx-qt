@@ -9,7 +9,7 @@ mod network;
 mod workers;
 
 // This mod defines our QObject called EnergyUsage
-#[cxx_qt::bridge(cxx_file_stem = "energy_usage", namespace = "cxx_qt::energy_usage")]
+#[cxx_qt::bridge(namespace = "cxx_qt::energy_usage")]
 pub mod qobject {
     #[namespace = ""]
     unsafe extern "C++" {

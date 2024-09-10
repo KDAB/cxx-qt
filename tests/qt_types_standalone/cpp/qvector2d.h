@@ -9,7 +9,7 @@
 #include <QtGui/QVector2D>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qvector2d.cxx.h"
+#include "qt_types_standalone/src/qvector2d.cxx.h"
 
 class QVector2DTest : public QObject
 {

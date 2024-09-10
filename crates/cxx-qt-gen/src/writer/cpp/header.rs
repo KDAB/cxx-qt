@@ -6,8 +6,7 @@
 use std::collections::BTreeSet;
 
 use crate::generator::cpp::GeneratedCppBlocks;
-use crate::writer::cpp::{extract_extern_qt, pair_as_header};
-use crate::writer::{self, cpp::namespaced};
+use crate::writer::cpp::{extract_extern_qt, namespaced, pair_as_header};
 use indoc::formatdoc;
 
 /// With a given block name, join the given items and add them under the block
@@ -128,7 +127,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
 }
 
 /// For a given GeneratedCppBlocks write this into a C++ header
-pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
+pub fn write_cpp_header(generated: &GeneratedCppBlocks, include_path: &str) -> String {
     let includes = {
         let mut include_set = BTreeSet::new();
         include_set.extend(
@@ -162,15 +161,13 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks) -> String {
         {includes}
 
         {forward_declare}
-        #include "{header_prefix}/{cxx_file_stem}.cxx.h"
+        #include "{include_path}.cxx.h"
 
         {extern_cxx_qt}
         {qobjects}
     "#,
-    cxx_file_stem = generated.cxx_file_stem,
     forward_declare = forward_declare(generated).join("\n"),
     qobjects = qobjects_header(generated).join("\n"),
-    header_prefix = writer::get_header_prefix()
     }
 }
 
@@ -217,21 +214,21 @@ mod tests {
     #[test]
     fn test_write_cpp_header() {
         let generated = create_generated_cpp();
-        let output = write_cpp_header(&generated);
+        let output = write_cpp_header(&generated, "cxx-qt-gen/cxx_file_stem");
         assert_str_eq!(output, expected_header());
     }
 
     #[test]
     fn test_write_cpp_header_multi_qobjects() {
         let generated = create_generated_cpp_multi_qobjects();
-        let output = write_cpp_header(&generated);
+        let output = write_cpp_header(&generated, "cxx-qt-gen/cxx_file_stem");
         assert_str_eq!(output, expected_header_multi_qobjects());
     }
 
     #[test]
     fn test_write_cpp_header_no_namespace() {
         let generated = create_generated_cpp_no_namespace();
-        let output = write_cpp_header(&generated);
+        let output = write_cpp_header(&generated, "cxx-qt-gen/cxx_file_stem");
         assert_str_eq!(output, expected_header_no_namespace());
     }
 
@@ -250,7 +247,7 @@ mod tests {
         let parser = Parser::from(module.clone()).unwrap();
 
         let generated = GeneratedCppBlocks::from(&parser).unwrap();
-        let header = write_cpp_header(&generated);
+        let header = write_cpp_header(&generated, "cxx-qt-gen/ffi");
         let expected = indoc! {r#"
 #pragma once
 
