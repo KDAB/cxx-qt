@@ -6,7 +6,7 @@
 //! This example shows how Qt container types can be used
 
 /// A CXX-Qt bridge which shows how to use Qt container types
-#[cxx_qt::bridge(cxx_file_stem = "rust_containers")]
+#[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qhash.h");

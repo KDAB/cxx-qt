@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cxx_qt::bridge(cxx_file_stem = "qquickstyle")]
+#[cxx_qt::bridge]
 mod ffi {
     unsafe extern "C++Qt" {
         include!("cxx-qt-lib/qquickstyle.h");

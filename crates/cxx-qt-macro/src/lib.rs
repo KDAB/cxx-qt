@@ -120,7 +120,7 @@ pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
 fn extract_and_generate(module: ItemMod) -> TokenStream {
     Parser::from(module)
         .and_then(|parser| GeneratedRustBlocks::from(&parser))
-        .map(|generated_rust| write_rust(&generated_rust))
+        .map(|generated_rust| write_rust(&generated_rust, None))
         .unwrap_or_else(|err| err.to_compile_error())
         .into()
 }

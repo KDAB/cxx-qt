@@ -6,8 +6,7 @@
 //! This example shows how an external QObject with signals can be used
 
 /// A CXX-Qt bridge which shows how an external QObject with signals can be used
-// ANCHOR: book_cxx_file_stem
-#[cxx_qt::bridge(cxx_file_stem = "externcxxqt")]
+#[cxx_qt::bridge]
 pub mod ffi {
     unsafe extern "C++Qt" {
         include!("external_qobject.h");

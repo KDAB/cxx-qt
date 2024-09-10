@@ -6,11 +6,16 @@ mod ffi {
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]
+        #[allow(dead_code)]
         type ConnectionType = cxx_qt::ConnectionType;
         #[doc(hidden)]
         #[namespace = "rust::cxxqt1"]
         #[rust_name = "CxxQtQMetaObjectConnection"]
+        #[allow(dead_code)]
         type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
+    }
+    unsafe extern "C++" {
+        include!("directory/file_ident.cxxqt.h");
     }
     #[repr(i32)]
     enum MyEnum {
@@ -60,9 +65,6 @@ mod ffi {
     extern "C++" {
         #[namespace = "cxx_qt::my_object"]
         type MyRenamedEnum;
-    }
-    unsafe extern "C++" {
-        include!("cxx-qt-gen/ffi.cxxqt.h");
     }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]

@@ -7,7 +7,7 @@
 
 /// A CXX-Qt bridge which shows how a QML_SINGLETON can be used
 // ANCHOR: book_macro_code
-#[cxx_qt::bridge(cxx_file_stem = "rust_singleton")]
+#[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "RustQt" {
         #[qobject]

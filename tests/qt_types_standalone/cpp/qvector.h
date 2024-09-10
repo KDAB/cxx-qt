@@ -9,7 +9,7 @@
 #include <QtCore/QVector>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qvector.cxx.h"
+#include "qt_types_standalone/src/qvector.cxx.h"
 
 class QVectorTest : public QObject
 {

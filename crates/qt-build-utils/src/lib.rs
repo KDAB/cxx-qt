@@ -178,6 +178,8 @@ pub struct QmlModuleRegistrationFiles {
     pub plugin: PathBuf,
     /// File that automatically registers the QQmlExtensionPlugin at startup. Must be linked with `+whole-archive`.
     pub plugin_init: PathBuf,
+    /// An optional include path that should be included
+    pub include_path: Option<PathBuf>,
 }
 
 /// Helper for build.rs scripts using Qt
@@ -602,9 +604,15 @@ impl QtBuild {
         }
 
         let input_path = input_file.as_ref();
-        let output_path = PathBuf::from(&format!(
-            "{}/moc_{}.cpp",
-            env::var("OUT_DIR").unwrap(),
+
+        // Put all the moc files into one place, this can then be added to the include path
+        let moc_dir = PathBuf::from(format!(
+            "{}/qt-build-utils/moc",
+            env::var("OUT_DIR").unwrap()
+        ));
+        std::fs::create_dir_all(&moc_dir).expect("Could not create moc dir");
+        let output_path = moc_dir.join(format!(
+            "moc_{}.cpp",
             input_path.file_name().unwrap().to_str().unwrap()
         ));
 
@@ -682,15 +690,18 @@ impl QtBuild {
         let qml_uri_dirs = uri.replace('.', "/");
 
         let out_dir = env::var("OUT_DIR").unwrap();
-        let qml_module_dir = format!("{out_dir}/qml_modules/{qml_uri_dirs}");
+        let qt_build_utils_dir = PathBuf::from(format!("{out_dir}/qt-build-utils"));
+        std::fs::create_dir_all(&qt_build_utils_dir).expect("Could not create qt_build_utils dir");
+
+        let qml_module_dir = qt_build_utils_dir.join("qml_modules").join(&qml_uri_dirs);
         std::fs::create_dir_all(&qml_module_dir).expect("Could not create QML module directory");
 
         let qml_uri_underscores = uri.replace('.', "_");
-        let qmltypes_path = format!("{qml_module_dir}/plugin.qmltypes");
+        let qmltypes_path = qml_module_dir.join("plugin.qmltypes");
         let plugin_class_name = format!("{qml_uri_underscores}_plugin");
 
         // Generate qmldir file
-        let qmldir_file_path = format!("{qml_module_dir}/qmldir");
+        let qmldir_file_path = qml_module_dir.join("qmldir");
         {
             let mut qmldir = File::create(&qmldir_file_path).expect("Could not create qmldir file");
             write!(
@@ -706,7 +717,8 @@ prefer :/qt/qml/{qml_uri_dirs}/
         }
 
         // Generate .qrc file and run rcc on it
-        let qrc_path = format!("{qml_module_dir}/qml_module_resources_{qml_uri_underscores}.qrc");
+        let qrc_path =
+            qml_module_dir.join(format!("qml_module_resources_{qml_uri_underscores}.qrc"));
         {
             fn qrc_file_line(file_path: &impl AsRef<Path>) -> String {
                 let path_display = file_path.as_ref().display();
@@ -728,15 +740,16 @@ prefer :/qt/qml/{qml_uri_dirs}/
             }
 
             let mut qrc = File::create(&qrc_path).expect("Could not create qrc file");
+            let qml_module_dir_str = qml_module_dir.to_str().unwrap();
             write!(
                 qrc,
                 r#"<RCC>
 <qresource prefix="/">
-    <file alias="/qt/qml/{qml_uri_dirs}">{qml_module_dir}</file>
+    <file alias="/qt/qml/{qml_uri_dirs}">{qml_module_dir_str}</file>
 </qresource>
 <qresource prefix="/qt/qml/{qml_uri_dirs}">
 {qml_files_qrc}
-    <file alias="qmldir">{qml_module_dir}/qmldir</file>
+    <file alias="qmldir">{qml_module_dir_str}/qmldir</file>
 </qresource>
 </RCC>
 "#
@@ -749,15 +762,15 @@ prefer :/qt/qml/{qml_uri_dirs}/
         // then once for the module with --resource-name.
         let mut qmlcachegen_file_paths = Vec::new();
         if let Some(qmlcachegen_executable) = &self.qmlcachegen_executable {
-            let qmlcachegen_dir = format!("{out_dir}/qmlcachegen/{qml_uri_dirs}");
+            let qmlcachegen_dir = qt_build_utils_dir.join("qmlcachegen").join(&qml_uri_dirs);
             std::fs::create_dir_all(&qmlcachegen_dir)
                 .expect("Could not create qmlcachegen directory for QML module");
 
             let common_args = [
                 "-i".to_string(),
-                qmldir_file_path.to_string(),
+                qmldir_file_path.to_string_lossy().to_string(),
                 "--resource".to_string(),
-                qrc_path.clone(),
+                qrc_path.to_string_lossy().to_string(),
             ];
 
             let mut qml_file_qrc_paths = Vec::new();
@@ -765,17 +778,17 @@ prefer :/qt/qml/{qml_uri_dirs}/
                 let qrc_resource_path =
                     format!("/qt/qml/{qml_uri_dirs}/{}", file.as_ref().display());
 
-                let qml_compiled_file = format!(
-                    "{qmlcachegen_dir}/{}.cpp",
+                let qml_compiled_file = qmlcachegen_dir.join(format!(
+                    "{}.cpp",
                     file.as_ref().file_name().unwrap().to_string_lossy()
-                );
+                ));
                 qmlcachegen_file_paths.push(PathBuf::from(&qml_compiled_file));
 
                 let specific_args = vec![
                     "--resource-path".to_string(),
                     qrc_resource_path.clone(),
                     "-o".to_string(),
-                    qml_compiled_file,
+                    qml_compiled_file.to_string_lossy().to_string(),
                     std::fs::canonicalize(file)
                         .unwrap()
                         .to_string_lossy()
@@ -801,12 +814,12 @@ prefer :/qt/qml/{qml_uri_dirs}/
                 qml_file_qrc_paths.push(qrc_resource_path);
             }
 
-            let qmlcachegen_loader = format!("{qmlcachegen_dir}/qmlcache_loader.cpp");
+            let qmlcachegen_loader = qmlcachegen_dir.join("qmlcache_loader.cpp");
             let specific_args = vec![
                 "--resource-name".to_string(),
                 format!("qmlcache_{qml_uri_underscores}"),
                 "-o".to_string(),
-                qmlcachegen_loader.clone(),
+                qmlcachegen_loader.to_string_lossy().to_string(),
             ];
 
             // If there are no QML files there is nothing for qmlcachegen to run with
@@ -830,14 +843,16 @@ prefer :/qt/qml/{qml_uri_dirs}/
             }
         }
 
+        let qml_plugin_dir = PathBuf::from(format!("{out_dir}/qt-build-utils/qml_plugin"));
+        std::fs::create_dir_all(&qml_plugin_dir).expect("Could not create qml_plugin dir");
+
         // Run qmltyperegistrar
-        let qmltyperegistrar_output_path = PathBuf::from(&format!(
-            "{out_dir}/{qml_uri_underscores}_qmltyperegistration.cpp"
-        ));
+        let qmltyperegistrar_output_path =
+            qml_plugin_dir.join(format!("{qml_uri_underscores}_qmltyperegistration.cpp"));
         {
             let mut args = vec![
                 "--generate-qmltypes".to_string(),
-                qmltypes_path,
+                qmltypes_path.to_string_lossy().to_string(),
                 "--major-version".to_string(),
                 version_major.to_string(),
                 "--minor-version".to_string(),
@@ -865,8 +880,9 @@ prefer :/qt/qml/{qml_uri_dirs}/
         }
 
         // Generate QQmlEngineExtensionPlugin
-        let qml_plugin_cpp_path = PathBuf::from(format!("{out_dir}/{plugin_class_name}.cpp"));
-        let qml_plugin_init_path = PathBuf::from(format!("{out_dir}/{plugin_class_name}_init.cpp"));
+        let qml_plugin_cpp_path = qml_plugin_dir.join(format!("{plugin_class_name}.cpp"));
+        let qml_plugin_init_path = qml_plugin_dir.join(format!("{plugin_class_name}_init.cpp"));
+        let include_path;
         {
             let mut declarations = Vec::default();
             let mut usages = Vec::default();
@@ -921,13 +937,12 @@ public:
             )
             .expect("Failed to write plugin definition");
 
-            self.moc(
+            let moc_product = self.moc(
                 &qml_plugin_cpp_path,
-                MocArguments {
-                    uri: Some(uri.to_owned()),
-                    ..Default::default()
-                },
+                MocArguments::default().uri(uri.to_owned()),
             );
+            // Pass the include directory of the moc file to the caller
+            include_path = moc_product.cpp.parent().map(|path| path.to_path_buf());
 
             // Generate file to load static QQmlExtensionPlugin
             std::fs::write(
@@ -948,6 +963,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             qmltyperegistrar: qmltyperegistrar_output_path,
             plugin: qml_plugin_cpp_path,
             plugin_init: qml_plugin_init_path,
+            include_path,
         }
     }
 
@@ -961,10 +977,14 @@ Q_IMPORT_PLUGIN({plugin_class_name});
         }
 
         let input_path = input_file.as_ref();
-        let output_path = PathBuf::from(&format!(
-            "{}/{}.cpp",
-            env::var("OUT_DIR").unwrap(),
-            input_path.file_name().unwrap().to_str().unwrap()
+        let output_folder = PathBuf::from(&format!(
+            "{}/qt-build-utils/qrc",
+            env::var("OUT_DIR").unwrap()
+        ));
+        std::fs::create_dir_all(&output_folder).expect("Could not create qrc dir");
+        let output_path = output_folder.join(format!(
+            "{}.cpp",
+            input_path.file_name().unwrap().to_string_lossy(),
         ));
 
         let cmd = Command::new(self.rcc_executable.as_ref().unwrap())

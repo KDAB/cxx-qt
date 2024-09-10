@@ -9,7 +9,7 @@
 #include <QtCore/QLine>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qline.cxx.h"
+#include "qt_types_standalone/src/qline.cxx.h"
 
 class QLineTest : public QObject
 {

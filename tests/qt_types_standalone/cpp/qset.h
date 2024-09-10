@@ -9,7 +9,7 @@
 #include <QtCore/QSet>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qset.cxx.h"
+#include "qt_types_standalone/src/qset.cxx.h"
 
 class QSetTest : public QObject
 {

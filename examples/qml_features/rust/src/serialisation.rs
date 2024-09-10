@@ -11,7 +11,7 @@
 use serde::{Deserialize, Serialize};
 
 /// A CXX-Qt bridge which shows how use serde for (de)serialization of the data in a QObjects' QPROPERTY's
-#[cxx_qt::bridge(cxx_file_stem = "serialisation")]
+#[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");

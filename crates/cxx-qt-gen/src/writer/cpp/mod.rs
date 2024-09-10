@@ -26,9 +26,9 @@ pub fn namespaced(namespace: &str, cpp_code: &str) -> String {
 }
 
 /// For a given GeneratedCppBlocks write this into a C++ header and source pair
-pub fn write_cpp(generated: &GeneratedCppBlocks) -> CppFragment {
-    let header = write_cpp_header(generated);
-    let source = write_cpp_source(generated);
+pub fn write_cpp(generated: &GeneratedCppBlocks, include_path: &str) -> CppFragment {
+    let header = write_cpp_header(generated, include_path);
+    let source = write_cpp_source(generated, include_path);
 
     CppFragment::Pair {
         header: clang_format_with_style(&header, &ClangFormatStyle::File).unwrap_or(header),
@@ -95,7 +95,6 @@ mod tests {
         GeneratedCppBlocks {
             forward_declares: vec![],
             includes: BTreeSet::default(),
-            cxx_file_stem: "cxx_file_stem".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
@@ -226,7 +225,6 @@ mod tests {
         GeneratedCppBlocks {
             forward_declares: vec![],
             includes: BTreeSet::default(),
-            cxx_file_stem: "cxx_file_stem".to_owned(),
             extern_cxx_qt: vec![],
             qobjects: vec![
                 GeneratedCppQObject {
@@ -698,7 +696,8 @@ mod tests {
     #[test]
     fn test_write_cpp() {
         let generated = create_generated_cpp();
-        let (header, source) = require_pair(&write_cpp(&generated)).unwrap();
+        let (header, source) =
+            require_pair(&write_cpp(&generated, "cxx-qt-gen/cxx_file_stem")).unwrap();
         assert_str_eq!(header, format_cpp(expected_header()));
         assert_str_eq!(source, format_cpp(expected_source()));
     }
@@ -706,7 +705,8 @@ mod tests {
     #[test]
     fn test_write_cpp_multi_qobjects() {
         let generated = create_generated_cpp_multi_qobjects();
-        let (header, source) = require_pair(&write_cpp(&generated)).unwrap();
+        let (header, source) =
+            require_pair(&write_cpp(&generated, "cxx-qt-gen/cxx_file_stem")).unwrap();
         assert_str_eq!(header, format_cpp(expected_header_multi_qobjects()));
         assert_str_eq!(source, format_cpp(expected_source_multi_qobjects()));
     }
@@ -714,7 +714,8 @@ mod tests {
     #[test]
     fn test_write_cpp_no_namespace() {
         let generated = create_generated_cpp_no_namespace();
-        let (header, source) = require_pair(&write_cpp(&generated)).unwrap();
+        let (header, source) =
+            require_pair(&write_cpp(&generated, "cxx-qt-gen/cxx_file_stem")).unwrap();
         assert_str_eq!(header, format_cpp(expected_header_no_namespace()));
         assert_str_eq!(source, format_cpp(expected_source_no_namespace()));
     }

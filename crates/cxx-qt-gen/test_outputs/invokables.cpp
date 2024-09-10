@@ -1,4 +1,4 @@
-#include "cxx-qt-gen/ffi.cxxqt.h"
+#include "directory/file_ident.cxxqt.h"
 
 namespace cxx_qt::my_object {
 static_assert(alignof(MyObjectCxxQtThread) <= alignof(::std::size_t),

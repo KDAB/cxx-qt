@@ -4,7 +4,7 @@
 
 class MyObject;
 
-#include "cxx-qt-gen/inheritance.cxx.h"
+#include "directory/file_ident.cxx.h"
 
 class MyObject
   : public QAbstractItemModel

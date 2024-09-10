@@ -9,7 +9,7 @@
 #include <QtCore/QRectF>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qrectf.cxx.h"
+#include "qt_types_standalone/src/qrectf.cxx.h"
 
 class QRectFTest : public QObject
 {

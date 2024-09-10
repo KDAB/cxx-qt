@@ -9,7 +9,7 @@
 #include <QtCore/QStringList>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qstringlist.cxx.h"
+#include "qt_types_standalone/src/qstringlist.cxx.h"
 
 class QStringListTest : public QObject
 {

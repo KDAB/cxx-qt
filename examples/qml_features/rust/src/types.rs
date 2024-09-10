@@ -34,10 +34,8 @@ impl cxx_qt_lib::QVariantValue for ffi::CustomStruct {
 // ANCHOR_END: book_qvariantvalue_impl
 
 /// A CXX-Qt bridge which shows how a custom type can be used with a QVariant
-// ANCHOR: book_cxx_file_stem
-#[cxx_qt::bridge(cxx_file_stem = "types")]
+#[cxx_qt::bridge]
 pub mod ffi {
-    // ANCHOR_END: book_cxx_file_stem
     unsafe extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         /// QPointF from cxx_qt_lib

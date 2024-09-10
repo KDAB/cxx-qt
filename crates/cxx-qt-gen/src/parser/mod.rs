@@ -63,14 +63,11 @@ pub struct Parser {
     pub(crate) cxx_qt_data: ParsedCxxQtData,
     /// all type names that were found in this module, including CXX types
     pub(crate) type_names: TypeNames,
-    /// The stem of the file that the CXX headers for this module will be generated into
-    pub cxx_file_stem: String,
 }
 
 impl Parser {
-    fn parse_mod_attributes(module: &mut ItemMod) -> Result<(Option<String>, String)> {
+    fn parse_mod_attributes(module: &mut ItemMod) -> Result<Option<String>> {
         let mut namespace = None;
-        let mut cxx_file_stem = module.ident.to_string();
 
         // Remove the cxx_qt::bridge attribute
         if let Some(attr) = attribute_take_path(&mut module.attrs, &["cxx_qt", "bridge"]) {
@@ -80,13 +77,16 @@ impl Parser {
                     attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)?;
                 for meta in nested {
                     match meta {
-                        Meta::NameValue(name_value) => {
+                        Meta::NameValue(ref name_value) => {
                             // Parse any namespace in the cxx_qt::bridge macro
                             if name_value.path.is_ident("namespace") {
                                 namespace = Some(expr_to_string(&name_value.value)?);
                                 // Parse any custom file stem
                             } else if name_value.path.is_ident("cxx_file_stem") {
-                                cxx_file_stem = expr_to_string(&name_value.value)?;
+                                return Err(Error::new(
+                                    meta.span(),
+                                    "cxx_file_stem is unsupported, instead the input file name will be used",
+                                ));
                             }
                         }
                         _others => {}
@@ -100,7 +100,7 @@ impl Parser {
             ));
         }
 
-        Ok((namespace, cxx_file_stem))
+        Ok(namespace)
     }
 
     fn parse_module_contents(
@@ -151,7 +151,7 @@ impl Parser {
 
     /// Constructs a Parser object from a given [syn::ItemMod] block
     pub fn from(mut module: ItemMod) -> Result<Self> {
-        let (namespace, cxx_file_stem) = Self::parse_mod_attributes(&mut module)?;
+        let namespace = Self::parse_mod_attributes(&mut module)?;
         let (mut cxx_qt_data, module) = Self::parse_module_contents(module, namespace)?;
         let type_names = Self::naming_phase(
             &mut cxx_qt_data,
@@ -168,7 +168,6 @@ impl Parser {
             passthrough_module: module,
             type_names,
             cxx_qt_data,
-            cxx_file_stem,
         })
     }
 }
@@ -198,6 +197,20 @@ mod tests {
         assert_eq!(parser.passthrough_module, expected_module);
         assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
+    }
+
+    #[test]
+    fn test_bridge_cxx_file_stem() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge(cxx_file_stem = "stem")]
+            mod ffi {
+                extern "Rust" {
+                    fn test();
+                }
+            }
+        };
+        let parser = Parser::from(module);
+        assert!(parser.is_err());
     }
 
     #[test]

@@ -9,7 +9,7 @@
 #include <QtGui/QRegion>
 #include <QtTest/QTest>
 
-#include "qt_types_standalone/qregion.cxx.h"
+#include "qt_types_standalone/src/qregion.cxx.h"
 
 class QRegionTest : public QObject
 {

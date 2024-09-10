@@ -6,9 +6,10 @@
 use crate::generator::rust::GeneratedRustBlocks;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
+use syn::{parse_quote_spanned, spanned::Spanned};
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
-pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
+pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -> TokenStream {
     // Retrieve the module contents and namespace
     let mut cxx_mod = generated.cxx_mod.clone();
     let mut cxx_mod_contents = generated.cxx_mod_contents.clone();
@@ -18,7 +19,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
     // Add common includes for all objects
     cxx_mod_contents.insert(
         0,
-        syn::parse2(quote! {
+        parse_quote_spanned! {cxx_mod.span() =>
             unsafe extern "C++" {
                 include ! (< QtCore / QObject >);
 
@@ -28,6 +29,8 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
                 // Rename to CxxQtConnectionType so the developer can define it
                 // in their bridges without an invisible conflict
                 #[rust_name = "CxxQtConnectionType"]
+                // If no signals are used this won't be used
+                #[allow(dead_code)]
                 type ConnectionType = cxx_qt::ConnectionType;
 
                 #[doc(hidden)]
@@ -35,11 +38,31 @@ pub fn write_rust(generated: &GeneratedRustBlocks) -> TokenStream {
                 // Rename to CxxQtQMetaObjectConnection so the developer can define it
                 // in their bridges without an invisible conflict
                 #[rust_name = "CxxQtQMetaObjectConnection"]
+                // If no signals are used this won't be used
+                #[allow(dead_code)]
                 type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
             }
-        })
-        .expect("Could not build CXX common block"),
+        },
     );
+
+    // Inject the include path if we have one after the common CXX block
+    //
+    // We only generate the include when we are from the build script
+    // as in Rust macro expansion the include isn't relevant
+    //
+    // This is useful as then we don't need Span::source_file() to be stable
+    // but can use the name of the file from the build script.
+    if let Some(include_path) = include_path {
+        let import_path = format!("{include_path}.cxxqt.h");
+        cxx_mod_contents.insert(
+            1,
+            parse_quote_spanned! {cxx_mod.span() =>
+                unsafe extern "C++" {
+                    include!(#import_path);
+                }
+            },
+        );
+    }
 
     for fragment in &generated.fragments {
         // Add the blocks from the fragment
@@ -79,11 +102,7 @@ mod tests {
             cxx_mod: parse_quote! {
                 mod ffi {}
             },
-            cxx_mod_contents: vec![parse_quote! {
-                unsafe extern "C++" {
-                    include!("myobject.cxxqt.h");
-                }
-            }],
+            cxx_mod_contents: vec![],
             namespace: "cxx_qt::my_object".to_owned(),
             fragments: vec![GeneratedRustFragment {
                 cxx_mod_contents: vec![
@@ -121,11 +140,7 @@ mod tests {
             cxx_mod: parse_quote! {
                 mod ffi {}
             },
-            cxx_mod_contents: vec![parse_quote! {
-                unsafe extern "C++" {
-                    include!("multiobject.cxxqt.h");
-                }
-            }],
+            cxx_mod_contents: vec![],
             namespace: "cxx_qt".to_owned(),
             fragments: vec![
                 GeneratedRustFragment {
@@ -198,11 +213,13 @@ mod tests {
                     #[doc(hidden)]
                     #[namespace = "Qt"]
                     #[rust_name = "CxxQtConnectionType"]
+                    #[allow(dead_code)]
                     type ConnectionType = cxx_qt::ConnectionType;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqt1"]
                     #[rust_name = "CxxQtQMetaObjectConnection"]
+                    #[allow(dead_code)]
                     type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
                 }
 
@@ -244,11 +261,13 @@ mod tests {
                     #[doc(hidden)]
                     #[namespace = "Qt"]
                     #[rust_name = "CxxQtConnectionType"]
+                    #[allow(dead_code)]
                     type ConnectionType = cxx_qt::ConnectionType;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqt1"]
                     #[rust_name = "CxxQtQMetaObjectConnection"]
+                    #[allow(dead_code)]
                     type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
                 }
 
@@ -298,7 +317,7 @@ mod tests {
     #[test]
     fn test_write_rust() {
         let generated = create_generated_rust();
-        let result = write_rust(&generated);
+        let result = write_rust(&generated, Some("myobject"));
         assert_str_eq!(result.to_string(), expected_rust());
     }
 
@@ -311,13 +330,13 @@ mod tests {
         let parser = Parser::from(module).unwrap();
 
         let generated = GeneratedRustBlocks::from(&parser).unwrap();
-        write_rust(&generated);
+        write_rust(&generated, None);
     }
 
     #[test]
     fn test_write_rust_multi_qobjects() {
         let generated = create_generated_rust_multi_qobjects();
-        let result = write_rust(&generated);
+        let result = write_rust(&generated, Some("multiobject"));
         assert_str_eq!(result.to_string(), expected_rust_multi_qobjects());
     }
 }

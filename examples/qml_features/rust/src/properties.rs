@@ -6,7 +6,7 @@
 //! This example shows how a Q_PROPERTY can be used
 
 /// A CXX-Qt bridge which shows how a Q_PROPERTY can be used
-#[cxx_qt::bridge(cxx_file_stem = "rust_properties")]
+#[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");

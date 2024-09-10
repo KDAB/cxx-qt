@@ -8,7 +8,7 @@
 /// This example shows how to send data from a background thread to the Qt event loop to update data in the QObject
 // ANCHOR: book_macro_code
 // ANCHOR: book_namespace_macro
-#[cxx_qt::bridge(cxx_file_stem = "threading_website", namespace = "cxx_qt::website")]
+#[cxx_qt::bridge(namespace = "cxx_qt::website")]
 pub mod qobject {
     // ANCHOR_END: book_namespace_macro
     #[namespace = ""]

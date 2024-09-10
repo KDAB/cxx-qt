@@ -19,7 +19,6 @@ use crate::generator::rust::fragment::GeneratedRustFragment;
 use crate::generator::structuring;
 use crate::parser::parameter::ParsedFunctionParameter;
 use crate::parser::Parser;
-use crate::writer;
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{Item, ItemMod, Result};
@@ -60,31 +59,13 @@ impl GeneratedRustBlocks {
                 .collect::<Result<Vec<GeneratedRustFragment>>>()?,
         );
 
-        let mut cxx_mod_contents = qenum::generate_cxx_mod_contents(&parser.cxx_qt_data.qenums);
-        cxx_mod_contents.push(generate_include(parser)?);
-
         Ok(GeneratedRustBlocks {
             cxx_mod: parser.passthrough_module.clone(),
-            cxx_mod_contents,
+            cxx_mod_contents: qenum::generate_cxx_mod_contents(&parser.cxx_qt_data.qenums),
             namespace: parser.cxx_qt_data.namespace.clone().unwrap_or_default(),
             fragments,
         })
     }
-}
-
-/// Generate the include line for this parsed block
-fn generate_include(parser: &Parser) -> Result<Item> {
-    let import_path = format!(
-        "{header_prefix}/{}.cxxqt.h",
-        parser.cxx_file_stem,
-        header_prefix = writer::get_header_prefix()
-    );
-
-    syn::parse2(quote! {
-        unsafe extern "C++" {
-            include!(#import_path);
-        }
-    })
 }
 
 /// Return the [TokenStream] of the parsed parameters for use in generation
@@ -119,8 +100,6 @@ mod tests {
 
     use super::*;
 
-    use crate::tests::assert_tokens_eq;
-
     #[test]
     fn test_generated_rust_blocks() {
         let module: ItemMod = parse_quote! {
@@ -136,15 +115,7 @@ mod tests {
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
         assert!(rust.cxx_mod.content.is_none());
-        assert_eq!(rust.cxx_mod_contents.len(), 1);
-        assert_tokens_eq(
-            &rust.cxx_mod_contents[0],
-            quote! {
-                unsafe extern "C++" {
-                    include!("cxx-qt-gen/ffi.cxxqt.h");
-                }
-            },
-        );
+        assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "");
         assert_eq!(rust.fragments.len(), 1);
     }
@@ -164,36 +135,8 @@ mod tests {
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
         assert!(rust.cxx_mod.content.is_none());
-        assert_eq!(rust.cxx_mod_contents.len(), 1);
+        assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "cxx_qt");
-        assert_eq!(rust.fragments.len(), 1);
-    }
-
-    #[test]
-    fn test_generated_rust_blocks_cxx_file_stem() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(cxx_file_stem = "my_object")]
-            mod ffi {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let parser = Parser::from(module).unwrap();
-
-        let rust = GeneratedRustBlocks::from(&parser).unwrap();
-        assert!(rust.cxx_mod.content.is_none());
-        assert_eq!(rust.cxx_mod_contents.len(), 1);
-        assert_tokens_eq(
-            &rust.cxx_mod_contents[0],
-            quote! {
-                unsafe extern "C++" {
-                    include!("cxx-qt-gen/my_object.cxxqt.h");
-                }
-            },
-        );
-        assert_eq!(rust.namespace, "");
         assert_eq!(rust.fragments.len(), 1);
     }
 }
