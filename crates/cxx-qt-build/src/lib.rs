@@ -302,6 +302,14 @@ fn static_lib_name() -> String {
     format!("{}-cxxqt-generated", crate_name())
 }
 
+fn qml_module_static_lib_name(module_uri: &str) -> String {
+    format!(
+        "{}-qml-module-{}-cxxqt-generated",
+        crate_name(),
+        module_name_from_uri(module_uri)
+    )
+}
+
 fn panic_duplicate_file_and_qml_module(
     path: impl AsRef<Path>,
     uri: &str,
@@ -775,12 +783,12 @@ impl CxxQtBuilder {
                 );
             }
 
-            // TODO: for now we use the global CxxQtBuilder cc_builder
+            // TODO: for now we clone the global CxxQtBuilder cc_builder
             // this means that any includes/files etc on these are in this builder
             // but we cannot have separate builds until we can configure includes,
             // qt modules, files, cc_builder options etc in the QmlModule itself
-            let cc_builder = &mut self.cc_builder;
-            qtbuild.cargo_link_libraries(cc_builder);
+            let mut cc_builder = self.cc_builder.clone();
+            qtbuild.cargo_link_libraries(&mut cc_builder);
 
             let mut moc_include_paths = HashSet::new();
             for files in generate_cxxqt_cpp_files(
@@ -872,6 +880,21 @@ impl CxxQtBuilder {
                 &qml_module_registration_files.plugin_init,
                 dir::module_target(&qml_module.uri).join("plugin_init.o"),
             );
+
+            // Build the QML module as a library
+            if cc_builder.get_files().count() > 0 {
+                let qml_library_name = qml_module_static_lib_name(&qml_module.uri);
+
+                // The linker argument order matters!
+                // We need to link the object file first, then link the static library.
+                // Otherwise, the linker will be unable to find the symbols in the static library file.
+                // See also: https://stackoverflow.com/questions/45135/why-does-the-order-in-which-libraries-are-linked-sometimes-cause-errors-in-gcc
+                if !dir::is_exporting() {
+                    println!("cargo::rustc-link-arg=-l{}", &qml_library_name);
+                }
+
+                cc_builder.compile(&qml_library_name);
+            }
         }
     }
 
