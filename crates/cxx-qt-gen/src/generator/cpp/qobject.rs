@@ -15,6 +15,7 @@ use crate::{
     naming::Name,
 };
 use crate::{naming::TypeNames, parser::qobject::ParsedQObject};
+use quote::format_ident;
 use std::collections::BTreeSet;
 use syn::Result;
 
@@ -117,7 +118,7 @@ impl GeneratedCppQObject {
         let base_class = qobject.base_class.clone().unwrap_or_else(|| {
             // If there is a QObject macro then assume the base class is QObject
             if qobject.has_qobject_macro {
-                "QObject".to_string()
+                Name::new(format_ident!("QObject"))
             } else {
                 // CODECOV_EXCLUDE_START
                 unreachable!(
@@ -126,7 +127,10 @@ impl GeneratedCppQObject {
                 // CODECOV_EXCLUDE_STOP
             }
         });
-        generated.blocks.base_classes.push(base_class.clone());
+        generated
+            .blocks
+            .base_classes
+            .push(base_class.cxx_unqualified());
 
         // Add the CxxQtType rust and rust_mut methods
         generated
@@ -152,7 +156,10 @@ impl GeneratedCppQObject {
 
         generated.blocks.append(&mut inherit::generate(
             &structured_qobject.inherited_methods,
-            &qobject.base_class,
+            &qobject
+                .base_class
+                .clone() // TODO: can this be done without clone?
+                .map(|name| name.cxx_unqualified()),
             type_names,
         )?);
         generated.blocks.append(&mut qenum::generate_on_qobject(
@@ -173,7 +180,7 @@ impl GeneratedCppQObject {
         generated.blocks.append(&mut constructor::generate(
             &generated,
             &structured_qobject.constructors,
-            base_class,
+            base_class.cxx_unqualified(),
             &class_initializers,
             type_names,
         )?);

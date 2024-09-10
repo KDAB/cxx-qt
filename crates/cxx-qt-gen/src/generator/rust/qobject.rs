@@ -34,7 +34,13 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = Self::default();
 
-        generated.append(&mut generate_qobject_definitions(&qobject_names)?);
+        generated.append(&mut generate_qobject_definitions(
+            &qobject_names,
+            qobject
+                .base_class
+                .clone()
+                .map(|name| name.cxx_unqualified()),
+        )?);
 
         // Generate methods for the properties, invokables, signals
         generated.append(&mut generate_rust_properties(
@@ -97,7 +103,10 @@ impl GeneratedRustFragment {
 }
 
 /// Generate the C++ and Rust CXX definitions for the QObject
-fn generate_qobject_definitions(qobject_idents: &QObjectNames) -> Result<GeneratedRustFragment> {
+fn generate_qobject_definitions(
+    qobject_idents: &QObjectNames,
+    base: Option<String>,
+) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
@@ -114,6 +123,12 @@ fn generate_qobject_definitions(qobject_idents: &QObjectNames) -> Result<Generat
             #[doc = #cpp_class_name_cpp]
             #[cxx_name = #cpp_class_name_cpp]
         }
+    };
+
+    let base_upcast = if let Some(base) = base {
+        quote! { impl cxx_qt::Upcast<#base> for #rust_struct_name_rust {} }
+    } else {
+        quote! {}
     };
 
     let fragment = RustFragmentPair {
@@ -142,7 +157,7 @@ fn generate_qobject_definitions(qobject_idents: &QObjectNames) -> Result<Generat
                 }
             },
         ],
-        implementation: vec![],
+        implementation: vec![base_upcast],
     };
 
     generated

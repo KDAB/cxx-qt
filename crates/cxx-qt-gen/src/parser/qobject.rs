@@ -10,7 +10,6 @@ use crate::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
     },
 };
-#[cfg(test)]
 use quote::format_ident;
 
 use syn::{Attribute, Error, Ident, Meta, Result};
@@ -28,7 +27,7 @@ pub struct QmlElementMetadata {
 /// then mutate these [syn::Item]'s for generation purposes.
 pub struct ParsedQObject {
     /// The base class of the struct
-    pub base_class: Option<String>,
+    pub base_class: Option<Name>,
     /// The name of the QObject
     pub name: Name,
     /// The ident of the inner type of the QObject
@@ -106,6 +105,10 @@ impl ParsedQObject {
             Some(module),
         )?;
 
+        let base_name = base_class
+            .clone()
+            .map(|name_str| Name::new(format_ident!("{name_str}")));
+
         // Find any QML metadata
         let qml_metadata = Self::parse_qml_metadata(&name, &mut declaration.attrs)?;
 
@@ -115,7 +118,7 @@ impl ParsedQObject {
         let inner = declaration.ident_right.clone();
 
         Ok(Self {
-            base_class,
+            base_class: base_name,
             declaration,
             name,
             rust_type: inner,
@@ -233,7 +236,10 @@ pub mod tests {
 
         let qobject =
             ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
-        assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
+        assert_eq!(
+            qobject.base_class.unwrap().cxx_unqualified(),
+            "QStringListModel"
+        );
     }
 
     #[test]
