@@ -19,30 +19,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
     // Add common includes for all objects
     cxx_mod_contents.insert(
         0,
-        parse_quote_spanned! {cxx_mod.span() =>
-            unsafe extern "C++" {
-                include ! (< QtCore / QObject >);
-
-                include!("cxx-qt/connection.h");
-                #[doc(hidden)]
-                #[namespace = "Qt"]
-                // Rename to CxxQtConnectionType so the developer can define it
-                // in their bridges without an invisible conflict
-                #[rust_name = "CxxQtConnectionType"]
-                // If no signals are used this won't be used
-                #[allow(dead_code)]
-                type ConnectionType = cxx_qt::ConnectionType;
-
-                #[doc(hidden)]
-                #[namespace = "rust::cxxqt1"]
-                // Rename to CxxQtQMetaObjectConnection so the developer can define it
-                // in their bridges without an invisible conflict
-                #[rust_name = "CxxQtQMetaObjectConnection"]
-                // If no signals are used this won't be used
-                #[allow(dead_code)]
-                type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
-            }
-        },
+        syn::parse2(signal_boilerplate()).expect("Could not build CXX common block"),
     );
 
     // Inject the include path if we have one after the common CXX block
@@ -85,6 +62,27 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
         #(#cxx_qt_mod_contents)*
     }
     .into_token_stream()
+}
+
+fn signal_boilerplate() -> TokenStream {
+    quote! {
+        unsafe extern "C++" {
+            include ! (< QtCore / QObject >);
+
+            include!("cxx-qt/connection.h");
+            #[doc(hidden)]
+            #[namespace = "Qt"]
+            #[rust_name = "CxxQtConnectionType"]
+            #[allow(dead_code)]
+            type ConnectionType = cxx_qt::ConnectionType;
+
+            #[doc(hidden)]
+            #[namespace = "rust::cxxqt1"]
+            #[rust_name = "CxxQtQMetaObjectConnection"]
+            #[allow(dead_code)]
+            type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
+        }
+    }
 }
 
 #[cfg(test)]
@@ -203,25 +201,11 @@ mod tests {
 
     /// Helper for the expected Rust
     pub fn expected_rust() -> String {
+        let signal_boilerplate = signal_boilerplate();
         quote! {
             #[cxx::bridge(namespace = "cxx_qt::my_object")]
             mod ffi {
-                unsafe extern "C++" {
-                    include ! (< QtCore / QObject >);
-
-                    include!("cxx-qt/connection.h");
-                    #[doc(hidden)]
-                    #[namespace = "Qt"]
-                    #[rust_name = "CxxQtConnectionType"]
-                    #[allow(dead_code)]
-                    type ConnectionType = cxx_qt::ConnectionType;
-
-                    #[doc(hidden)]
-                    #[namespace = "rust::cxxqt1"]
-                    #[rust_name = "CxxQtQMetaObjectConnection"]
-                    #[allow(dead_code)]
-                    type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
-                }
+                #signal_boilerplate
 
                 unsafe extern "C++" {
                     include!("myobject.cxxqt.h");
@@ -251,25 +235,11 @@ mod tests {
 
     /// Helper for the expected Rust with multiple qobjects
     pub fn expected_rust_multi_qobjects() -> String {
+        let signal_boilerplate = signal_boilerplate();
         quote! {
             #[cxx::bridge(namespace = "cxx_qt")]
             mod ffi {
-                unsafe extern "C++" {
-                    include ! (< QtCore / QObject >);
-
-                    include!("cxx-qt/connection.h");
-                    #[doc(hidden)]
-                    #[namespace = "Qt"]
-                    #[rust_name = "CxxQtConnectionType"]
-                    #[allow(dead_code)]
-                    type ConnectionType = cxx_qt::ConnectionType;
-
-                    #[doc(hidden)]
-                    #[namespace = "rust::cxxqt1"]
-                    #[rust_name = "CxxQtQMetaObjectConnection"]
-                    #[allow(dead_code)]
-                    type QMetaObjectConnection = cxx_qt::QMetaObjectConnection;
-                }
+                #signal_boilerplate
 
                 unsafe extern "C++" {
                     include!("multiobject.cxxqt.h");

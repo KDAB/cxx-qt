@@ -118,7 +118,6 @@ impl<'a> Structures<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    // use crate::tests::assert_parse_errors;
     use crate::tests::assert_parse_errors;
     use crate::Parser;
     use quote::format_ident;

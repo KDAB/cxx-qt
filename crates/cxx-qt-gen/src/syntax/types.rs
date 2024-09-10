@@ -84,7 +84,8 @@ fn extract_qobject_ident_from_ref(ty: &TypeReference) -> Result<(Ident, Option<M
 
 fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
     if path_compare_str(&ty.path, &["Pin"]) {
-        if let PathArguments::AngleBracketed(angles) = &ty.path.segments.first().unwrap().arguments
+        return if let PathArguments::AngleBracketed(angles) =
+            &ty.path.segments.first().unwrap().arguments
         {
             if let [GenericArgument::Type(Type::Reference(reference))] =
                 *angles.args.iter().collect::<Vec<_>>()
@@ -93,16 +94,16 @@ fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
                 if mutability.is_none() {
                     return Err(err_pin_misuse(reference));
                 }
-                return Ok((ident, mutability.unwrap()));
+                Ok((ident, mutability.unwrap()))
             } else {
-                return Err(err_pin_misuse(ty));
+                Err(err_pin_misuse(ty))
             }
         } else {
-            return Err(Error::new_spanned(
+            Err(Error::new_spanned(
                 ty,
                 "Pin must use angle brackets not parentheses for generic args! Use Pin<&mut T>",
-            ));
-        }
+            ))
+        };
     }
 
     Err(err_pin_misuse(ty))
