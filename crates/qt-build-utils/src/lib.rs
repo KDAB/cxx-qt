@@ -623,7 +623,7 @@ impl QtBuild {
         let mut cmd = Command::new(self.moc_executable.as_ref().unwrap());
 
         if let Some(uri) = arguments.uri {
-            cmd.arg(&format!("-Muri={uri}"));
+            cmd.arg(format!("-Muri={uri}"));
         }
 
         cmd.args(include_args.trim_end().split(' '));
