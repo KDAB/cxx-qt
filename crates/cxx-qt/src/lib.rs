@@ -118,6 +118,9 @@ pub trait Threading: Sized {
     fn threading_drop(cxx_qt_thread: &mut CxxQtThread<Self>);
 }
 
+/// Placeholder for upcasting objects, suppresses dead code warning
+pub trait Upcast {}
+
 /// This trait can be implemented on any [CxxQtType] to define a
 /// custom constructor in C++ for the QObject.
 ///

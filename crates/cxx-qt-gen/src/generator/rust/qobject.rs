@@ -36,10 +36,7 @@ impl GeneratedRustFragment {
 
         generated.append(&mut generate_qobject_definitions(
             &qobject_names,
-            qobject
-                .base_class
-                .clone()
-                .map(|name| name.cxx_unqualified()),
+            qobject.base_class.clone().map(|ident| ident.to_string()),
         )?);
 
         // Generate methods for the properties, invokables, signals

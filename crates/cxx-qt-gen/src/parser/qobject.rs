@@ -10,6 +10,7 @@ use crate::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
     },
 };
+#[cfg(test)]
 use quote::format_ident;
 
 use syn::{Attribute, Error, Expr, Ident, Meta, Result};
@@ -27,7 +28,7 @@ pub struct QmlElementMetadata {
 /// then mutate these [syn::Item]'s for generation purposes.
 pub struct ParsedQObject {
     /// The base class of the struct
-    pub base_class: Option<Name>,
+    pub base_class: Option<Ident>,
     /// The name of the QObject
     pub name: Name,
     /// The ident of the inner type of the QObject
@@ -89,10 +90,10 @@ impl ParsedQObject {
         //     .transpose()?;
 
         let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
-            .map(|attr| -> Result<Name> {
+            .map(|attr| -> Result<Ident> {
                 let expr = &attr.meta.require_name_value()?.value;
                 if let Expr::Path(path_expr) = expr {
-                    Ok(Name::new(path_expr.path.require_ident()?.clone()))
+                    Ok(path_expr.path.require_ident()?.clone())
                 } else {
                     Err(Error::new_spanned(
                         expr,
@@ -246,10 +247,7 @@ pub mod tests {
 
         let qobject =
             ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
-        assert_eq!(
-            qobject.base_class.unwrap().cxx_unqualified(),
-            "QStringListModel"
-        );
+        assert_eq!(qobject.base_class.unwrap().to_string(), "QStringListModel");
     }
 
     #[test]
