@@ -29,6 +29,7 @@ pub mod qobject {
     // Define the API from QtQuick that we need
     unsafe extern "C++" {
         include!(<QtQuick/QQuickPaintedItem>);
+        type QQuickPaintedItem;
     }
 
     unsafe extern "RustQt" {

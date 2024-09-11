@@ -116,7 +116,15 @@ impl GeneratedCppQObject {
         let base_class = if let Some(ident) = &qobject.base_class {
             type_names.lookup(ident)?.cxx_qualified()
         } else {
-            "QObject".to_string()
+            if qobject.has_qobject_macro {
+                "QObject".to_string()
+            } else {
+                // CODECOV_EXCLUDE_START
+                unreachable!(
+                    "Cannot have an empty #[base] attribute  with no #[qobject] attribute"
+                );
+                // CODECOV_EXCLUDE_STOP
+            }
         };
 
         generated.blocks.base_classes.push(base_class.clone());
