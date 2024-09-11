@@ -89,6 +89,7 @@ pub mod ffi {
 
     unsafe extern "C++" {
         include!(<QtCore/QStringListModel>);
+        type QStringListModel;
     }
 
     #[namespace = ""]

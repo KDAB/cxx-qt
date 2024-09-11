@@ -20,7 +20,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::Result;
+use syn::{Ident, Result};
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
@@ -36,7 +36,8 @@ impl GeneratedRustFragment {
 
         generated.append(&mut generate_qobject_definitions(
             &qobject_names,
-            qobject.base_class.clone().map(|ident| ident.to_string()),
+            qobject.base_class.clone(),
+            type_names,
         )?);
 
         // Generate methods for the properties, invokables, signals
@@ -102,7 +103,8 @@ impl GeneratedRustFragment {
 /// Generate the C++ and Rust CXX definitions for the QObject
 fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
-    base: Option<String>,
+    base: Option<Ident>,
+    type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
@@ -123,7 +125,8 @@ fn generate_qobject_definitions(
     };
 
     let base_upcast = if let Some(base) = base {
-        quote! { impl cxx_qt::Upcast<#base> for #rust_struct_name_rust {} }
+        let base_name = type_names.lookup(&base)?.rust_unqualified();
+        quote! { impl cxx_qt::Upcast<#base_name> for #rust_struct_name_rust {} }
     } else {
         quote! {}
     };

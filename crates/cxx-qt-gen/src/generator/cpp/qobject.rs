@@ -15,7 +15,6 @@ use crate::{
     naming::Name,
 };
 use crate::{naming::TypeNames, parser::qobject::ParsedQObject};
-use quote::format_ident;
 use std::collections::BTreeSet;
 use syn::Result;
 
@@ -114,20 +113,13 @@ impl GeneratedCppQObject {
             has_qobject_macro: qobject.has_qobject_macro,
         };
 
-        // Build the base class
-        let base_class = qobject.base_class.clone().unwrap_or_else(|| {
-            // If there is a QObject macro then assume the base class is QObject
-            if qobject.has_qobject_macro {
-                format_ident!("QObject")
-            } else {
-                // CODECOV_EXCLUDE_START
-                unreachable!(
-                    "Cannot have an empty #[base] attribute  with no #[qobject] attribute"
-                );
-                // CODECOV_EXCLUDE_STOP
-            }
-        });
-        generated.blocks.base_classes.push(base_class.to_string());
+        let base_class = if let Some(ident) = &qobject.base_class {
+            type_names.lookup(ident)?.cxx_qualified()
+        } else {
+            "QObject".to_string()
+        };
+
+        generated.blocks.base_classes.push(base_class.clone());
 
         // Add the CxxQtType rust and rust_mut methods
         generated
@@ -174,7 +166,7 @@ impl GeneratedCppQObject {
         generated.blocks.append(&mut constructor::generate(
             &generated,
             &structured_qobject.constructors,
-            base_class.to_string(),
+            base_class,
             &class_initializers,
             type_names,
         )?);
@@ -186,9 +178,9 @@ impl GeneratedCppQObject {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::generator::mock_qml_singleton;
     use crate::{generator::structuring::Structures, parser::Parser};
+    use quote::format_ident;
     use syn::{parse_quote, ItemMod};
 
     #[test]
@@ -235,10 +227,17 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+        let mut type_names = TypeNames::mock();
+
+        type_names.mock_insert(
+            "QStringListModel",
+            Some(format_ident!("qobject")),
+            None,
+            None,
+        );
 
         let cpp =
-            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::mock())
-                .unwrap();
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &type_names).unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
         assert_eq!(cpp.blocks.base_classes.len(), 2);
         assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");

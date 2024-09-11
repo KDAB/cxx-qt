@@ -279,7 +279,7 @@ MyObject_readyConnect(
 
 namespace cxx_qt::multi_object {
 MyObject::MyObject(QObject* parent)
-  : QStringListModel(parent)
+  : cxx_qt::multi_object::QStringListModel(parent)
   , ::rust::cxxqt1::CxxQtType<MyObjectRust>(
       ::cxx_qt::multi_object::cxx_qt_my_object::createRs())
 {

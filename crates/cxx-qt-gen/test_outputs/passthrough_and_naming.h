@@ -104,7 +104,7 @@ MyObject_readyConnect(
 
 namespace cxx_qt::multi_object {
 class MyObject
-  : public QStringListModel
+  : public cxx_qt::multi_object::QStringListModel
   , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
 {
   Q_OBJECT

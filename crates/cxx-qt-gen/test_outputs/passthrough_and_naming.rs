@@ -53,6 +53,7 @@ pub mod ffi {
     use super::MyTrait;
     unsafe extern "C++" {
         include ! (< QtCore / QStringListModel >);
+        type QStringListModel;
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
