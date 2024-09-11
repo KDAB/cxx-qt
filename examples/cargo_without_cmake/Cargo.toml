@@ -25,7 +25,7 @@ cxx.workspace = true
 # Use `cxx-qt = "0.6"` here instead!
 cxx-qt.workspace = true
 # Use `cxx-qt-lib = "0.6"` here instead!
-cxx-qt-lib.workspace = true
+cxx-qt-lib = { workspace = true, features = ["full"] }
 
 [build-dependencies]
 # Use `cxx-qt-build = "0.6"` here instead!

@@ -16,7 +16,7 @@ crate-type = ["staticlib"]
 [dependencies]
 cxx.workspace = true
 cxx-qt.workspace = true
-cxx-qt-lib.workspace = true
+cxx-qt-lib = { workspace = true, features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 
