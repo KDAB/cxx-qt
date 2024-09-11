@@ -102,6 +102,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 ///
 ///     unsafe extern "C++" {
 ///         include!(<QtCore/QStringListModel>);
+///         type QStringListModel;
 ///     }
 /// }
 ///

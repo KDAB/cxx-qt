@@ -119,7 +119,9 @@ pub trait Threading: Sized {
 }
 
 /// Placeholder for upcasting objects, suppresses dead code warning
-pub trait Upcast {}
+#[allow(dead_code)]
+#[doc(hidden)]
+pub trait Upcast<T> {}
 
 /// This trait can be implemented on any [CxxQtType] to define a
 /// custom constructor in C++ for the QObject.

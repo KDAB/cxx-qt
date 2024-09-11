@@ -2,7 +2,6 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 use crate::generator::structuring::StructuredQObject;
 use crate::{
     generator::{
@@ -124,11 +123,13 @@ fn generate_qobject_definitions(
         }
     };
 
+    let cpp_struct_qualified = &qobject_idents.name.rust_qualified();
+
     let base_upcast = if let Some(base) = base {
-        let base_name = type_names.lookup(&base)?.rust_unqualified();
-        quote! { impl cxx_qt::Upcast<#base_name> for #rust_struct_name_rust {} }
+        let base_name = type_names.lookup(&base)?.rust_qualified();
+        vec![quote! { impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {} }]
     } else {
-        quote! {}
+        vec![]
     };
 
     let fragment = RustFragmentPair {
@@ -157,12 +158,15 @@ fn generate_qobject_definitions(
                 }
             },
         ],
-        implementation: vec![base_upcast],
+        implementation: base_upcast,
     };
 
     generated
         .cxx_mod_contents
         .append(&mut fragment.cxx_bridge_as_items()?);
+    generated
+        .cxx_qt_mod_contents
+        .append(&mut fragment.implementation_as_items()?);
 
     Ok(generated)
 }

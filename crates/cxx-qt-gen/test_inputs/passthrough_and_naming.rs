@@ -87,6 +87,7 @@ pub mod ffi {
     // ItemUse
     use super::MyTrait;
 
+    #[namespace = ""]
     unsafe extern "C++" {
         include!(<QtCore/QStringListModel>);
         type QStringListModel;

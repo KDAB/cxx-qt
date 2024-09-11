@@ -12,6 +12,7 @@ pub mod qobject {
     // ANCHOR: book_base_include
     unsafe extern "C++" {
         include!(<QtCore/QAbstractListModel>);
+        /// Base for Qt type
         type QAbstractListModel;
     }
     // ANCHOR_END: book_base_include

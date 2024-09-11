@@ -76,6 +76,7 @@ mod inheritance {
         ) -> Pin<&mut MyObjectRust>;
     }
 }
+impl cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())

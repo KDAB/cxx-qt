@@ -41,7 +41,6 @@ pub struct ParsedQObject {
     pub qml_metadata: Option<QmlElementMetadata>,
     /// Whether this type has a #[qobject] / Q_OBJECT macro
     pub has_qobject_macro: bool,
-
     /// The original declaration entered by the user, i.e. a type alias with a list of attributes
     pub declaration: ForeignTypeIdentAlias,
 }
@@ -71,24 +70,6 @@ impl ParsedQObject {
         module: &Ident,
     ) -> Result<Self> {
         let has_qobject_macro = attribute_take_path(&mut declaration.attrs, &["qobject"]).is_some();
-
-        // Find if there is any base class
-        // let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
-        //     .map(|attr| {
-        //         let string = expr_to_string(&attr.meta.require_name_value()?.value)?;
-        //         if string.is_empty() {
-        //             // Ensure that the base class attribute is not empty, as this is not valid in both cases
-        //             // - when there is a qobject macro it is not valid
-        //             // - when there is not a qobject macro it is not valid
-        //             return Err(Error::new_spanned(
-        //                 attr,
-        //                 "The #[base] attribute cannot be empty!",
-        //             ));
-        //         }
-        //         Ok(string)
-        //     })
-        //     .transpose()?;
-
         let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
             .map(|attr| -> Result<Ident> {
                 let expr = &attr.meta.require_name_value()?.value;
