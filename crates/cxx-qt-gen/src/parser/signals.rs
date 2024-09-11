@@ -2,14 +2,12 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
-use crate::syntax::{attribute::attribute_get_path, path::path_compare_str, safety::Safety};
+use crate::{
+    parser::{check_safety, method::MethodFields, parse_attributes, separate_docs},
+    syntax::{path::path_compare_str, safety::Safety},
+};
 use core::ops::Deref;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
-
-use crate::parser::method::MethodFields;
-use crate::parser::{check_attribute_validity, check_safety, separate_docs};
-
 #[derive(Clone)]
 /// Describes an individual Signal
 pub struct ParsedSignal {
@@ -33,12 +31,11 @@ impl ParsedSignal {
     }
 
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
-        // FIND ONLY
         check_safety(&method, &safety)?;
-        check_attribute_validity(&method.attrs, &Self::ALLOWED_ATTRS)?;
 
         let docs = separate_docs(&mut method);
         let fields = MethodFields::parse(method)?;
+        let attrs = parse_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         if !fields.mutable {
             return Err(Error::new(
@@ -47,7 +44,8 @@ impl ParsedSignal {
             ));
         }
 
-        let inherit = attribute_get_path(&fields.method.attrs, &["inherit"]).is_some();
+        let inherit = attrs.get("inherit").is_some();
+
         let private = if let Visibility::Restricted(vis_restricted) = &fields.method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
         } else {

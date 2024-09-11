@@ -17,13 +17,15 @@ pub mod qobject;
 pub mod signals;
 pub mod trait_impl;
 
-use crate::syntax::path::path_compare_str;
-use crate::syntax::safety::Safety;
 use crate::{
     naming::TypeNames,
-    syntax::{attribute::attribute_take_path, expr::expr_to_string},
+    syntax::{
+        attribute::attribute_take_path, expr::expr_to_string, path::path_compare_str,
+        safety::Safety,
+    },
 };
 use cxxqtdata::ParsedCxxQtData;
+use std::collections::BTreeMap;
 use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
@@ -54,28 +56,28 @@ pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
         .collect()
 }
 
-/// Returns an error if the attributes passed contain an attribute not in the whitelist provided
-pub fn check_attribute_validity(attrs: &[Attribute], allowed: &[&str]) -> Result<()> {
-    let disallowed: Vec<&Attribute> = attrs
-        .iter()
-        .filter(|attr| {
-            !allowed
-                .iter()
-                .any(|string| path_compare_str(attr.meta.path(), &[string]))
-        })
-        .collect();
-
-    if disallowed.is_empty() {
-        Ok(())
-    } else {
-        Err(Error::new(
-            disallowed[0].span(),
-            format!(
-                "Unsupported attribute! The only attributes allowed on this item are\n{}",
-                allowed.join(", ")
-            ),
-        ))
+pub fn parse_attributes<'a>(
+    attrs: &'a [Attribute],
+    allowed: &'a [&str],
+) -> Result<BTreeMap<&'a str, &'a Attribute>> {
+    let mut output = BTreeMap::default();
+    for attr in attrs {
+        let index = allowed
+            .iter()
+            .position(|string| path_compare_str(attr.meta.path(), &[string]));
+        if let Some(index) = index {
+            output.insert(allowed[index], attr); // Doesn't error on duplicates
+        } else {
+            return Err(Error::new(
+                attr.span(),
+                format!(
+                    "Unsupported attribute! The only attributes allowed on this item are\n{}",
+                    allowed.join(", ")
+                ),
+            ));
+        }
     }
+    Ok(output)
 }
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
@@ -132,7 +134,7 @@ impl Parser {
 
         // Only attributes allowed on a module being parsed is cxx_qt::bridge and docs
         // If a namespace is needed it is supplied like #[cxx_qt::bridge(namespace = "...")]
-        check_attribute_validity(&module.attrs, &["doc"])?;
+        parse_attributes(&module.attrs, &["docs"])?;
 
         Ok(namespace)
     }

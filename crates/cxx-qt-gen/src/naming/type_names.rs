@@ -2,24 +2,16 @@
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
-use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
-
+use super::Name;
+use crate::{
+    parser::{cxxqtdata::ParsedCxxQtData, parse_attributes, qobject::ParsedQObject},
+    syntax::{expr::expr_to_string, foreignmod::foreign_mod_to_foreign_item_types},
+};
 use quote::{format_ident, quote};
+use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
 use syn::{
     parse_quote, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct, Path, Result,
 };
-
-use crate::{
-    parser::qobject::ParsedQObject,
-    syntax::{
-        attribute::attribute_get_path, expr::expr_to_string,
-        foreignmod::foreign_mod_to_foreign_item_types,
-    },
-};
-
-use super::Name;
-use crate::parser::cxxqtdata::ParsedCxxQtData;
 
 /// The purpose of this struct is to store all nameable types.
 ///
@@ -197,12 +189,12 @@ impl TypeNames {
         module_ident: &Ident,
     ) -> Result<()> {
         // Retrieve a namespace from the mod or the bridge
-        let block_namespace =
-            if let Some(attr) = attribute_get_path(&foreign_mod.attrs, &["namespace"]) {
-                Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
-            } else {
-                bridge_namespace.map(str::to_owned)
-            };
+        let attrs = parse_attributes(&foreign_mod.attrs, &["namespace"])?;
+        let block_namespace = if let Some(attr) = attrs.get("namespace") {
+            Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
+        } else {
+            bridge_namespace.map(str::to_owned)
+        };
 
         // Read each of the types in the mod (type A;)
         for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {

@@ -3,11 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::{naming::Name, parser::parse_attributes, syntax::path::path_compare_str};
 use quote::ToTokens;
 use syn::{Ident, ItemEnum, Result, Variant};
-
-use crate::parser::check_attribute_validity;
-use crate::{naming::Name, syntax::path::path_compare_str};
 
 pub struct ParsedQEnum {
     /// The name of the QObject
@@ -56,7 +54,7 @@ impl ParsedQEnum {
         parent_namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
-        check_attribute_validity(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
+        parse_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
                 qenum,

@@ -5,7 +5,7 @@
 
 use crate::{
     naming::Name,
-    parser::{check_attribute_validity, property::ParsedQProperty},
+    parser::{parse_attributes, property::ParsedQProperty},
     syntax::{
         attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
         path::path_compare_str,
@@ -83,6 +83,9 @@ impl ParsedQObject {
         namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
+        let attributes = parse_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
+        let has_qobject_macro = attributes.get("qobject").is_some();
+
         let has_qobject_macro = attribute_take_path(&mut declaration.attrs, &["qobject"]).is_some();
         let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
             .map(|attr| -> Result<Ident> {
@@ -133,28 +136,22 @@ impl ParsedQObject {
     }
 
     fn parse_qml_metadata(name: &Name, attrs: &[Attribute]) -> Result<Option<QmlElementMetadata>> {
-        // Find if there is a qml_element attribute
-        if let Some(attr) = attribute_get_path(attrs, &["qml_element"]) {
+        let attributes = parse_attributes(attrs, &Self::ALLOWED_ATTRS)?;
+        if let Some(attr) = attributes.get("qml_element") {
             // Extract the name of the qml_element from macro, else use the c++ name
             // This will use the name provided by cxx_name if that attr was present
             let name = match &attr.meta {
                 Meta::NameValue(name_value) => expr_to_string(&name_value.value)?,
                 _ => name.cxx_unqualified(),
             };
-
-            // Determine if this element is uncreatable
-            let uncreatable = attribute_get_path(attrs, &["qml_uncreatable"]).is_some();
-
-            // Determine if this element is a singleton
-            let singleton = attribute_get_path(attrs, &["qml_singleton"]).is_some();
-
+            let uncreatable = attributes.get("qml_uncreatable").is_some();
+            let singleton = attributes.get("qml_singleton").is_some();
             return Ok(Some(QmlElementMetadata {
                 name,
                 uncreatable,
                 singleton,
             }));
         }
-
         Ok(None)
     }
 

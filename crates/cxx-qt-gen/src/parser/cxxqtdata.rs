@@ -6,20 +6,17 @@
 use super::qnamespace::ParsedQNamespace;
 use super::trait_impl::TraitImpl;
 use crate::naming::cpp::err_unsupported_item;
-use crate::parser::check_attribute_validity;
-use crate::syntax::attribute::attribute_get_path;
-use crate::syntax::foreignmod::ForeignTypeIdentAlias;
-use crate::syntax::path::path_compare_str;
-use crate::syntax::safety::Safety;
 use crate::{
     parser::{
         externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod, method::ParsedMethod,
-        qenum::ParsedQEnum, qobject::ParsedQObject, signals::ParsedSignal,
+        parse_attributes, qenum::ParsedQEnum, qobject::ParsedQObject, signals::ParsedSignal,
     },
-    syntax::expr::expr_to_string,
+    syntax::{
+        attribute::attribute_get_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
+        path::path_compare_str, safety::Safety,
+    },
 };
-use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result};
-use syn::{ItemMacro, Meta};
+use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, ItemMacro, Meta, Result};
 
 pub struct ParsedCxxQtData {
     /// Map of the QObjects defined in the module that will be used for code generation
@@ -130,9 +127,10 @@ impl ParsedCxxQtData {
     }
 
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
-        check_attribute_validity(&foreign_mod.attrs, &["namespace"])?;
+        let attrs = parse_attributes(&foreign_mod.attrs, &["namespace"])?;
 
-        let namespace = attribute_get_path(&foreign_mod.attrs, &["namespace"])
+        let namespace = attrs
+            .get("namespace")
             .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
             .transpose()?
             .or_else(|| self.namespace.clone());
