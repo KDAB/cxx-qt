@@ -92,18 +92,6 @@ impl ParsedExternCxxQt {
 
         Ok(extern_cxx_block)
     }
-
-    #[cfg(test)]
-    fn get_passthrough_foreign_type(&self) -> Result<ForeignItemType> {
-        if let ForeignItem::Type(foreign_ty) = &self.passthrough_items[0] {
-            Ok(foreign_ty.clone())
-        } else {
-            Err(Error::new_spanned(
-                &self.passthrough_items[0],
-                "Item should be `ForeignItem::Type`!",
-            ))
-        }
-    }
 }
 
 #[cfg(test)]
@@ -188,9 +176,8 @@ mod tests {
         )
         .unwrap();
         // Check that the non Type object is detected and error
-        assert!(extern_cxx_qt.get_passthrough_foreign_type().is_err());
-
-        assert_eq!(extern_cxx_qt.signals.len(), 0);
+        assert!(extern_cxx_qt.qobjects.is_empty());
+        assert!(extern_cxx_qt.signals.is_empty());
         assert!(extern_cxx_qt.unsafety.is_none());
     }
 }

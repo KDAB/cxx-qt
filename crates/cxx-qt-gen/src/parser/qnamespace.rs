@@ -31,7 +31,7 @@ impl ParsedQNamespace {
             ));
         }
 
-        let qml_element = attrs.get("qml_element").is_some();
+        let qml_element = attrs.contains_key("qml_element");
 
         if let Some(ident) = mac.ident {
             return Err(syn::Error::new_spanned(

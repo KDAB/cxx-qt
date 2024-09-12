@@ -35,7 +35,7 @@ impl ParsedQInvokableSpecifiers {
             ParsedQInvokableSpecifiers::Override,
             ParsedQInvokableSpecifiers::Virtual,
         ] {
-            if attrs.get(specifier.as_str()).is_some() {
+            if attrs.contains_key(specifier.as_str()) {
                 output.insert(specifier);
             }
         }
@@ -56,13 +56,14 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
-    const ALLOWED_ATTRS: [&'static str; 6] = [
+    const ALLOWED_ATTRS: [&'static str; 7] = [
         "cxx_name",
         "rust_name",
         "qinvokable",
         "cxx_final",
         "cxx_override",
         "cxx_virtual",
+        "doc",
     ];
 
     #[cfg(test)]
@@ -106,7 +107,7 @@ impl ParsedMethod {
         let attrs = parse_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         // Determine if the method is invokable
-        let is_qinvokable = attrs.get("qinvokable").is_some();
+        let is_qinvokable = attrs.contains_key("qinvokable");
         let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs);
 
         Ok(Self {

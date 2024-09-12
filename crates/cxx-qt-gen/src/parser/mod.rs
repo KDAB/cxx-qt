@@ -134,7 +134,7 @@ impl Parser {
 
         // Only attributes allowed on a module being parsed is cxx_qt::bridge and docs
         // If a namespace is needed it is supplied like #[cxx_qt::bridge(namespace = "...")]
-        parse_attributes(&module.attrs, &["docs"])?;
+        parse_attributes(&module.attrs, &["doc"])?;
 
         Ok(namespace)
     }

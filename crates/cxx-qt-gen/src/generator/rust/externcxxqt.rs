@@ -2,7 +2,6 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 use crate::{
     generator::rust::{
         fragment::{GeneratedRustFragment, RustFragmentPair},
@@ -10,9 +9,10 @@ use crate::{
     },
     naming::TypeNames,
     parser::externcxxqt::ParsedExternCxxQt,
+    syntax::path::path_compare_str,
 };
 use quote::quote;
-use syn::Result;
+use syn::{Attribute, Result};
 
 impl GeneratedRustFragment {
     pub fn from_extern_cxx_qt(
@@ -51,9 +51,16 @@ impl GeneratedRustFragment {
                         #[cxx_name = #cxx_name]
                     }
                 };
+                let docs: Vec<&Attribute> = ty
+                    .declaration
+                    .attrs
+                    .iter()
+                    .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
+                    .collect();
                 quote! {
                     #namespace
                     #cxx_name
+                    #(#docs)*
                     #vis type #ident;
                 }
             })

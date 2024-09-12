@@ -75,6 +75,9 @@ mod inheritance {
             outer: Pin<&mut MyObject>,
         ) -> Pin<&mut MyObjectRust>;
     }
+    extern "C++" {
+        type MyStruct;
+    }
 }
 impl cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {}
 #[allow(unused_imports)]

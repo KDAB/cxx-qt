@@ -169,6 +169,7 @@ mod ffi {
     unsafe extern "C++" {
         include ! (< QtCore / QTimer >);
         #[namespace = "cxx_qt::my_object"]
+        #[doc = " QTimer"]
         type QTimer;
     }
     unsafe extern "C++" {

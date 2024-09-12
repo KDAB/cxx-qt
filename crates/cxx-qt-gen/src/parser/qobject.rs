@@ -52,7 +52,7 @@ impl ParsedQObject {
         "rust_name",
         "namespace",
         "derive",
-        "docs",
+        "doc",
         "qobject",
         "base",
         "qml_element",
@@ -84,7 +84,7 @@ impl ParsedQObject {
         module: &Ident,
     ) -> Result<Self> {
         let attributes = parse_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
-        let has_qobject_macro = attributes.get("qobject").is_some();
+        let has_qobject_macro = attributes.contains_key("qobject");
 
         let has_qobject_macro = attribute_take_path(&mut declaration.attrs, &["qobject"]).is_some();
         let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
@@ -144,8 +144,8 @@ impl ParsedQObject {
                 Meta::NameValue(name_value) => expr_to_string(&name_value.value)?,
                 _ => name.cxx_unqualified(),
             };
-            let uncreatable = attributes.get("qml_uncreatable").is_some();
-            let singleton = attributes.get("qml_singleton").is_some();
+            let uncreatable = attributes.contains_key("qml_uncreatable");
+            let singleton = attributes.contains_key("qml_singleton");
             return Ok(Some(QmlElementMetadata {
                 name,
                 uncreatable,

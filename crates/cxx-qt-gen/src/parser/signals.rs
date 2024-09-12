@@ -44,7 +44,7 @@ impl ParsedSignal {
             ));
         }
 
-        let inherit = attrs.get("inherit").is_some();
+        let inherit = attrs.contains_key("inherit");
 
         let private = if let Visibility::Restricted(vis_restricted) = &fields.method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
