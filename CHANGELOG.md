@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for specifying read write and notify in qproperty macro, including support for custom user defined functions
 - Add support for the constant, required, reset and final flags in the qproperty macro
 - QObject subclasses can now inherit from other CXX-Qt generated QObject classes
+- `BUILD_WASM` CMake option to support WebAssembly builds and a book page for building for WASM
 
 ### Changed
 

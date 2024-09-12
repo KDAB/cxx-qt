@@ -14,6 +14,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   - [Creating the QML GUI](./getting-started/3-qml-gui.md)
   - [Building with Cargo](./getting-started/4-cargo-executable.md)
   - [Building with CMake](./getting-started/5-cmake-integration.md)
+  - [Building for WebAssembly](./getting-started/6-wasm-builds.md)
 - [Core Concepts](./concepts/index.md)
   - [Build Systems](./concepts/build_systems.md)
   - [Generated `QObject`](./concepts/generated_qobject.md)

@@ -130,6 +130,9 @@ For this example, we are [supporting both Qt5 and Qt6 with CMake](https://doc.qt
 
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_setup}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_setup-2}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_setup-3}}
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_setup-4}}
 ```
 
 Download CXX-Qts CMake code with FetchContent:
@@ -164,6 +167,7 @@ This will create two new CMake targets:
 Finally, we can create the CMake executable target and link it to our crate:
 
 ```cmake,ignore
+{{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_executable-2}}
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_executable}}
 ```
 

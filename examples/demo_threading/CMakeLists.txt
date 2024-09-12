@@ -16,16 +16,28 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
 
+if(BUILD_WASM)
+    # Ensure Rust build for the correct target
+    set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
+    set(THREADS_PREFER_PTHREAD_FLAG ON)
+    find_package(Threads REQUIRED)
+endif()
+
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CXXQT_QTCOMPONENTS Core Gui Qml QuickControls2)
+if(NOT BUILD_WASM)
+    set(CXXQT_QTCOMPONENTS ${CXXQT_QTCOMPONENTS} QmlImportScanner)
+endif()
+
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner)
+    find_package(Qt6 COMPONENTS ${CXXQT_QTCOMPONENTS})
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Qml QuickControls2 QmlImportScanner REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS ${CXXQT_QTCOMPONENTS} REQUIRED)
 endif()
 
 find_package(CxxQt QUIET)
@@ -53,7 +65,7 @@ else()
     set(QML_COMPAT_RESOURCES qml/compat/compat_qt6.qrc)
 endif()
 
-add_executable(${APP_NAME}
+set(DEMO_THREADING_SOURCES
     cpp/helpers/energyusageproxymodel.h
     cpp/helpers/energyusageproxymodel.cpp
     cpp/main.cpp
@@ -62,6 +74,19 @@ add_executable(${APP_NAME}
     images/images.qrc
     ${QML_COMPAT_RESOURCES}
 )
+
+if(BUILD_WASM)
+    # Currently need to use qt_add_executable
+    # for WASM builds, otherwise there is no
+    # HTML output.
+    #
+    # TODO: Figure out how to configure such that
+    #       we can use add_executable for WASM
+    qt_add_executable(${APP_NAME} ${DEMO_THREADING_SOURCES})
+else()
+    add_executable(${APP_NAME} ${DEMO_THREADING_SOURCES})
+endif()
+
 target_link_libraries(${APP_NAME}
     PRIVATE
     ${CRATE}_qml
