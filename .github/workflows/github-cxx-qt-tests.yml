@@ -88,6 +88,135 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
 
+  build-wasm:
+    name: Ubuntu 22.04 (wasm_32) Qt 6
+    needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
+    runs-on: ubuntu-22.04
+    env:
+      SCCACHE_CACHE_SIZE: 600M
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+      - name: Setup toolchain
+        run: |
+          rustup component add clippy rustfmt
+          rustup target add wasm32-unknown-emscripten
+      - name: "Rust tools cache"
+        uses: actions/cache@v4
+        id: rust-tools-cache
+        with:
+          path: |
+            ~/.cargo/bin/sccache
+            ~/.cargo/bin/mdbook
+            ~/.cargo/bin/mdbook-linkcheck
+          key: ubuntu-22.04_sccache-0.7.6_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+      - name: "Build Rust tools"
+        if: steps.rust-tools-cache.outputs.cache-hit != 'true'
+        # Do not build with storage backends enabled, we only need local
+        run: |
+          cargo install --no-default-features sccache
+          cargo install mdbook mdbook-linkcheck
+      # We want our compiler cache to always update to the newest state.
+      # The best way for us to achieve this is to **always** update the cache after every landed commit.
+      # That way it will closely follow our development.
+      # And if a PR diverges a lot with its cache that's not a big deal, as it will be merged eventually.
+      #
+      # This is a workaround for the fact that GH doesn't support updating existing caches.
+      # See: https://github.com/azu/github-actions-overwrite-cache-example
+      #
+      # Ideally we'd like to use this:
+      # - name: "Compiler cache"
+      #   uses: actions/cache@v4
+      #   with:
+      #     update: true <------- THIS DOESN'T EXIST YET
+      #     path: /home/runner/.cache/sccache
+      #     key: "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache"
+      - name: "Restore Compiler Cache"
+        id: compiler-cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: /home/runner/.cache/sccache
+          key: "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache"
+      - name: "emsdk cache"
+        uses: actions/cache@v4
+        id: emsdk-cache
+        with:
+          path: ./emsdk
+          key: emsdk_2.0.14
+      - name: "Setup emsdk"
+        if: steps.emsdk-cache.outputs.cache-hit != 'true'
+        run: |
+          git clone https://github.com/emscripten-core/emsdk
+          ./emsdk/emsdk install 2.0.14
+          ./emsdk/emsdk activate 2.0.14
+      - name: "Install Dependencies"
+        run: sudo apt-get update && sudo apt-get install -y ninja-build clang-format-12
+      - name: Install Qt GCC
+        uses: jurplel/install-qt-action@v3
+        with:
+          aqtversion: '==3.1.*'
+          version: '6.2.4'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'gcc_64'
+          cache: true
+      - name: Install Qt WASM
+        uses: jurplel/install-qt-action@v3
+        with:
+          aqtversion: '==3.1.*'
+          version: '6.2.4'
+          host: 'linux'
+          target: 'desktop'
+          arch: 'wasm_32'
+          tools: 'tools_cmake'
+          cache: true
+      - name: "Configure"
+        # FIXME: ninja is not being found?
+        env:
+          RUSTC_WRAPPER: sccache
+        run: |
+          source ./emsdk/emsdk_env.sh
+          /home/runner/work/cxx-qt/Qt/6.2.4/wasm_32/bin/qt-cmake -DQT_HOST_PATH=/home/runner/work/cxx-qt/Qt/6.2.4/gcc_64 -DBUILD_WASM=ON -Bbuild .
+      - name: "Build"
+        env:
+          RUSTC_WRAPPER: sccache
+        run: cmake --build build --parallel 4
+      - name: Test output files exist
+        run: |
+          test -f ./build/examples/qml_minimal/example_qml_minimal.html
+          test -f ./build/examples/qml_minimal/example_qml_minimal.js
+          test -f ./build/examples/qml_minimal/libqml_minimal.a
+          test -x ./build/examples/qml_minimal/example_qml_minimal.wasm
+          test -f ./build/examples/qml_minimal/qtloader.js
+          test -f ./build/examples/qml_features/example_qml_features.html
+          test -f ./build/examples/qml_features/example_qml_features.js
+          test -f ./build/examples/qml_features/libqml_features.a
+          test -x ./build/examples/qml_features/example_qml_features.wasm
+          test -f ./build/examples/qml_features/qtloader.js
+      - name: "Print compiler cache statistics"
+        run: sccache --show-stats
+      # This is a workaround for the fact that GH doesn't support updating existing caches.
+      # See: https://github.com/azu/github-actions-overwrite-cache-example
+      - name: "Delete previous compiler cache"
+        # Updating th cache doesn't work from forks
+        # So update it once it's merged into the repo
+        if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
+        working-directory: /home/runner/cxx-qt
+        continue-on-error: true
+        run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache" --confirm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Save Compiler Cache"
+        # Updating th cache doesn't work from forks
+        # So update it once it's merged into the repo
+        if: ${{ github.event_name == 'push' }}
+        uses: actions/cache/save@v4
+        with:
+          path: /home/runner/.cache/sccache
+          key: "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache"
+
   build:
     # Run after pre checks
     needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
