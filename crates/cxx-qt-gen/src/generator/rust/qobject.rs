@@ -127,7 +127,17 @@ fn generate_qobject_definitions(
 
     let base_upcast = if let Some(base) = base {
         let base_name = type_names.lookup(&base)?.rust_qualified();
-        vec![quote! { impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {} }]
+        vec![
+            quote! { impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {} },
+            // Until we can actually implement the Upcast trait properly, we just need to silence
+            // the warning that the base class is otherwise unused.
+            // This can be done with an unnamed import and the right attributes
+            quote! {
+                #[allow(unused_imports)]
+                #[allow(dead_code)]
+                use #base_name as _;
+            },
+        ]
     } else {
         vec![]
     };

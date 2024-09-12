@@ -77,6 +77,9 @@ mod inheritance {
     }
 }
 impl cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {}
+#[allow(unused_imports)]
+#[allow(dead_code)]
+use inheritance::QAbstractItemModel as _;
 #[doc(hidden)]
 pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())

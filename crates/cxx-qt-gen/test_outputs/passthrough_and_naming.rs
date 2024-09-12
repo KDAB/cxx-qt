@@ -430,6 +430,9 @@ pub mod ffi {
     }
 }
 impl cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {}
+#[allow(unused_imports)]
+#[allow(dead_code)]
+use ffi::QStringListModel as _;
 impl ffi::MyObject {
     #[doc = "Getter for the Q_PROPERTY "]
     #[doc = "property_name"]
