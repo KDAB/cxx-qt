@@ -87,8 +87,10 @@ pub mod ffi {
     // ItemUse
     use super::MyTrait;
 
+    #[namespace = ""]
     unsafe extern "C++" {
         include!(<QtCore/QStringListModel>);
+        type QStringListModel;
     }
 
     #[namespace = ""]
@@ -115,7 +117,7 @@ pub mod ffi {
 
     extern "RustQt" {
         #[qobject]
-        #[base = "QStringListModel"]
+        #[base = QStringListModel]
         #[qproperty(i32, property_name)]
         type MyObject = super::MyObjectRust;
     }

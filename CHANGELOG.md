@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - CMake code has been extracted into a separate repository for faster downloads (kdab/cxx-qt-cmake)
 - Folder structure of Rust bridges is now considered in the same way as CXX in `CxxQtBuilder`
 - `cxx_file_stem` has been removed from `#[cxx_qt::bridge]` and the source file name is now used for generated headers similar to CXX
+- Base attribute now takes an ident not a string, e.g. `#[base = ParentClass]` instead of `#[base = "ParentClass"]`
 - No Cxx-qt-lib features are on by default now, instead we have a 'full' feature for the previously enabled features, making them opt in
 
 ### Removed

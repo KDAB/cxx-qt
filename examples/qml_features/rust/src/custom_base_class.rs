@@ -12,6 +12,8 @@ pub mod qobject {
     // ANCHOR: book_base_include
     unsafe extern "C++" {
         include!(<QtCore/QAbstractListModel>);
+        /// Base for Qt type
+        type QAbstractListModel;
     }
     // ANCHOR_END: book_base_include
 
@@ -57,7 +59,7 @@ pub mod qobject {
     // ANCHOR: book_qobject_base
     extern "RustQt" {
         #[qobject]
-        #[base = "QAbstractListModel"]
+        #[base = QAbstractListModel]
         #[qml_element]
         #[qproperty(State, state)]
         type CustomBaseClass = super::CustomBaseClassRust;
@@ -205,7 +207,7 @@ pub mod qobject {
     unsafe extern "RustQt" {
         #[qobject]
         #[qml_element]
-        #[base = "CustomBaseClass"]
+        #[base = CustomBaseClass]
         type TransitiveInheritance = super::TransitiveInheritanceRust;
 
         #[qinvokable]

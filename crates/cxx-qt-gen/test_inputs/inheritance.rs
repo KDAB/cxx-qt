@@ -5,11 +5,13 @@ mod inheritance {
         type QModelIndex = cxx_qt_lib::QModelIndex;
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
+
+        type QAbstractItemModel;
     }
 
     extern "RustQt" {
         #[qobject]
-        #[base = "QAbstractItemModel"]
+        #[base = QAbstractItemModel]
         type MyObject = super::MyObjectRust;
     }
 

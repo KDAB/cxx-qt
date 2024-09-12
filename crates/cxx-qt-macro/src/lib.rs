@@ -86,7 +86,7 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// # fn main() {}
 /// ```
 ///
-/// You can also specify a custom base class by using `#[base = "QStringListModel"]`, you must then use CXX to add any includes needed.
+/// You can also specify a custom base class by using `#[base = QStringListModel]`, you must then use CXX to add any includes needed.
 ///
 /// # Example
 ///
@@ -95,13 +95,14 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// mod my_object {
 ///     extern "RustQt" {
 ///         #[qobject]
-///         #[base = "QStringListModel"]
+///         #[base = QStringListModel]
 ///         # // Note that we can't use properties as this confuses the linker on Windows
 ///         type MyModel = super::MyModelRust;
 ///     }
 ///
 ///     unsafe extern "C++" {
 ///         include!(<QtCore/QStringListModel>);
+///         type QStringListModel;
 ///     }
 /// }
 ///

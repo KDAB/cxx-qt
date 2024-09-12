@@ -29,12 +29,14 @@ pub mod qobject {
     // Define the API from QtQuick that we need
     unsafe extern "C++" {
         include!(<QtQuick/QQuickPaintedItem>);
+        /// Base for Qt type
+        type QQuickPaintedItem;
     }
 
     unsafe extern "RustQt" {
         #[qobject]
         #[qml_element]
-        #[base = "QQuickPaintedItem"]
+        #[base = QQuickPaintedItem]
         #[qproperty(QColor, color)]
         type CustomParentClass = super::CustomParentClassRust;
 

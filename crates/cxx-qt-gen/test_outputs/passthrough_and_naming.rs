@@ -51,8 +51,10 @@ pub mod ffi {
         y: B,
     }
     use super::MyTrait;
+    #[namespace = ""]
     unsafe extern "C++" {
         include ! (< QtCore / QStringListModel >);
+        type QStringListModel;
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
@@ -427,6 +429,7 @@ pub mod ffi {
         );
     }
 }
+impl cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {}
 impl ffi::MyObject {
     #[doc = "Getter for the Q_PROPERTY "]
     #[doc = "property_name"]

@@ -5,6 +5,7 @@ mod inheritance {
         type QModelIndex = cxx_qt_lib::QModelIndex;
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = cxx_qt_lib::QVariant;
+        type QAbstractItemModel;
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
@@ -75,6 +76,7 @@ mod inheritance {
         ) -> Pin<&mut MyObjectRust>;
     }
 }
+impl cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())

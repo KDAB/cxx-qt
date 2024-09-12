@@ -13,7 +13,7 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 
-use syn::{Attribute, Error, Ident, Meta, Result};
+use syn::{Attribute, Error, Expr, Ident, Meta, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -28,7 +28,7 @@ pub struct QmlElementMetadata {
 /// then mutate these [syn::Item]'s for generation purposes.
 pub struct ParsedQObject {
     /// The base class of the struct
-    pub base_class: Option<String>,
+    pub base_class: Option<Ident>,
     /// The name of the QObject
     pub name: Name,
     /// The ident of the inner type of the QObject
@@ -41,7 +41,6 @@ pub struct ParsedQObject {
     pub qml_metadata: Option<QmlElementMetadata>,
     /// Whether this type has a #[qobject] / Q_OBJECT macro
     pub has_qobject_macro: bool,
-
     /// The original declaration entered by the user, i.e. a type alias with a list of attributes
     pub declaration: ForeignTypeIdentAlias,
 }
@@ -71,21 +70,17 @@ impl ParsedQObject {
         module: &Ident,
     ) -> Result<Self> {
         let has_qobject_macro = attribute_take_path(&mut declaration.attrs, &["qobject"]).is_some();
-
-        // Find if there is any base class
         let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
-            .map(|attr| {
-                let string = expr_to_string(&attr.meta.require_name_value()?.value)?;
-                if string.is_empty() {
-                    // Ensure that the base class attribute is not empty, as this is not valid in both cases
-                    // - when there is a qobject macro it is not valid
-                    // - when there is not a qobject macro it is not valid
-                    return Err(Error::new_spanned(
-                        attr,
-                        "The #[base] attribute cannot be empty!",
-                    ));
+            .map(|attr| -> Result<Ident> {
+                let expr = &attr.meta.require_name_value()?.value;
+                if let Expr::Path(path_expr) = expr {
+                    Ok(path_expr.path.require_ident()?.clone())
+                } else {
+                    Err(Error::new_spanned(
+                        expr,
+                        "Base must be a identifier and cannot be empty!",
+                    ))
                 }
-                Ok(string)
             })
             .transpose()?;
 
@@ -204,7 +199,7 @@ pub mod tests {
         };
         assert!(qobject.has_qobject_macro);
         let qobject = parse_qobject! {
-            #[base="Thing"]
+            #[base=Thing]
             type MyObject = super::MyObjectRust;
         };
         assert!(!qobject.has_qobject_macro);
@@ -227,13 +222,13 @@ pub mod tests {
     fn test_from_struct_base_class() {
         let qobject_struct: ForeignTypeIdentAlias = parse_quote! {
             #[qobject]
-            #[base = "QStringListModel"]
+            #[base = QStringListModel]
             type MyObject = super::MyObjectRust;
         };
 
         let qobject =
             ParsedQObject::parse(qobject_struct, None, &format_ident!("qobject")).unwrap();
-        assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
+        assert_eq!(qobject.base_class.unwrap().to_string(), "QStringListModel");
     }
 
     #[test]

@@ -113,19 +113,16 @@ impl GeneratedCppQObject {
             has_qobject_macro: qobject.has_qobject_macro,
         };
 
-        // Build the base class
-        let base_class = qobject.base_class.clone().unwrap_or_else(|| {
-            // If there is a QObject macro then assume the base class is QObject
-            if qobject.has_qobject_macro {
-                "QObject".to_string()
-            } else {
-                // CODECOV_EXCLUDE_START
-                unreachable!(
-                    "Cannot have an empty #[base] attribute  with no #[qobject] attribute"
-                );
-                // CODECOV_EXCLUDE_STOP
-            }
-        });
+        let base_class = if let Some(ident) = &qobject.base_class {
+            type_names.lookup(ident)?.cxx_qualified()
+        } else if qobject.has_qobject_macro {
+            "QObject".to_string()
+        } else {
+            // CODECOV_EXCLUDE_START
+            unreachable!("Cannot have an empty #[base] attribute  with no #[qobject] attribute");
+            // CODECOV_EXCLUDE_STOP
+        };
+
         generated.blocks.base_classes.push(base_class.clone());
 
         // Add the CxxQtType rust and rust_mut methods
@@ -152,7 +149,7 @@ impl GeneratedCppQObject {
 
         generated.blocks.append(&mut inherit::generate(
             &structured_qobject.inherited_methods,
-            &qobject.base_class,
+            &qobject.base_class.as_ref().map(|ident| ident.to_string()),
             type_names,
         )?);
         generated.blocks.append(&mut qenum::generate_on_qobject(
@@ -185,9 +182,9 @@ impl GeneratedCppQObject {
 #[cfg(test)]
 mod tests {
     use super::*;
-
     use crate::generator::mock_qml_singleton;
     use crate::{generator::structuring::Structures, parser::Parser};
+    use quote::format_ident;
     use syn::{parse_quote, ItemMod};
 
     #[test]
@@ -227,17 +224,24 @@ mod tests {
             mod ffi {
                 extern "RustQt" {
                     #[qobject]
-                    #[base = "QStringListModel"]
+                    #[base = QStringListModel]
                     type MyObject = super::MyObjectRust;
                 }
             }
         };
         let parser = Parser::from(module).unwrap();
         let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+        let mut type_names = TypeNames::mock();
+
+        type_names.mock_insert(
+            "QStringListModel",
+            Some(format_ident!("qobject")),
+            None,
+            None,
+        );
 
         let cpp =
-            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &TypeNames::mock())
-                .unwrap();
+            GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &type_names).unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
         assert_eq!(cpp.blocks.base_classes.len(), 2);
         assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");

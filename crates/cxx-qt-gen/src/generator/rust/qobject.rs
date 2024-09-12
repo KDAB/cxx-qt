@@ -2,7 +2,6 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 use crate::generator::structuring::StructuredQObject;
 use crate::{
     generator::{
@@ -20,7 +19,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::Result;
+use syn::{Ident, Result};
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
@@ -34,7 +33,11 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
         let mut generated = Self::default();
 
-        generated.append(&mut generate_qobject_definitions(&qobject_names)?);
+        generated.append(&mut generate_qobject_definitions(
+            &qobject_names,
+            qobject.base_class.clone(),
+            type_names,
+        )?);
 
         // Generate methods for the properties, invokables, signals
         generated.append(&mut generate_rust_properties(
@@ -97,7 +100,11 @@ impl GeneratedRustFragment {
 }
 
 /// Generate the C++ and Rust CXX definitions for the QObject
-fn generate_qobject_definitions(qobject_idents: &QObjectNames) -> Result<GeneratedRustFragment> {
+fn generate_qobject_definitions(
+    qobject_idents: &QObjectNames,
+    base: Option<Ident>,
+    type_names: &TypeNames,
+) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
@@ -114,6 +121,15 @@ fn generate_qobject_definitions(qobject_idents: &QObjectNames) -> Result<Generat
             #[doc = #cpp_class_name_cpp]
             #[cxx_name = #cpp_class_name_cpp]
         }
+    };
+
+    let cpp_struct_qualified = &qobject_idents.name.rust_qualified();
+
+    let base_upcast = if let Some(base) = base {
+        let base_name = type_names.lookup(&base)?.rust_qualified();
+        vec![quote! { impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {} }]
+    } else {
+        vec![]
     };
 
     let fragment = RustFragmentPair {
@@ -142,12 +158,15 @@ fn generate_qobject_definitions(qobject_idents: &QObjectNames) -> Result<Generat
                 }
             },
         ],
-        implementation: vec![],
+        implementation: base_upcast,
     };
 
     generated
         .cxx_mod_contents
         .append(&mut fragment.cxx_bridge_as_items()?);
+    generated
+        .cxx_qt_mod_contents
+        .append(&mut fragment.implementation_as_items()?);
 
     Ok(generated)
 }

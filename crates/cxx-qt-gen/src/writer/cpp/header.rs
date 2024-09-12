@@ -237,8 +237,12 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
             mod ffi {
+                extern "C++" {
+                    type MyBase;
+                }
+
                 extern "RustQt" {
-                    #[base = "MyBase"]
+                    #[base = MyBase]
                     type MyObject = super::MyObjectRust;
                 }
             }
