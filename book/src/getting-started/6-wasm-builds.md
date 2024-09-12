@@ -9,11 +9,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 CXX-Qt and applications written with it can be compiled for WebAssembly, with a few limitations. Below you will find detailed instructions regarding how to build for the WASM target.
 
-## Additional Requirements
-
 You will need to have Qt for WebAssembly installed. The next section shows versions that have been tested.
-
-Make sure you have the Emscripten target for `rustc` with `rustup target add wasm-unknown-emscripten`.
 
 Additionally, if you haven't already, clone the `emsdk` git repo from [here](https://github.com/emscripten-core/emsdk).
 
@@ -31,13 +27,7 @@ Qt|Emscripten
 6.5|3.1.25
 6.6|3.1.37
 
-For Qt 6.5 or later, use the `wasm_singlethread` toolchain. For versions earlier than 6.5 use `wasm_32`.
-
-The `wasm_multithread` toolchain available in 6.5 and later is currently not supported. For more information, see the [Known Issues](#known-issues) section at the bottom of this page.
-
 Info about other Qt and emscripten versions can be found in the [Qt documentation](https://doc.qt.io/qt-6/wasm.html).
-
-Make sure you have a version of Qt for WebAssembly that will work, and clone the `emsdk` repository if you do not already have it.
 
 ## Setting Up `emsdk`
 
@@ -57,52 +47,37 @@ $ ./emsdk install 3.1.14
 
 On Windows, the third step, which sets up environment variables (`source` command above on Unix-like environments) is unnecessary because the required environment setup will already be done.
 
-## Building CXX-Qt
+## Toolchains
 
-When invoking CMake, the `CMAKE_TOOLCHAIN_FILE` variable needs to be set to the correct toolchain file; for example, if using Qt 6.4.2 on WebAssembly, the toolchain file is typically located at `/path/to/Qt/6.4.2/wasm_32/lib/cmake/Qt6/qt.toolchain.cmake`. This will set CMake up to use the correct Qt path, compiler, linker, and so forth.
+When configuring with CMake, the `CMAKE_TOOLCHAIN_FILE` variable needs to be set to the correct toolchain file; for example, if using Qt 6.4.2 on WebAssembly, the toolchain file is typically located at `/path/to/Qt/6.4.2/wasm_32/lib/cmake/Qt6/qt.toolchain.cmake`. This will set CMake up to use the correct Qt path, compiler, linker, and so forth.
 
-Generally, this does not need to be done manually. Using the `qt-cmake` binary bundled with your selected version of Qt WASM will set the toolchain file for you. However, in Qt 6.3 and below, the bundled CMake is version 3.22, while CXX-Qt requires at least version 3.24. For these versions of Qt, a more up-to-date CMake binary needs to be used to configure, so `CMAKE_TOOLCHAIN_FILE` needs to be passed into the `cmake` command.
+Generally, this does not need to be done manually. Using the `qt-cmake` binary bundled with your selected version of Qt WASM will set the toolchain file for you.
 
-Navigate to the root directory of the CXX-Qt repo and run the following command to configure CXX-Qt for WebAssembly:
+For example, if using Qt 6.4.2:
 
 ```bash
-$ /path/to/qt-cmake -DBUILD_WASM=ON -B build .
+$ /path/to/Qt/6.4.2/wasm_32/bin/qt-cmake -B build .
 ```
+
+However, in Qt 6.3 and below, the bundled CMake is version 3.22, while CXX-Qt requires at least version 3.24. For these versions of Qt, a more up-to-date CMake binary needs to be used to configure, so `CMAKE_TOOLCHAIN_FILE` needs to be passed into the `cmake` command.
 
 If using a different CMake binary, instead do this:
 
 ```bash
-$ <cmake binary> -DCMAKE_TOOLCHAIN_FILE=/path/to/qt.toolchain.cmake -DBUILD_WASM=ON -B build .
+$ cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/qt.toolchain.cmake -B build .
 ```
 
-Finally, run `cmake --build` on the configured build directory to compile and link the project and examples. This can be any CMake binary, here the OS package works just fine:
+For Qt 6.5 or later, use the `wasm_singlethread` toolchain. For versions earlier than 6.5 use `wasm_32`.
 
-```bash
-$ cmake --build build
-```
+The `wasm_multithread` toolchain available in 6.5 and later is currently not supported. For more information, see the [Known Issues](#known-issues) section at the bottom of this page.
 
-Then you can run the `qml_minimal` example like so:
+## Compiling Your Project for WebAssembly
 
-```bash
-$ emrun ./build/examples/qml_minimal/example_qml_minimal.html
-```
+To build for WebAssembly in a project that uses CXX-Qt crates, first follow the instructions in the [Using Correct Versions](#using-correct-versions) and [Setting Up `emsdk`](#setting-up-emsdk) sections.
 
-## Working Examples
+### CMakeLists.txt
 
-Not all of the examples are currently supported for WASM builds.
-
-Example|Working
--|-
-`qml-minimal-no-cmake`|❌ broken
-`demo_threading`|❌ broken
-`qml_features`|✅ working
-`qml_minimal`|✅ working
-
-For more information, see the [Known Issues](#known-issues) section at the bottom of this page.
-
-## Compiling CXX-Qt Projects for WebAssembly
-
-When compiling a CXX-Qt project for wasm, the Rust target must be set to `wasm32-unknown-emscripten`, and the project must be configured to use POSIX threads.
+When compiling a CXX-Qt project for wasm, the Rust target must be set to `wasm32-unknown-emscripten`, and the project must be configured to use POSIX threads. Make sure you have the Emscripten target for `rustc` with `rustup target add wasm-unknown-emscripten`.
 
 ```cmake
 set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
@@ -119,6 +94,69 @@ else()
     add_executable(${APP_NAME} ${SOURCE_FILES})
 endif()
 ```
+
+### Configure, Build, and Run
+
+Configure your build directory following the instructions in the [Toolchains](#toolchains) section.
+
+Now, run `cmake --build` on the build directory to compile and link the project. This can be any CMake binary; here the OS package works just fine:
+
+```bash
+$ cmake --build build
+```
+
+You can then run your built application like so:
+
+```bash
+$ emrun ./build/path/to/<appname>.html
+```
+
+## Compiling CXX-Qt WASM from Source
+
+If you are compiling CXX-Qt from source, the workflow is similar. First, follow the instructions in the [Using Correct Versions](#using-correct-versions) and [Setting Up `emsdk`](#setting-up-emsdk) sections.
+
+The `CMakeLists.txt` file at the root of the CXX-Qt repository has an option `BUILD_WASM` to toggle WebAssembly builds. Simply compiling with the correct emsdk and toolchain and flipping this option `ON` should build the libraries and examples for WebAssembly.
+
+### Building
+
+Read the [Toolchains](#toolchains) section before proceeding. Then navigate to the root directory of the CXX-Qt repo.
+
+If using the `qt-cmake` binary packaged with your version of Qt for WebAssembly, run the following command to configure CXX-Qt:
+
+```bash
+$ /path/to/qt-cmake -DBUILD_WASM=ON -B build .
+```
+
+If using a different CMake binary, instead do this:
+
+```bash
+$ <cmake binary> -DCMAKE_TOOLCHAIN_FILE=/path/to/qt.toolchain.cmake -DBUILD_WASM=ON -B build .
+```
+
+Finally, run `cmake --build` on the configured build directory to compile and link the project and examples. This can be any CMake binary; here the OS package works just fine:
+
+```bash
+$ cmake --build build
+```
+
+Then you can run the `qml_minimal` example like so:
+
+```bash
+$ emrun ./build/examples/qml_minimal/example_qml_minimal.html
+```
+
+### Working Examples
+
+Not all of the examples are currently supported for WASM builds.
+
+Example|Working
+-|-
+`qml-minimal-no-cmake`|❌ broken
+`demo_threading`|❌ broken
+`qml_features`|✅ working
+`qml_minimal`|✅ working
+
+For more information, see the [Known Issues](#known-issues) section at the bottom of this page.
 
 ## Known Issues
 
