@@ -849,7 +849,23 @@ prefer :/qt/qml/{qml_uri_dirs}/
         // Run qmltyperegistrar
         let qmltyperegistrar_output_path =
             qml_plugin_dir.join(format!("{qml_uri_underscores}_qmltyperegistration.cpp"));
-        {
+
+        // Filter out empty jsons
+        let metatypes_json: Vec<_> = metatypes_json
+            .iter()
+            .filter(|f| {
+                std::fs::metadata(f)
+                    .unwrap_or_else(|_| {
+                        panic!("couldn't open json file {}", f.as_ref().to_string_lossy())
+                    })
+                    .len()
+                    > 0
+            })
+            .map(|f| f.as_ref().to_string_lossy().to_string())
+            .collect();
+
+        // Only run qmltyperegistrar if we have valid json files left out
+        if !metatypes_json.is_empty() {
             let mut args = vec![
                 "--generate-qmltypes".to_string(),
                 qmltypes_path.to_string_lossy().to_string(),
@@ -862,11 +878,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
                 "-o".to_string(),
                 qmltyperegistrar_output_path.to_string_lossy().to_string(),
             ];
-            args.extend(
-                metatypes_json
-                    .iter()
-                    .map(|f| f.as_ref().to_string_lossy().to_string()),
-            );
+            args.extend(metatypes_json);
             let cmd = Command::new(self.qmltyperegistrar_executable.as_ref().unwrap())
                 .args(args)
                 .output()
