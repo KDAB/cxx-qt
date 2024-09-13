@@ -62,6 +62,7 @@ pub fn generate_cpp_properties(
 pub mod tests {
     use super::*;
 
+    use crate::generator::naming::property::property_name_from_rust_name;
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::generator::structuring::Structures;
     use crate::parser::property::QPropertyFlags;
@@ -471,7 +472,7 @@ pub mod tests {
     #[test]
     fn test_generate_cpp_properties_mapped_cxx_name() {
         let properties = vec![ParsedQProperty {
-            ident: format_ident!("mapped_property"),
+            name: property_name_from_rust_name(format_ident!("mapped_property")),
             ty: parse_quote! { A },
             flags: QPropertyFlags::default(),
         }];

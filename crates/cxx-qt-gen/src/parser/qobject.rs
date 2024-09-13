@@ -251,10 +251,10 @@ pub mod tests {
         let properties = qobject.properties;
         assert_eq!(properties.len(), 2);
 
-        assert_eq!(properties[0].ident, "f64_property");
+        assert_eq!(properties[0].name.rust_unqualified(), "f64_property");
         assert_eq!(properties[0].ty, f64_type());
 
-        assert_eq!(properties[1].ident, "public_property");
+        assert_eq!(properties[1].name.rust_unqualified(), "public_property");
         assert_eq!(properties[1].ty, f64_type());
     }
 
