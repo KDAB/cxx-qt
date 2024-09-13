@@ -180,6 +180,8 @@ fn main() {
         "core/qvector/qvector_i64",
         "core/qvector/qvector_qbytearray",
         "core/qvector/qvector_qdate",
+        "core/qvector/qvector_qline",
+        "core/qvector/qvector_qlinef",
         "core/qvector/qvector_qmargins",
         "core/qvector/qvector_qmarginsf",
         "core/qvector/qvector_qpersistentmodelindex",
