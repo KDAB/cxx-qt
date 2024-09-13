@@ -15,6 +15,7 @@ fn main() {
                 "src/containers.rs",
                 "src/custom_base_class.rs",
                 "src/custom_parent_class.rs",
+                "src/empty_bridge.rs",
                 "src/externcxxqt.rs",
                 "src/invokables.rs",
                 "src/multiple_qobjects.rs",
