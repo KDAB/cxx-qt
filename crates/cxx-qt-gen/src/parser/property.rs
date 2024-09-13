@@ -64,25 +64,24 @@ pub struct ParsedQProperty {
 fn parse_meta_name_value(name_value: &MetaNameValue) -> Result<(Ident, Ident)> {
     let ident = name_value.path.require_ident()?.clone();
     let expr = &name_value.value;
-    let value: Ident;
 
     // Only cxx_name and rust_name can use string literals for values
-    if ident == "cxx_name" || ident == "rust_name" {
+    let value = if ident == "cxx_name" || ident == "rust_name" {
         let string = expr_to_string(expr).map_err(|_| {
             Error::new(
                 ident.span(),
                 "cxx_name and rust_name must use string values like `cxx_name = \"myName\"`!",
             )
         })?;
-        value = format_ident!("{}", string);
+        format_ident!("{}", string)
     } else if let Expr::Path(path_expr) = expr {
-        value = path_expr.path.require_ident()?.clone();
+        path_expr.path.require_ident()?.clone()
     } else {
         return Err(Error::new(
             expr.span(),
             "Function signatures must be identifiers!",
         ));
-    }
+    };
 
     Ok((ident, value))
 }
@@ -192,8 +191,10 @@ impl ParsedQProperty {
 
                 let cxx_name_str = if let Some(name) = cxx_name {
                     name.to_string()
-                } else {
+                } else if rust_name.is_none() {
                     ident.to_string().to_case(Case::Camel)
+                } else {
+                    ident.to_string()
                 };
                 let mut name = Name::new(ident).with_cxx_name(cxx_name_str);
 
@@ -254,26 +255,6 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_named_no_value() {
-        let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, cxx_name)]
-            struct MyStruct;
-        };
-        let property = ParsedQProperty::parse(input.attrs.remove(0));
-        assert!(property.is_err());
-    }
-
-    #[test]
-    fn test_parse_non_string_value() {
-        let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, cxx_name = myName)]
-            struct MyStruct;
-        };
-        let property = ParsedQProperty::parse(input.attrs.remove(0));
-        assert!(property.is_err());
-    }
-
-    #[test]
     fn test_parse_invalid() {
         assert_parse_errors! {
             ParsedQProperty::parse =>
@@ -298,6 +279,10 @@ mod tests {
             { #[qproperty(T)] }
             // No args
             { #[qproperty()] }
+            // cxx_name should be a string
+            { #[qproperty(T, name, cxx_name = myName)] }
+            // cxx_name had no value provided
+            { #[qproperty(T, name, cxx_name)] }
         }
     }
 

@@ -26,6 +26,18 @@ using MyObjectCxxQtSignalHandlercustomFunctionPropChanged =
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
+using MyObjectCxxQtSignalHandlerrenamedPropertyChanged =
+  ::rust::cxxqt1::SignalHandler<
+    struct MyObjectCxxQtSignalParamsrenamedPropertyChanged*>;
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+using MyObjectCxxQtSignalHandlernamed_prop_2Changed =
+  ::rust::cxxqt1::SignalHandler<
+    struct MyObjectCxxQtSignalParamsnamed_prop_2Changed*>;
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
 using MyObjectCxxQtSignalHandlermyOnChanged =
   ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsmyOnChanged*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
@@ -61,6 +73,24 @@ MyObject_customFunctionPropChangedConnect(
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
+MyObject_renamedPropertyChangedConnect(
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::
+    MyObjectCxxQtSignalHandlerrenamedPropertyChanged closure,
+  ::Qt::ConnectionType type);
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
+MyObject_named_prop_2ChangedConnect(
+  cxx_qt::my_object::MyObject& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::
+    MyObjectCxxQtSignalHandlernamed_prop_2Changed closure,
+  ::Qt::ConnectionType type);
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
 MyObject_myOnChangedConnect(
   cxx_qt::my_object::MyObject& self,
   ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermyOnChanged
@@ -82,6 +112,10 @@ public:
   Q_PROPERTY(::std::int32_t customFunctionProp READ myGetter WRITE
                MyCustomSetter NOTIFY customFunctionPropChanged)
   Q_PROPERTY(::std::int32_t readonlyProp READ getReadonlyProp)
+  Q_PROPERTY(::std::int32_t renamedProperty READ getRenamedProperty WRITE
+               setRenamedProperty NOTIFY renamedPropertyChanged)
+  Q_PROPERTY(::std::int32_t named_prop_2 READ getNamedProp2 WRITE setNamedProp2
+               NOTIFY named_prop_2Changed)
   Q_PROPERTY(::std::int32_t customOnChangedProp READ getCustomOnChangedProp
                WRITE setCustomOnChangedProp NOTIFY myOnChanged)
   Q_PROPERTY(::std::int32_t constProp READ getConstProp CONSTANT)
@@ -100,6 +134,10 @@ public:
   QPoint const& getTrivial() const noexcept;
   Q_SLOT void setTrivial(QPoint value) noexcept;
   ::std::int32_t const& getReadonlyProp() const noexcept;
+  ::std::int32_t const& getRenamedProperty() const noexcept;
+  Q_SLOT void setRenamedProperty(::std::int32_t value) noexcept;
+  ::std::int32_t const& getNamedProp2() const noexcept;
+  Q_SLOT void setNamedProp2(::std::int32_t value) noexcept;
   ::std::int32_t const& getCustomOnChangedProp() const noexcept;
   Q_SLOT void setCustomOnChangedProp(::std::int32_t value) noexcept;
   ::std::int32_t const& getConstProp() const noexcept;
@@ -112,6 +150,8 @@ public:
   Q_SIGNAL void primitiveChanged();
   Q_SIGNAL void trivialChanged();
   Q_SIGNAL void customFunctionPropChanged();
+  Q_SIGNAL void renamedPropertyChanged();
+  Q_SIGNAL void named_prop_2Changed();
   ::std::int32_t myGetter() const noexcept;
   void MyCustomSetter(::std::int32_t value) noexcept;
   void myResetFn() noexcept;

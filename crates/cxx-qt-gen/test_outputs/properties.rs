@@ -62,6 +62,26 @@ mod ffi {
         unsafe fn readonly_prop<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
+        #[cxx_name = "getRenamedProperty"]
+        #[namespace = "cxx_qt::my_object"]
+        unsafe fn renamed_property<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setRenamedProperty"]
+        #[namespace = "cxx_qt::my_object"]
+        fn set_renamed_property(self: Pin<&mut MyObject>, value: i32);
+    }
+    extern "Rust" {
+        #[cxx_name = "getNamedProp2"]
+        #[namespace = "cxx_qt::my_object"]
+        unsafe fn renamed_property_2<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setNamedProp2"]
+        #[namespace = "cxx_qt::my_object"]
+        fn set_renamed_property_2(self: Pin<&mut MyObject>, value: i32);
+    }
+    extern "Rust" {
         #[cxx_name = "getCustomOnChangedProp"]
         #[namespace = "cxx_qt::my_object"]
         unsafe fn custom_on_changed_prop<'a>(self: &'a MyObject) -> &'a i32;
@@ -203,6 +223,72 @@ mod ffi {
             self_value: Pin<&mut MyObject>,
         );
     }
+    unsafe extern "C++" {
+        #[cxx_name = "renamedPropertyChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
+        fn renamed_property_changed(self: Pin<&mut MyObject>);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        type MyObjectCxxQtSignalHandlerrenamedPropertyChanged =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                super::MyObjectCxxQtSignalClosurerenamedPropertyChanged,
+            >;
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        #[cxx_name = "MyObject_renamedPropertyChangedConnect"]
+        fn MyObject_connect_renamed_property_changed(
+            self_value: Pin<&mut MyObject>,
+            signal_handler: MyObjectCxxQtSignalHandlerrenamedPropertyChanged,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_MyObject_signal_handler_renamedPropertyChanged(
+            handler: MyObjectCxxQtSignalHandlerrenamedPropertyChanged,
+        );
+        #[doc(hidden)]
+        fn call_MyObject_signal_handler_renamedPropertyChanged(
+            handler: &mut MyObjectCxxQtSignalHandlerrenamedPropertyChanged,
+            self_value: Pin<&mut MyObject>,
+        );
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "named_prop_2Changed"]
+        #[doc = "Notify for the Q_PROPERTY"]
+        fn renamed_property_2_changed(self: Pin<&mut MyObject>);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        type MyObjectCxxQtSignalHandlernamed_prop_2Changed =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                super::MyObjectCxxQtSignalClosurenamed_prop_2Changed,
+            >;
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        #[cxx_name = "MyObject_named_prop_2ChangedConnect"]
+        fn MyObject_connect_renamed_property_2_changed(
+            self_value: Pin<&mut MyObject>,
+            signal_handler: MyObjectCxxQtSignalHandlernamed_prop_2Changed,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_MyObject_signal_handler_named_prop_2Changed(
+            handler: MyObjectCxxQtSignalHandlernamed_prop_2Changed,
+        );
+        #[doc(hidden)]
+        fn call_MyObject_signal_handler_named_prop_2Changed(
+            handler: &mut MyObjectCxxQtSignalHandlernamed_prop_2Changed,
+            self_value: Pin<&mut MyObject>,
+        );
+    }
     extern "Rust" {
         #[cxx_name = "myGetter"]
         #[namespace = "cxx_qt::my_object"]
@@ -312,6 +398,44 @@ impl ffi::MyObject {
     #[doc = "readonly_prop"]
     pub fn readonly_prop(&self) -> &i32 {
         &self.readonly_prop
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "renamed_property"]
+    pub fn renamed_property(&self) -> &i32 {
+        &self.renamed_property
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "renamed_property"]
+    pub fn set_renamed_property(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.renamed_property == value {
+            return;
+        }
+        self.as_mut().rust_mut().renamed_property = value;
+        self.as_mut().renamed_property_changed();
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "renamed_property_2"]
+    pub fn renamed_property_2(&self) -> &i32 {
+        &self.renamed_property_2
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "renamed_property_2"]
+    pub fn set_renamed_property_2(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.renamed_property_2 == value {
+            return;
+        }
+        self.as_mut().rust_mut().renamed_property_2 = value;
+        self.as_mut().renamed_property_2_changed();
     }
 }
 impl ffi::MyObject {
@@ -582,6 +706,138 @@ cxx_qt::static_assertions::assert_eq_align!(
 );
 cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurecustomFunctionPropChanged>,
+    [usize; 2]
+);
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "renamedPropertyChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    pub fn connect_renamed_property_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static,
+    >(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_changed(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                MyObjectCxxQtSignalClosurerenamedPropertyChanged,
+            >::new(Box::new(closure)),
+            conn_type,
+        ))
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "renamedPropertyChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    pub fn on_renamed_property_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_changed(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                MyObjectCxxQtSignalClosurerenamedPropertyChanged,
+            >::new(Box::new(closure)),
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
+    }
+}
+#[doc(hidden)]
+pub struct MyObjectCxxQtSignalClosurerenamedPropertyChanged {}
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
+    for MyObjectCxxQtSignalClosurerenamedPropertyChanged
+{
+    type Id = cxx::type_id!(
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerrenamedPropertyChanged"
+    );
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
+}
+use core::mem::drop as drop_MyObject_signal_handler_renamedPropertyChanged;
+fn call_MyObject_signal_handler_renamedPropertyChanged(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
+        MyObjectCxxQtSignalClosurerenamedPropertyChanged,
+    >,
+    self_value: core::pin::Pin<&mut ffi::MyObject>,
+) {
+    handler.closure()(self_value);
+}
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurerenamedPropertyChanged>,
+    usize
+);
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurerenamedPropertyChanged>,
+    [usize; 2]
+);
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "named_prop_2Changed"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    pub fn connect_renamed_property_2_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static,
+    >(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_2_changed(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                MyObjectCxxQtSignalClosurenamed_prop_2Changed,
+            >::new(Box::new(closure)),
+            conn_type,
+        ))
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "named_prop_2Changed"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    pub fn on_renamed_property_2_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_2_changed(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                MyObjectCxxQtSignalClosurenamed_prop_2Changed,
+            >::new(Box::new(closure)),
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
+    }
+}
+#[doc(hidden)]
+pub struct MyObjectCxxQtSignalClosurenamed_prop_2Changed {}
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
+    for MyObjectCxxQtSignalClosurenamed_prop_2Changed
+{
+    type Id = cxx::type_id!(
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlernamed_prop_2Changed"
+    );
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
+}
+use core::mem::drop as drop_MyObject_signal_handler_named_prop_2Changed;
+fn call_MyObject_signal_handler_named_prop_2Changed(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
+        MyObjectCxxQtSignalClosurenamed_prop_2Changed,
+    >,
+    self_value: core::pin::Pin<&mut ffi::MyObject>,
+) {
+    handler.closure()(self_value);
+}
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurenamed_prop_2Changed>,
+    usize
+);
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurenamed_prop_2Changed>,
     [usize; 2]
 );
 impl ffi::MyObject {

@@ -794,7 +794,7 @@ mod tests {
 
     #[test]
     fn constructor_impl_with_unused_lifetime() {
-        let result = super::generate(
+        assert!(generate(
             &[&Constructor {
                 lifetime: Some(parse_quote! { 'a }),
                 ..mock_constructor()
@@ -802,8 +802,7 @@ mod tests {
             &mock_name(),
             &mock_namespace(),
             &TypeNames::mock(),
-        );
-
-        assert!(result.is_err());
+        )
+        .is_err());
     }
 }
