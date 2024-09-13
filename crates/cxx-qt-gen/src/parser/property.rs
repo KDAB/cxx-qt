@@ -66,14 +66,21 @@ fn parse_meta_name_value(name_value: &MetaNameValue) -> Result<(Ident, Ident)> {
     let expr = &name_value.value;
     let value: Ident;
 
-    if let Expr::Path(path_expr) = expr {
+    // Only cxx_name and rust_name can use string literals for values
+    if ident == "cxx_name" || ident == "rust_name" {
+        let string = expr_to_string(expr).map_err(|_| {
+            Error::new(
+                ident.span(),
+                "cxx_name and rust_name must use string values like `cxx_name = \"myName\"`!",
+            )
+        })?;
+        value = format_ident!("{}", string);
+    } else if let Expr::Path(path_expr) = expr {
         value = path_expr.path.require_ident()?.clone();
-    } else if let Expr::Lit(_) = expr {
-        value = format_ident!("{}", expr_to_string(expr)?); // TODO: Allows all attrs to use either ident or string which isn't right
     } else {
         return Err(Error::new(
             expr.span(),
-            "Function signatures must be identifiers, and cxx_name and rust_name must use strings!",
+            "Function signatures must be identifiers!",
         ));
     }
 
@@ -116,6 +123,7 @@ impl ParsedQProperty {
 
                 // Remove the commas and collect the individual meta items
                 let flags: Vec<Meta> = punctuated_flags.clone().into_iter().collect();
+                let mut read_required = false;
 
                 let mut read = None;
                 let mut write = None;
@@ -144,21 +152,25 @@ impl ParsedQProperty {
                         ).transpose()
                     };
 
+                    // Matches the flag, and if it is a QProperty flag instead of a naming flag set flag to ensure READ was passed
                     match ident.to_string().as_str() {
-                        "READ" => map_auto_or_custom(&mut read, &value),
-                        "WRITE" => map_auto_or_custom(&mut write, &value),
-                        "NOTIFY" => map_auto_or_custom(&mut notify, &value),
-                        "CONSTANT" => constant = true,
-                        "REQUIRED" => required = true,
-                        "FINAL" => is_final = true,
-                        "RESET" => reset = require_value("RESET flag", "RESET = my_reset_fn")?,
                         "cxx_name" => cxx_name = require_value("cxx_name", "cxx_name = \"myName\"")?,
                         "rust_name" => rust_name = require_value("rust_name", "rust_name = \"my_name\"")?,
-                        _ => {
-                            return Err(Error::new(
-                                ident.span(),
-                                "Invalid flag passed!, must be one of\n  READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL or cxx_name / rust_name",
-                            ));
+                        property_flag => {
+                            read_required = true;
+                            match property_flag {
+                                "READ" => map_auto_or_custom(&mut read, &value),
+                                "WRITE" => map_auto_or_custom(&mut write, &value),
+                                "NOTIFY" => map_auto_or_custom(&mut notify, &value),
+                                "CONSTANT" => constant = true,
+                                "REQUIRED" => required = true,
+                                "FINAL" => is_final = true,
+                                "RESET" => reset = require_value("RESET flag", "RESET = my_reset_fn")?,
+                                _ => return Err(Error::new(
+                                    ident.span(),
+                                    "Invalid flag passed!, must be one of\n  READ, WRITE, NOTIFY, RESET, CONSTANT, REQUIRED, FINAL or cxx_name / rust_name",
+                                ))
+                            }
                         }
                     };
 
@@ -189,25 +201,33 @@ impl ParsedQProperty {
                     name = name.with_rust_name(ident);
                 }
 
-                if let Some(read) = read {
+                if read_required {
+                    if let Some(read) = read {
+                        Ok(Self {
+                            name,
+                            ty,
+                            flags: QPropertyFlags {
+                                read,
+                                write,
+                                notify,
+                                reset,
+                                is_final,
+                                constant,
+                                required,
+                            },
+                        })
+                    } else {
+                        Err(Error::new(
+                            punctuated_flags.span(),
+                            "If any flags are passed, READ must be explicitly specified!",
+                        ))
+                    }
+                } else {
                     Ok(Self {
                         name,
                         ty,
-                        flags: QPropertyFlags {
-                            read,
-                            write,
-                            notify,
-                            reset,
-                            is_final,
-                            constant,
-                            required,
-                        },
+                        flags: QPropertyFlags::default(),
                     })
-                } else {
-                    Err(Error::new(
-                        punctuated_flags.span(),
-                        "If any flags are passed, READ must be explicitly specified!",
-                    ))
                 }
             }
         })
@@ -222,13 +242,35 @@ mod tests {
     use syn::{parse_quote, ItemStruct};
 
     #[test]
-    fn debug() {
+    fn test_parse_named_property() {
         let mut input: ItemStruct = parse_quote! {
-            #[qproperty(T, name, READ, cxx_name = myName)]
+            #[qproperty(T, name, cxx_name = "myName", rust_name = "my_name")]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+
+        assert_eq!(property.name.cxx_unqualified(), "myName");
+        assert_eq!(property.name.rust_unqualified(), "my_name");
+    }
+
+    #[test]
+    fn test_parse_named_no_value() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, cxx_name)]
             struct MyStruct;
         };
         let property = ParsedQProperty::parse(input.attrs.remove(0));
-        property.unwrap();
+        assert!(property.is_err());
+    }
+
+    #[test]
+    fn test_parse_non_string_value() {
+        let mut input: ItemStruct = parse_quote! {
+            #[qproperty(T, name, cxx_name = myName)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(input.attrs.remove(0));
+        assert!(property.is_err());
     }
 
     #[test]
