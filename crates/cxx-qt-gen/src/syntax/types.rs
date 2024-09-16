@@ -84,7 +84,8 @@ fn extract_qobject_ident_from_ref(ty: &TypeReference) -> Result<(Ident, Option<M
 
 fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
     if path_compare_str(&ty.path, &["Pin"]) {
-        if let PathArguments::AngleBracketed(angles) = &ty.path.segments.first().unwrap().arguments
+        return if let PathArguments::AngleBracketed(angles) =
+            &ty.path.segments.first().unwrap().arguments
         {
             if let [GenericArgument::Type(Type::Reference(reference))] =
                 *angles.args.iter().collect::<Vec<_>>()
@@ -93,16 +94,16 @@ fn extract_qobject_from_mut_pin(ty: &TypePath) -> Result<(Ident, Mut)> {
                 if mutability.is_none() {
                     return Err(err_pin_misuse(reference));
                 }
-                return Ok((ident, mutability.unwrap()));
+                Ok((ident, mutability.unwrap()))
             } else {
-                return Err(err_pin_misuse(ty));
+                Err(err_pin_misuse(ty))
             }
         } else {
-            return Err(Error::new_spanned(
+            Err(Error::new_spanned(
                 ty,
                 "Pin must use angle brackets not parentheses for generic args! Use Pin<&mut T>",
-            ));
-        }
+            ))
+        };
     }
 
     Err(err_pin_misuse(ty))
@@ -132,6 +133,7 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
 mod tests {
     use crate::parser::method::ParsedMethod;
     use crate::syntax::safety::Safety;
+    use crate::tests::assert_parse_errors;
     use syn::{parse_quote, ForeignItemFn, Type};
 
     #[test]
@@ -161,13 +163,16 @@ mod tests {
         assert_qobject_ident(parse_quote! { &Foo }, "Foo", false);
         assert_qobject_ident(parse_quote! { Pin<&mut Foo> }, "Foo", true);
 
-        assert!(super::extract_qobject_ident(&parse_quote! { Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { &mut Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Pin<&Foo> }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { X::Foo }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Self }).is_err());
-        assert!(super::extract_qobject_ident(&parse_quote! { Pin<T = A> }).is_err());
+        assert_parse_errors! {
+            |ty| super::extract_qobject_ident(&ty) =>
+
+            { Foo }
+            { &mut Foo }
+            { Pin<&Foo> }
+            { X::Foo }
+            { Self }
+            { Pin<T = A> }
+        }
     }
 
     #[test]

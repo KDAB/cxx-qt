@@ -180,105 +180,64 @@ impl Constructor {
 
 #[cfg(test)]
 mod tests {
-    use syn::parse_quote;
-
     use super::*;
-
-    // CODECOV_EXCLUDE_START
-    fn assert_parse_error(item: ItemImpl, message: &str) {
-        assert!(
-            Constructor::parse(item).is_err(),
-            // Excluded as this is just a custom error message for if asserts fail
-            "Constructor shouldn't have parsed because '{message}'."
-        );
-    }
-    // CODECOV_EXCLUDE_STOP
+    use crate::tests::assert_parse_errors;
+    use syn::parse_quote;
 
     #[test]
     fn parse_invalid_constructors() {
-        assert_parse_error(
-            parse_quote! {
+        assert_parse_errors! {
+            Constructor::parse =>
+
+            {
+                /// Missing type arguments
                 impl cxx_qt::Constructor for X {}
-            },
-            "missing type arguments",
-        );
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Missing main argument list
                 impl cxx_qt::Constructor<NewArguments=()> for X {}
-            },
-            "missing main argument list",
-        );
-
-        // Hard to tell if this actually hits the error as the rest of the project isn't compiling
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Negative impls for cxx_qt::Constructor are not allowed
                 impl !cxx_qt::Constructor<(i32, i32)> for T {}
-            },
-            "Negative impls for cxx_qt::Constructor are not allowed",
-        );
-
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Generics on impl block are not allowed
                 impl<T> cxx_qt::Constructor<()> for T {}
-            },
-            "generics on impl block",
-        );
-        // TODO This should be allowed at some point if the lifetime is actually used.
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Multiple Lifetimes are not allowed
                 impl<'a, 'b> cxx_qt::Constructor<()> for T {}
-            },
-            "multiple lifetimes on impl block",
-        );
-
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Unknown named args
                 impl cxx_qt::Constructor<(), UnknownArguments=()> for X {}
-            },
-            "unknown named type argument",
-        );
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Duplicate args
                 impl cxx_qt::Constructor<(), NewArguments=(), NewArguments=()> for X {}
-            },
-            "duplicate named type argument",
-        );
-
-        // Not a tuple, missing `,`
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Expects a tuple
                 impl cxx_qt::Constructor<> for X {}
-            },
-            "cxx_qt::Constructor expects a tuple as the first generic argument",
-        );
-
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Not a tuple
                 impl cxx_qt::Constructor<(i32)> for X {}
-            },
-            "type argument is not a tuple",
-        );
-
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Expected 2nd generic arg to be an associated type
                 impl cxx_qt::Constructor<(i32,String),'a> for X {}
-            },
-            "Expected associated type as a generic argument!",
-        );
-
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Where clauses are not allowed
                 impl cxx_qt::Constructor<(T,S)> for X where S: Debug, T: Clone {}
-            },
-            "Where clauses are not allowed on cxx_qt::Constructor impls!",
-        );
-
-        assert_parse_error(
-            parse_quote! {
+            }
+            {
+                /// Unnecessary unsafe impl
                 unsafe impl cxx_qt::Constructor<(i32,String)> for X {}
-            },
-            "Unnecessary unsafe around constructor impl.",
-        );
+            }
+        }
     }
 
     #[test]

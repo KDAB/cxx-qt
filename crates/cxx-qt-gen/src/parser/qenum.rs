@@ -159,53 +159,48 @@ mod tests {
         assert_tokens_eq(&parsed.item, qenum.to_token_stream());
     }
 
-    macro_rules! assert_parse_error {
-        ($( $input:tt )*) => {
-            let qenum: ItemEnum = parse_quote! { $($input)* };
-            assert!(ParsedQEnum::parse(qenum, Some(format_ident!("QObject")), None, &mock_module()).is_err());
-        }
-    }
+    use crate::tests::assert_parse_errors;
 
     #[test]
     fn parse_errors() {
-        assert_parse_error! {
+        assert_parse_errors! {
+            |qenum| ParsedQEnum::parse(qenum, Some(format_ident!("QObject")), None, &mock_module()) =>
             // No variants
-            enum MyEnum {}
-        }
-        assert_parse_error! {
-            // Unkown attributes
-            #[any_attribute]
-            enum MyEnum { A }
-        }
-        assert_parse_error! {
-            // Repr is not allowed either
-            #[repr(u32)]
-            enum MyEnum { A }
-        }
-        assert_parse_error! {
-            // Fields are not allowed
-            enum MyEnum {
-                A { field: i32 }
-            }
-        }
-        assert_parse_error! {
-            // Fields are not allowed
-            enum MyEnum {
-                A(i32)
-            }
-        }
-        assert_parse_error! {
-            // Attributes on variants are not allowed
-            enum MyEnum {
+            { enum MyEnum {} }
+            {
+                // Unknown attributes
                 #[any_attribute]
-                A
+                enum MyEnum { A }
             }
-        }
-
-        // TODO: allow discriminants
-        assert_parse_error! {
-            enum MyEnum {
-                A = 1
+            {
+                // Repr is not allowed either
+                #[repr(u32)]
+                enum MyEnum { A }
+            }
+            {
+                // Fields are not allowed
+                enum MyEnum {
+                    A { field: i32 }
+                }
+            }
+            {
+                // Fields are not allowed
+                enum MyEnum {
+                    A(i32)
+                }
+            }
+            {
+                // Attributes on variants are not allowed
+                enum MyEnum {
+                    #[any_attribute]
+                    A
+                }
+            }
+            {
+                // TODO: Allow discriminants
+                enum MyEnum {
+                    A = 1
+                }
             }
         }
     }

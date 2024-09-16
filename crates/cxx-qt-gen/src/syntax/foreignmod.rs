@@ -199,11 +199,10 @@ pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<Receiver> {
 
 #[cfg(test)]
 mod tests {
-    use syn::{parse_quote, ForeignItemFn};
-
     use super::*;
-
-    use quote::{quote, ToTokens};
+    use crate::tests::assert_parse_errors;
+    use quote::ToTokens;
+    use syn::{parse_quote, ForeignItemFn};
 
     #[test]
     fn test_foreign_mod_to_foreign_item_types() {
@@ -247,34 +246,34 @@ mod tests {
 
     #[test]
     fn test_foreign_fn_invalid_self() {
-        macro_rules! test {
-            ($($tt:tt)*) => {
-                let foreign_fn: ForeignItemFn = parse_quote! {
-                    $($tt)*
-                };
-                assert!(self_type_from_foreign_fn(&foreign_fn.sig).is_err());
-            }
+        assert_parse_errors! {
+            |function: ForeignItemFn| self_type_from_foreign_fn(&function.sig) =>
+            // Missing self
+            { fn foo(a: A) -> B; }
+            // self without type
+            { fn foo(self); }
+            // self with mut
+            { fn foo(mut self: T); }
+            // self reference
+            { fn foo(&self); }
+            // self reference with mut
+            { fn foo(&mut self); }
+            // attribute on self type
+            { fn foo(#[attr] self: T); }
         }
-        // Missing self
-        test! { fn foo(a: A) -> B; }
-        // self without type
-        test! { fn foo(self); }
-        // self with mut
-        test! { fn foo(mut self: T); }
-        // self reference
-        test! { fn foo(&self); }
-        // self reference with mut
-        test! { fn foo(&mut self); }
-        // attribute on self type
-        test! { fn foo(#[attr] self: T); }
     }
 
     #[test]
-    fn test_foreign_type_ident_alias_invalid() {
-        let alias = syn::parse2::<ForeignTypeIdentAlias>(quote! {
-            struct MyStruct;
-        });
-        assert!(alias.is_err()); // Unsupported verbatim input from trying to parse a struct as a foreign Type alias
+    fn test_parse_invalid_type_aliases() {
+        assert_parse_errors! {
+            syn::parse2::<ForeignTypeIdentAlias> =>
+
+            { struct MyStruct; }
+            { type A = B; }
+            { type A = super::module::B; }
+            { type A = crate::B; }
+            { type A = super::A; }
+        }
     }
 
     #[test]
@@ -287,38 +286,6 @@ mod tests {
         assert_eq!(alias.attrs.len(), 1);
         assert_eq!(alias.ident_left, "A");
         assert_eq!(alias.ident_right, "B");
-    }
-
-    #[test]
-    fn test_foreign_type_ident_alias_segments_one() {
-        let parse = syn::parse2::<ForeignTypeIdentAlias>(quote! {
-            type A = B;
-        });
-        assert!(parse.is_err());
-    }
-
-    #[test]
-    fn test_foreign_type_ident_alias_segments_three() {
-        let parse = syn::parse2::<ForeignTypeIdentAlias>(quote! {
-            type A = super::module::B;
-        });
-        assert!(parse.is_err());
-    }
-
-    #[test]
-    fn test_foreign_type_ident_alias_no_super() {
-        let parse = syn::parse2::<ForeignTypeIdentAlias>(quote! {
-            type A = crate::B;
-        });
-        assert!(parse.is_err());
-    }
-
-    #[test]
-    fn test_foreign_type_ident_alias_left_is_right() {
-        let parse = syn::parse2::<ForeignTypeIdentAlias>(quote! {
-            type A = super::A;
-        });
-        assert!(parse.is_err());
     }
 
     #[test]

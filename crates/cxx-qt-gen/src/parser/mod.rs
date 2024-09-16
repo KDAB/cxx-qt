@@ -176,6 +176,7 @@ impl Parser {
 mod tests {
     use super::*;
 
+    use crate::tests::assert_parse_errors;
     use pretty_assertions::assert_eq;
     use quote::format_ident;
     use syn::{parse_quote, ItemMod, Type};
@@ -333,31 +334,29 @@ mod tests {
     }
 
     #[test]
-    fn test_non_string_namespace() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                extern "Rust" {
-                    #[namespace = 1]
-                    type MyObject = super::MyObjectRust;
-                }
-            }
-        };
-        let parser = Parser::from(module);
-        assert!(parser.is_err());
-    }
+    fn test_parser_invalid() {
+        assert_parse_errors! {
+            Parser::from =>
 
-    #[test]
-    fn test_parser_from_error_no_attribute() {
-        let module: ItemMod = parse_quote! {
-            mod ffi {
-                extern "Rust" {
-                    fn test();
+            {
+                // Non-string namespace
+                #[cxx_qt::bridge]
+                mod ffi {
+                    extern "Rust" {
+                        #[namespace = 1]
+                        type MyObject = super::MyObjectRust;
+                    }
                 }
             }
-        };
-        let parser = Parser::from(module);
-        assert!(parser.is_err());
+            {
+                // No cxx_qt bridge on module
+                mod ffi {
+                    extern "Rust" {
+                        fn test();
+                    }
+                }
+            }
+        }
     }
 
     #[test]

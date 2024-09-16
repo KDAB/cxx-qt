@@ -270,9 +270,9 @@ fn possible_built_in_template_base(ty: &str) -> Option<&str> {
 
 #[cfg(test)]
 mod tests {
-    use syn::parse_quote;
-
     use super::*;
+    use crate::tests::assert_parse_errors;
+    use syn::parse_quote;
 
     #[test]
     fn test_syn_return_type_to_cpp_except_default() {
@@ -355,44 +355,26 @@ mod tests {
     }
 
     #[test]
-    fn test_syn_type_invalid() {
-        let ty = parse_quote! { (A) };
+    fn test_invalid_types() {
         let mut type_names = TypeNames::default();
-        type_names.mock_insert("A", None, Some("A1"), None);
-        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
+        assert_parse_errors! {
+            |ty| {
+                type_names.mock_insert("A", None, Some("A1"), None);
+                syn_type_to_cpp_type(&ty, &type_names)
+            } =>
 
-        let ty = parse_quote! { Option<A> };
-        let mut type_names = TypeNames::default();
-        type_names.mock_insert("A", None, Some("A1"), None);
-        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
-
-        let ty = parse_quote! { Result<A> };
-        let mut type_names = TypeNames::default();
-        type_names.mock_insert("A", None, Some("A1"), None);
-        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
-
-        let ty = parse_quote! { Pin<> };
-        let mut type_names = TypeNames::default();
-        type_names.mock_insert("A", None, Some("A1"), None);
-        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
-
-        let ty = parse_quote! { Vec<'a,T> };
-        let mut type_names = TypeNames::default();
-        type_names.mock_insert("A", None, Some("A1"), None);
-        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
-
-        let ty = parse_quote! { f32::f32::f32 };
-        let mut type_names = TypeNames::default();
-        type_names.mock_insert("A", None, Some("A1"), None);
-        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err());
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_no_template() {
-        let ty = parse_quote! { NotATemplate<A> };
-        let mut type_names = TypeNames::default();
-        type_names.mock_insert("A", None, Some("A1"), None);
-        assert!(syn_type_to_cpp_type(&ty, &type_names).is_err(),);
+            { (A) }
+            { Option<A> }
+            { Result<A> }
+            { Pin<> }
+            { Vec<'a, T> }
+            { f32::f32::f32 }
+            { NotATemplate<A> }
+            { [i32; 0] }
+            { [i32; String] }
+            { [i32; 1.5f32] }
+            { (i32, ) }
+        }
     }
 
     #[test]
@@ -409,30 +391,6 @@ mod tests {
         let mut type_names = TypeNames::default();
         type_names.mock_insert("A", None, Some("A1"), Some("N1"));
         assert_eq!(syn_type_to_cpp_type(&ty, &type_names).unwrap(), "N1::A1");
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_array_length_zero() {
-        let ty = parse_quote! { [i32; 0] };
-        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_array_length_invalid() {
-        let ty = parse_quote! { [i32; String] };
-        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_array_length_non_integer() {
-        let ty = parse_quote! { [i32; 1.5f32] };
-        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
-    }
-
-    #[test]
-    fn test_syn_type_to_cpp_type_tuple_multiple() {
-        let ty = parse_quote! { (i32, ) };
-        assert!(syn_type_to_cpp_type(&ty, &TypeNames::default()).is_err());
     }
 
     #[test]

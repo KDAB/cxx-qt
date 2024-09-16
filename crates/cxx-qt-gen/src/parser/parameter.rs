@@ -97,10 +97,25 @@ impl ParsedFunctionParameter {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use crate::tests::assert_parse_errors;
     use quote::ToTokens;
     use syn::{parse_quote, ForeignItemFn};
+    #[test]
+    fn test_parse_invalid() {
+        assert_parse_errors! {
+            |function: ForeignItemFn| ParsedFunctionParameter::parse_all_without_receiver(&function.sig) =>
 
-    use super::*;
+            // Missing self
+            { fn foo(a: i32, b: String); }
+            // self parameter points to non-self type
+            { fn foo(self: T); }
+            // self parameter is a non-self pin
+            { fn foo(self: Pin<&mut T>); }
+            // missing receiver type
+            { fn foo(); }
+        }
+    }
 
     #[test]
     fn test_parse_remove_receiver() {
@@ -135,25 +150,6 @@ mod tests {
     }
 
     #[test]
-    fn test_parse_all_without_receiver_invalid_self() {
-        fn assert_parse_error(function: ForeignItemFn) {
-            assert!(ParsedFunctionParameter::parse_all_without_receiver(&function.sig).is_err());
-        }
-        // Missing self
-        assert_parse_error(syn::parse_quote! {
-            fn foo(a: i32, b: String);
-        });
-        // self parameter points to non-self type
-        assert_parse_error(syn::parse_quote! {
-            fn foo(self: T);
-        });
-        // self parameter is a non-self pin
-        assert_parse_error(syn::parse_quote! {
-            fn foo(self: Pin<&mut T>);
-        })
-    }
-
-    #[test]
     fn test_parse_all_ignoring_receiver() {
         // This supports using a type as `self` that's not "Self".
         let function: ForeignItemFn = syn::parse_quote! {
@@ -177,15 +173,5 @@ mod tests {
         };
 
         assert!(ParsedFunctionParameter::parse_all_ignoring_receiver(&function.sig).is_err())
-    }
-
-    #[test]
-    fn test_parse_all_without_receiver_invalid() {
-        // missing receiver type
-        let function: ForeignItemFn = syn::parse_quote! {
-            fn foo();
-        };
-
-        assert!(ParsedFunctionParameter::parse_all_without_receiver(&function.sig).is_err())
     }
 }
