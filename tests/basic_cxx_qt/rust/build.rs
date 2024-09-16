@@ -11,5 +11,6 @@ fn main() {
         .file("src/data.rs")
         .file("src/lib.rs")
         .file("src/types.rs")
+        .file("src/naming.rs")
         .build();
 }
