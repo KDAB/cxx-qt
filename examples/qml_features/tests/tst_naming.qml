@@ -21,6 +21,8 @@ TestCase {
     function test_increment() {
         const obj = createTemporaryObject(componentNaming, null, {});
 
+        compare(obj.num, 0)
         obj.increment();
+        compare(obj.num, 1)
     }
 }
