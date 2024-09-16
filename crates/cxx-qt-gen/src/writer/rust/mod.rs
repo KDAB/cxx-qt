@@ -4,9 +4,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::rust::GeneratedRustBlocks;
+use crate::syntax::path::path_compare_str;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_quote_spanned, spanned::Spanned};
+use syn::{parse_quote_spanned, spanned::Spanned, Attribute};
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
 pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -> TokenStream {
@@ -47,6 +48,15 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
         cxx_qt_mod_contents.extend_from_slice(&fragment.cxx_qt_mod_contents);
     }
 
+    let docs: Vec<Attribute> = cxx_mod
+        .attrs
+        .iter()
+        .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
+        .cloned()
+        .collect();
+
+    cxx_mod.attrs = vec![]; // Reset all attributes to stop cxx_qt::bridge being passed through
+
     // Inject the CXX blocks
     if let Some((_, items)) = &mut cxx_mod.content {
         items.extend(cxx_mod_contents);
@@ -57,6 +67,7 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
 
     quote! {
         #[cxx::bridge(namespace = #namespace)]
+        #(#docs)*
         #cxx_mod
 
         #(#cxx_qt_mod_contents)*

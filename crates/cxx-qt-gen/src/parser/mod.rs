@@ -20,8 +20,7 @@ pub mod trait_impl;
 use crate::{
     naming::TypeNames,
     syntax::{
-        attribute::attribute_take_path, expr::expr_to_string, path::path_compare_str,
-        safety::Safety,
+        attribute::attribute_get_path, expr::expr_to_string, path::path_compare_str, safety::Safety,
     },
 };
 use cxxqtdata::ParsedCxxQtData;
@@ -94,14 +93,11 @@ pub struct Parser {
 }
 
 impl Parser {
-    const ALLOWED_ATTRS: [&'static str; 1] = ["doc"];
-
-
     fn parse_mod_attributes(module: &mut ItemMod) -> Result<Option<String>> {
         let mut namespace = None;
 
-        // Remove the cxx_qt::bridge attribute
-        if let Some(attr) = attribute_take_path(&mut module.attrs, &["cxx_qt", "bridge"]) {
+        // Check for the cxx_qt::bridge attribute
+        if let Some(attr) = attribute_get_path(&module.attrs, &["cxx_qt", "bridge"]) {
             // TODO: Also maybe necessary since the multipath attr doesn't rlly work with current fn
             // If we are not #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
             if !matches!(attr.meta, Meta::Path(_)) {
@@ -132,9 +128,15 @@ impl Parser {
             ));
         }
 
-        // Only attributes allowed on a module being parsed is cxx_qt::bridge and docs
-        // If a namespace is needed it is supplied like #[cxx_qt::bridge(namespace = "...")]
-        parse_attributes(&module.attrs, &["doc"])?;
+        // Maybe not the best but removes use of take_path
+        let filtered: Vec<Attribute> = module
+            .attrs
+            .iter()
+            .filter(|attr| !path_compare_str(attr.meta.path(), &["cxx_qt", "bridge"]))
+            .cloned()
+            .collect();
+
+        parse_attributes(&filtered, &["doc"])?;
 
         Ok(namespace)
     }
@@ -229,6 +231,7 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
         let expected_module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
             mod ffi;
         };
         assert_eq!(parser.passthrough_module, expected_module);
@@ -271,6 +274,7 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
         let expected_module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
             mod ffi {
                 extern "Rust" {
                     fn test();
@@ -302,7 +306,7 @@ mod tests {
 
         assert_ne!(parser.passthrough_module, module);
 
-        assert_eq!(parser.passthrough_module.attrs.len(), 0);
+        assert_eq!(parser.passthrough_module.attrs.len(), 1);
         assert_eq!(parser.passthrough_module.ident, "ffi");
         assert!(parser.passthrough_module.content.is_none());
         assert_eq!(parser.cxx_qt_data.namespace, Some("cxx_qt".to_owned()));
@@ -348,7 +352,7 @@ mod tests {
 
         assert_ne!(parser.passthrough_module, module);
 
-        assert_eq!(parser.passthrough_module.attrs.len(), 0);
+        assert_eq!(parser.passthrough_module.attrs.len(), 1);
         assert_eq!(parser.passthrough_module.ident, "ffi");
         assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 1);
         assert_eq!(parser.cxx_qt_data.namespace, None);

@@ -7,8 +7,6 @@ use crate::{
     parser::{externqobject::ParsedExternQObject, parse_attributes, signals::ParsedSignal},
     syntax::{attribute::attribute_get_path, expr::expr_to_string, safety::Safety},
 };
-#[cfg(test)]
-use syn::ForeignItemType;
 use syn::{spanned::Spanned, Error, ForeignItem, Ident, ItemForeignMod, Result, Token};
 
 /// Representation of an extern "C++Qt" block

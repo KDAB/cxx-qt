@@ -6,10 +6,7 @@
 use crate::{
     naming::Name,
     parser::{parse_attributes, property::ParsedQProperty},
-    syntax::{
-        attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
-        path::path_compare_str,
-    },
+    syntax::{expr::expr_to_string, foreignmod::ForeignTypeIdentAlias, path::path_compare_str},
 };
 #[cfg(test)]
 use quote::format_ident;
@@ -86,8 +83,8 @@ impl ParsedQObject {
         let attributes = parse_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
         let has_qobject_macro = attributes.contains_key("qobject");
 
-        let has_qobject_macro = attribute_take_path(&mut declaration.attrs, &["qobject"]).is_some();
-        let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
+        let base_class = attributes
+            .get("base")
             .map(|attr| -> Result<Ident> {
                 let expr = &attr.meta.require_name_value()?.value;
                 if let Expr::Path(path_expr) = expr {
