@@ -5,7 +5,7 @@ use cxx_qt::CxxQtType;
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt_lib::QString;
 
-#[cxx_qt::bridge(cxx_file_stem = "my_naming", namespace = "bridge_namespace")]
+#[cxx_qt::bridge(namespace = "bridge_namespace")]
 mod qobject {
     #[namespace = ""]
     unsafe extern "C++" {

@@ -13,8 +13,8 @@
 #include "basic_cxx_qt/src/data.cxxqt.h"
 #include "basic_cxx_qt/src/empty.cxxqt.h"
 #include "basic_cxx_qt/src/lib.cxxqt.h"
-#include "basic_cxx_qt/src/types.cxxqt.h"
 #include "basic_cxx_qt/src/naming.cxxqt.h"
+#include "basic_cxx_qt/src/types.cxxqt.h"
 
 class CxxQtTest : public QObject
 {

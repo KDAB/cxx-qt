@@ -2,9 +2,11 @@
 // SPDX-FileContributor: Ben Ford <ben.ford@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use std::pin::Pin;
 
-#[cxx_qt::bridge(cxx_file_stem = "rust_naming")]
+//! This example shows how cxx_name, rust_name and namespace can be used
+
+/// A CXX-Qt bridge containing renamed and namespaced types
+#[cxx_qt::bridge]
 pub mod qobject {
     unsafe extern "RustQt" {
         #[qobject]
@@ -23,12 +25,16 @@ pub mod qobject {
     }
 }
 
+use std::pin::Pin;
+
+/// Simple counter struct which has been renamed in this example
 #[derive(Default)]
 pub struct NamedObjectRust {
     pub(crate) num: i32,
 }
 
 impl qobject::NamedObject {
+    /// Increment method for the counter
     pub fn plus_one(self: Pin<&mut Self>) {
         let previous = *self.num();
         self.set_num(previous + 1);

@@ -16,7 +16,7 @@ pub mod custom_parent_class;
 pub mod externcxxqt;
 pub mod invokables;
 pub mod multiple_qobjects;
-mod naming;
+pub mod naming;
 pub mod nested_qobjects;
 pub mod properties;
 pub mod serialisation;

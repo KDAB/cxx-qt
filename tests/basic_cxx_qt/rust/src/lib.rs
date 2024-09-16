@@ -6,8 +6,8 @@
 
 mod data;
 mod empty;
-mod types;
 mod naming;
+mod types;
 
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 mod qobject {
