@@ -9,11 +9,6 @@ mod inheritance {
         type QAbstractItemModel;
     }
 
-    extern "C++Qt" {
-        #[qobject]
-        type MyStruct;
-    }
-
     extern "RustQt" {
         #[qobject]
         #[base = QAbstractItemModel]

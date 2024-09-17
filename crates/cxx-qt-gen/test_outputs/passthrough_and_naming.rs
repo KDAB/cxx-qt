@@ -22,10 +22,12 @@ pub mod ffi {
     extern "C" {}
     #[namespace = "namespace"]
     extern "C" {}
+    #[custom_attr = "test"]
     unsafe extern "C++" {}
     #[namespace = "namespace"]
     unsafe extern "C++" {}
     #[namespace = "namespace"]
+    #[custom_attr = "test"]
     unsafe extern "C++" {}
     macro_rules! macro1 {
         () => {

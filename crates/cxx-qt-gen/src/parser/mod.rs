@@ -6,7 +6,7 @@
 pub mod constructor;
 pub mod cxxqtdata;
 pub mod externcxxqt;
-mod externqobject;
+pub mod externqobject;
 pub mod inherit;
 pub mod method;
 pub mod parameter;
@@ -55,7 +55,9 @@ pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
         .collect()
 }
 
-pub fn parse_attributes<'a>(
+/// Collects a Map of all attributes found from the allowed list
+/// Will error if an attribute which is not in the allowed list is found
+pub fn require_attributes<'a>(
     attrs: &'a [Attribute],
     allowed: &'a [&str],
 ) -> Result<BTreeMap<&'a str, &'a Attribute>> {
@@ -136,7 +138,7 @@ impl Parser {
             .cloned()
             .collect();
 
-        parse_attributes(&filtered, &["doc"])?;
+        require_attributes(&filtered, &["doc"])?;
 
         Ok(namespace)
     }

@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    parser::{externqobject::ParsedExternQObject, parse_attributes, signals::ParsedSignal},
+    parser::{externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal},
     syntax::{attribute::attribute_get_path, expr::expr_to_string, safety::Safety},
 };
 use syn::{spanned::Spanned, Error, ForeignItem, Ident, ItemForeignMod, Result, Token};
@@ -30,7 +30,7 @@ impl ParsedExternCxxQt {
         module_ident: &Ident,
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
-        let attrs = parse_attributes(&foreign_mod.attrs, &["namespace"])?;
+        let attrs = require_attributes(&foreign_mod.attrs, &["namespace"])?;
 
         let namespace = attrs
             .get("namespace")

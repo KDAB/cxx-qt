@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{naming::Name, parser::parse_attributes, syntax::path::path_compare_str};
+use crate::{naming::Name, parser::require_attributes, syntax::path::path_compare_str};
 use quote::ToTokens;
 use syn::{Ident, ItemEnum, Result, Variant};
 
@@ -54,7 +54,7 @@ impl ParsedQEnum {
         parent_namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
-        parse_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
+        require_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
                 qenum,

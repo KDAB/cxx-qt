@@ -5,7 +5,7 @@
 
 use crate::{
     naming::Name,
-    parser::{parse_attributes, property::ParsedQProperty},
+    parser::{property::ParsedQProperty, require_attributes},
     syntax::{expr::expr_to_string, foreignmod::ForeignTypeIdentAlias, path::path_compare_str},
 };
 #[cfg(test)]
@@ -44,11 +44,10 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
-    const ALLOWED_ATTRS: [&'static str; 11] = [
+    const ALLOWED_ATTRS: [&'static str; 10] = [
         "cxx_name",
         "rust_name",
         "namespace",
-        "derive",
         "doc",
         "qobject",
         "base",
@@ -76,11 +75,11 @@ impl ParsedQObject {
 
     /// Parse a ForeignTypeIdentAlias into a [ParsedQObject] with the index of the #[qobject] specified
     pub fn parse(
-        mut declaration: ForeignTypeIdentAlias,
+        declaration: ForeignTypeIdentAlias,
         namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
-        let attributes = parse_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
+        let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
         let has_qobject_macro = attributes.contains_key("qobject");
 
         let base_class = attributes
@@ -118,7 +117,7 @@ impl ParsedQObject {
 
         // Parse any properties in the type
         // and remove the #[qproperty] attribute
-        let properties = Self::parse_property_attributes(&mut declaration.attrs)?;
+        let properties = Self::parse_property_attributes(&declaration.attrs)?;
         let inner = declaration.ident_right.clone();
 
         Ok(Self {
@@ -133,7 +132,7 @@ impl ParsedQObject {
     }
 
     fn parse_qml_metadata(name: &Name, attrs: &[Attribute]) -> Result<Option<QmlElementMetadata>> {
-        let attributes = parse_attributes(attrs, &Self::ALLOWED_ATTRS)?;
+        let attributes = require_attributes(attrs, &Self::ALLOWED_ATTRS)?;
         if let Some(attr) = attributes.get("qml_element") {
             // Extract the name of the qml_element from macro, else use the c++ name
             // This will use the name provided by cxx_name if that attr was present
@@ -152,12 +151,12 @@ impl ParsedQObject {
         Ok(None)
     }
 
-    fn parse_property_attributes(attrs: &mut Vec<Attribute>) -> Result<Vec<ParsedQProperty>> {
+    fn parse_property_attributes(attrs: &[Attribute]) -> Result<Vec<ParsedQProperty>> {
         // Once extract_if is stable, this would allow comparing all the elements using
         // path_compare_str and building ParsedQProperty from the extracted elements.
         // https://doc.rust-lang.org/nightly/std/vec/struct.Vec.html#method.extract_if
         attrs
-            .drain(..)
+            .iter()
             .filter(|attr| path_compare_str(attr.meta.path(), &["qproperty"]))
             .map(ParsedQProperty::parse)
             .collect::<Result<Vec<_>>>()

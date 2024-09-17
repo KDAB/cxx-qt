@@ -21,7 +21,7 @@ impl GeneratedRustFragment {
     ) -> Result<Self> {
         let mut generated = Self::default();
 
-        let namespace = if let Some(namespace) = &extern_cxxqt_block.namespace {
+        let extern_block_namespace = if let Some(namespace) = &extern_cxxqt_block.namespace {
             quote! { #[namespace = #namespace ] }
         } else {
             quote! {}
@@ -68,7 +68,7 @@ impl GeneratedRustFragment {
 
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
-                #namespace
+                #extern_block_namespace
                 #unsafety extern "C++" {
                     #(#items)*
 

@@ -35,7 +35,6 @@ mod ffi {
 
     unsafe extern "RustQt" {
         #[qobject]
-        #[derive(Default)]
         type MyObject = super::MyObjectRust;
 
         #[qinvokable]

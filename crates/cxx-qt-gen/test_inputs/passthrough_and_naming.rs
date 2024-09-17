@@ -37,12 +37,14 @@ pub mod ffi {
     #[namespace = "namespace"]
     extern "C" {}
 
+    #[custom_attr = "test"]
     unsafe extern "C++" {}
 
     #[namespace = "namespace"]
     unsafe extern "C++" {}
 
     #[namespace = "namespace"]
+    #[custom_attr = "test"]
     unsafe extern "C++" {}
 
     // ItemMacro

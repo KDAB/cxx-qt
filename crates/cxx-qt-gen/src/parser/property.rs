@@ -13,6 +13,9 @@ use syn::{
     Attribute, Expr, Ident, Meta, MetaNameValue, Result, Token, Type,
 };
 
+#[cfg(test)]
+use syn::ItemStruct;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 /// Enum representing the possible states of a flag passed to a QProperty
 /// Auto is the state where a user passed for example `read` but no custom function
@@ -99,7 +102,7 @@ fn parse_meta(meta: Meta) -> Result<(Ident, Option<Ident>)> {
 }
 
 impl ParsedQProperty {
-    pub fn parse(attr: Attribute) -> Result<Self> {
+    pub fn parse(attr: &Attribute) -> Result<Self> {
         attr.parse_args_with(|input: ParseStream| -> Result<Self> {
             let ty = input.parse()?;
             let _comma = input.parse::<Token![,]>()?;
@@ -222,9 +225,14 @@ impl ParsedQProperty {
         })
     }
 }
+#[cfg(test)]
+pub fn mock_property(mut input: ItemStruct) -> ParsedQProperty {
+    ParsedQProperty::parse(&input.attrs.remove(0)).unwrap()
+}
 
 #[cfg(test)]
 mod tests {
+    use std::os::unix::raw::ino_t;
     use super::*;
     use crate::tests::assert_parse_errors;
     use quote::format_ident;
@@ -236,7 +244,7 @@ mod tests {
             #[qproperty(T, name, cxx_name = "myName", rust_name = "my_name")]
             struct MyStruct;
         };
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
 
         assert_eq!(property.name.cxx_unqualified(), "myName");
         assert_eq!(property.name.rust_unqualified(), "my_name");
@@ -245,7 +253,7 @@ mod tests {
     #[test]
     fn test_parse_invalid() {
         assert_parse_errors! {
-            ParsedQProperty::parse =>
+            |attr| ParsedQProperty::parse(&attr) =>
 
             // Non-constant property with constant flag
             { #[qproperty(T, name, READ, WRITE, NOTIFY, CONSTANT)] }
@@ -278,43 +286,43 @@ mod tests {
 
     #[test]
     fn test_parse_constant() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(T, name, READ, CONSTANT)]
             struct MyStruct;
         };
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
         assert!(property.flags.constant);
     }
 
     #[test]
     fn test_parse_property() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(T, name, READ, WRITE = myGetter,)]
             struct MyStruct;
         };
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
         assert_eq!(property.name.rust_unqualified(), "name");
         assert_eq!(property.ty, parse_quote! { T });
     }
 
     #[test]
     fn test_parse_flags_read() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(T, name, READ)]
             struct MyStruct;
         };
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
         assert_eq!(property.name.rust_unqualified(), "name");
         assert_eq!(property.ty, parse_quote! { T });
     }
 
     #[test]
     fn test_parse_flags_all() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(T, name, READ, WRITE, NOTIFY, REQUIRED, RESET = my_reset, FINAL)]
             struct MyStruct;
         };
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
         assert_eq!(property.name.rust_unqualified(), "name");
         assert_eq!(property.ty, parse_quote! { T });
 
@@ -334,11 +342,11 @@ mod tests {
 
     #[test]
     fn test_parse_flags_kw() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(T, name, READ = my_getter, WRITE, NOTIFY = my_notifier)]
             struct MyStruct;
         };
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
         assert_eq!(property.name.rust_unqualified(), "name");
         assert_eq!(property.ty, parse_quote! { T });
 

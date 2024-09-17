@@ -3,8 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use super::Name;
+use crate::syntax::attribute::attribute_get_path;
 use crate::{
-    parser::{cxxqtdata::ParsedCxxQtData, parse_attributes, qobject::ParsedQObject},
+    parser::{cxxqtdata::ParsedCxxQtData, qobject::ParsedQObject},
     syntax::{expr::expr_to_string, foreignmod::foreign_mod_to_foreign_item_types},
 };
 use quote::{format_ident, quote};
@@ -150,10 +151,12 @@ impl TypeNames {
         bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
+        // Find and register the QObjects in the bridge
         for qobject in cxx_qt_data.qobjects.iter() {
             self.populate_qobject(qobject)?;
         }
 
+        // Find and register the names of any QEnums in the bridge
         for qenum in &cxx_qt_data.qenums {
             self.insert(qenum.name.clone())?;
         }
@@ -174,8 +177,14 @@ impl TypeNames {
             };
             self.populate_from_foreign_mod_item(&foreign_mod, bridge_namespace, module_ident)?;
 
+            // Find and register the names of any qobjects in extern "C++Qt"
             for qobject in extern_cxxqt.qobjects.iter() {
                 self.insert(qobject.name.clone())?;
+            }
+
+            // Find and register the names of any signals in extern "C++Qt"
+            for signal in extern_cxxqt.signals.iter() {
+                self.insert(signal.name.clone())?;
             }
         }
 
@@ -189,12 +198,12 @@ impl TypeNames {
         module_ident: &Ident,
     ) -> Result<()> {
         // Retrieve a namespace from the mod or the bridge
-        let attrs = parse_attributes(&foreign_mod.attrs, &["namespace"])?;
-        let block_namespace = if let Some(attr) = attrs.get("namespace") {
-            Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
-        } else {
-            bridge_namespace.map(str::to_owned)
-        };
+        let block_namespace =
+            if let Some(attr) = attribute_get_path(&foreign_mod.attrs, &["namespace"]) {
+                Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
+            } else {
+                bridge_namespace.map(str::to_owned)
+            };
 
         // Read each of the types in the mod (type A;)
         for foreign_type in foreign_mod_to_foreign_item_types(foreign_mod)? {

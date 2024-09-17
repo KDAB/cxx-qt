@@ -8,7 +8,6 @@ mod ffi {
 
     extern "RustQt" {
         #[qobject]
-        #[derive(Default)]
         #[qproperty(i32, primitive)]
         #[qproperty(QPoint, trivial)]
         #[qproperty(i32, custom_function_prop, READ = my_getter, WRITE = my_setter, NOTIFY)]

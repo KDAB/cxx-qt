@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::parse_attributes;
+use crate::parser::require_attributes;
 use syn::{ItemMacro, LitStr, Result};
 
 pub struct ParsedQNamespace {
@@ -15,7 +15,7 @@ pub struct ParsedQNamespace {
 
 impl ParsedQNamespace {
     pub fn parse(mac: ItemMacro) -> Result<Self> {
-        let attrs = parse_attributes(&mac.attrs, &["qml_element"])?;
+        let attrs = require_attributes(&mac.attrs, &["qml_element"])?;
         let namespace_literal: LitStr = syn::parse2(mac.mac.tokens)?;
         let namespace = namespace_literal.value();
         if namespace.contains(char::is_whitespace) {

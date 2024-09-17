@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{check_safety, method::MethodFields, parse_attributes, separate_docs};
+use crate::parser::{check_safety, method::MethodFields, require_attributes, separate_docs};
 use crate::syntax::safety::Safety;
 use core::ops::Deref;
 use quote::format_ident;
@@ -23,7 +23,7 @@ impl ParsedInheritedMethod {
 
     pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
-        parse_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
+        require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
         let docs = separate_docs(&mut method);
 
         Ok(Self {

@@ -9,7 +9,7 @@ use crate::naming::cpp::err_unsupported_item;
 use crate::{
     parser::{
         externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod, method::ParsedMethod,
-        parse_attributes, qenum::ParsedQEnum, qobject::ParsedQObject, signals::ParsedSignal,
+        qenum::ParsedQEnum, qobject::ParsedQObject, require_attributes, signals::ParsedSignal,
     },
     syntax::{
         attribute::attribute_get_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
@@ -127,7 +127,7 @@ impl ParsedCxxQtData {
     }
 
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
-        let attrs = parse_attributes(&foreign_mod.attrs, &["namespace"])?;
+        let attrs = require_attributes(&foreign_mod.attrs, &["namespace"])?;
 
         let namespace = attrs
             .get("namespace")

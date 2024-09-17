@@ -139,4 +139,24 @@ mod tests {
         assert_eq!(rust.namespace, "cxx_qt");
         assert_eq!(rust.fragments.len(), 1);
     }
+
+    #[test]
+    fn test_generated_rust_blocks_foreign_qobject() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "C++Qt" {
+                    #[qobject]
+                    type MyObject;
+                }
+            }
+        };
+        let parser = Parser::from(module).unwrap();
+
+        let rust = GeneratedRustBlocks::from(&parser).unwrap();
+        assert!(rust.cxx_mod.content.is_none());
+        assert_eq!(rust.cxx_mod_contents.len(), 0);
+        assert_eq!(rust.namespace, "");
+        assert_eq!(rust.fragments.len(), 1);
+    }
 }

@@ -63,7 +63,7 @@ fn verbatim_to_foreign_type(tokens: &TokenStream) -> Result<Option<ForeignItemTy
             })?;
 
             Ok(Some(parse_quote! {
-                #(#attrs)* // TODO: Should these be checked at this point? Passthrough of random attrs could cause problems
+                #(#attrs)*
                 #visibility #type_token #ident;
             }))
         } else {
@@ -95,7 +95,6 @@ pub struct ForeignTypeIdentAlias {
 impl Parse for ForeignTypeIdentAlias {
     fn parse(input: ParseStream) -> Result<Self> {
         let attrs = input.call(Attribute::parse_outer)?;
-        // TODO: Potentially check attr validity here?
 
         // Note that visibility is ignored for now
         let _: Visibility = input.parse()?;

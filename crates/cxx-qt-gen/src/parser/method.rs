@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{
     naming::Name,
-    parser::{check_safety, parameter::ParsedFunctionParameter, parse_attributes},
+    parser::{check_safety, parameter::ParsedFunctionParameter, require_attributes},
     syntax::{foreignmod, safety::Safety, types},
 };
 use core::ops::Deref;
@@ -104,7 +104,7 @@ impl ParsedMethod {
     pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
         let fields = MethodFields::parse(method)?;
-        let attrs = parse_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
+        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         // Determine if the method is invokable
         let is_qinvokable = attrs.contains_key("qinvokable");
