@@ -344,7 +344,7 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn create_rs_my_object_rust() -> Box<MyObjectRust>;
+        fn create_rs_MyObjectRust() -> Box<MyObjectRust>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -915,7 +915,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     [usize; 2]
 );
 #[doc(hidden)]
-pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
+pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
 impl ::core::ops::Deref for ffi::MyObject {

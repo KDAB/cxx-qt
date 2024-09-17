@@ -33,7 +33,7 @@ fn connect_name_from_signal(name: &Name) -> Name {
 }
 
 fn on_from_signal(ident: &Ident) -> Ident {
-    format_ident!("on_{}", ident.to_string().to_case(Case::Snake))
+    format_ident!("on_{}", ident.to_string().to_case(Case::Snake)) // TODO: REMOVE this
 }
 
 pub struct QSignalHelperNames {

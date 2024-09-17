@@ -113,7 +113,7 @@ impl Name {
         // No explicit cxx_name set, generate an appropriate camelCase cxx_name
         if name.cxx.is_none() {
             let rust_string = name.rust.to_string();
-            let cxx = rust_string.to_case(Case::Camel);
+            let cxx = rust_string.to_case(Case::Camel); // TODO: REMOVE this
             if cxx != rust_string {
                 return Ok(name.with_cxx_name(cxx));
             }

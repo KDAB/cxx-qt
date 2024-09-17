@@ -63,7 +63,7 @@ mod inheritance {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt_my_object"]
-        fn create_rs_my_object_rust() -> Box<MyObjectRust>;
+        fn create_rs_MyObjectRust() -> Box<MyObjectRust>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -85,7 +85,7 @@ impl cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {
 #[allow(dead_code)]
 use inheritance::QAbstractItemModel as _;
 #[doc(hidden)]
-pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
+pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
 impl ::core::ops::Deref for inheritance::MyObject {

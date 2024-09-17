@@ -47,7 +47,7 @@ pub fn namespace_combine_ident(namespace: &str, ident: &Ident) -> String {
 fn namespace_internal_from_pair(base: &str, ident: &Ident) -> String {
     namespace_combine_ident(
         base,
-        &format_ident!("cxx_qt_{}", ident.to_string().to_case(Case::Snake)),
+        &format_ident!("cxx_qt_{}", ident.to_string().to_case(Case::Snake)), // TODO: REMOVE this
     )
 }
 
