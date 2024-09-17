@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{naming::Name, parser::signals::ParsedSignal};
-use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::{Ident, Result};
 
@@ -33,7 +32,7 @@ fn connect_name_from_signal(name: &Name) -> Name {
 }
 
 fn on_from_signal(ident: &Ident) -> Ident {
-    format_ident!("on_{}", ident.to_string().to_case(Case::Snake)) // TODO: REMOVE this
+    format_ident!("on_{}", ident.to_string())
 }
 
 pub struct QSignalHelperNames {
