@@ -166,7 +166,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::multi_object::cxx_qt_my_object"]
+        #[namespace = "cxx_qt::multi_object::cxx_qt_MyObject"]
         fn create_rs_MyObjectRust() -> Box<MyObjectRust>;
     }
     unsafe extern "C++" {
@@ -278,7 +278,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
-        #[namespace = "second_object::cxx_qt_second_object"]
+        #[namespace = "second_object::cxx_qt_SecondObject"]
         fn create_rs_SecondObjectRust() -> Box<SecondObjectRust>;
     }
     unsafe extern "C++" {
@@ -314,7 +314,7 @@ pub mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
-        #[namespace = "my_namespace::cxx_qt_my_rust_name"]
+        #[namespace = "my_namespace::cxx_qt_MyRustName"]
         fn create_rs_ThirdObjectRust() -> Box<ThirdObjectRust>;
     }
     unsafe extern "C++" {

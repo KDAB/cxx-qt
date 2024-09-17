@@ -91,7 +91,7 @@ mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
         fn create_rs_MyObjectRust() -> Box<MyObjectRust>;
     }
     unsafe extern "C++" {
@@ -127,7 +127,7 @@ mod ffi {
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
-        #[namespace = "cxx_qt::my_object::cxx_qt_my_renamed_object"]
+        #[namespace = "cxx_qt::my_object::cxx_qt_MyRenamedObject"]
         fn create_rs_InternalObject() -> Box<InternalObject>;
     }
     unsafe extern "C++" {

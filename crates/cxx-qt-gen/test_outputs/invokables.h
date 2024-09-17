@@ -40,9 +40,9 @@ public:
 
 private:
   explicit MyObject(
-    ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments0&& args);
+    ::cxx_qt::my_object::cxx_qt_MyObject::CxxQtConstructorArguments0&& args);
   explicit MyObject(
-    ::cxx_qt::my_object::cxx_qt_my_object::CxxQtConstructorArguments1&& args);
+    ::cxx_qt::my_object::cxx_qt_MyObject::CxxQtConstructorArguments1&& args);
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
