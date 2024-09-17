@@ -16,7 +16,7 @@ links = "cxx-qt-lib-extras"
 [dependencies]
 cxx.workspace = true
 cxx-qt.workspace = true
-cxx-qt-lib.workspace = true
+cxx-qt-lib = { workspace = true, features = ["full_qt"] }
 
 [build-dependencies]
 cxx-qt-build.workspace = true
