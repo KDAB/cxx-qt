@@ -34,7 +34,8 @@ serde = { version = "1", features=["derive"], optional = true }
 cxx-qt-build.workspace = true
 
 [features]
-full = ["qt_gui", "qt_qml", "qt_quickcontrols"]
+full_qt = ["qt_gui", "qt_qml", "qt_quickcontrols"]
+full = ["full_qt", "serde", "url", "time", "rgb", "http", "chrono", "bytes"]
 default = []
 
 qt_gui = []

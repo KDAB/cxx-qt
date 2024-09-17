@@ -31,7 +31,7 @@ cxx.workspace = true
 # Use `cxx-qt = "0.6"` here instead!
 cxx-qt.workspace = true
 # Use `cxx-qt-lib = "0.6"` here instead!
-cxx-qt-lib = { workspace = true, features = ["full"] }
+cxx-qt-lib = { workspace = true, features = ["full_qt"] }
 # ANCHOR_END: book_dependencies
 
 # cxx-qt-build generates C++ code from the `#[cxx_qt::bridge]` module
