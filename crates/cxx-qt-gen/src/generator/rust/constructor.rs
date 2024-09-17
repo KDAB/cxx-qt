@@ -482,7 +482,7 @@ mod tests {
             quote! {
                 extern "Rust" {
                     #[cxx_name="createRs"]
-                    #[namespace="qobject::cxx_qt_my_object"]
+                    #[namespace="qobject::cxx_qt_MyObject"]
                     fn create_rs_MyObjectRust() -> Box<MyObjectRust>;
                 }
             },
@@ -508,7 +508,7 @@ mod tests {
         assert_tokens_eq(
             tokens,
             quote! {
-                #[namespace = "qobject::cxx_qt_my_object"]
+                #[namespace = "qobject::cxx_qt_MyObject"]
                 #[cxx_name = #cxx_name]
                 #[doc(hidden)]
                 struct #rust_name {
@@ -782,7 +782,7 @@ mod tests {
         assert_eq!(blocks.cxx_qt_mod_contents.len(), 6);
 
         let namespace_attr = quote! {
-                #[namespace = "qobject::cxx_qt_my_object"]
+                #[namespace = "qobject::cxx_qt_MyObject"]
         };
 
         assert_empty_constructor_blocks(&blocks, &namespace_attr);

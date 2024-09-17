@@ -245,7 +245,7 @@ mod tests {
             &generated.cxx_mod_contents[1],
             quote! {
                 extern "Rust" {
-                    #[namespace = "cxx_qt_my_object"]
+                    #[namespace = "cxx_qt_MyObject"]
                     type MyObjectCxxQtThreadQueuedFn;
                 }
             },

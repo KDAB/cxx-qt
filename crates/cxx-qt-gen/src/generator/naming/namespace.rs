@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::parser::qobject::ParsedQObject;
-use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::Ident;
 
@@ -45,10 +44,7 @@ pub fn namespace_combine_ident(namespace: &str, ident: &Ident) -> String {
 ///
 /// The base namespace could be from the module bridge or from the QObject
 fn namespace_internal_from_pair(base: &str, ident: &Ident) -> String {
-    namespace_combine_ident(
-        base,
-        &format_ident!("cxx_qt_{}", ident.to_string().to_case(Case::Snake)), // TODO: REMOVE this
-    )
+    namespace_combine_ident(base, &format_ident!("cxx_qt_{}", ident.to_string()))
 }
 
 #[cfg(test)]
@@ -60,14 +56,14 @@ mod tests {
     #[test]
     fn test_namespace_pair() {
         let names = NamespaceName::from_namespace_and_ident("cxx_qt", &format_ident!("MyObject"));
-        assert_eq!(names.internal, "cxx_qt::cxx_qt_my_object");
+        assert_eq!(names.internal, "cxx_qt::cxx_qt_MyObject");
         assert_eq!(names.namespace, "cxx_qt");
     }
 
     #[test]
     fn test_namespace_pair_empty_base() {
         let names = NamespaceName::from_namespace_and_ident("", &format_ident!("MyObject"));
-        assert_eq!(names.internal, "cxx_qt_my_object");
+        assert_eq!(names.internal, "cxx_qt_MyObject");
         assert_eq!(names.namespace, "");
     }
 
@@ -82,7 +78,7 @@ mod tests {
     #[test]
     fn test_namespace_from_qobject() {
         let names = NamespaceName::from(&create_parsed_qobject());
-        assert_eq!(names.internal, "cxx_qt_my_object");
+        assert_eq!(names.internal, "cxx_qt_MyObject");
         assert_eq!(names.namespace, "");
     }
 }

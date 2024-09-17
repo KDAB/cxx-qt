@@ -206,7 +206,7 @@ mod tests {
                 .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.rust_struct.cxx_unqualified(), "MyObjectRust");
-        assert_eq!(cpp.namespace_internals, "cxx_qt_my_object");
+        assert_eq!(cpp.namespace_internals, "cxx_qt_MyObject");
 
         assert_eq!(cpp.blocks.base_classes.len(), 2);
         assert_eq!(cpp.blocks.base_classes[0], "QObject");
@@ -242,7 +242,7 @@ mod tests {
 
         let cpp =
             GeneratedCppQObject::from(structures.qobjects.first().unwrap(), &type_names).unwrap();
-        assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_my_object");
+        assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_MyObject");
         assert_eq!(cpp.blocks.base_classes.len(), 2);
         assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
         assert_eq!(

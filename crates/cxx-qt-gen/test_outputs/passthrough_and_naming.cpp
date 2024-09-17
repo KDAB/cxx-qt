@@ -283,7 +283,7 @@ namespace cxx_qt::multi_object {
 MyObject::MyObject(QObject* parent)
   : QStringListModel(parent)
   , ::rust::cxxqt1::CxxQtType<MyObjectRust>(
-      ::cxx_qt::multi_object::cxx_qt_my_object::createRs())
+      ::cxx_qt::multi_object::cxx_qt_MyObject::createRs())
 {
 }
 
@@ -405,7 +405,7 @@ namespace second_object {
 SecondObject::SecondObject(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<SecondObjectRust>(
-      ::second_object::cxx_qt_second_object::createRs())
+      ::second_object::cxx_qt_SecondObject::createRs())
 {
 }
 
@@ -415,7 +415,7 @@ namespace my_namespace {
 MyCxxName::MyCxxName(QObject* parent)
   : QObject(parent)
   , ::rust::cxxqt1::CxxQtType<ThirdObjectRust>(
-      ::my_namespace::cxx_qt_my_rust_name::createRs())
+      ::my_namespace::cxx_qt_MyRustName::createRs())
 {
 }
 
