@@ -110,7 +110,7 @@ mod tests {
                     #[doc(hidden)]
                     #[cxx_name = "unsafeRust"]
                     #[namespace = "rust::cxxqt1"]
-                    fn cxx_qt_ffi_my_object_unsafe_rust(outer: &MyObject) -> &MyObjectRust;
+                    fn cxx_qt_ffi_MyObject_unsafeRust(outer: &MyObject) -> &MyObjectRust;
                 }
             },
         );
@@ -121,7 +121,7 @@ mod tests {
                     #[doc(hidden)]
                     #[cxx_name = "unsafeRustMut"]
                     #[namespace = "rust::cxxqt1"]
-                    fn cxx_qt_ffi_my_object_unsafe_rust_mut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
+                    fn cxx_qt_ffi_MyObject_unsafeRustMut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
                 }
             },
         );
@@ -134,7 +134,7 @@ mod tests {
                     type Target = MyObjectRust;
 
                     fn deref(&self) -> &Self::Target {
-                        qobject::cxx_qt_ffi_my_object_unsafe_rust(self)
+                        qobject::cxx_qt_ffi_MyObject_unsafeRust(self)
                     }
                 }
             },
@@ -146,11 +146,11 @@ mod tests {
                     type Rust = MyObjectRust;
 
                     fn rust(&self) -> &Self::Rust {
-                        qobject::cxx_qt_ffi_my_object_unsafe_rust(self)
+                        qobject::cxx_qt_ffi_MyObject_unsafeRust(self)
                     }
 
                     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-                        qobject::cxx_qt_ffi_my_object_unsafe_rust_mut(self)
+                        qobject::cxx_qt_ffi_MyObject_unsafeRustMut(self)
                     }
                 }
             },

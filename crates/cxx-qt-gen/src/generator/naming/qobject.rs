@@ -6,7 +6,6 @@ use crate::{
     naming::{Name, TypeNames},
     parser::qobject::ParsedQObject,
 };
-use convert_case::{Case, Casing};
 use proc_macro2::TokenStream;
 use quote::{format_ident, quote};
 use syn::{Ident, Result};
@@ -61,9 +60,8 @@ impl QObjectNames {
     /// CXX.
     pub fn cxx_qt_ffi_method(&self, cxx_name: &str) -> Name {
         let ident = format_ident!(
-            "cxx_qt_ffi_{ident}_{suffix}",
-            ident = self.name.cxx_unqualified().to_case(Case::Snake), // TODO: REMOVE this
-            suffix = cxx_name.to_case(Case::Snake)                    // TODO: REMOVE this
+            "cxx_qt_ffi_{ident}_{cxx_name}",
+            ident = self.name.cxx_unqualified(),
         );
         let mut name = Name::new(ident);
         if let Some(module) = self.name.module() {
@@ -71,6 +69,7 @@ impl QObjectNames {
         }
         name.with_namespace("rust::cxxqt1".to_owned())
             .with_cxx_name(cxx_name.to_owned())
+        // Could potentially add the rust name here, with an automatic conversion or provided
     }
 
     /// Returns the tokens of the namespace attribute to be added to a rust line, or no tokens if this instance has no namespace
@@ -121,23 +120,23 @@ pub mod tests {
         assert_eq!(
             names.cxx_qt_ffi_method("threading_clone").into_cxx_parts(),
             (
-                format_ident!("cxx_qt_ffi_my_object_threading_clone"),
+                format_ident!("cxx_qt_ffi_MyObject_threading_clone"),
                 vec![
                     syn::parse_quote! { #[cxx_name="threading_clone"] },
                     syn::parse_quote! { #[namespace="rust::cxxqt1"] },
                 ],
-                syn::parse_quote! { qobject::cxx_qt_ffi_my_object_threading_clone}
+                syn::parse_quote! { qobject::cxx_qt_ffi_MyObject_threading_clone}
             )
         );
         // These have the same values for namespace, and Rust module, so no need to
         // assert those again
         assert_eq!(
             names.cxx_qt_ffi_method("threading_drop").rust_unqualified(),
-            "cxx_qt_ffi_my_object_threading_drop"
+            "cxx_qt_ffi_MyObject_threading_drop"
         );
         assert_eq!(
             names.cxx_qt_ffi_method("queue_boxed_fn").rust_unqualified(),
-            "cxx_qt_ffi_my_object_queue_boxed_fn"
+            "cxx_qt_ffi_MyObject_queue_boxed_fn"
         );
     }
 }

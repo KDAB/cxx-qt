@@ -117,11 +117,11 @@ mod ffi {
         #[doc(hidden)]
         #[cxx_name = "qtThread"]
         #[namespace = "rust::cxxqt1"]
-        fn cxx_qt_ffi_my_object_qt_thread(qobject: &MyObject) -> MyObjectCxxQtThread;
+        fn cxx_qt_ffi_MyObject_qtThread(qobject: &MyObject) -> MyObjectCxxQtThread;
         #[doc(hidden)]
         #[cxx_name = "cxxQtThreadQueue"]
         #[namespace = "rust::cxxqt1"]
-        fn cxx_qt_ffi_my_object_cxx_qt_thread_queue(
+        fn cxx_qt_ffi_MyObject_cxxQtThreadQueue(
             cxx_qt_thread: &MyObjectCxxQtThread,
             func: fn(Pin<&mut MyObject>, Box<MyObjectCxxQtThreadQueuedFn>),
             arg: Box<MyObjectCxxQtThreadQueuedFn>,
@@ -129,19 +129,17 @@ mod ffi {
         #[doc(hidden)]
         #[cxx_name = "cxxQtThreadClone"]
         #[namespace = "rust::cxxqt1"]
-        fn cxx_qt_ffi_my_object_cxx_qt_thread_clone(
+        fn cxx_qt_ffi_MyObject_cxxQtThreadClone(
             cxx_qt_thread: &MyObjectCxxQtThread,
         ) -> MyObjectCxxQtThread;
         #[doc(hidden)]
         #[cxx_name = "cxxQtThreadDrop"]
         #[namespace = "rust::cxxqt1"]
-        fn cxx_qt_ffi_my_object_cxx_qt_thread_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
+        fn cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread: &mut MyObjectCxxQtThread);
         #[doc(hidden)]
         #[cxx_name = "cxxQtThreadIsDestroyed"]
         #[namespace = "rust::cxxqt1"]
-        fn cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(
-            cxx_qt_thread: &MyObjectCxxQtThread,
-        ) -> bool;
+        fn cxx_qt_ffi_MyObject_cxxQtThreadIsDestroyed(cxx_qt_thread: &MyObjectCxxQtThread) -> bool;
     }
     extern "Rust" {
         #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
@@ -240,26 +238,24 @@ mod ffi {
         #[doc(hidden)]
         #[cxx_name = "unsafeRust"]
         #[namespace = "rust::cxxqt1"]
-        fn cxx_qt_ffi_my_object_unsafe_rust(outer: &MyObject) -> &MyObjectRust;
+        fn cxx_qt_ffi_MyObject_unsafeRust(outer: &MyObject) -> &MyObjectRust;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "unsafeRustMut"]
         #[namespace = "rust::cxxqt1"]
-        fn cxx_qt_ffi_my_object_unsafe_rust_mut(
-            outer: Pin<&mut MyObject>,
-        ) -> Pin<&mut MyObjectRust>;
+        fn cxx_qt_ffi_MyObject_unsafeRustMut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
 impl cxx_qt::Threading for ffi::MyObject {
     type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
     type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
     fn qt_thread(&self) -> ffi::MyObjectCxxQtThread {
-        ffi::cxx_qt_ffi_my_object_qt_thread(self)
+        ffi::cxx_qt_ffi_MyObject_qtThread(self)
     }
     #[doc(hidden)]
     fn is_destroyed(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> bool {
-        ffi::cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(cxx_qt_thread)
+        ffi::cxx_qt_ffi_MyObject_cxxQtThreadIsDestroyed(cxx_qt_thread)
     }
     #[doc(hidden)]
     fn queue<F>(
@@ -281,19 +277,15 @@ impl cxx_qt::Threading for ffi::MyObject {
         let arg = MyObjectCxxQtThreadQueuedFn {
             inner: std::boxed::Box::new(f),
         };
-        ffi::cxx_qt_ffi_my_object_cxx_qt_thread_queue(
-            cxx_qt_thread,
-            func,
-            std::boxed::Box::new(arg),
-        )
+        ffi::cxx_qt_ffi_MyObject_cxxQtThreadQueue(cxx_qt_thread, func, std::boxed::Box::new(arg))
     }
     #[doc(hidden)]
     fn threading_clone(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> ffi::MyObjectCxxQtThread {
-        ffi::cxx_qt_ffi_my_object_cxx_qt_thread_clone(cxx_qt_thread)
+        ffi::cxx_qt_ffi_MyObject_cxxQtThreadClone(cxx_qt_thread)
     }
     #[doc(hidden)]
     fn threading_drop(cxx_qt_thread: &mut ffi::MyObjectCxxQtThread) {
-        ffi::cxx_qt_ffi_my_object_cxx_qt_thread_drop(cxx_qt_thread);
+        ffi::cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread);
     }
 }
 #[doc(hidden)]
@@ -373,15 +365,15 @@ pub fn initialize_MyObject_1(
 impl ::core::ops::Deref for ffi::MyObject {
     type Target = MyObjectRust;
     fn deref(&self) -> &Self::Target {
-        ffi::cxx_qt_ffi_my_object_unsafe_rust(self)
+        ffi::cxx_qt_ffi_MyObject_unsafeRust(self)
     }
 }
 impl ::cxx_qt::CxxQtType for ffi::MyObject {
     type Rust = MyObjectRust;
     fn rust(&self) -> &Self::Rust {
-        ffi::cxx_qt_ffi_my_object_unsafe_rust(self)
+        ffi::cxx_qt_ffi_MyObject_unsafeRust(self)
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
-        ffi::cxx_qt_ffi_my_object_unsafe_rust_mut(self)
+        ffi::cxx_qt_ffi_MyObject_unsafeRustMut(self)
     }
 }

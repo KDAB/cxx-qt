@@ -209,7 +209,7 @@ mod tests {
                     #[doc(hidden)]
                     #[cxx_name = "qtThread"]
                     #[namespace = "rust::cxxqt1"]
-                    fn cxx_qt_ffi_my_object_qt_thread(qobject: &MyObject) -> MyObjectCxxQtThread;
+                    fn cxx_qt_ffi_MyObject_qtThread(qobject: &MyObject) -> MyObjectCxxQtThread;
 
                     // SAFETY:
                     // - Send + 'static: argument closure can be transferred to QObject thread.
@@ -217,7 +217,7 @@ mod tests {
                     #[doc(hidden)]
                     #[cxx_name = "cxxQtThreadQueue"]
                     #[namespace = "rust::cxxqt1"]
-                    fn cxx_qt_ffi_my_object_cxx_qt_thread_queue(
+                    fn cxx_qt_ffi_MyObject_cxxQtThreadQueue(
                         cxx_qt_thread: &MyObjectCxxQtThread,
                         func: fn(Pin<&mut MyObject>, Box<MyObjectCxxQtThreadQueuedFn>),
                         arg: Box<MyObjectCxxQtThreadQueuedFn>,
@@ -226,18 +226,17 @@ mod tests {
                     #[doc(hidden)]
                     #[cxx_name = "cxxQtThreadClone"]
                     #[namespace = "rust::cxxqt1"]
-                    fn cxx_qt_ffi_my_object_cxx_qt_thread_clone(cxx_qt_thread: &MyObjectCxxQtThread) -> MyObjectCxxQtThread;
+                    fn cxx_qt_ffi_MyObject_cxxQtThreadClone(cxx_qt_thread: &MyObjectCxxQtThread) -> MyObjectCxxQtThread;
 
                     #[doc(hidden)]
                     #[cxx_name = "cxxQtThreadDrop"]
                     #[namespace = "rust::cxxqt1"]
-                    fn cxx_qt_ffi_my_object_cxx_qt_thread_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
+                    fn cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread: &mut MyObjectCxxQtThread);
 
                     #[doc(hidden)]
                     #[cxx_name = "cxxQtThreadIsDestroyed"]
                     #[namespace = "rust::cxxqt1"]
-                    fn cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(cxx_qt_thread: &MyObjectCxxQtThread)
-                        -> bool;
+                    fn cxx_qt_ffi_MyObject_cxxQtThreadIsDestroyed(cxx_qt_thread: &MyObjectCxxQtThread) -> bool;
                 }
             },
         );
@@ -261,12 +260,12 @@ mod tests {
 
                     fn qt_thread(&self) -> qobject::MyObjectCxxQtThread
                     {
-                        qobject::cxx_qt_ffi_my_object_qt_thread(self)
+                        qobject::cxx_qt_ffi_MyObject_qtThread(self)
                     }
 
                     #[doc(hidden)]
                     fn is_destroyed(cxx_qt_thread: &qobject::MyObjectCxxQtThread) -> bool {
-                        qobject::cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(cxx_qt_thread)
+                        qobject::cxx_qt_ffi_MyObject_cxxQtThreadIsDestroyed(cxx_qt_thread)
                     }
 
                     #[doc(hidden)]
@@ -287,19 +286,19 @@ mod tests {
                             (arg.inner)(obj)
                         }
                         let arg = MyObjectCxxQtThreadQueuedFn { inner: std::boxed::Box::new(f) };
-                        qobject::cxx_qt_ffi_my_object_cxx_qt_thread_queue(cxx_qt_thread, func, std::boxed::Box::new(arg))
+                        qobject::cxx_qt_ffi_MyObject_cxxQtThreadQueue(cxx_qt_thread, func, std::boxed::Box::new(arg))
                     }
 
                     #[doc(hidden)]
                     fn threading_clone(cxx_qt_thread: &qobject::MyObjectCxxQtThread) -> qobject::MyObjectCxxQtThread
                     {
-                        qobject::cxx_qt_ffi_my_object_cxx_qt_thread_clone(cxx_qt_thread)
+                        qobject::cxx_qt_ffi_MyObject_cxxQtThreadClone(cxx_qt_thread)
                     }
 
                     #[doc(hidden)]
                     fn threading_drop(cxx_qt_thread: &mut qobject::MyObjectCxxQtThread)
                     {
-                        qobject::cxx_qt_ffi_my_object_cxx_qt_thread_drop(cxx_qt_thread);
+                        qobject::cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread);
                     }
                 }
             },
