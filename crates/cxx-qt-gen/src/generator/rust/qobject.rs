@@ -263,7 +263,7 @@ mod tests {
                 extern "Rust" {
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::cxx_qt_my_object"]
-                    fn create_rs_my_object_rust() -> Box<MyObjectRust>;
+                    fn create_rs_MyObjectRust() -> Box<MyObjectRust>;
                 }
             },
         );

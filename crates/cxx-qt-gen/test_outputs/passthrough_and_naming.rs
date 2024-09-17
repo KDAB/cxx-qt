@@ -167,7 +167,7 @@ pub mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::multi_object::cxx_qt_my_object"]
-        fn create_rs_my_object_rust() -> Box<MyObjectRust>;
+        fn create_rs_MyObjectRust() -> Box<MyObjectRust>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -279,7 +279,7 @@ pub mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "second_object::cxx_qt_second_object"]
-        fn create_rs_second_object_rust() -> Box<SecondObjectRust>;
+        fn create_rs_SecondObjectRust() -> Box<SecondObjectRust>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -315,7 +315,7 @@ pub mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "my_namespace::cxx_qt_my_rust_name"]
-        fn create_rs_third_object_rust() -> Box<ThirdObjectRust>;
+        fn create_rs_ThirdObjectRust() -> Box<ThirdObjectRust>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -586,7 +586,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     [usize; 2]
 );
 #[doc(hidden)]
-pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
+pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
 impl ::core::ops::Deref for ffi::MyObject {
@@ -751,7 +751,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     [usize; 2]
 );
 #[doc(hidden)]
-pub fn create_rs_second_object_rust() -> std::boxed::Box<SecondObjectRust> {
+pub fn create_rs_SecondObjectRust() -> std::boxed::Box<SecondObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
 impl ::core::ops::Deref for ffi::SecondObject {
@@ -770,7 +770,7 @@ impl ::cxx_qt::CxxQtType for ffi::SecondObject {
     }
 }
 #[doc(hidden)]
-pub fn create_rs_third_object_rust() -> std::boxed::Box<ThirdObjectRust> {
+pub fn create_rs_ThirdObjectRust() -> std::boxed::Box<ThirdObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
 impl ::core::ops::Deref for ffi::MyRustName {

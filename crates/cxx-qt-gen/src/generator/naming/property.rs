@@ -129,7 +129,7 @@ pub fn property_name_from_rust_name(ident: Ident) -> Name {
 fn getter_name_from_property(name: &Name) -> Name {
     name.clone().with_cxx_name(format!(
         "get{}",
-        name.cxx_unqualified().to_case(Case::Pascal)
+        name.cxx_unqualified().to_case(Case::Pascal) // TODO: REMOVE this
     ))
 }
 
@@ -139,7 +139,7 @@ fn setter_name_from_property(name: &Name) -> Name {
         .with_rust_name(format_ident!("set_{}", name.rust_unqualified()))
         .with_cxx_name(format!(
             "set{}",
-            name.cxx_unqualified().to_case(Case::Pascal)
+            name.cxx_unqualified().to_case(Case::Pascal) // TODO: REMOVE this
         ))
 }
 

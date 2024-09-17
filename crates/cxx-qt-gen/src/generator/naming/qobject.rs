@@ -62,8 +62,8 @@ impl QObjectNames {
     pub fn cxx_qt_ffi_method(&self, cxx_name: &str) -> Name {
         let ident = format_ident!(
             "cxx_qt_ffi_{ident}_{suffix}",
-            ident = self.name.cxx_unqualified().to_case(Case::Snake),
-            suffix = cxx_name.to_case(Case::Snake)
+            ident = self.name.cxx_unqualified().to_case(Case::Snake), // TODO: REMOVE this
+            suffix = cxx_name.to_case(Case::Snake)                    // TODO: REMOVE this
         );
         let mut name = Name::new(ident);
         if let Some(module) = self.name.module() {

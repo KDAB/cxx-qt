@@ -92,7 +92,7 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
-        fn create_rs_my_object_rust() -> Box<MyObjectRust>;
+        fn create_rs_MyObjectRust() -> Box<MyObjectRust>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -128,7 +128,7 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_my_renamed_object"]
-        fn create_rs_internal_object() -> Box<InternalObject>;
+        fn create_rs_InternalObject() -> Box<InternalObject>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -146,7 +146,7 @@ mod ffi {
     }
 }
 #[doc(hidden)]
-pub fn create_rs_my_object_rust() -> std::boxed::Box<MyObjectRust> {
+pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
 impl ::core::ops::Deref for ffi::MyObject {
@@ -165,7 +165,7 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
     }
 }
 #[doc(hidden)]
-pub fn create_rs_internal_object() -> std::boxed::Box<InternalObject> {
+pub fn create_rs_InternalObject() -> std::boxed::Box<InternalObject> {
     std::boxed::Box::new(core::default::Default::default())
 }
 impl ::core::ops::Deref for ffi::MyRenamedObject {
