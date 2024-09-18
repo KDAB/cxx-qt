@@ -6,8 +6,6 @@
 use crate::generator::naming::property::property_name_from_rust_name;
 use crate::naming::Name;
 use crate::syntax::expr::expr_to_string;
-use convert_case::{Case, Casing};
-use quote::format_ident;
 use syn::{
     parse::{Error, ParseStream},
     punctuated::Punctuated,
@@ -73,7 +71,7 @@ fn parse_meta_name_value(name_value: &MetaNameValue) -> Result<(Ident, Ident)> {
                 "cxx_name and rust_name must use string values like `cxx_name = \"myName\"`!",
             )
         })?;
-        format_ident!("{}", string)
+        syn::parse_str::<Ident>(&string)?
     } else if let Expr::Path(path_expr) = expr {
         path_expr.path.require_ident()?.clone()
     } else {
@@ -189,19 +187,9 @@ impl ParsedQProperty {
                     ))
                 }
 
-                let cxx_name_str = if let Some(name) = cxx_name {
-                    name.to_string()
-                } else if rust_name.is_none() {
-                    ident.to_string().to_case(Case::Camel)
-                } else {
-                    ident.to_string()
-                };
-                let mut name = Name::new(ident).with_cxx_name(cxx_name_str);
+                let name = Name::new(ident).with_options(cxx_name.map(|ident| ident.to_string()), rust_name, true);
 
-                if let Some(ident) = rust_name {
-                    name = name.with_rust_name(ident);
-                }
-
+                // This check is needed otherwise this fn would error unless READ, WRITE, etc... was passed with cxx_name
                 if read_required {
                     if let Some(read) = read {
                         Ok(Self {
@@ -227,7 +215,7 @@ impl ParsedQProperty {
                     Ok(Self {
                         name,
                         ty,
-                        flags: QPropertyFlags::default(),
+                        flags: QPropertyFlags::default(), // This block is hit if no flags, or only cxx / rust name were passed
                     })
                 }
             }
@@ -281,6 +269,8 @@ mod tests {
             { #[qproperty()] }
             // cxx_name should be a string
             { #[qproperty(T, name, cxx_name = myName)] }
+            // cxx_name should be a valid non_empty ident
+            { #[qproperty(T, name, cxx_name = "")] }
             // cxx_name had no value provided
             { #[qproperty(T, name, cxx_name)] }
         }

@@ -136,34 +136,56 @@ impl Name {
         }
 
         // Find if there is a cxx_name mapping (for C++ generation)
-        let mut cxx_name = attribute_find_path(attrs, &["cxx_name"])
+        let cxx_name = attribute_find_path(attrs, &["cxx_name"])
             .map(|index| -> Result<_> {
                 expr_to_string(&attrs[index].meta.require_name_value()?.value)
             })
             .transpose()?;
 
         // Find if there is a rust_name mapping
-        let rust_ident = if let Some(index) = attribute_find_path(attrs, &["rust_name"]) {
-            // If we have a rust_name, but no cxx_name, the original ident is the cxx_name.
-            if cxx_name.is_none() {
-                cxx_name = Some(ident.to_string());
-            }
-
-            format_ident!(
-                "{}",
-                expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
-                span = attrs[index].span()
-            )
-        } else {
-            ident.clone()
-        };
+        let rust_name = attribute_find_path(attrs, &["rust_name"])
+            .map(|index| -> Result<_> {
+                Ok(format_ident!(
+                    "{}",
+                    expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
+                    span = attrs[index].span()
+                ))
+            })
+            .transpose()?;
 
         Ok(Self {
-            rust: rust_ident,
-            cxx: cxx_name,
+            rust: ident.clone(),
+            cxx: None,
             namespace,
             module: module.cloned().map(Path::from),
-        })
+        }
+        .with_options(cxx_name, rust_name, false))
+    }
+
+    /// Applies naming options to an existing name, applying logic about what should cause renaming
+    pub fn with_options(self, cxx: Option<String>, rust: Option<Ident>, auto_camel: bool) -> Self {
+        let mut cxx_ident = cxx.clone();
+        let rust_ident = if let Some(rust_ident) = rust {
+            // If we have a rust_name, but no cxx_name, the original ident is the cxx_name.
+            if cxx.is_none() {
+                cxx_ident = Some(self.rust.to_string());
+            };
+
+            rust_ident
+        } else {
+            // If we have no rust_name and no cxx_name, the original ident is the cxx_name ONLY if auto converting.
+            // Otherwise it stays as the original cxx Option
+            if cxx.is_none() && auto_camel {
+                cxx_ident = Some(self.rust.to_string().to_case(Case::Camel));
+            }
+            self.rust.clone()
+        };
+
+        Self {
+            rust: rust_ident,
+            cxx: cxx_ident,
+            ..self
+        }
     }
 
     /// Get the unqualified name of the type in C++.
