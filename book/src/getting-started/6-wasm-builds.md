@@ -77,7 +77,7 @@ To build for WebAssembly in a project that uses CXX-Qt crates, first follow the 
 
 ### CMakeLists.txt
 
-When compiling a CXX-Qt project for wasm, the Rust target must be set to `wasm32-unknown-emscripten`, and the project must be configured to use POSIX threads. Make sure you have the Emscripten target for `rustc` with `rustup target add wasm-unknown-emscripten`.
+When compiling a CXX-Qt project for wasm, the Rust target must be set to `wasm32-unknown-emscripten`, and the project must be configured to use POSIX threads. Make sure you have the Emscripten target for `rustc` with `rustup target add wasm32-unknown-emscripten`.
 
 ```cmake
 set(Rust_CARGO_TARGET wasm32-unknown-emscripten)

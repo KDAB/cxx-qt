@@ -105,6 +105,10 @@ ApplicationWindow {
                     source: "pages/MultipleQObjectsPage.qml"
                 }
                 ListElement {
+                    name: "Naming"
+                    source: "pages/NamingPage.qml"
+                }
+                ListElement {
                     name: "Nested QObjects"
                     source: "pages/NestedQObjectsPage.qml"
                 }

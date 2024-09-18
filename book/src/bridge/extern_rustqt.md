@@ -63,7 +63,7 @@ TODO: we need to add https://doc.qt.io/qt-6/qqmlengine.html#QML_ANONYMOUS
 TODO: we need to add https://doc.qt.io/qt-6/qqmlengine.html#QML_INTERFACE
 -->
 
-- [`qml_name`](https://doc.qt.io/qt-6/qqmlengine.html#QML_NAMED_ELEMENT): Use a different type name for QML.
+- [`qml_element`](https://doc.qt.io/qt-6/qqmlengine.html#QML_NAMED_ELEMENT): Declare type as a qml element. An alternative type name for QML can be used like `qml_element = "MyName"`
 - [`qml_uncreatable`](https://doc.qt.io/qt-6/qqmlengine.html#QML_UNCREATABLE): Mark the type as uncreatable from QML. It may still be returned by C++/Rust code.
 - [`qml_singleton`](https://doc.qt.io/qt-6/qqmlengine.html#QML_SINGLETON): An instance of the `QObject` will be instantiated as a singleton in QML.
 
