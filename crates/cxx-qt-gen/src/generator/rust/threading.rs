@@ -230,6 +230,12 @@ mod tests {
                     #[cxx_name = "cxxQtThreadDrop"]
                     #[namespace = "rust::cxxqt1"]
                     fn cxx_qt_ffi_my_object_cxx_qt_thread_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
+
+                    #[doc(hidden)]
+                    #[cxx_name = "cxxQtThreadIsDestroyed"]
+                    #[namespace = "rust::cxxqt1"]
+                    fn cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(cxx_qt_thread: &MyObjectCxxQtThread)
+                        -> bool;
                 }
             },
         );
