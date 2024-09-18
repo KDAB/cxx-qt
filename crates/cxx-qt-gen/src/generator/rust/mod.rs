@@ -15,13 +15,11 @@ pub mod qobject;
 pub mod signals;
 pub mod threading;
 
-use crate::generator::rust::fragment::GeneratedRustFragment;
-use crate::generator::structuring;
-use crate::parser::parameter::ParsedFunctionParameter;
-use crate::parser::Parser;
+use crate::generator::{rust::fragment::GeneratedRustFragment, structuring};
+use crate::parser::{parameter::ParsedFunctionParameter, Parser};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
-use syn::{Item, ItemMod, Result};
+use syn::{parse_quote, Item, ItemMod, Result};
 
 /// Representation of the generated Rust code for a QObject
 pub struct GeneratedRustBlocks {
@@ -59,10 +57,35 @@ impl GeneratedRustBlocks {
                 .collect::<Result<Vec<GeneratedRustFragment>>>()?,
         );
 
+        let namespace = parser.cxx_qt_data.namespace.clone().unwrap_or_default();
+        let passthrough_mod = &parser.passthrough_module;
+
+        let vis = &passthrough_mod.vis;
+        let ident = &passthrough_mod.module_ident;
+        let docs = &passthrough_mod.docs;
+        let module = passthrough_mod.items.clone().map_or(
+            // If no items are present, curly braces aren't needed
+            quote! {
+                #vis mod #ident;
+            },
+            |items| {
+                quote! {
+                    #vis mod #ident {
+                        #(#items)*
+                    }
+                }
+            },
+        );
+        let cxx_mod = parse_quote! {
+            #[cxx::bridge(namespace = #namespace)]
+            #(#docs)*
+            #module
+        };
+
         Ok(GeneratedRustBlocks {
-            cxx_mod: parser.passthrough_module.clone(),
+            cxx_mod,
             cxx_mod_contents: qenum::generate_cxx_mod_contents(&parser.cxx_qt_data.qenums),
-            namespace: parser.cxx_qt_data.namespace.clone().unwrap_or_default(),
+            namespace,
             fragments,
         })
     }
@@ -96,9 +119,8 @@ pub fn get_params_tokens(
 
 #[cfg(test)]
 mod tests {
-    use syn::parse_quote;
-
     use super::*;
+    use syn::parse_quote;
 
     #[test]
     fn test_generated_rust_blocks() {

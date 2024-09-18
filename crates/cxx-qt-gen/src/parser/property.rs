@@ -232,7 +232,6 @@ pub fn mock_property(mut input: ItemStruct) -> ParsedQProperty {
 
 #[cfg(test)]
 mod tests {
-    use std::os::unix::raw::ino_t;
     use super::*;
     use crate::tests::assert_parse_errors;
     use quote::format_ident;
@@ -240,7 +239,7 @@ mod tests {
 
     #[test]
     fn test_parse_named_property() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(T, name, cxx_name = "myName", rust_name = "my_name")]
             struct MyStruct;
         };

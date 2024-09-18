@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{check_safety, method::MethodFields, require_attributes, separate_docs};
+use crate::parser::{check_safety, extract_docs, method::MethodFields, require_attributes};
 use crate::syntax::safety::Safety;
 use core::ops::Deref;
 use quote::format_ident;
@@ -21,10 +21,10 @@ impl ParsedInheritedMethod {
     const ALLOWED_ATTRS: [&'static str; 5] =
         ["cxx_name", "rust_name", "qinvokable", "doc", "inherit"];
 
-    pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
+    pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
         require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
-        let docs = separate_docs(&mut method);
+        let docs = extract_docs(&method.attrs);
 
         Ok(Self {
             method_fields: MethodFields::parse(method)?,

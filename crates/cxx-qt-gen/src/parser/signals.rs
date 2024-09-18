@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{
-    parser::{check_safety, method::MethodFields, require_attributes, separate_docs},
+    parser::{check_safety, extract_docs, method::MethodFields, require_attributes},
     syntax::{path::path_compare_str, safety::Safety},
 };
 use core::ops::Deref;
@@ -30,10 +30,10 @@ impl ParsedSignal {
         Self::parse(method.clone(), Safety::Safe).unwrap()
     }
 
-    pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
+    pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 
-        let docs = separate_docs(&mut method);
+        let docs = extract_docs(&method.attrs);
         let fields = MethodFields::parse(method)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 

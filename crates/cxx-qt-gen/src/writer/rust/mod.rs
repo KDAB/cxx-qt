@@ -4,10 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::rust::GeneratedRustBlocks;
-use crate::syntax::path::path_compare_str;
 use proc_macro2::TokenStream;
 use quote::{quote, ToTokens};
-use syn::{parse_quote_spanned, spanned::Spanned, Attribute};
+use syn::{parse_quote_spanned, spanned::Spanned};
 
 /// For a given GeneratedRustBlocks write this into a Rust TokenStream
 pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -> TokenStream {
@@ -15,7 +14,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
     let mut cxx_mod = generated.cxx_mod.clone();
     let mut cxx_mod_contents = generated.cxx_mod_contents.clone();
     let mut cxx_qt_mod_contents = vec![];
-    let namespace = &generated.namespace;
 
     // Add common includes for all objects
     cxx_mod_contents.insert(
@@ -48,15 +46,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
         cxx_qt_mod_contents.extend_from_slice(&fragment.cxx_qt_mod_contents);
     }
 
-    let docs: Vec<Attribute> = cxx_mod
-        .attrs
-        .iter()
-        .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
-        .cloned()
-        .collect();
-
-    cxx_mod.attrs = vec![]; // Reset all attributes to stop cxx_qt::bridge being passed through
-
     // Inject the CXX blocks
     if let Some((_, items)) = &mut cxx_mod.content {
         items.extend(cxx_mod_contents);
@@ -66,8 +55,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
     }
 
     quote! {
-        #[cxx::bridge(namespace = #namespace)]
-        #(#docs)*
         #cxx_mod
 
         #(#cxx_qt_mod_contents)*
@@ -109,6 +96,7 @@ mod tests {
     pub fn create_generated_rust() -> GeneratedRustBlocks {
         GeneratedRustBlocks {
             cxx_mod: parse_quote! {
+                #[cxx::bridge(namespace = "cxx_qt::my_object")]
                 mod ffi {}
             },
             cxx_mod_contents: vec![],
@@ -147,6 +135,7 @@ mod tests {
     pub fn create_generated_rust_multi_qobjects() -> GeneratedRustBlocks {
         GeneratedRustBlocks {
             cxx_mod: parse_quote! {
+                #[cxx::bridge(namespace = "cxx_qt")]
                 mod ffi {}
             },
             cxx_mod_contents: vec![],
