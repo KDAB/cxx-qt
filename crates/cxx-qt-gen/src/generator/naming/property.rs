@@ -63,14 +63,14 @@ impl QPropertyNames {
         property: &ParsedQProperty,
         structured_qobject: &StructuredQObject,
     ) -> Result<Self> {
-        let property_name = property_name_from_rust_name(property.ident.clone());
+        let property_name = &property.name;
 
         // Cache flags as they are accessed multiple times
         let flags = &property.flags;
 
         let getter = NameState::from_flag_with_auto_fn(
             &flags.read,
-            || getter_name_from_property(&property_name),
+            || getter_name_from_property(property_name),
             structured_qobject,
             false,
         )?;
@@ -81,7 +81,7 @@ impl QPropertyNames {
             .map(|setter| {
                 NameState::from_flag_with_auto_fn(
                     &setter,
-                    || setter_name_from_property(&property_name),
+                    || setter_name_from_property(property_name),
                     structured_qobject,
                     false,
                 )
@@ -94,7 +94,7 @@ impl QPropertyNames {
             .map(|notify| {
                 NameState::from_flag_with_auto_fn(
                     &notify,
-                    || notify_name_from_property(&property_name),
+                    || notify_name_from_property(property_name),
                     structured_qobject,
                     true,
                 )
@@ -112,14 +112,15 @@ impl QPropertyNames {
             setter,
             notify,
             reset,
-            name: property_name,
+            name: property_name.clone(),
         })
     }
 }
 
-fn property_name_from_rust_name(ident: Ident) -> Name {
+pub fn property_name_from_rust_name(ident: Ident) -> Name {
     // TODO: ParsedQProperty should probably take care of this already and allow the user to set
     // their own name for C++ if they want to.
+    // REMOVE THIS FN
     let cxx_name = ident.to_string().to_case(Case::Camel);
     Name::new(ident).with_cxx_name(cxx_name)
 }
@@ -159,7 +160,7 @@ pub mod tests {
 
     pub fn create_i32_qpropertyname() -> QPropertyNames {
         let property = ParsedQProperty {
-            ident: format_ident!("my_property"),
+            name: property_name_from_rust_name(format_ident!("my_property")),
             ty: parse_quote! { i32 },
             flags: QPropertyFlags::default(),
         };
@@ -175,19 +176,16 @@ pub mod tests {
     fn test_parsed_property() {
         let names = create_i32_qpropertyname();
         assert_eq!(names.name.cxx_unqualified(), "myProperty");
-        assert_eq!(names.name.rust_unqualified(), &format_ident!("my_property"));
+        assert_eq!(names.name.rust_unqualified(), "my_property");
         assert_eq!(names.getter.cxx_unqualified(), "getMyProperty");
-        assert_eq!(
-            names.getter.rust_unqualified(),
-            &format_ident!("my_property")
-        );
+        assert_eq!(names.getter.rust_unqualified(), "my_property");
         assert_eq!(
             names.setter.as_ref().unwrap().cxx_unqualified(),
             "setMyProperty"
         );
         assert_eq!(
             names.setter.as_ref().unwrap().rust_unqualified(),
-            &format_ident!("set_my_property")
+            "set_my_property"
         );
         assert_eq!(
             names.notify.as_ref().unwrap().cxx_unqualified(),
@@ -195,7 +193,7 @@ pub mod tests {
         );
         assert_eq!(
             names.notify.as_ref().unwrap().rust_unqualified(),
-            &format_ident!("my_property_changed")
+            "my_property_changed"
         );
     }
 }

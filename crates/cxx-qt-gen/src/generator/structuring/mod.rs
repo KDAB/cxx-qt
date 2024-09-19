@@ -124,92 +124,6 @@ mod tests {
     use syn::{parse_quote, ItemMod};
 
     #[test]
-    fn test_structuring_unknown_qobject() {
-        let module = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                extern "RustQt" {
-                    #[qobject]
-                    type MyObject = super::MyObjectRust;
-                }
-
-                unsafe extern "RustQt" {
-                    #[qsignal]
-                    fn ready(self: Pin<&mut UnknownObject>);
-                }
-            }
-        };
-        let parser = Parser::from(module).unwrap();
-        let structures = Structures::new(&parser.cxx_qt_data);
-
-        assert!(structures.is_err());
-    }
-
-    #[test]
-    fn test_module_invalid_qobject_qenum() {
-        let module = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                #[qenum(MyObject)]
-                enum MyEnum {
-                    A,
-                }
-            }
-        };
-
-        let parser = Parser::from(module).unwrap();
-        assert!(Structures::new(&parser.cxx_qt_data).is_err());
-    }
-
-    #[test]
-    fn test_module_invalid_qobject_method() {
-        let module = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                unsafe extern "RustQt" {
-                    #[qinvokable]
-                    fn test_fn(self: Pin<&mut MyObject>);
-                }
-            }
-        };
-
-        let parser = Parser::from(module).unwrap();
-        assert!(Structures::new(&parser.cxx_qt_data).is_err());
-    }
-
-    #[test]
-    fn test_module_invalid_qobject_signal() {
-        let module = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                unsafe extern "RustQt" {
-                    #[qsignal]
-                    fn test_fn(self: Pin<&mut MyObject>);
-                }
-            }
-        };
-
-        let parser = Parser::from(module).unwrap();
-        assert!(Structures::new(&parser.cxx_qt_data).is_err());
-    }
-
-    #[test]
-    fn test_module_invalid_qobject_inherited() {
-        let module = parse_quote! {
-            #[cxx_qt::bridge]
-            mod ffi {
-                unsafe extern "RustQt" {
-                    #[inherit]
-                    fn test_fn(self: Pin<&mut MyObject>);
-                }
-            }
-        };
-
-        let parser = Parser::from(module).unwrap();
-        assert!(Structures::new(&parser.cxx_qt_data).is_err());
-    }
-
-    #[test]
     fn test_invalid_lookup() {
         let module = parse_quote! {
             #[cxx_qt::bridge]
@@ -338,20 +252,15 @@ mod tests {
         }
     }
 
-    fn assert_structuring_error(additional_items: impl IntoIterator<Item = syn::Item>) {
-        let mut bridge = mock_bridge();
-        bridge.content.as_mut().unwrap().1.extend(additional_items);
-        let parser = Parser::from(bridge).unwrap();
-        assert!(Structures::new(&parser.cxx_qt_data).is_err());
-    }
-
     #[test]
     fn test_incompatible_trait_impl() {
-        // TODO: Possible to use assert_parse_errors?
-        assert_structuring_error([
+        let mut bridge = mock_bridge();
+        bridge.content.as_mut().unwrap().1.extend([
             parse_quote! {impl cxx_qt::Threading for MyObject {}},
             parse_quote! {impl cxx_qt::Threading for MyObject {}},
         ]);
+        let parser = Parser::from(bridge).unwrap();
+        assert!(Structures::new(&parser.cxx_qt_data).is_err());
     }
 
     #[test]

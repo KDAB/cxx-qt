@@ -67,6 +67,7 @@ pub fn generate_rust_properties(
 mod tests {
     use super::*;
 
+    use crate::generator::naming::property::property_name_from_rust_name;
     use crate::parser::property::QPropertyFlags;
     use crate::parser::qobject::ParsedQObject;
     use crate::{generator::naming::qobject::tests::create_qobjectname, tests::assert_tokens_eq};
@@ -77,17 +78,17 @@ mod tests {
     fn test_generate_rust_properties() {
         let properties = vec![
             ParsedQProperty {
-                ident: format_ident!("trivial_property"),
+                name: property_name_from_rust_name(format_ident!("trivial_property")),
                 ty: parse_quote! { i32 },
                 flags: QPropertyFlags::default(),
             },
             ParsedQProperty {
-                ident: format_ident!("opaque_property"),
+                name: property_name_from_rust_name(format_ident!("opaque_property")),
                 ty: parse_quote! { UniquePtr<QColor> },
                 flags: QPropertyFlags::default(),
             },
             ParsedQProperty {
-                ident: format_ident!("unsafe_property"),
+                name: property_name_from_rust_name(format_ident!("unsafe_property")),
                 ty: parse_quote! { *mut T },
                 flags: QPropertyFlags::default(),
             },

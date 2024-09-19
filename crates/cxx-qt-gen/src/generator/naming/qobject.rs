@@ -109,19 +109,13 @@ pub mod tests {
         let names =
             QObjectNames::from_qobject(&create_parsed_qobject(), &TypeNames::mock()).unwrap();
         assert_eq!(names.name.cxx_unqualified(), "MyObject");
-        assert_eq!(names.name.rust_unqualified(), &format_ident!("MyObject"));
+        assert_eq!(names.name.rust_unqualified(), "MyObject");
         assert_eq!(names.rust_struct.cxx_unqualified(), "MyObjectRust");
-        assert_eq!(
-            names.rust_struct.rust_unqualified(),
-            &format_ident!("MyObjectRust")
-        );
-        assert_eq!(
-            names.cxx_qt_thread_class,
-            format_ident!("MyObjectCxxQtThread")
-        );
+        assert_eq!(names.rust_struct.rust_unqualified(), "MyObjectRust");
+        assert_eq!(names.cxx_qt_thread_class, "MyObjectCxxQtThread");
         assert_eq!(
             names.cxx_qt_thread_queued_fn_struct,
-            format_ident!("MyObjectCxxQtThreadQueuedFn")
+            "MyObjectCxxQtThreadQueuedFn"
         );
 
         assert_eq!(

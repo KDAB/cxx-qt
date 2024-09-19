@@ -13,6 +13,13 @@ mod ffi {
         #[qproperty(QPoint, trivial)]
         #[qproperty(i32, custom_function_prop, READ = my_getter, WRITE = my_setter, NOTIFY)]
         #[qproperty(i32, readonly_prop, READ)]
+        #[qproperty(
+            i32,
+            named_prop,
+            cxx_name = "renamedProperty",
+            rust_name = "renamed_property"
+        )]
+        #[qproperty(i32, named_prop_2, rust_name = "renamed_property_2")]
         #[qproperty(i32, custom_on_changed_prop, READ, WRITE, NOTIFY = my_on_changed)]
         #[qproperty(i32, const_prop, READ, CONSTANT)]
         #[qproperty(i32, resettable_prop, READ, WRITE, RESET = myResetFn)]

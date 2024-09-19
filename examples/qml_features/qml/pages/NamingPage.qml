@@ -11,7 +11,7 @@ import com.kdab.cxx_qt.demo 1.0
 Page {
     RenamedObject {
         id: renamedObject
-        num: 1
+        numberProp: 1
     }
 
     Column {
@@ -22,7 +22,7 @@ Page {
         Label {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            text: qsTr("Counter: %1").arg(renamedObject.num)
+            text: qsTr("Counter: %1").arg(renamedObject.numberProp)
             wrapMode: Text.Wrap
         }
 
