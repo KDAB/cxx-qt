@@ -22,19 +22,20 @@ public:
   virtual ~MyObject() = default;
 
 public:
-  void cppMethod() const noexcept;
+  void cpp_method() const noexcept;
   Q_INVOKABLE void invokable() const noexcept;
-  Q_INVOKABLE void invokableMutable() noexcept;
-  Q_INVOKABLE void invokableParameters(QColor const& opaque,
-                                       QPoint const& trivial,
-                                       ::std::int32_t primitive) const noexcept;
-  Q_INVOKABLE ::std::unique_ptr<Opaque> invokableReturnOpaque() noexcept;
-  Q_INVOKABLE QPoint invokableReturnTrivial() noexcept;
-  Q_INVOKABLE void invokableFinal() const noexcept final;
-  Q_INVOKABLE void invokableOverride() const noexcept override;
-  Q_INVOKABLE virtual void invokableVirtual() const noexcept;
-  Q_INVOKABLE void invokableResultTuple() const;
-  Q_INVOKABLE ::rust::String invokableResultType() const;
+  Q_INVOKABLE void invokable_mutable() noexcept;
+  Q_INVOKABLE void invokable_parameters(
+    QColor const& opaque,
+    QPoint const& trivial,
+    ::std::int32_t primitive) const noexcept;
+  Q_INVOKABLE ::std::unique_ptr<Opaque> invokable_return_opaque() noexcept;
+  Q_INVOKABLE QPoint invokable_return_trivial() noexcept;
+  Q_INVOKABLE void invokable_final() const noexcept final;
+  Q_INVOKABLE void invokable_override() const noexcept override;
+  Q_INVOKABLE virtual void invokable_virtual() const noexcept;
+  Q_INVOKABLE void invokable_result_tuple() const;
+  Q_INVOKABLE ::rust::String invokable_result_type() const;
   explicit MyObject(::std::int32_t arg0, QString const& arg1);
   explicit MyObject();
 

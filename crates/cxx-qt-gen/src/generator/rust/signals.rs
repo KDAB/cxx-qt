@@ -417,6 +417,7 @@ mod tests {
     #[test]
     fn test_generate_rust_signal_parameters() {
         let method: ForeignItemFn = parse_quote! {
+            #[cxx_name = "dataChanged"]
             fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
         let qsignal = ParsedSignal::mock(&method);
@@ -558,6 +559,7 @@ mod tests {
     #[test]
     fn test_generate_rust_signal_unsafe() {
         let method = parse_quote! {
+            #[cxx_name = "unsafeSignal"]
             unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
         };
         let qsignal = ParsedSignal::mock(&method);

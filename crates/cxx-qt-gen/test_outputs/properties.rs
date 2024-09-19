@@ -313,31 +313,34 @@ mod ffi {
         fn myResetFn(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
-        #[cxx_name = "myOnChanged"]
+        #[cxx_name = "my_on_changed"]
         #[namespace = "cxx_qt::my_object"]
         fn my_on_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlermyOnChanged =
-            cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosuremyOnChanged>;
+        type MyObjectCxxQtSignalHandlermy_on_changed = cxx_qt::signalhandler::CxxQtSignalHandler<
+            super::MyObjectCxxQtSignalClosuremy_on_changed,
+        >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        #[cxx_name = "MyObject_myOnChangedConnect"]
+        #[cxx_name = "MyObject_my_on_changedConnect"]
         fn MyObject_connect_my_on_changed(
             self_value: Pin<&mut MyObject>,
-            signal_handler: MyObjectCxxQtSignalHandlermyOnChanged,
+            signal_handler: MyObjectCxxQtSignalHandlermy_on_changed,
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
-        fn drop_MyObject_signal_handler_myOnChanged(handler: MyObjectCxxQtSignalHandlermyOnChanged);
+        fn drop_MyObject_signal_handler_my_on_changed(
+            handler: MyObjectCxxQtSignalHandlermy_on_changed,
+        );
         #[doc(hidden)]
-        fn call_MyObject_signal_handler_myOnChanged(
-            handler: &mut MyObjectCxxQtSignalHandlermyOnChanged,
+        fn call_MyObject_signal_handler_my_on_changed(
+            handler: &mut MyObjectCxxQtSignalHandlermy_on_changed,
             self_value: Pin<&mut MyObject>,
         );
     }
@@ -854,25 +857,19 @@ cxx_qt::static_assertions::assert_eq_size!(
 );
 impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
-    #[doc = "myOnChanged"]
+    #[doc = "my_on_changed"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_my_on_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_my_on_changed(
-            self,
-            cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuremyOnChanged>::new(
-                Box::new(closure),
-            ),
-            conn_type,
-        ))
+        cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_my_on_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuremy_on_changed > :: new (Box :: new (closure)) , conn_type ,))
     }
 }
 impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
-    #[doc = "myOnChanged"]
+    #[doc = "my_on_changed"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
@@ -880,36 +877,32 @@ impl ffi::MyObject {
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_my_on_changed(
-            self,
-            cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuremyOnChanged>::new(
-                Box::new(closure),
-            ),
-            cxx_qt::ConnectionType::AutoConnection,
-        ))
+        cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_my_on_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuremy_on_changed > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
 }
 #[doc(hidden)]
-pub struct MyObjectCxxQtSignalClosuremyOnChanged {}
-impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosuremyOnChanged {
+pub struct MyObjectCxxQtSignalClosuremy_on_changed {}
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosuremy_on_changed {
     type Id = cxx::type_id!(
-        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermyOnChanged"
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermy_on_changed"
     );
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
-use core::mem::drop as drop_MyObject_signal_handler_myOnChanged;
-fn call_MyObject_signal_handler_myOnChanged(
-    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuremyOnChanged>,
+use core::mem::drop as drop_MyObject_signal_handler_my_on_changed;
+fn call_MyObject_signal_handler_my_on_changed(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
+        MyObjectCxxQtSignalClosuremy_on_changed,
+    >,
     self_value: core::pin::Pin<&mut ffi::MyObject>,
 ) {
     handler.closure()(self_value);
 }
 cxx_qt::static_assertions::assert_eq_align!(
-    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuremyOnChanged>,
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuremy_on_changed>,
     usize
 );
 cxx_qt::static_assertions::assert_eq_size!(
-    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuremyOnChanged>,
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuremy_on_changed>,
     [usize; 2]
 );
 #[doc(hidden)]

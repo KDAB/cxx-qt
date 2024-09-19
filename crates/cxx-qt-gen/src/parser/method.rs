@@ -146,7 +146,7 @@ impl MethodFields {
 
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
         let safe = method.sig.unsafety.is_none();
-        let name = Name::from_rust_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+        let name = Name::from_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
 
         Ok(MethodFields {
             method,

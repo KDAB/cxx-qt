@@ -17,7 +17,7 @@ public:
 public:
   Q_INVOKABLE QVariant data(QModelIndex const& _index,
                             ::std::int32_t _role) const noexcept override;
-  Q_INVOKABLE bool hasChildren(
+  Q_INVOKABLE bool has_children(
     QModelIndex const& _parent) const noexcept override;
   template<class... Args>
   bool hasChildrenCxxQtInherit(Args... args) const
@@ -30,9 +30,9 @@ public:
     return QAbstractItemModel::helloWorld(args...);
   }
   template<class... Args>
-  void fetchMoreCxxQtInherit(Args... args)
+  void fetch_moreCxxQtInherit(Args... args)
   {
-    return QAbstractItemModel::fetchMore(args...);
+    return QAbstractItemModel::fetch_more(args...);
   }
   explicit MyObject(QObject* parent = nullptr);
 };

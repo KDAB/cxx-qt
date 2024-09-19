@@ -14,8 +14,8 @@ using MyObjectCxxQtSignalHandlerready =
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
-using MyObjectCxxQtSignalHandlerdataChanged =
-  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsdataChanged*>;
+using MyObjectCxxQtSignalHandlerdata_changed =
+  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsdata_changed*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
@@ -48,9 +48,9 @@ MyObject_readyConnect(
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
-MyObject_dataChangedConnect(
+MyObject_data_changedConnect(
   cxx_qt::my_object::MyObject& self,
-  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdataChanged
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdata_changed
     closure,
   ::Qt::ConnectionType type);
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
@@ -76,10 +76,10 @@ public:
 public:
   Q_INVOKABLE void invokable() noexcept;
   Q_SIGNAL void ready();
-  Q_SIGNAL void dataChanged(::std::int32_t first,
-                            ::std::unique_ptr<Opaque> second,
-                            QPoint third,
-                            QPoint const& fourth);
+  Q_SIGNAL void data_changed(::std::int32_t first,
+                             ::std::unique_ptr<Opaque> second,
+                             QPoint third,
+                             QPoint const& fourth);
   explicit MyObject(QObject* parent = nullptr);
 };
 

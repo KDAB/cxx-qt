@@ -117,21 +117,21 @@ MyObject_readyConnect(
 namespace rust::cxxqt1 {
 template<>
 SignalHandler<
-  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged*>::
-  ~SignalHandler() noexcept
+  ::cxx_qt::my_object::rust::cxxqtgen1::
+    MyObjectCxxQtSignalParamsdata_changed*>::~SignalHandler() noexcept
 {
   if (data[0] == nullptr && data[1] == nullptr) {
     return;
   }
 
-  drop_MyObject_signal_handler_dataChanged(::std::move(*this));
+  drop_MyObject_signal_handler_data_changed(::std::move(*this));
 }
 
 template<>
 template<>
 void
-SignalHandler<
-  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalParamsdataChanged*>::
+SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                MyObjectCxxQtSignalParamsdata_changed*>::
 operator()<cxx_qt::my_object::MyObject&,
            ::std::int32_t,
            ::std::unique_ptr<Opaque>,
@@ -142,35 +142,36 @@ operator()<cxx_qt::my_object::MyObject&,
                           QPoint third,
                           QPoint const& fourth)
 {
-  call_MyObject_signal_handler_dataChanged(*this,
-                                           self,
-                                           ::std::move(first),
-                                           ::std::move(second),
-                                           ::std::move(third),
-                                           ::std::move(fourth));
+  call_MyObject_signal_handler_data_changed(*this,
+                                            self,
+                                            ::std::move(first),
+                                            ::std::move(second),
+                                            ::std::move(third),
+                                            ::std::move(fourth));
 }
 
-static_assert(alignof(SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
-                                      MyObjectCxxQtSignalParamsdataChanged*>) <=
-                alignof(::std::size_t),
-              "unexpected aligment");
+static_assert(
+  alignof(SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                          MyObjectCxxQtSignalParamsdata_changed*>) <=
+    alignof(::std::size_t),
+  "unexpected aligment");
 static_assert(sizeof(SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
-                                     MyObjectCxxQtSignalParamsdataChanged*>) ==
+                                     MyObjectCxxQtSignalParamsdata_changed*>) ==
                 sizeof(::std::size_t[2]),
               "unexpected size");
 } // namespace rust::cxxqt1
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
-MyObject_dataChangedConnect(
+MyObject_data_changedConnect(
   cxx_qt::my_object::MyObject& self,
-  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdataChanged
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdata_changed
     closure,
   ::Qt::ConnectionType type)
 {
   return ::QObject::connect(
     &self,
-    &cxx_qt::my_object::MyObject::dataChanged,
+    &cxx_qt::my_object::MyObject::data_changed,
     &self,
     [&, closure = ::std::move(closure)](::std::int32_t first,
                                         ::std::unique_ptr<Opaque> second,

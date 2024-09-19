@@ -44,7 +44,7 @@ mod ffi {
         type MyObjectRust;
     }
     extern "Rust" {
-        #[cxx_name = "cppMethod"]
+        #[cxx_name = "cpp_method"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn cpp_method(self: &MyObject);
@@ -56,55 +56,55 @@ mod ffi {
         fn invokable(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableMutable"]
+        #[cxx_name = "invokable_mutable"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_mutable(self: Pin<&mut MyObject>);
     }
     extern "Rust" {
-        #[cxx_name = "invokableParameters"]
+        #[cxx_name = "invokable_parameters"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
     }
     extern "Rust" {
-        #[cxx_name = "invokableReturnOpaque"]
+        #[cxx_name = "invokable_return_opaque"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
     }
     extern "Rust" {
-        #[cxx_name = "invokableReturnTrivial"]
+        #[cxx_name = "invokable_return_trivial"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
     }
     extern "Rust" {
-        #[cxx_name = "invokableFinal"]
+        #[cxx_name = "invokable_final"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_final(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableOverride"]
+        #[cxx_name = "invokable_override"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_override(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableVirtual"]
+        #[cxx_name = "invokable_virtual"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_virtual(self: &MyObject);
     }
     extern "Rust" {
-        #[cxx_name = "invokableResultTuple"]
+        #[cxx_name = "invokable_result_tuple"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_result_tuple(self: &MyObject) -> Result<()>;
     }
     extern "Rust" {
-        #[cxx_name = "invokableResultType"]
+        #[cxx_name = "invokable_result_type"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
         fn invokable_result_type(self: &MyObject) -> Result<String>;

@@ -39,9 +39,11 @@ pub mod qobject {
     unsafe extern "RustQt" {
         // Declare the invokable methods we want to expose on the QObject
         #[qinvokable]
+        #[cxx_name = "incrementNumber"]
         fn increment_number(self: Pin<&mut MyObject>);
 
         #[qinvokable]
+        #[cxx_name = "sayHi"]
         fn say_hi(self: &MyObject, string: &QString, number: i32);
     }
     // ANCHOR_END: book_rustobj_invokable_signature

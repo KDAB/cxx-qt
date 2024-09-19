@@ -221,6 +221,7 @@ mod tests {
     #[test]
     fn test_generate_cpp_signals() {
         let method: ForeignItemFn = parse_quote! {
+            #[cxx_name = "dataChanged"]
             fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
         };
         let signal = ParsedSignal::mock(&method);
@@ -300,6 +301,7 @@ mod tests {
     #[test]
     fn test_generate_cpp_signals_mapped_cxx_name() {
         let method: ForeignItemFn = parse_quote! {
+            #[cxx_name = "dataChanged"]
             fn data_changed(self: Pin<&mut MyObject>, mapped: A);
         };
         let signal = ParsedSignal::mock(&method);
@@ -451,6 +453,7 @@ mod tests {
     #[test]
     fn test_generate_cpp_signal_free() {
         let method: ForeignItemFn = parse_quote! {
+            #[cxx_name = "signalRustName"]
             fn signal_rust_name(self: Pin<&mut MyObject>);
         };
         let signal = ParsedSignal {

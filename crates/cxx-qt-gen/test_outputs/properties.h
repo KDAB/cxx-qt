@@ -38,8 +38,8 @@ using MyObjectCxxQtSignalHandlernamed_prop_2Changed =
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
-using MyObjectCxxQtSignalHandlermyOnChanged =
-  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsmyOnChanged*>;
+using MyObjectCxxQtSignalHandlermy_on_changed =
+  ::rust::cxxqt1::SignalHandler<struct MyObjectCxxQtSignalParamsmy_on_changed*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
 #include "directory/file_ident.cxx.h"
@@ -91,9 +91,9 @@ MyObject_named_prop_2ChangedConnect(
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
-MyObject_myOnChangedConnect(
+MyObject_my_on_changedConnect(
   cxx_qt::my_object::MyObject& self,
-  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermyOnChanged
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermy_on_changed
     closure,
   ::Qt::ConnectionType type);
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
@@ -117,7 +117,7 @@ public:
   Q_PROPERTY(::std::int32_t named_prop_2 READ getNamed_prop_2 WRITE
                setNamed_prop_2 NOTIFY named_prop_2Changed)
   Q_PROPERTY(::std::int32_t customOnChangedProp READ getCustomOnChangedProp
-               WRITE setCustomOnChangedProp NOTIFY myOnChanged)
+               WRITE setCustomOnChangedProp NOTIFY my_on_changed)
   Q_PROPERTY(::std::int32_t constProp READ getConstProp CONSTANT)
   Q_PROPERTY(::std::int32_t resettableProp READ getResettableProp WRITE
                setResettableProp RESET myResetFn)
@@ -155,7 +155,7 @@ public:
   ::std::int32_t myGetter() const noexcept;
   void MyCustomSetter(::std::int32_t value) noexcept;
   void myResetFn() noexcept;
-  Q_SIGNAL void myOnChanged();
+  Q_SIGNAL void my_on_changed();
   explicit MyObject(QObject* parent = nullptr);
 };
 
