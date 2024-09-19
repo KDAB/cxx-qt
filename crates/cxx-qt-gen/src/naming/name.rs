@@ -97,30 +97,6 @@ impl Name {
         }
     }
 
-    /// Parse a name from an an identifier and a list of attributes.
-    ///
-    /// This variant assumes that the name is contained in an `extern "Rust"` block.
-    /// If no cxx_name is set, it generates a camelCase cxx_name from the rust name.
-    ///
-    /// See also: [Self::from_ident_and_attrs]
-    pub fn from_rust_ident_and_attrs(
-        ident: &Ident,
-        attrs: &[Attribute],
-        parent_namespace: Option<&str>,
-        module: Option<&Ident>,
-    ) -> Result<Self> {
-        let name = Self::from_ident_and_attrs(ident, attrs, parent_namespace, module)?;
-        // No explicit cxx_name set, generate an appropriate camelCase cxx_name
-        if name.cxx.is_none() {
-            let rust_string = name.rust.to_string();
-            let cxx = rust_string.to_case(Case::Camel); // TODO: REMOVE this
-            if cxx != rust_string {
-                return Ok(name.with_cxx_name(cxx));
-            }
-        }
-        Ok(name)
-    }
-
     /// Parse a name from an identifier and a list of attributes.
     ///
     /// This deciphers the rust_name, cxx_name and namespace attributes, including

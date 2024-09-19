@@ -83,13 +83,26 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_invokables() {
-        let method1: ForeignItemFn = parse_quote! { fn void_invokable(self: &MyObject); };
-        let method2: ForeignItemFn =
-            parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; };
-        let method3: ForeignItemFn = parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; };
-        let method4: ForeignItemFn =
-            parse_quote! { fn specifiers_invokable(self: &MyObject, param: i32) -> i32; };
-        let method5: ForeignItemFn = parse_quote! { fn cpp_method(self: &MyObject); };
+        let method1: ForeignItemFn = parse_quote! {
+            #[cxx_name = "voidInvokable"]
+            fn void_invokable(self: &MyObject);
+        };
+        let method2: ForeignItemFn = parse_quote! {
+            #[cxx_name = "trivialInvokable"]
+            fn trivial_invokable(self: &MyObject, param: i32) -> i32;
+        };
+        let method3: ForeignItemFn = parse_quote! {
+            #[cxx_name = "opaqueInvokable"]
+            fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
+        };
+        let method4: ForeignItemFn = parse_quote! {
+            #[cxx_name = "specifiersInvokable"]
+            fn specifiers_invokable(self: &MyObject, param: i32) -> i32;
+        };
+        let method5: ForeignItemFn = parse_quote! {
+            #[cxx_name = "cppMethod"]
+            fn cpp_method(self: &MyObject);
+        };
         let invokables = vec![
             ParsedMethod::mock_qinvokable(&method1),
             ParsedMethod::mock_qinvokable(&method2),
@@ -143,8 +156,10 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_invokables_mapped_cxx_name() {
-        let method_declaration: ForeignItemFn =
-            parse_quote! { fn trivial_invokable(self: &MyObject, param: A) -> B; };
+        let method_declaration: ForeignItemFn = parse_quote! {
+            #[cxx_name = "trivialInvokable"]
+            fn trivial_invokable(self: &MyObject, param: A) -> B;
+        };
 
         let method = ParsedMethod::mock_qinvokable(&method_declaration);
         let invokables = vec![&method];

@@ -28,6 +28,7 @@ mod qobject {
 
     // Note that we are only testing with C++ here so we don't need qinvokable
     unsafe extern "RustQt" {
+        #[cxx_name = "sayHi"]
         fn say_hi(self: &NamedObject, string: &QString, number: i32);
 
         #[cxx_name = "getDouble"]

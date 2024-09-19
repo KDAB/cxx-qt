@@ -84,12 +84,22 @@ mod tests {
 
     #[test]
     fn test_generate_rust_invokables() {
-        let method1: ForeignItemFn = parse_quote! { fn void_invokable(self: &MyObject); };
-        let method2: ForeignItemFn =
-            parse_quote! { fn trivial_invokable(self: &MyObject, param: i32) -> i32; };
-        let method3: ForeignItemFn = parse_quote! { fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>; };
-        let method4: ForeignItemFn =
-            parse_quote! { unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T; };
+        let method1: ForeignItemFn = parse_quote! {
+            #[cxx_name = "voidInvokable"]
+            fn void_invokable(self: &MyObject);
+        };
+        let method2: ForeignItemFn = parse_quote! {
+            #[cxx_name = "trivialInvokable"]
+            fn trivial_invokable(self: &MyObject, param: i32) -> i32;
+        };
+        let method3: ForeignItemFn = parse_quote! {
+            #[cxx_name = "opaqueInvokable"]
+            fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
+        };
+        let method4: ForeignItemFn = parse_quote! {
+            #[cxx_name = "unsafeInvokable"]
+            unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T;
+        };
         let invokables = vec![
             ParsedMethod::mock_qinvokable(&method1),
             ParsedMethod::mock_qinvokable(&method2),

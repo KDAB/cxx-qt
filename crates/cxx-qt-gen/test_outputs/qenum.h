@@ -98,7 +98,7 @@ public:
   virtual ~MyObject() = default;
 
 public:
-  Q_INVOKABLE void myInvokable(
+  Q_INVOKABLE void my_invokable(
     cxx_qt::my_object::MyEnum qenum,
     my_namespace::MyOtherEnum other_qenum) const noexcept;
   explicit MyObject(QObject* parent = nullptr);

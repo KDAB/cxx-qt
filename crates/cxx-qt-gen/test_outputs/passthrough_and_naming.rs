@@ -130,7 +130,7 @@ pub mod ffi {
         );
     }
     extern "Rust" {
-        #[cxx_name = "invokableName"]
+        #[cxx_name = "invokable_name"]
         #[namespace = "cxx_qt::multi_object"]
         #[doc(hidden)]
         fn invokable_name(self: Pin<&mut MyObject>);
@@ -240,7 +240,7 @@ pub mod ffi {
         );
     }
     extern "Rust" {
-        #[cxx_name = "invokableName"]
+        #[cxx_name = "invokable_name"]
         #[namespace = "second_object"]
         #[doc(hidden)]
         fn invokable_name(self: Pin<&mut SecondObject>);

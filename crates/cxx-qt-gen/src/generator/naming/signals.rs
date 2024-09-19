@@ -107,6 +107,7 @@ mod tests {
     #[test]
     fn test_parsed_signal() {
         let method = parse_quote! {
+            #[cxx_name = "dataChanged"]
             fn data_changed(self: Pin<&mut MyObject>);
         };
         let qsignal = ParsedSignal::mock(&method);
