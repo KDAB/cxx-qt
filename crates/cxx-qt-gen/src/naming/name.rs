@@ -9,6 +9,20 @@ use syn::{spanned::Spanned, Attribute, Error, Ident, Path, Result};
 
 use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
 
+pub enum AutoCamel {
+    Enabled,
+    Disabled,
+}
+
+impl AutoCamel {
+    pub fn as_bool(&self) -> bool {
+        match self {
+            AutoCamel::Enabled => true,
+            AutoCamel::Disabled => false,
+        }
+    }
+}
+
 /// This struct contains all names a certain syntax element may have
 ///
 /// This includes the rust_name, cxx_name, as well as qualifications like
@@ -159,11 +173,16 @@ impl Name {
             namespace,
             module: module.cloned().map(Path::from),
         }
-        .with_options(cxx_name, rust_name, false))
+        .with_options(cxx_name, rust_name, AutoCamel::Disabled))
     }
 
     /// Applies naming options to an existing name, applying logic about what should cause renaming
-    pub fn with_options(self, cxx: Option<String>, rust: Option<Ident>, auto_camel: bool) -> Self {
+    pub fn with_options(
+        self,
+        cxx: Option<String>,
+        rust: Option<Ident>,
+        auto_camel: AutoCamel,
+    ) -> Self {
         let mut cxx_ident = cxx.clone();
         let rust_ident = if let Some(rust_ident) = rust {
             // If we have a rust_name, but no cxx_name, the original ident is the cxx_name.
@@ -175,7 +194,7 @@ impl Name {
         } else {
             // If we have no rust_name and no cxx_name, the original ident is the cxx_name ONLY if auto converting.
             // Otherwise it stays as the original cxx Option
-            if cxx.is_none() && auto_camel {
+            if cxx.is_none() && auto_camel.as_bool() {
                 cxx_ident = Some(self.rust.to_string().to_case(Case::Camel));
             }
             self.rust.clone()

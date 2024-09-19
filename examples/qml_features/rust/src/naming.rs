@@ -11,7 +11,7 @@ pub mod qobject {
     unsafe extern "RustQt" {
         #[qobject]
         #[qml_element]
-        #[qproperty(i32, num)]
+        #[qproperty(i32, num, cxx_name = "numberProp")]
         #[cxx_name = "RenamedObject"]
         #[namespace = "my_namespace"]
         type NamedObject = super::NamedObjectRust;

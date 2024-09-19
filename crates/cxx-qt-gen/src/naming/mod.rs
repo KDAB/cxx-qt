@@ -16,5 +16,5 @@ mod name;
 pub(crate) mod rust;
 mod type_names;
 
-pub use name::Name;
+pub use name::{AutoCamel, Name};
 pub use type_names::TypeNames;
