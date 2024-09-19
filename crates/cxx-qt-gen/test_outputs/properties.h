@@ -114,8 +114,8 @@ public:
   Q_PROPERTY(::std::int32_t readonlyProp READ getReadonlyProp)
   Q_PROPERTY(::std::int32_t renamedProperty READ getRenamedProperty WRITE
                setRenamedProperty NOTIFY renamedPropertyChanged)
-  Q_PROPERTY(::std::int32_t named_prop_2 READ getNamedProp2 WRITE setNamedProp2
-               NOTIFY named_prop_2Changed)
+  Q_PROPERTY(::std::int32_t named_prop_2 READ getNamed_prop_2 WRITE
+               setNamed_prop_2 NOTIFY named_prop_2Changed)
   Q_PROPERTY(::std::int32_t customOnChangedProp READ getCustomOnChangedProp
                WRITE setCustomOnChangedProp NOTIFY myOnChanged)
   Q_PROPERTY(::std::int32_t constProp READ getConstProp CONSTANT)
@@ -136,8 +136,8 @@ public:
   ::std::int32_t const& getReadonlyProp() const noexcept;
   ::std::int32_t const& getRenamedProperty() const noexcept;
   Q_SLOT void setRenamedProperty(::std::int32_t value) noexcept;
-  ::std::int32_t const& getNamedProp2() const noexcept;
-  Q_SLOT void setNamedProp2(::std::int32_t value) noexcept;
+  ::std::int32_t const& getNamed_prop_2() const noexcept;
+  Q_SLOT void setNamed_prop_2(::std::int32_t value) noexcept;
   ::std::int32_t const& getCustomOnChangedProp() const noexcept;
   Q_SLOT void setCustomOnChangedProp(::std::int32_t value) noexcept;
   ::std::int32_t const& getConstProp() const noexcept;
