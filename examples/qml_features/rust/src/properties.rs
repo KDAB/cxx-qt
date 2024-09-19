@@ -30,12 +30,15 @@ pub mod qobject {
 
         /// Custom on changed signal, used for all the properties
         #[qsignal]
+        #[cxx_name = "connectedStateChanged"]
         fn connected_state_changed(self: Pin<&mut RustProperties>);
 
         /// Custom setter for connected_url, which also handles setting the other qproperties
+        #[cxx_name = "setUrl"]
         fn set_url(self: Pin<&mut RustProperties>, url: QUrl);
 
         /// Resets value of connected_url to empty, as well as calling the other disconnected logic
+        #[cxx_name = "resetUrl"]
         fn reset_url(self: Pin<&mut RustProperties>);
     }
 

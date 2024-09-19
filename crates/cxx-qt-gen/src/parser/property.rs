@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::naming::property::property_name_from_rust_name;
 use crate::naming::{AutoCamel, Name};
 use crate::syntax::expr::expr_to_string;
 use syn::{
@@ -111,7 +110,7 @@ impl ParsedQProperty {
             if input.is_empty() {
                 // No flags passed so desugar: #[qproperty(T, ident)] -> #[qproperty(T, ident, read, write, notify)]
                 Ok(Self {
-                    name: property_name_from_rust_name(ident),
+                    name: Name::new(ident),
                     ty,
                     flags: QPropertyFlags::default(),
                 })

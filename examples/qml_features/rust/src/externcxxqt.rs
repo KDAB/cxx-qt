@@ -31,16 +31,18 @@ pub mod ffi {
         #[qobject]
         #[qml_element]
         #[qproperty(u32, count)]
-        #[qproperty(u32, private_count)]
+        #[qproperty(u32, private_count, cxx_name = "privateCount")]
         type ExternalCxxQtHelper = super::ExternalCxxQtHelperRust;
 
         #[qinvokable]
+        #[cxx_name = "connectToExternal"]
         unsafe fn connect_to_external(
             self: Pin<&mut ExternalCxxQtHelper>,
             external: *mut ExternalQObject,
         );
 
         #[qinvokable]
+        #[cxx_name = "triggerOnExternal"]
         unsafe fn trigger_on_external(
             self: Pin<&mut ExternalCxxQtHelper>,
             external: *mut ExternalQObject,

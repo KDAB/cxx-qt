@@ -130,10 +130,7 @@ mod tests {
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);
-        assert_eq!(
-            signal.name,
-            Name::new(format_ident!("ready")).with_cxx_name("cppReady".to_owned())
-        );
+        assert_eq!(signal.name, Name::mock_name_with_cxx("ready", "cppReady"));
         assert!(signal.safe);
         assert!(!signal.inherit);
         assert!(!signal.private);

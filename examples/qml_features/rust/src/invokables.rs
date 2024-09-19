@@ -44,14 +44,17 @@ pub mod qobject {
     unsafe extern "RustQt" {
         /// Immutable invokable method that returns the QColor
         #[qinvokable]
+        #[cxx_name = "loadColor"]
         fn load_color(self: &RustInvokables) -> Result<QColor>;
 
         /// Mutable invokable method that stores a color
         #[qinvokable]
+        #[cxx_name = "storeColor"]
         fn store_color(self: Pin<&mut RustInvokables>, red: f32, green: f32, blue: f32);
 
         /// Mutable invokable method that stores a color with an enum
         #[qinvokable]
+        #[cxx_name = "storeColorWithEnum"]
         fn store_color_with_enum(self: Pin<&mut RustInvokables>, color: Color);
 
         /// Mutable invokable method with no parameters that resets the color
@@ -63,6 +66,7 @@ pub mod qobject {
     // ANCHOR: book_cpp_method_signature
     unsafe extern "RustQt" {
         /// C++ only method which returns the red value
+        #[cxx_name = "redValue"]
         fn red_value(self: &RustInvokables) -> f32;
     }
     // ANCHOR_END: book_cpp_method_signature
