@@ -479,7 +479,7 @@ mod tests {
         assert_eq!(signals[0].name, Name::new(format_ident!("ready")));
         assert_eq!(
             signals[1].name,
-            Name::new(format_ident!("data_changed")).with_cxx_name("cppDataChanged".to_owned())
+            Name::mock_name_with_cxx("data_changed", "cppDataChanged")
         );
         assert!(!signals[0].inherit);
         assert!(signals[1].inherit);
@@ -505,7 +505,7 @@ mod tests {
         assert_eq!(signals[0].parameters[0].ident, "arg");
         assert_eq!(
             signals[0].name,
-            Name::new(format_ident!("unsafe_signal")).with_cxx_name("unsafeSignal".to_owned())
+            Name::mock_name_with_cxx("unsafe_signal", "unsafeSignal")
         );
         assert!(!signals[0].inherit);
     }

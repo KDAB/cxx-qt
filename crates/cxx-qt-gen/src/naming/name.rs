@@ -311,6 +311,12 @@ impl Name {
         .with_namespace(namespace.into())
         .with_module(Path::from(format_ident!("qobject")))
     }
+
+    #[cfg(test)]
+    /// Helper for creating cxx_named Names, usually for camelcase cxx names
+    pub fn mock_name_with_cxx(name: &str, cxx: &str) -> Name {
+        Name::new(format_ident!("{name}")).with_cxx_name(cxx.to_string())
+    }
 }
 
 #[cfg(test)]

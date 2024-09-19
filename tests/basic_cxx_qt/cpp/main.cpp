@@ -135,14 +135,14 @@ private Q_SLOTS:
     cxx_qt::my_types::MyTypes types;
 
     QSignalSpy booleanSpy(&types, &cxx_qt::my_types::MyTypes::booleanChanged);
-    QSignalSpy float32Spy(&types, &cxx_qt::my_types::MyTypes::float32Changed);
-    QSignalSpy float64Spy(&types, &cxx_qt::my_types::MyTypes::float64Changed);
-    QSignalSpy int8Spy(&types, &cxx_qt::my_types::MyTypes::int8Changed);
-    QSignalSpy int16Spy(&types, &cxx_qt::my_types::MyTypes::int16Changed);
-    QSignalSpy int32Spy(&types, &cxx_qt::my_types::MyTypes::int32Changed);
-    QSignalSpy uint8Spy(&types, &cxx_qt::my_types::MyTypes::uint8Changed);
-    QSignalSpy uint16Spy(&types, &cxx_qt::my_types::MyTypes::uint16Changed);
-    QSignalSpy uint32Spy(&types, &cxx_qt::my_types::MyTypes::uint32Changed);
+    QSignalSpy float32Spy(&types, &cxx_qt::my_types::MyTypes::float_32Changed);
+    QSignalSpy float64Spy(&types, &cxx_qt::my_types::MyTypes::float_64Changed);
+    QSignalSpy int8Spy(&types, &cxx_qt::my_types::MyTypes::int_8Changed);
+    QSignalSpy int16Spy(&types, &cxx_qt::my_types::MyTypes::int_16Changed);
+    QSignalSpy int32Spy(&types, &cxx_qt::my_types::MyTypes::int_32Changed);
+    QSignalSpy uint8Spy(&types, &cxx_qt::my_types::MyTypes::uint_8Changed);
+    QSignalSpy uint16Spy(&types, &cxx_qt::my_types::MyTypes::uint_16Changed);
+    QSignalSpy uint32Spy(&types, &cxx_qt::my_types::MyTypes::uint_32Changed);
 
     QCOMPARE(types.getBoolean(), false);
     QCOMPARE(booleanSpy.count(), 0);
@@ -150,53 +150,53 @@ private Q_SLOTS:
     QCOMPARE(booleanSpy.count(), 1);
     QCOMPARE(types.getBoolean(), true);
 
-    QCOMPARE(types.getFloat32(), 0.0);
+    QCOMPARE(types.getFloat_32(), 0.0);
     QCOMPARE(float32Spy.count(), 0);
-    types.setFloat32(0.33f);
+    types.setFloat_32(0.33f);
     QCOMPARE(float32Spy.count(), 1);
-    QCOMPARE(types.getFloat32(), 0.33f);
+    QCOMPARE(types.getFloat_32(), 0.33f);
 
-    QCOMPARE(types.getFloat64(), 0.0);
+    QCOMPARE(types.getFloat_64(), 0.0);
     QCOMPARE(float64Spy.count(), 0);
-    types.setFloat64(0.33);
+    types.setFloat_64(0.33);
     QCOMPARE(float64Spy.count(), 1);
-    QCOMPARE(types.getFloat64(), 0.33);
+    QCOMPARE(types.getFloat_64(), 0.33);
 
-    QCOMPARE(types.getInt8(), 0);
+    QCOMPARE(types.getInt_8(), 0);
     QCOMPARE(int8Spy.count(), 0);
-    types.setInt8(4);
+    types.setInt_8(4);
     QCOMPARE(int8Spy.count(), 1);
-    QCOMPARE(types.getInt8(), 4);
+    QCOMPARE(types.getInt_8(), 4);
 
-    QCOMPARE(types.getInt16(), 0);
+    QCOMPARE(types.getInt_16(), 0);
     QCOMPARE(int16Spy.count(), 0);
-    types.setInt16(4);
+    types.setInt_16(4);
     QCOMPARE(int16Spy.count(), 1);
-    QCOMPARE(types.getInt16(), 4);
+    QCOMPARE(types.getInt_16(), 4);
 
-    QCOMPARE(types.getInt32(), 0);
+    QCOMPARE(types.getInt_32(), 0);
     QCOMPARE(int32Spy.count(), 0);
-    types.setInt32(4);
+    types.setInt_32(4);
     QCOMPARE(int32Spy.count(), 1);
-    QCOMPARE(types.getInt32(), 4);
+    QCOMPARE(types.getInt_32(), 4);
 
-    QCOMPARE(types.getUint8(), 0);
+    QCOMPARE(types.getUint_8(), 0);
     QCOMPARE(uint8Spy.count(), 0);
-    types.setUint8(4);
+    types.setUint_8(4);
     QCOMPARE(uint8Spy.count(), 1);
-    QCOMPARE(types.getUint8(), 4);
+    QCOMPARE(types.getUint_8(), 4);
 
-    QCOMPARE(types.getUint16(), 0);
+    QCOMPARE(types.getUint_16(), 0);
     QCOMPARE(uint16Spy.count(), 0);
-    types.setUint16(4);
+    types.setUint_16(4);
     QCOMPARE(uint16Spy.count(), 1);
-    QCOMPARE(types.getUint16(), 4);
+    QCOMPARE(types.getUint_16(), 4);
 
-    QCOMPARE(types.getUint32(), 0);
+    QCOMPARE(types.getUint_32(), 0);
     QCOMPARE(uint32Spy.count(), 0);
-    types.setUint32(4);
+    types.setUint_32(4);
     QCOMPARE(uint32Spy.count(), 1);
-    QCOMPARE(types.getUint32(), 4);
+    QCOMPARE(types.getUint_32(), 4);
   }
 
   // Tests that we can build an empty QObject end to end

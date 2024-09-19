@@ -116,7 +116,7 @@ pub mod ffi {
     extern "RustQt" {
         #[qobject]
         #[base = QStringListModel]
-        #[qproperty(i32, property_name)]
+        #[qproperty(i32, property_name, cxx_name = "propertyName")]
         type MyObject = super::MyObjectRust;
     }
 
@@ -131,7 +131,7 @@ pub mod ffi {
     extern "RustQt" {
         #[qobject]
         #[namespace = "second_object"]
-        #[qproperty(i32, property_name)]
+        #[qproperty(i32, property_name, cxx_name = "propertyName")]
         type SecondObject = super::SecondObjectRust;
     }
 

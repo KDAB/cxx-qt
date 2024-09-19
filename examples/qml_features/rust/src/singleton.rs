@@ -13,7 +13,7 @@ pub mod qobject {
         #[qobject]
         #[qml_element]
         #[qml_singleton]
-        #[qproperty(i32, persistent_value)]
+        #[qproperty(i32, persistent_value, cxx_name = "persistentValue")]
         type RustSingleton = super::RustSingletonRust;
 
         /// Increment the persistent value Q_PROPERTY of the QML_SINGLETON

@@ -35,11 +35,11 @@ pub mod qobject {
     unsafe extern "RustQt" {
         #[qobject]
         #[qml_element]
-        #[qproperty(QString, string_hash)]
-        #[qproperty(QString, string_list)]
-        #[qproperty(QString, string_map)]
-        #[qproperty(QString, string_set)]
-        #[qproperty(QString, string_vector)]
+        #[qproperty(QString, string_hash, cxx_name = "stringHash")]
+        #[qproperty(QString, string_list, cxx_name = "stringList")]
+        #[qproperty(QString, string_map, cxx_name = "stringMap")]
+        #[qproperty(QString, string_set, cxx_name = "stringSet")]
+        #[qproperty(QString, string_vector, cxx_name = "stringVector")]
         // Expose as a Q_PROPERTY so that QML tests can ensure that QVariantMap works
         #[qproperty(QMap_QString_QVariant, map)]
         type RustContainers = super::RustContainersRust;
@@ -50,22 +50,27 @@ pub mod qobject {
 
         /// Append the given number to the vector container
         #[qinvokable]
+        #[cxx_name = "appendVector"]
         fn append_vector(self: Pin<&mut RustContainers>, value: i32);
 
         /// Append the given number to the list container
         #[qinvokable]
+        #[cxx_name = "appendList"]
         fn append_list(self: Pin<&mut RustContainers>, value: i32);
 
         /// Insert the given number into the set container
         #[qinvokable]
+        #[cxx_name = "insertSet"]
         fn insert_set(self: Pin<&mut RustContainers>, value: i32);
 
         /// Insert the given string and variant to the hash container
         #[qinvokable]
+        #[cxx_name = "insertHash"]
         fn insert_hash(self: Pin<&mut RustContainers>, key: QString, value: QVariant);
 
         /// Insert the given string and variant to the map container
         #[qinvokable]
+        #[cxx_name = "insertMap"]
         fn insert_map(self: Pin<&mut RustContainers>, key: QString, value: QVariant);
     }
 }

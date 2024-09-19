@@ -77,15 +77,17 @@ pub mod ffi {
         #[qproperty(bool, boolean)]
         #[qproperty(QPointF, point)]
         #[qproperty(QUrl, url)]
-        #[qproperty(i32, custom_value)]
+        #[qproperty(i32, custom_value, cxx_name = "customValue")]
         type Types = super::TypesRust;
 
         /// Load the value from a QVariant
         #[qinvokable]
+        #[cxx_name = "loadFromVariant"]
         fn load_from_variant(self: Pin<&mut Types>, variant: &QVariant);
 
         /// Toggle the boolean Q_PROPERTY
         #[qinvokable]
+        #[cxx_name = "toggleBoolean"]
         fn toggle_boolean(self: Pin<&mut Types>);
     }
 }

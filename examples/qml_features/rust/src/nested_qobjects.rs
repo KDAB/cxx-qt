@@ -54,6 +54,7 @@ pub mod qobject {
         ///
         /// As we deref a pointer in a public method this needs to be marked as unsafe
         #[qinvokable]
+        #[cxx_name = "printCount"]
         unsafe fn print_count(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
 
         /// Reset the counter of the inner QObject stored in the Q_PROPERTY
