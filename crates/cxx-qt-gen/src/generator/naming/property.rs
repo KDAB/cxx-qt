@@ -125,22 +125,26 @@ pub fn property_name_from_rust_name(ident: Ident) -> Name {
     Name::new(ident).with_cxx_name(cxx_name)
 }
 
+fn capitalise_first(str: String) -> String {
+    let mut out = "".to_string();
+    if let Some(first) = str.chars().next() {
+        out.push(first.to_ascii_uppercase());
+        out.push_str(&str[1..]);
+    }
+    out
+}
+
 /// For a given property name generate the getter name
 fn getter_name_from_property(name: &Name) -> Name {
-    name.clone().with_cxx_name(format!(
-        "get{}",
-        name.cxx_unqualified().to_case(Case::Pascal) // TODO: REMOVE this
-    ))
+    name.clone()
+        .with_cxx_name(format!("get{}", capitalise_first(name.cxx_unqualified())))
 }
 
 /// For a given property name generate the setter name
 fn setter_name_from_property(name: &Name) -> Name {
     name.clone()
         .with_rust_name(format_ident!("set_{}", name.rust_unqualified()))
-        .with_cxx_name(format!(
-            "set{}",
-            name.cxx_unqualified().to_case(Case::Pascal) // TODO: REMOVE this
-        ))
+        .with_cxx_name(format!("set{}", capitalise_first(name.cxx_unqualified())))
 }
 
 /// For a given property name generate the notify signal name
@@ -195,5 +199,12 @@ pub mod tests {
             names.notify.as_ref().unwrap().rust_unqualified(),
             "my_property_changed"
         );
+    }
+
+    #[test]
+    fn test_capitalise_first() {
+        assert_eq!(capitalise_first("abc".to_owned()), "Abc".to_owned());
+        assert_eq!(capitalise_first("".to_string()), "".to_owned());
+        assert_eq!(capitalise_first("a".to_owned()), "A".to_owned());
     }
 }

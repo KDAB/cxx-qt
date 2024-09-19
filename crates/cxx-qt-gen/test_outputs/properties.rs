@@ -72,12 +72,12 @@ mod ffi {
         fn set_renamed_property(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
-        #[cxx_name = "getNamedProp2"]
+        #[cxx_name = "getNamed_prop_2"]
         #[namespace = "cxx_qt::my_object"]
         unsafe fn renamed_property_2<'a>(self: &'a MyObject) -> &'a i32;
     }
     extern "Rust" {
-        #[cxx_name = "setNamedProp2"]
+        #[cxx_name = "setNamed_prop_2"]
         #[namespace = "cxx_qt::my_object"]
         fn set_renamed_property_2(self: Pin<&mut MyObject>, value: i32);
     }
