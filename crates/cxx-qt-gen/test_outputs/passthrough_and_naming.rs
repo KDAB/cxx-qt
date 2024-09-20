@@ -98,6 +98,7 @@ pub mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "propertyNameChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "cxx_qt::multi_object"]
         fn property_name_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -136,6 +137,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
+        #[namespace = "cxx_qt::multi_object"]
         fn ready(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -208,6 +210,7 @@ pub mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "propertyNameChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "second_object"]
         fn property_name_changed(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
@@ -246,6 +249,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
+        #[namespace = "second_object"]
         fn ready(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
@@ -337,6 +341,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "clicked"]
+        #[namespace = "cxx_qt::multi_object"]
         fn clicked(self: Pin<&mut QPushButton>, checked: bool);
     }
     unsafe extern "C++" {
@@ -366,6 +371,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "dataReady"]
+        #[namespace = "mynamespace"]
         fn data_ready(self: Pin<&mut ExternObject>);
     }
     unsafe extern "C++" {
@@ -397,6 +403,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "errorOccurred"]
+        #[namespace = "mynamespace"]
         fn error_occurred(self: Pin<&mut ExternObject>);
     }
     unsafe extern "C++" {
