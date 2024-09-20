@@ -18,6 +18,7 @@ mod ffi {
         include!("directory/file_ident.cxxqt.h");
     }
     #[repr(i32)]
+    #[namespace = "cxx_qt::my_object"]
     enum MyEnum {
         A,
     }
@@ -37,6 +38,7 @@ mod ffi {
         type MyOtherEnum;
     }
     #[repr(i32)]
+    #[namespace = "cxx_qt::my_object"]
     enum MyNamespacedEnum {
         A,
         B,
@@ -57,6 +59,7 @@ mod ffi {
         type MyOtherNamespacedEnum;
     }
     #[repr(i32)]
+    #[namespace = "cxx_qt::my_object"]
     enum MyRenamedEnum {
         A,
         B,

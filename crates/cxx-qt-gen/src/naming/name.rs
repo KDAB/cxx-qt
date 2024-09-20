@@ -3,11 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::syntax::{attribute::attribute_get_path, expr::expr_to_string};
 use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::{spanned::Spanned, Attribute, Error, Ident, Path, Result};
-
-use crate::syntax::{attribute::attribute_find_path, expr::expr_to_string};
 
 pub enum AutoCamel {
     Enabled,
@@ -133,10 +132,8 @@ impl Name {
         module: Option<&Ident>,
     ) -> Result<Self> {
         // Find if there is a namespace (for C++ generation)
-        let mut namespace = if let Some(index) = attribute_find_path(attrs, &["namespace"]) {
-            Some(expr_to_string(
-                &attrs[index].meta.require_name_value()?.value,
-            )?)
+        let mut namespace = if let Some(attr) = attribute_get_path(attrs, &["namespace"]) {
+            Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
         } else {
             parent_namespace.map(|namespace| namespace.to_owned())
         };
@@ -150,19 +147,17 @@ impl Name {
         }
 
         // Find if there is a cxx_name mapping (for C++ generation)
-        let cxx_name = attribute_find_path(attrs, &["cxx_name"])
-            .map(|index| -> Result<_> {
-                expr_to_string(&attrs[index].meta.require_name_value()?.value)
-            })
+        let cxx_name = attribute_get_path(attrs, &["cxx_name"])
+            .map(|attr| -> Result<_> { expr_to_string(&attr.meta.require_name_value()?.value) })
             .transpose()?;
 
         // Find if there is a rust_name mapping
-        let rust_name = attribute_find_path(attrs, &["rust_name"])
-            .map(|index| -> Result<_> {
+        let rust_name = attribute_get_path(attrs, &["rust_name"])
+            .map(|attr| -> Result<_> {
                 Ok(format_ident!(
                     "{}",
-                    expr_to_string(&attrs[index].meta.require_name_value()?.value)?,
-                    span = attrs[index].span()
+                    expr_to_string(&attr.meta.require_name_value()?.value)?,
+                    span = attr.span()
                 ))
             })
             .transpose()?;

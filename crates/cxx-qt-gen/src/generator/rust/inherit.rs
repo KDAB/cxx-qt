@@ -45,15 +45,14 @@ pub fn generate(
             if method.safe {
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }
-
-            let attrs = &method.method.attrs;
             let doc_comments = &method.docs;
+            let namespace = qobject_names.namespace_tokens();
 
             syn::parse2(quote_spanned! {
                 method.method.span() =>
                 #unsafe_block extern "C++" {
-                    #(#attrs)*
                     #[cxx_name = #cxx_name_string]
+                    #namespace
                     #(#doc_comments)*
                     #unsafe_call fn #ident(#self_param, #(#parameters),*) #return_type;
                 }
@@ -78,7 +77,7 @@ mod tests {
         method: ForeignItemFn,
         safety: Safety,
     ) -> Result<GeneratedRustFragment> {
-        let method = ParsedInheritedMethod::parse(method, safety).unwrap();
+        let method = ParsedInheritedMethod::parse(method, safety)?;
         let inherited_methods = vec![&method];
         generate(&create_qobjectname(), &inherited_methods)
     }

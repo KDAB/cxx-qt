@@ -1,6 +1,4 @@
-#[attrA]
 #[cxx_qt::bridge(namespace = "cxx_qt::multi_object")]
-#[attrB]
 pub mod ffi {
     // ItemConst
     const MAX: u16 = 65535;
@@ -37,9 +35,9 @@ pub mod ffi {
     extern "C" {}
 
     #[namespace = "namespace"]
-    #[custom_attr = "test"]
     extern "C" {}
 
+    #[custom_attr = "test"]
     unsafe extern "C++" {}
 
     #[namespace = "namespace"]
@@ -138,7 +136,6 @@ pub mod ffi {
     }
 
     unsafe extern "RustQt" {
-        #[my_attribute]
         #[qsignal]
         fn ready(self: Pin<&mut SecondObject>);
 

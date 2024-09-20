@@ -2,14 +2,12 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
-use crate::syntax::{attribute::attribute_take_path, path::path_compare_str, safety::Safety};
+use crate::{
+    parser::{check_safety, extract_docs, method::MethodFields, require_attributes},
+    syntax::{path::path_compare_str, safety::Safety},
+};
 use core::ops::Deref;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
-
-use crate::parser::method::MethodFields;
-use crate::parser::{check_safety, separate_docs};
-
 #[derive(Clone)]
 /// Describes an individual Signal
 pub struct ParsedSignal {
@@ -24,24 +22,20 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
+    const ALLOWED_ATTRS: [&'static str; 5] = ["cxx_name", "rust_name", "inherit", "doc", "qsignal"];
+
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
     pub fn mock(method: &ForeignItemFn) -> Self {
         Self::parse(method.clone(), Safety::Safe).unwrap()
     }
 
-    pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
+    pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
 
-        let docs = separate_docs(&mut method);
-        let mut fields = MethodFields::parse(method)?;
-
-        if fields.name.namespace().is_some() {
-            return Err(Error::new_spanned(
-                fields.method.sig.ident,
-                "Signals cannot have a namespace attribute!",
-            ));
-        }
+        let docs = extract_docs(&method.attrs);
+        let fields = MethodFields::parse(method)?;
+        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         if !fields.mutable {
             return Err(Error::new(
@@ -50,7 +44,8 @@ impl ParsedSignal {
             ));
         }
 
-        let inherit = attribute_take_path(&mut fields.method.attrs, &["inherit"]).is_some();
+        let inherit = attrs.contains_key("inherit");
+
         let private = if let Visibility::Restricted(vis_restricted) = &fields.method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
         } else {
@@ -150,12 +145,9 @@ mod tests {
             #[inherit]
             fn ready(self: Pin<&mut MyObject>);
         };
-        let signal = ParsedSignal::parse(method, Safety::Safe).unwrap();
+        let signal = ParsedSignal::parse(method.clone(), Safety::Safe).unwrap();
 
-        let expected_method: ForeignItemFn = parse_quote! {
-            fn ready(self: Pin<&mut MyObject>);
-        };
-        assert_eq!(signal.method, expected_method);
+        assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
         assert_eq!(signal.parameters, vec![]);

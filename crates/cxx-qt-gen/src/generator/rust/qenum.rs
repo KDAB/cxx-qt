@@ -4,16 +4,24 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::qenum::ParsedQEnum;
+use crate::syntax::path::path_compare_str;
 use quote::quote;
-use syn::{parse_quote_spanned, spanned::Spanned, Item};
+use syn::{parse_quote_spanned, spanned::Spanned, Attribute, Item};
 
 pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
     qenums
         .iter()
         .flat_map(|qenum| {
-            let qenum_item = &qenum.item;
             let qenum_ident = &qenum.name.rust_unqualified();
             let namespace = &qenum.name.namespace();
+            let item = &qenum.item;
+            let vis = &item.vis;
+            let variants = &item.variants;
+            let docs: Vec<&Attribute> = item
+                .attrs
+                .iter()
+                .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
+                .collect();
 
             let cxx_namespace = if namespace.is_none() {
                 quote! {}
@@ -22,12 +30,16 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
             };
             vec![
                 parse_quote_spanned! {
-                    qenum.item.span() =>
+                    item.span() =>
                     #[repr(i32)]
-                    #qenum_item
+                    #(#docs)*
+                    #cxx_namespace
+                    #vis enum #qenum_ident {
+                        #variants
+                    }
                 },
                 parse_quote_spanned! {
-                    qenum.item.span() =>
+                    item.span() =>
                     extern "C++" {
                         #cxx_namespace
                         type #qenum_ident;

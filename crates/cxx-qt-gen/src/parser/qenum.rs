@@ -3,10 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::{naming::Name, parser::require_attributes, syntax::path::path_compare_str};
 use quote::ToTokens;
 use syn::{Ident, ItemEnum, Result, Variant};
-
-use crate::{naming::Name, syntax::path::path_compare_str};
 
 pub struct ParsedQEnum {
     /// The name of the QObject
@@ -20,6 +19,7 @@ pub struct ParsedQEnum {
 }
 
 impl ParsedQEnum {
+    const ALLOWED_ATTRS: [&'static str; 5] = ["doc", "cxx_name", "rust_name", "namespace", "qenum"];
     fn parse_variant(variant: &Variant) -> Result<Ident> {
         fn err(spanned: &impl ToTokens, message: &str) -> Result<Ident> {
             Err(syn::Error::new_spanned(spanned, message))
@@ -54,6 +54,7 @@ impl ParsedQEnum {
         parent_namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
+        require_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
                 qenum,
@@ -68,17 +69,6 @@ impl ParsedQEnum {
             return Err(syn::Error::new_spanned(
                 qenum.ident,
                 "A QEnum must either be namespaced or associated to a QObject!",
-            ));
-        }
-
-        if let Some(attr) = qenum.attrs.iter().find(|attr| {
-            !["doc", "namespace", "cxx_name", "rust_name"]
-                .iter()
-                .any(|allowed_attr| path_compare_str(attr.path(), &[allowed_attr]))
-        }) {
-            return Err(syn::Error::new_spanned(
-                attr,
-                "Additional attributes are not allowed on #[qenum] enums!",
             ));
         }
 

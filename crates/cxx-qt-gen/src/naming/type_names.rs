@@ -2,25 +2,17 @@
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
-use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
-
-use quote::format_ident;
-use syn::{
-    parse_quote, token::Brace, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct,
-    Path, Result,
-};
-
-use crate::{
-    parser::qobject::ParsedQObject,
-    syntax::{
-        attribute::attribute_find_path, expr::expr_to_string,
-        foreignmod::foreign_mod_to_foreign_item_types,
-    },
-};
-
 use super::Name;
-use crate::parser::cxxqtdata::ParsedCxxQtData;
+use crate::syntax::attribute::attribute_get_path;
+use crate::{
+    parser::{cxxqtdata::ParsedCxxQtData, qobject::ParsedQObject},
+    syntax::{expr::expr_to_string, foreignmod::foreign_mod_to_foreign_item_types},
+};
+use quote::{format_ident, quote};
+use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
+use syn::{
+    parse_quote, Attribute, Error, Ident, Item, ItemEnum, ItemForeignMod, ItemStruct, Path, Result,
+};
 
 /// The purpose of this struct is to store all nameable types.
 ///
@@ -159,27 +151,41 @@ impl TypeNames {
         bridge_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
+        // Find and register the QObjects in the bridge
         for qobject in cxx_qt_data.qobjects.iter() {
             self.populate_qobject(qobject)?;
         }
 
+        // Find and register the names of any QEnums in the bridge
         for qenum in &cxx_qt_data.qenums {
             self.insert(qenum.name.clone())?;
         }
 
         for extern_cxxqt in &cxx_qt_data.extern_cxxqt_blocks {
-            // TODO: Refactor, this is a hack to reconstruct the original ItemForeignMod
-            let foreign_mod = ItemForeignMod {
-                attrs: extern_cxxqt.attrs.clone(),
-                unsafety: None,
-                brace_token: Brace::default(),
-                items: extern_cxxqt.passthrough_items.clone(),
-                abi: syn::Abi {
-                    extern_token: syn::parse_quote!(extern),
-                    name: None,
-                },
+            let namespace = if let Some(namespace) = &extern_cxxqt.namespace {
+                quote! { #[namespace = #namespace ] }
+            } else {
+                quote! {}
+            };
+
+            let items = extern_cxxqt.passthrough_items.clone();
+            let foreign_mod: ItemForeignMod = parse_quote! {
+                #namespace
+                extern "C++" {
+                    #(#items)*
+                }
             };
             self.populate_from_foreign_mod_item(&foreign_mod, bridge_namespace, module_ident)?;
+
+            // Find and register the names of any qobjects in extern "C++Qt"
+            for qobject in extern_cxxqt.qobjects.iter() {
+                self.insert(qobject.name.clone())?;
+            }
+
+            // Find and register the names of any signals in extern "C++Qt"
+            for signal in extern_cxxqt.signals.iter() {
+                self.insert(signal.name.clone())?;
+            }
         }
 
         Ok(())
@@ -193,10 +199,8 @@ impl TypeNames {
     ) -> Result<()> {
         // Retrieve a namespace from the mod or the bridge
         let block_namespace =
-            if let Some(index) = attribute_find_path(&foreign_mod.attrs, &["namespace"]) {
-                Some(expr_to_string(
-                    &foreign_mod.attrs[index].meta.require_name_value()?.value,
-                )?)
+            if let Some(attr) = attribute_get_path(&foreign_mod.attrs, &["namespace"]) {
+                Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
             } else {
                 bridge_namespace.map(str::to_owned)
             };

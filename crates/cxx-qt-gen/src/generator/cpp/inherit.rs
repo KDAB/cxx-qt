@@ -58,7 +58,7 @@ mod tests {
         method: ForeignItemFn,
         base_class: Option<&str>,
     ) -> Result<GeneratedCppQObjectBlocks> {
-        let method = ParsedInheritedMethod::parse(method, Safety::Safe).unwrap();
+        let method = ParsedInheritedMethod::parse(method, Safety::Safe)?;
         let inherited_methods = vec![&method];
         let base_class = base_class.map(|s| s.to_owned());
         generate(&inherited_methods, &base_class, &TypeNames::default())

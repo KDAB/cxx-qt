@@ -6,6 +6,7 @@
 pub mod constructor;
 pub mod cxxqtdata;
 pub mod externcxxqt;
+pub mod externqobject;
 pub mod inherit;
 pub mod method;
 pub mod parameter;
@@ -16,20 +17,20 @@ pub mod qobject;
 pub mod signals;
 pub mod trait_impl;
 
-use crate::syntax::safety::Safety;
 use crate::{
-    // Used for error handling when resolving the namespace of the qenum.
     naming::TypeNames,
-    syntax::{attribute::attribute_take_path, expr::expr_to_string},
+    syntax::{expr::expr_to_string, path::path_compare_str, safety::Safety},
 };
 use cxxqtdata::ParsedCxxQtData;
+use std::collections::BTreeMap;
 use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Brace, Semi},
-    Attribute, Error, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token,
+    Attribute, Error, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token, Visibility,
 };
 
+/// Validates that an invokable is either unsafe, or is in an unsafe extern block
 fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
     if safety == &Safety::Unsafe && method.sig.unsafety.is_none() {
         Err(Error::new(
@@ -42,14 +43,70 @@ fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
 }
 
 /// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
-///
-/// Note: This modifies the method by removing those doc attributes
-pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
-    let mut docs = vec![];
-    while let Some(doc) = attribute_take_path(&mut method.attrs, &["doc"]) {
-        docs.push(doc);
+pub fn extract_docs(attrs: &[Attribute]) -> Vec<Attribute> {
+    attrs
+        .iter()
+        .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
+        .cloned()
+        .collect()
+}
+
+/// Splits a path by :: separators e.g. "cxx_qt::bridge" becomes ["cxx_qt", "bridge"]
+fn split_path(path_str: &str) -> Vec<&str> {
+    let path = if path_str.contains("::") {
+        path_str.split("::").collect::<Vec<_>>()
+    } else {
+        vec![path_str]
+    };
+    path
+}
+
+/// Collects a Map of all attributes found from the allowed list
+/// Will error if an attribute which is not in the allowed list is found
+pub fn require_attributes<'a>(
+    attrs: &'a [Attribute],
+    allowed: &'a [&str],
+) -> Result<BTreeMap<&'a str, &'a Attribute>> {
+    let mut output = BTreeMap::default();
+    for attr in attrs {
+        let index = allowed
+            .iter()
+            .position(|string| path_compare_str(attr.meta.path(), &split_path(string)));
+        if let Some(index) = index {
+            output.insert(allowed[index], attr); // Doesn't error on duplicates
+        } else {
+            return Err(Error::new(
+                attr.span(),
+                format!(
+                    "Unsupported attribute! The only attributes allowed on this item are\n{}",
+                    allowed.join(", ")
+                ),
+            ));
+        }
     }
-    docs
+    Ok(output)
+}
+
+/// Struct representing the necessary components of a cxx mod to be passed through to generation
+pub struct PassthroughMod {
+    pub(crate) items: Option<Vec<Item>>,
+    pub(crate) docs: Vec<Attribute>,
+    pub(crate) module_ident: Ident,
+    pub(crate) vis: Visibility,
+}
+
+impl PassthroughMod {
+    /// Parse an item mod into it's components
+    pub fn parse(module: ItemMod) -> Self {
+        let items = module.content.map(|(_, items)| items);
+
+        Self {
+            items,
+            docs: extract_docs(&module.attrs),
+            module_ident: module.ident,
+            vis: module.vis,
+        }
+    }
 }
 
 /// A struct representing a module block with CXX-Qt relevant [syn::Item]'s
@@ -58,7 +115,7 @@ pub fn separate_docs(method: &mut ForeignItemFn) -> Vec<Attribute> {
 /// [syn::Item]'s that are not handled specially by CXX-Qt are passed through for CXX to process.
 pub struct Parser {
     /// The module which unknown (eg CXX) blocks are stored into
-    pub(crate) passthrough_module: ItemMod,
+    pub(crate) passthrough_module: PassthroughMod,
     /// Any CXX-Qt data that needs generation later
     pub(crate) cxx_qt_data: ParsedCxxQtData,
     /// all type names that were found in this module, including CXX types
@@ -67,11 +124,12 @@ pub struct Parser {
 
 impl Parser {
     fn parse_mod_attributes(module: &mut ItemMod) -> Result<Option<String>> {
+        let attrs = require_attributes(&module.attrs, &["doc", "cxx_qt::bridge"])?;
         let mut namespace = None;
 
-        // Remove the cxx_qt::bridge attribute
-        if let Some(attr) = attribute_take_path(&mut module.attrs, &["cxx_qt", "bridge"]) {
-            // If we are no #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
+        // Check for the cxx_qt::bridge attribute
+        if let Some(attr) = attrs.get("cxx_qt::bridge") {
+            // If we are not #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
             if !matches!(attr.meta, Meta::Path(_)) {
                 let nested =
                     attr.parse_args_with(Punctuated::<Meta, Token![,]>::parse_terminated)?;
@@ -165,7 +223,7 @@ impl Parser {
 
         // Return the successful Parser object
         Ok(Self {
-            passthrough_module: module,
+            passthrough_module: PassthroughMod::parse(module),
             type_names,
             cxx_qt_data,
         })
@@ -192,26 +250,13 @@ mod tests {
             mod ffi {}
         };
         let parser = Parser::from(module).unwrap();
-        let expected_module: ItemMod = parse_quote! {
-            mod ffi;
-        };
-        assert_eq!(parser.passthrough_module, expected_module);
+
+        assert!(parser.passthrough_module.items.is_none());
+        assert!(parser.passthrough_module.docs.is_empty());
+        assert_eq!(parser.passthrough_module.module_ident, "ffi");
+        assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
-    }
-
-    #[test]
-    fn test_bridge_cxx_file_stem() {
-        let module: ItemMod = parse_quote! {
-            #[cxx_qt::bridge(cxx_file_stem = "stem")]
-            mod ffi {
-                extern "Rust" {
-                    fn test();
-                }
-            }
-        };
-        let parser = Parser::from(module);
-        assert!(parser.is_err());
     }
 
     #[test]
@@ -248,14 +293,10 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
-        let expected_module: ItemMod = parse_quote! {
-            mod ffi {
-                extern "Rust" {
-                    fn test();
-                }
-            }
-        };
-        assert_eq!(parser.passthrough_module, expected_module);
+        assert_eq!(parser.passthrough_module.items.unwrap().len(), 1);
+        assert!(parser.passthrough_module.docs.is_empty());
+        assert_eq!(parser.passthrough_module.module_ident, "ffi");
+        assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
     }
@@ -278,11 +319,10 @@ mod tests {
         };
         let parser = Parser::from(module.clone()).unwrap();
 
-        assert_ne!(parser.passthrough_module, module);
-
-        assert_eq!(parser.passthrough_module.attrs.len(), 0);
-        assert_eq!(parser.passthrough_module.ident, "ffi");
-        assert!(parser.passthrough_module.content.is_none());
+        assert!(parser.passthrough_module.items.is_none());
+        assert!(parser.passthrough_module.docs.is_empty());
+        assert_eq!(parser.passthrough_module.module_ident, "ffi");
+        assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, Some("cxx_qt".to_owned()));
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
         assert_eq!(parser.type_names.num_types(), 18);
@@ -306,6 +346,7 @@ mod tests {
     fn test_parser_from_cxx_and_cxx_qt_items() {
         let module: ItemMod = parse_quote! {
             #[cxx_qt::bridge]
+            /// A cxx_qt::bridge module
             mod ffi {
                 extern "RustQt" {
                     #[qobject]
@@ -324,11 +365,10 @@ mod tests {
         };
         let parser = Parser::from(module.clone()).unwrap();
 
-        assert_ne!(parser.passthrough_module, module);
-
-        assert_eq!(parser.passthrough_module.attrs.len(), 0);
-        assert_eq!(parser.passthrough_module.ident, "ffi");
-        assert_eq!(parser.passthrough_module.content.unwrap().1.len(), 1);
+        assert_eq!(parser.passthrough_module.items.unwrap().len(), 1);
+        assert_eq!(parser.passthrough_module.docs.len(), 1);
+        assert_eq!(parser.passthrough_module.module_ident, "ffi");
+        assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, None);
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
     }
@@ -350,6 +390,15 @@ mod tests {
             }
             {
                 // No cxx_qt bridge on module
+                mod ffi {
+                    extern "Rust" {
+                        fn test();
+                    }
+                }
+            }
+            {
+                // Cxx_file_stem is deprecated
+                #[cxx_qt::bridge(cxx_file_stem = "stem")]
                 mod ffi {
                     extern "Rust" {
                         fn test();

@@ -129,6 +129,7 @@ mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "primitiveChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "cxx_qt::my_object"]
         fn primitive_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -161,6 +162,7 @@ mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "trivialChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "cxx_qt::my_object"]
         fn trivial_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -193,6 +195,7 @@ mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "customFunctionPropChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "cxx_qt::my_object"]
         fn custom_function_prop_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -226,6 +229,7 @@ mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "renamedPropertyChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "cxx_qt::my_object"]
         fn renamed_property_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -259,6 +263,7 @@ mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "named_prop_2Changed"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "cxx_qt::my_object"]
         fn renamed_property_2_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -309,6 +314,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "myOnChanged"]
+        #[namespace = "cxx_qt::my_object"]
         fn my_on_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {

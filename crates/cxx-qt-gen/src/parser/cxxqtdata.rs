@@ -6,19 +6,17 @@
 use super::qnamespace::ParsedQNamespace;
 use super::trait_impl::TraitImpl;
 use crate::naming::cpp::err_unsupported_item;
-use crate::syntax::attribute::{attribute_find_path, attribute_take_path};
-use crate::syntax::foreignmod::ForeignTypeIdentAlias;
-use crate::syntax::path::path_compare_str;
-use crate::syntax::safety::Safety;
 use crate::{
     parser::{
         externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod, method::ParsedMethod,
-        qenum::ParsedQEnum, qobject::ParsedQObject, signals::ParsedSignal,
+        qenum::ParsedQEnum, qobject::ParsedQObject, require_attributes, signals::ParsedSignal,
     },
-    syntax::expr::expr_to_string,
+    syntax::{
+        attribute::attribute_get_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
+        path::path_compare_str, safety::Safety,
+    },
 };
-use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, Result};
-use syn::{ItemMacro, Meta};
+use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, ItemMacro, Meta, Result};
 
 pub struct ParsedCxxQtData {
     /// Map of the QObjects defined in the module that will be used for code generation
@@ -76,8 +74,8 @@ impl ParsedCxxQtData {
         }
     }
 
-    fn parse_enum(&mut self, mut item: ItemEnum) -> Result<Option<Item>> {
-        if let Some(qenum_attribute) = attribute_take_path(&mut item.attrs, &["qenum"]) {
+    fn parse_enum(&mut self, item: ItemEnum) -> Result<Option<Item>> {
+        if let Some(qenum_attribute) = attribute_get_path(&item.attrs, &["qenum"]) {
             // A Meta::Path indicates no arguments were provided to the enum
             // It only contains the "qenum" path and nothing else.
             let qobject: Option<Ident> = if let Meta::Path(_) = qenum_attribute.meta {
@@ -114,8 +112,11 @@ impl ParsedCxxQtData {
                     return Ok(None);
                 }
                 "C++Qt" => {
-                    self.extern_cxxqt_blocks
-                        .push(ParsedExternCxxQt::parse(foreign_mod)?);
+                    self.extern_cxxqt_blocks.push(ParsedExternCxxQt::parse(
+                        foreign_mod,
+                        &self.module_ident,
+                        self.namespace.as_deref(),
+                    )?);
                     return Ok(None);
                 }
                 _others => {}
@@ -126,8 +127,11 @@ impl ParsedCxxQtData {
     }
 
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
-        let namespace = attribute_find_path(&foreign_mod.attrs, &["namespace"])
-            .map(|index| expr_to_string(&foreign_mod.attrs[index].meta.require_name_value()?.value))
+        let attrs = require_attributes(&foreign_mod.attrs, &["namespace"])?;
+
+        let namespace = attrs
+            .get("namespace")
+            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
             .transpose()?
             .or_else(|| self.namespace.clone());
 
@@ -139,16 +143,16 @@ impl ParsedCxxQtData {
 
         for item in foreign_mod.items.drain(..) {
             match item {
-                ForeignItem::Fn(mut foreign_fn) => {
+                ForeignItem::Fn(foreign_fn) => {
                     // Test if the function is a signal
-                    if attribute_take_path(&mut foreign_fn.attrs, &["qsignal"]).is_some() {
+                    if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
                         let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
                         self.signals.push(parsed_signal_method);
 
                         // Test if the function is an inheritance method
                         //
                         // Note that we need to test for qsignal first as qsignals have their own inherit meaning
-                    } else if attribute_take_path(&mut foreign_fn.attrs, &["inherit"]).is_some() {
+                    } else if attribute_get_path(&foreign_fn.attrs, &["inherit"]).is_some() {
                         let parsed_inherited_method =
                             ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
 
@@ -399,11 +403,8 @@ mod tests {
         assert!(result.is_none());
 
         assert_eq!(cxx_qt_data.extern_cxxqt_blocks.len(), 1);
-        assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].attrs.len(), 1);
-        assert_eq!(
-            cxx_qt_data.extern_cxxqt_blocks[0].passthrough_items.len(),
-            1
-        );
+        assert!(cxx_qt_data.extern_cxxqt_blocks[0].namespace.is_some());
+        assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].qobjects.len(), 1);
         assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].signals.len(), 1);
         assert!(cxx_qt_data.extern_cxxqt_blocks[0].unsafety.is_some());
     }

@@ -44,24 +44,29 @@ pub fn generate(
 
 #[cfg(test)]
 mod tests {
+    use quote::format_ident;
     use syn::parse_quote;
 
     use super::*;
 
     #[test]
     fn test_generate_cpp_extern_qt() {
-        let blocks = vec![ParsedExternCxxQt::parse(parse_quote! {
-            unsafe extern "C++Qt" {
-                #[qobject]
-                type MyObject;
+        let blocks = vec![ParsedExternCxxQt::parse(
+            parse_quote! {
+                unsafe extern "C++Qt" {
+                    #[qobject]
+                    type MyObject;
 
-                #[qsignal]
-                fn signal1(self: Pin<&mut MyObject>);
+                    #[qsignal]
+                    fn signal1(self: Pin<&mut MyObject>);
 
-                #[qsignal]
-                fn signal2(self: Pin<&mut MyObject>);
-            }
-        })
+                    #[qsignal]
+                    fn signal2(self: Pin<&mut MyObject>);
+                }
+            },
+            &format_ident!("qobject"),
+            None,
+        )
         .unwrap()];
 
         // Unknown types
@@ -73,17 +78,21 @@ mod tests {
 
     #[test]
     fn test_generate_cpp_extern_qt_mapping() {
-        let blocks = vec![ParsedExternCxxQt::parse(parse_quote! {
-            unsafe extern "C++Qt" {
-                #[cxx_name = "ObjCpp"]
-                #[namespace = "mynamespace"]
-                #[qobject]
-                type ObjRust;
+        let blocks = vec![ParsedExternCxxQt::parse(
+            parse_quote! {
+                unsafe extern "C++Qt" {
+                    #[cxx_name = "ObjCpp"]
+                    #[namespace = "mynamespace"]
+                    #[qobject]
+                    type ObjRust;
 
-                #[qsignal]
-                fn signal(self: Pin<&mut ObjRust>);
-            }
-        })
+                    #[qsignal]
+                    fn signal(self: Pin<&mut ObjRust>);
+                }
+            },
+            &format_ident!("qobject"),
+            None,
+        )
         .unwrap()];
         let mut type_names = TypeNames::default();
         type_names.mock_insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));

@@ -45,6 +45,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
+        #[namespace = "cxx_qt::my_object"]
         fn ready(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -73,6 +74,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "dataChanged"]
+        #[namespace = "cxx_qt::my_object"]
         fn data_changed(
             self: Pin<&mut MyObject>,
             first: i32,
@@ -111,6 +113,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "newData"]
+        #[namespace = "cxx_qt::my_object"]
         fn base_class_new_data(
             self: Pin<&mut MyObject>,
             first: i32,
@@ -168,6 +171,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         include ! (< QtCore / QTimer >);
+        #[namespace = "cxx_qt::my_object"]
         #[doc = " QTimer"]
         type QTimer;
     }

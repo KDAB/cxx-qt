@@ -40,10 +40,10 @@ class MyCxxName;
 
 } // namespace my_namespace
 
-namespace rust::cxxqtgen1 {
+namespace cxx_qt::multi_object::rust::cxxqtgen1 {
 using QPushButtonCxxQtSignalHandlerclicked =
   ::rust::cxxqt1::SignalHandler<struct QPushButtonCxxQtSignalParamsclicked*>;
-} // namespace rust::cxxqtgen1
+} // namespace cxx_qt::multi_object::rust::cxxqtgen1
 
 namespace mynamespace::rust::cxxqtgen1 {
 using ExternObjectCxxQtSignalHandlerdataReady =
@@ -58,13 +58,14 @@ using ExternObjectCxxQtSignalHandlererrorOccurred =
 
 #include "directory/file_ident.cxx.h"
 
-namespace rust::cxxqtgen1 {
+namespace cxx_qt::multi_object::rust::cxxqtgen1 {
 ::QMetaObject::Connection
 QPushButton_clickedConnect(
-  QPushButton& self,
-  ::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked closure,
+  cxx_qt::multi_object::QPushButton& self,
+  ::cxx_qt::multi_object::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked
+    closure,
   ::Qt::ConnectionType type);
-} // namespace rust::cxxqtgen1
+} // namespace cxx_qt::multi_object::rust::cxxqtgen1
 
 namespace mynamespace::rust::cxxqtgen1 {
 ::QMetaObject::Connection

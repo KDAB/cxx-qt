@@ -51,7 +51,7 @@ fn qualify_type_path(ty_path: &TypePath, type_names: &TypeNames) -> Result<Type>
         // Inject the qualified prefix into the path if there is one
         if let Some(qualified_prefix) = qualified_prefix {
             for part in qualified_prefix.iter().rev() {
-                let segment: PathSegment = syn::parse_str(part).unwrap();
+                let segment: PathSegment = syn::parse_str(part)?;
                 ty_path.path.segments.insert(0, segment);
             }
         }

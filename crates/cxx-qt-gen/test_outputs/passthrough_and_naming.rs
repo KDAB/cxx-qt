@@ -1,6 +1,4 @@
 #[cxx::bridge(namespace = "cxx_qt::multi_object")]
-#[attrA]
-#[attrB]
 pub mod ffi {
     const MAX: u16 = 65535;
     enum Event {
@@ -23,8 +21,8 @@ pub mod ffi {
     #[namespace = "namespace"]
     extern "C" {}
     #[namespace = "namespace"]
-    #[custom_attr = "test"]
     extern "C" {}
+    #[custom_attr = "test"]
     unsafe extern "C++" {}
     #[namespace = "namespace"]
     unsafe extern "C++" {}
@@ -100,6 +98,7 @@ pub mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "propertyNameChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "cxx_qt::multi_object"]
         fn property_name_changed(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -138,6 +137,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
+        #[namespace = "cxx_qt::multi_object"]
         fn ready(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
@@ -210,6 +210,7 @@ pub mod ffi {
     unsafe extern "C++" {
         #[cxx_name = "propertyNameChanged"]
         #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "second_object"]
         fn property_name_changed(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
@@ -248,6 +249,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
+        #[namespace = "second_object"]
         fn ready(self: Pin<&mut SecondObject>);
     }
     unsafe extern "C++" {
@@ -331,6 +333,7 @@ pub mod ffi {
     }
     #[namespace = ""]
     unsafe extern "C++" {
+        #[namespace = "cxx_qt::multi_object"]
         type QPushButton;
         #[namespace = "mynamespace"]
         #[cxx_name = "ExternObjectCpp"]
@@ -338,15 +341,16 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "clicked"]
+        #[namespace = "cxx_qt::multi_object"]
         fn clicked(self: Pin<&mut QPushButton>, checked: bool);
     }
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1"]
+        #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
         type QPushButtonCxxQtSignalHandlerclicked =
             cxx_qt::signalhandler::CxxQtSignalHandler<super::QPushButtonCxxQtSignalClosureclicked>;
         #[doc(hidden)]
-        #[namespace = "rust::cxxqtgen1"]
+        #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
         #[cxx_name = "QPushButton_clickedConnect"]
         fn QPushButton_connect_clicked(
             self_value: Pin<&mut QPushButton>,
@@ -354,7 +358,7 @@ pub mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[namespace = "rust::cxxqtgen1"]
+    #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QPushButton_signal_handler_clicked(handler: QPushButtonCxxQtSignalHandlerclicked);
@@ -367,6 +371,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "dataReady"]
+        #[namespace = "mynamespace"]
         fn data_ready(self: Pin<&mut ExternObject>);
     }
     unsafe extern "C++" {
@@ -398,6 +403,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "errorOccurred"]
+        #[namespace = "mynamespace"]
         fn error_occurred(self: Pin<&mut ExternObject>);
     }
     unsafe extern "C++" {
@@ -816,7 +822,9 @@ impl ffi::QPushButton {
 #[doc(hidden)]
 pub struct QPushButtonCxxQtSignalClosureclicked {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QPushButtonCxxQtSignalClosureclicked {
-    type Id = cxx::type_id!("::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked");
+    type Id = cxx::type_id!(
+        "::cxx_qt::multi_object::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked"
+    );
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool);
 }
 use core::mem::drop as drop_QPushButton_signal_handler_clicked;

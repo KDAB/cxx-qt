@@ -5,10 +5,8 @@
 
 use crate::{
     naming::Name,
-    parser::property::ParsedQProperty,
-    syntax::{
-        attribute::attribute_take_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
-    },
+    parser::{property::ParsedQProperty, require_attributes},
+    syntax::{expr::expr_to_string, foreignmod::ForeignTypeIdentAlias, path::path_compare_str},
 };
 #[cfg(test)]
 use quote::format_ident;
@@ -46,6 +44,18 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
+    const ALLOWED_ATTRS: [&'static str; 10] = [
+        "cxx_name",
+        "rust_name",
+        "namespace",
+        "doc",
+        "qobject",
+        "base",
+        "qml_element",
+        "qml_uncreatable",
+        "qml_singleton",
+        "qproperty",
+    ];
     #[cfg(test)]
     pub fn mock() -> Self {
         ParsedQObject {
@@ -65,12 +75,15 @@ impl ParsedQObject {
 
     /// Parse a ForeignTypeIdentAlias into a [ParsedQObject] with the index of the #[qobject] specified
     pub fn parse(
-        mut declaration: ForeignTypeIdentAlias,
+        declaration: ForeignTypeIdentAlias,
         namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
-        let has_qobject_macro = attribute_take_path(&mut declaration.attrs, &["qobject"]).is_some();
-        let base_class = attribute_take_path(&mut declaration.attrs, &["base"])
+        let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
+        let has_qobject_macro = attributes.contains_key("qobject");
+
+        let base_class = attributes
+            .get("base")
             .map(|attr| -> Result<Ident> {
                 let expr = &attr.meta.require_name_value()?.value;
                 if let Expr::Path(path_expr) = expr {
@@ -85,8 +98,6 @@ impl ParsedQObject {
             .transpose()?;
 
         // Ensure that if there is no qobject macro that a base class is specificed
-        //
-        // Note this assumes the check above
         if !has_qobject_macro && base_class.is_none() {
             return Err(Error::new_spanned(
                 declaration.ident_left,
@@ -102,11 +113,11 @@ impl ParsedQObject {
         )?;
 
         // Find any QML metadata
-        let qml_metadata = Self::parse_qml_metadata(&name, &mut declaration.attrs)?;
+        let qml_metadata = Self::parse_qml_metadata(&name, &declaration.attrs)?;
 
         // Parse any properties in the type
         // and remove the #[qproperty] attribute
-        let properties = Self::parse_property_attributes(&mut declaration.attrs)?;
+        let properties = Self::parse_property_attributes(&declaration.attrs)?;
         let inner = declaration.ident_right.clone();
 
         Ok(Self {
@@ -120,47 +131,35 @@ impl ParsedQObject {
         })
     }
 
-    fn parse_qml_metadata(
-        name: &Name,
-        attrs: &mut Vec<Attribute>,
-    ) -> Result<Option<QmlElementMetadata>> {
-        // Find if there is a qml_element attribute
-        if let Some(attr) = attribute_take_path(attrs, &["qml_element"]) {
+    fn parse_qml_metadata(name: &Name, attrs: &[Attribute]) -> Result<Option<QmlElementMetadata>> {
+        let attributes = require_attributes(attrs, &Self::ALLOWED_ATTRS)?;
+        if let Some(attr) = attributes.get("qml_element") {
             // Extract the name of the qml_element from macro, else use the c++ name
             // This will use the name provided by cxx_name if that attr was present
-            let name = match attr.meta {
+            let name = match &attr.meta {
                 Meta::NameValue(name_value) => expr_to_string(&name_value.value)?,
                 _ => name.cxx_unqualified(),
             };
-
-            // Determine if this element is uncreatable
-            let uncreatable = attribute_take_path(attrs, &["qml_uncreatable"]).is_some();
-
-            // Determine if this element is a singleton
-            let singleton = attribute_take_path(attrs, &["qml_singleton"]).is_some();
-
+            let uncreatable = attributes.contains_key("qml_uncreatable");
+            let singleton = attributes.contains_key("qml_singleton");
             return Ok(Some(QmlElementMetadata {
                 name,
                 uncreatable,
                 singleton,
             }));
         }
-
         Ok(None)
     }
 
-    fn parse_property_attributes(attrs: &mut Vec<Attribute>) -> Result<Vec<ParsedQProperty>> {
-        let mut properties = vec![];
-
-        // Note that once extract_if is stable, this would allow for comparing all the
-        // elements once using path_compare_str and then building ParsedQProperty
-        // from the extracted elements.
+    fn parse_property_attributes(attrs: &[Attribute]) -> Result<Vec<ParsedQProperty>> {
+        // Once extract_if is stable, this would allow comparing all the elements using
+        // path_compare_str and building ParsedQProperty from the extracted elements.
         // https://doc.rust-lang.org/nightly/std/vec/struct.Vec.html#method.extract_if
-        while let Some(attr) = attribute_take_path(attrs, &["qproperty"]) {
-            properties.push(ParsedQProperty::parse(attr)?);
-        }
-
-        Ok(properties)
+        attrs
+            .iter()
+            .filter(|attr| path_compare_str(attr.meta.path(), &["qproperty"]))
+            .map(ParsedQProperty::parse)
+            .collect::<Result<Vec<_>>>()
     }
 }
 

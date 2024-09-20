@@ -65,7 +65,7 @@ pub mod tests {
     use crate::generator::naming::property::property_name_from_rust_name;
     use crate::generator::naming::qobject::tests::create_qobjectname;
     use crate::generator::structuring::Structures;
-    use crate::parser::property::QPropertyFlags;
+    use crate::parser::property::{mock_property, QPropertyFlags};
     use crate::parser::qobject::ParsedQObject;
     use crate::{CppFragment, Parser};
     use indoc::indoc;
@@ -95,7 +95,7 @@ pub mod tests {
     }
 
     fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = ParsedQProperty::parse(&input.attrs.remove(0))?;
 
         let properties = vec![property];
 
@@ -152,12 +152,12 @@ pub mod tests {
 
     #[test]
     fn test_unexpected_headers() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(i32, num, READ, WRITE = mySetter)]
             struct MyStruct;
         };
 
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
 
         let properties = vec![property];
 
@@ -190,12 +190,12 @@ pub mod tests {
 
     #[test]
     fn test_custom_setter() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(i32, num, READ, WRITE = mySetter)]
             struct MyStruct;
         };
 
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
 
         let properties = vec![property];
 
@@ -231,12 +231,12 @@ pub mod tests {
 
     #[test]
     fn test_reset() {
-        let mut input: ItemStruct = parse_quote! {
+        let input: ItemStruct = parse_quote! {
             #[qproperty(i32, num, READ, WRITE = mySetter, RESET = my_resetter)]
             struct MyStruct;
         };
 
-        let property = ParsedQProperty::parse(input.attrs.remove(0)).unwrap();
+        let property = mock_property(input);
 
         let properties = vec![property];
 
@@ -280,20 +280,17 @@ pub mod tests {
 
     #[test]
     fn test_generate_cpp_properties() {
-        let mut input1: ItemStruct = parse_quote! {
+        let input1: ItemStruct = parse_quote! {
             #[qproperty(i32, trivial_property, READ, WRITE, NOTIFY)]
             struct MyStruct;
         };
 
-        let mut input2: ItemStruct = parse_quote! {
+        let input2: ItemStruct = parse_quote! {
             #[qproperty(UniquePtr<QColor>, opaque_property)]
             struct MyStruct;
         };
 
-        let properties = vec![
-            ParsedQProperty::parse(input1.attrs.remove(0)).unwrap(),
-            ParsedQProperty::parse(input2.attrs.remove(0)).unwrap(),
-        ];
+        let properties = vec![mock_property(input1), mock_property(input2)];
 
         let qobject_idents = create_qobjectname();
 

@@ -101,6 +101,11 @@ pub fn generate_rust_signal(
     let cpp_ident = idents.name.cxx_unqualified();
 
     let doc_comments = &signal.docs;
+    let namespace = if let Some(namespace) = qobject_name.namespace() {
+        quote! { #[namespace = #namespace ] }
+    } else {
+        quote! {}
+    };
 
     let signal_ident_cpp = idents.name.rust_unqualified();
     let parameter_signatures =
@@ -114,6 +119,7 @@ pub fn generate_rust_signal(
             #unsafe_block extern "C++" {
                 #[cxx_name = #cpp_ident]
                 #(#doc_comments)*
+                #namespace
                 #unsafe_call fn #signal_ident_cpp(#parameter_signatures) #return_type;
             }
         });

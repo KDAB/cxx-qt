@@ -3,9 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::method::MethodFields;
-use crate::parser::{check_safety, separate_docs};
-use crate::syntax::{attribute::attribute_take_path, safety::Safety};
+use crate::parser::{check_safety, extract_docs, method::MethodFields, require_attributes};
+use crate::syntax::safety::Safety;
 use core::ops::Deref;
 use quote::format_ident;
 use syn::{Attribute, ForeignItemFn, Ident, Result};
@@ -19,17 +18,16 @@ pub struct ParsedInheritedMethod {
 }
 
 impl ParsedInheritedMethod {
-    pub fn parse(mut method: ForeignItemFn, safety: Safety) -> Result<Self> {
+    const ALLOWED_ATTRS: [&'static str; 5] =
+        ["cxx_name", "rust_name", "qinvokable", "doc", "inherit"];
+
+    pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
-
-        let docs = separate_docs(&mut method);
-        let mut fields = MethodFields::parse(method)?;
-
-        // This block seems unnecessary but since attrs are passed through on generator/rust/inherit.rs a duplicate attr would occur without it
-        attribute_take_path(&mut fields.method.attrs, &["cxx_name"]);
+        require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
+        let docs = extract_docs(&method.attrs);
 
         Ok(Self {
-            method_fields: fields,
+            method_fields: MethodFields::parse(method)?,
             docs,
         })
     }

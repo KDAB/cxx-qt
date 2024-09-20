@@ -2,18 +2,14 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 use crate::{
     naming::Name,
-    parser::parameter::ParsedFunctionParameter,
-    syntax::{attribute::attribute_take_path, safety::Safety},
+    parser::{check_safety, parameter::ParsedFunctionParameter, require_attributes},
+    syntax::{foreignmod, safety::Safety, types},
 };
 use core::ops::Deref;
-use std::collections::HashSet;
-use syn::{Error, ForeignItemFn, Ident, Result};
-
-use crate::parser::check_safety;
-use crate::syntax::{foreignmod, types};
+use std::collections::{BTreeMap, HashSet};
+use syn::{Attribute, ForeignItemFn, Ident, Result};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -24,12 +20,26 @@ pub enum ParsedQInvokableSpecifiers {
 }
 
 impl ParsedQInvokableSpecifiers {
-    fn as_str_slice(&self) -> &[&str] {
+    fn as_str(&self) -> &str {
         match self {
-            ParsedQInvokableSpecifiers::Final => &["cxx_final"],
-            ParsedQInvokableSpecifiers::Override => &["cxx_override"],
-            ParsedQInvokableSpecifiers::Virtual => &["cxx_virtual"],
+            ParsedQInvokableSpecifiers::Final => "cxx_final",
+            ParsedQInvokableSpecifiers::Override => "cxx_override",
+            ParsedQInvokableSpecifiers::Virtual => "cxx_virtual",
         }
+    }
+
+    fn from_attrs(attrs: BTreeMap<&str, &Attribute>) -> HashSet<ParsedQInvokableSpecifiers> {
+        let mut output = HashSet::new();
+        for specifier in [
+            ParsedQInvokableSpecifiers::Final,
+            ParsedQInvokableSpecifiers::Override,
+            ParsedQInvokableSpecifiers::Virtual,
+        ] {
+            if attrs.contains_key(specifier.as_str()) {
+                output.insert(specifier);
+            }
+        }
+        output
     }
 }
 
@@ -46,6 +56,16 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
+    const ALLOWED_ATTRS: [&'static str; 7] = [
+        "cxx_name",
+        "rust_name",
+        "qinvokable",
+        "cxx_final",
+        "cxx_override",
+        "cxx_virtual",
+        "doc",
+    ];
+
     #[cfg(test)]
     pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
         Self {
@@ -83,31 +103,12 @@ impl ParsedMethod {
 
     pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
         check_safety(&method, &safety)?;
-
-        let mut fields = MethodFields::parse(method)?;
-
-        if fields.name.namespace().is_some() {
-            return Err(Error::new_spanned(
-                fields.method.sig.ident,
-                "Methods / QInvokables cannot have a namespace attribute",
-            ));
-        }
+        let fields = MethodFields::parse(method)?;
+        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         // Determine if the method is invokable
-        let is_qinvokable =
-            attribute_take_path(&mut fields.method.attrs, &["qinvokable"]).is_some();
-
-        // Parse any C++ specifiers
-        let mut specifiers = HashSet::new();
-        for specifier in [
-            ParsedQInvokableSpecifiers::Final,
-            ParsedQInvokableSpecifiers::Override,
-            ParsedQInvokableSpecifiers::Virtual,
-        ] {
-            if attribute_take_path(&mut fields.method.attrs, specifier.as_str_slice()).is_some() {
-                specifiers.insert(specifier); // Should a fn be able to be Override AND Virtual?
-            }
-        }
+        let is_qinvokable = attrs.contains_key("qinvokable");
+        let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs);
 
         Ok(Self {
             method_fields: fields,

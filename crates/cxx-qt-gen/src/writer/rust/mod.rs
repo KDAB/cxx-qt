@@ -14,7 +14,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
     let mut cxx_mod = generated.cxx_mod.clone();
     let mut cxx_mod_contents = generated.cxx_mod_contents.clone();
     let mut cxx_qt_mod_contents = vec![];
-    let namespace = &generated.namespace;
 
     // Add common includes for all objects
     cxx_mod_contents.insert(
@@ -56,7 +55,6 @@ pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -
     }
 
     quote! {
-        #[cxx::bridge(namespace = #namespace)]
         #cxx_mod
 
         #(#cxx_qt_mod_contents)*
@@ -98,6 +96,7 @@ mod tests {
     pub fn create_generated_rust() -> GeneratedRustBlocks {
         GeneratedRustBlocks {
             cxx_mod: parse_quote! {
+                #[cxx::bridge(namespace = "cxx_qt::my_object")]
                 mod ffi {}
             },
             cxx_mod_contents: vec![],
@@ -136,6 +135,7 @@ mod tests {
     pub fn create_generated_rust_multi_qobjects() -> GeneratedRustBlocks {
         GeneratedRustBlocks {
             cxx_mod: parse_quote! {
+                #[cxx::bridge(namespace = "cxx_qt")]
                 mod ffi {}
             },
             cxx_mod_contents: vec![],
