@@ -10,8 +10,8 @@ mod ffi {
         #[qobject]
         #[qproperty(i32, primitive)]
         #[qproperty(QPoint, trivial)]
-        #[qproperty(i32, custom_function_prop, READ = my_getter, WRITE = my_setter, NOTIFY)]
-        #[qproperty(i32, readonly_prop, READ)]
+        #[qproperty(i32, custom_function_prop, cxx_name = "customFunctionProp", READ = my_getter, WRITE = my_setter, NOTIFY)]
+        #[qproperty(i32, readonly_prop, cxx_name = "readonlyProp", READ)]
         #[qproperty(
             i32,
             named_prop,
@@ -19,11 +19,11 @@ mod ffi {
             rust_name = "renamed_property"
         )]
         #[qproperty(i32, named_prop_2, rust_name = "renamed_property_2")]
-        #[qproperty(i32, custom_on_changed_prop, READ, WRITE, NOTIFY = my_on_changed)]
-        #[qproperty(i32, const_prop, READ, CONSTANT)]
-        #[qproperty(i32, resettable_prop, READ, WRITE, RESET = myResetFn)]
-        #[qproperty(i32, required_prop, READ, WRITE, REQUIRED)]
-        #[qproperty(i32, final_prop, READ, WRITE, FINAL)]
+        #[qproperty(i32, custom_on_changed_prop, cxx_name = "customOnChangedProp", READ, WRITE, NOTIFY = my_on_changed)]
+        #[qproperty(i32, const_prop, cxx_name = "constProp", READ, CONSTANT)]
+        #[qproperty(i32, resettable_prop, cxx_name = "resettableProp", READ, WRITE, RESET = myResetFn)]
+        #[qproperty(i32, required_prop, cxx_name = "requiredProp", READ, WRITE, REQUIRED)]
+        #[qproperty(i32, final_prop, cxx_name = "finalProp", READ, WRITE, FINAL)]
         type MyObject = super::MyObjectRust;
     }
 

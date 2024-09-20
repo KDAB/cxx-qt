@@ -22,9 +22,9 @@ pub mod qobject {
         #[qobject]
         #[qml_element]
         #[qproperty(bool, connected, READ, NOTIFY = connected_state_changed)]
-        #[qproperty(QUrl, connected_url, READ, WRITE = set_url, NOTIFY = connected_state_changed, RESET = reset_url)]
-        #[qproperty(QUrl, previous_connected_url, READ, NOTIFY = connected_state_changed)]
-        #[qproperty(QString, status_message, READ, NOTIFY = connected_state_changed)]
+        #[qproperty(QUrl, connected_url, cxx_name = "connectedUrl", READ, WRITE = set_url, NOTIFY = connected_state_changed, RESET = reset_url)]
+        #[qproperty(QUrl, previous_connected_url, cxx_name = "previousConnectedUrl", READ, NOTIFY = connected_state_changed)]
+        #[qproperty(QString, status_message, cxx_name = "statusMessage", READ, NOTIFY = connected_state_changed)]
         type RustProperties = super::RustPropertiesRust;
         // ANCHOR_END: book_properties_signature
 

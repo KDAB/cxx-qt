@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::naming::{AutoCamel, Name};
+use crate::naming::Name;
 use crate::syntax::expr::expr_to_string;
 use syn::{
     parse::{Error, ParseStream},
@@ -189,7 +189,7 @@ impl ParsedQProperty {
                     ))
                 }
 
-                let name = Name::new(ident).with_options(cxx_name.map(|ident| ident.to_string()), rust_name, AutoCamel::Enabled);
+                let name = Name::new(ident).with_options(cxx_name.map(|ident| ident.to_string()), rust_name);
 
                 // This check is needed otherwise this fn would error unless READ, WRITE, etc... was passed with cxx_name
                 if read_required {
