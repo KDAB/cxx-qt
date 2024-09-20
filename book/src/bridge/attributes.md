@@ -16,6 +16,8 @@ The C++ `namespace` which to emit `extern "RustQt"` items and the namespace to f
 An item will inherit the namespace specified on it's surrounding `extern` block if any,
 otherwise the namespace specified with the top level `cxx_qt::bridge` attribute, if any, will be used.
 
+> **📝 Note**: The `#[namespace = "..."]` attribute is not allowed on signals, methods or inherited methods
+
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/threading.rs:book_namespace_macro}}
 ```
@@ -25,6 +27,10 @@ otherwise the namespace specified with the top level `cxx_qt::bridge` attribute,
 The `#[cxx_name = "..."]` attribute replaces the name that C++ should use for this item.
 
 The `#[rust_name = "..."]` attribute replaces the name that Rust should use for this item.
+
+For [`#[qproperty]`](./extern_rustqt.md#properties), a CXX or Rust name can be provided inside the attribute like so
+
+`#[qproperty(T, name, cxx_name = "MyName", rust_name = "my_name")]`
 
 > **📝 Note**: If an item has different C++ and Rust identifiers, it is always referenced by its Rust identifier inside the bridge, not its C++ identifier. (e.g. when referring to a QObject inside a `#[qenum(...)]` attribute)
 
