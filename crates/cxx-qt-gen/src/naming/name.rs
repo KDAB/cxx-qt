@@ -4,23 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::syntax::{attribute::attribute_get_path, expr::expr_to_string};
-use convert_case::{Case, Casing};
 use quote::format_ident;
 use syn::{spanned::Spanned, Attribute, Error, Ident, Path, Result};
-
-pub enum AutoCamel {
-    Enabled,
-    Disabled,
-}
-
-impl AutoCamel {
-    pub fn as_bool(&self) -> bool {
-        match self {
-            AutoCamel::Enabled => true,
-            AutoCamel::Disabled => false,
-        }
-    }
-}
 
 /// This struct contains all names a certain syntax element may have
 ///
@@ -144,35 +129,18 @@ impl Name {
             namespace,
             module: module.cloned().map(Path::from),
         }
-        .with_options(cxx_name, rust_name, AutoCamel::Disabled))
+        .with_options(cxx_name, rust_name))
     }
 
     /// Applies naming options to an existing name, applying logic about what should cause renaming
-    pub fn with_options(
-        self,
-        cxx: Option<String>,
-        rust: Option<Ident>,
-        auto_camel: AutoCamel,
-    ) -> Self {
-        let mut cxx_ident = cxx.clone();
-        let rust_ident = if let Some(rust_ident) = rust {
-            // If we have a rust_name, but no cxx_name, the original ident is the cxx_name.
-            if cxx.is_none() {
-                cxx_ident = Some(self.rust.to_string());
-            };
-
-            rust_ident
+    pub fn with_options(self, cxx: Option<String>, rust: Option<Ident>) -> Self {
+        let cxx_ident = if cxx.is_none() && rust.is_some() {
+            Some(self.rust.to_string())
         } else {
-            // If we have no rust_name and no cxx_name, the original ident is the cxx_name ONLY if auto converting.
-            // Otherwise it stays as the original cxx Option
-            if cxx.is_none() && auto_camel.as_bool() {
-                cxx_ident = Some(self.rust.to_string().to_case(Case::Camel));
-            }
-            self.rust.clone()
+            cxx.clone()
         };
-
         Self {
-            rust: rust_ident,
+            rust: rust.unwrap_or_else(|| self.rust.clone()),
             cxx: cxx_ident,
             ..self
         }
