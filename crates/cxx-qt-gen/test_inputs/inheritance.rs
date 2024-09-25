@@ -20,6 +20,10 @@ mod inheritance {
         #[cxx_name = "hasChildren"]
         #[inherit]
         fn has_children_super(self: &MyObject, parent: &QModelIndex) -> bool;
+
+        #[rust_name = "hello_world"]
+        #[inherit]
+        fn helloWorld(self: &MyObject, parent: &QModelIndex) -> bool;
     }
 
     extern "RustQt" {

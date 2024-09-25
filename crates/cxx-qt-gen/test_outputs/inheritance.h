@@ -25,6 +25,11 @@ public:
     return QAbstractItemModel::hasChildren(args...);
   }
   template<class... Args>
+  bool helloWorldCxxQtInherit(Args... args) const
+  {
+    return QAbstractItemModel::helloWorld(args...);
+  }
+  template<class... Args>
   void fetchMoreCxxQtInherit(Args... args)
   {
     return QAbstractItemModel::fetchMore(args...);
