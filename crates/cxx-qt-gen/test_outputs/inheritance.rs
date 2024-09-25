@@ -51,6 +51,10 @@ mod inheritance {
         #[doc = " Inherited hasChildren from the base class"]
         fn has_children_super(self: &MyObject, parent: &QModelIndex) -> bool;
     }
+    unsafe extern "C++" {
+        #[cxx_name = "helloWorldCxxQtInherit"]
+        fn hello_world(self: &MyObject, parent: &QModelIndex) -> bool;
+    }
     extern "C++" {
         #[cxx_name = "fetchMoreCxxQtInherit"]
         #[doc = " Inherited fetchMore from the base class"]

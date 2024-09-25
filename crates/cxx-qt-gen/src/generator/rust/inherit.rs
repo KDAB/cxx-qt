@@ -31,7 +31,7 @@ pub fn generate(
                 })
                 .collect::<Vec<TokenStream>>();
 
-            let ident = &method.method.sig.ident;
+            let ident = &method.method_fields.name.rust_unqualified();
             let cxx_name_string = &method.wrapper_ident().to_string();
             let self_param = if method.mutable {
                 quote! { self: Pin<&mut #qobject_name> }
