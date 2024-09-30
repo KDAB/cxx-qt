@@ -21,8 +21,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update && sudo apt-get install -y clang-format-12
-      - run: ./scripts/clang_format_check.sh .
+      # Note ensure that matrix runner is updated too
+      - run: |
+          pip install --user clang-format==14.0.6
+          test -x ~/.local/bin/clang-format
+          test -x /home/runner/.local/bin/clang-format
+      - run: ./scripts/clang_format_check.sh /home/runner/.local/bin/clang-format .
 
   license_check:
     runs-on: ubuntu-latest
@@ -235,6 +239,7 @@ jobs:
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
+            clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             packages-extra: >-
                 qtbase5-dev
@@ -255,6 +260,7 @@ jobs:
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
+            clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             packages-extra: >-
                 qt6-base-dev
@@ -277,14 +283,10 @@ jobs:
             cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
-            #
-            # FIXME: clang-format-14 causes formatting differences if it is selected by brew
-            # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
-            # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
-            # https://github.com/KDAB/cxx-qt/issues/121
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
+            clang_format_path: /Users/runner/Library/Python/3.12/bin/clang-format
             cargo_dir: ~/.cargo
             workspace: /Users/runner/cxx-qt
             cc: clang
@@ -300,6 +302,7 @@ jobs:
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
+            clang_format_path: /Users/runner/Library/Python/3.12/bin/clang-format
             cargo_dir: ~/.cargo
             workspace: /Users/runner/cxx-qt
             cc: clang
@@ -317,6 +320,7 @@ jobs:
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
@@ -334,6 +338,7 @@ jobs:
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
@@ -405,13 +410,18 @@ jobs:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
 
+    - name: "Install clang-format"
+      # Note ensure that clang-format runner is updated too
+      run: |
+        pip install --user clang-format==14.0.6
+        test -x ${{ matrix.clang_format_path }}
+
     - name: "[Ubuntu] Install dependencies"
       if: runner.os == 'Linux'
       run: >-
         sudo apt-get update &&
         sudo apt-get install -y
         ninja-build
-        clang-format-12
         libssl-dev
         pkg-config
         valgrind
@@ -424,13 +434,8 @@ jobs:
 
     - name: "[macOS] Install dependencies"
       if: runner.os == 'macOS'
-      # FIXME: clang-format-14 causes formatting differences if it is selected by brew
-      # once Ubuntu 22.04 is we can move to clang-format-14 everywhere
-      # for now we need at least clang-format-12 otherwise include reordering fails after clang-format off
-      # https://github.com/KDAB/cxx-qt/issues/121
-      #
       # automake is needed for building libicu which is a dependency of Qt
-      run: brew install automake autoconf-archive ninja clang-format
+      run: brew install automake autoconf-archive ninja
 
     # Note that for nuget uploads to work this must be run as the kdab user
     # eg a branch on the kdab repo rather than a users fork
@@ -480,6 +485,8 @@ jobs:
       run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
       working-directory: ${{ matrix.workspace }}/build
       env:
+        # Use the version of clang-format from pip
+        CLANG_FORMAT_BINARY: ${{ matrix.clang_format_path }}
         RUSTC_WRAPPER: sccache
         QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
         QT_SELECT: qt${{ matrix.qt_version }}

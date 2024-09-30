@@ -7,14 +7,15 @@
 # SPDX-License-Identifier: MIT OR Apache-2.0
 set -e
 
-DIR=$1
-echo "Executing clang-format on directory: $DIR"
+CLANG_FORMAT_CMD=$1
+DIR=$2
+echo "Executing $CLANG_FORMAT_CMD on directory: $DIR"
 
 function clang_format_files() {
     while IFS= read -r -d '' file
     do
         if ! git check-ignore -q "$file"; then
-            clang-format --dry-run -Werror "$file"
+            $CLANG_FORMAT_CMD --dry-run -Werror "$file"
         fi
     done < <(find "$DIR" -type f -name "$1" -a -not -path "$DIR/.git/*" -not -path "$DIR/vcpkg/*" -not -path "$DIR/*/vcpkg_installed/*" -print0)
 }
