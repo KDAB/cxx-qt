@@ -50,6 +50,17 @@ CXX-Qt is in early development and the API changes frequently. For the latest do
 and run `mdbook serve --open` in the [book folder](./book). It will open your own browser.
 If you need to open it in another browser goto url [http://localhost:3000](http://localhost:3000).
 
+## Supported Qt Versions
+
+We currently aim to support the Qt versions that have official support by the Qt company.
+
+At the moment this means:
+
+* Qt 5.15 LTS
+* All versions of Qt 6
+
+Versions below Qt 5.15 LTS are *explicitly unsupported*.
+
 ## Comparison to other Rust Qt bindings
 
 | Project | Integrate into C++ codebase  | Safe Rust | QML | QWidgets | Maintained<sup>1</sup> | Binding mechanism |
