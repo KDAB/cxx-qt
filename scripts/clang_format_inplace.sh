@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
-# SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 # SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
-# SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
-set -e
 
 CLANG_FORMAT_CMD=$1
 DIR=$2
@@ -15,8 +13,7 @@ function clang_format_files() {
     while IFS= read -r -d '' FILE
     do
         if git ls-files --error-unmatch "$FILE" &> /dev/null; then
-            $CLANG_FORMAT_CMD --dry-run -Werror "$FILE"
-            RET=$((RET | $?))
+            $CLANG_FORMAT_CMD -i -Werror "$FILE"
         fi
     done < <(find "$DIR" -type f -name "$1" -a -print0)
 }
