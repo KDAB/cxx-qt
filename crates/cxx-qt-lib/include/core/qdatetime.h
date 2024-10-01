@@ -21,8 +21,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QDateTime> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 

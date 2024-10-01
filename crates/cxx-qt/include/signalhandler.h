@@ -48,7 +48,6 @@ namespace rust {
 template<typename CXXArguments>
 struct IsRelocatable<rust::cxxqt1::SignalHandler<CXXArguments>>
   : ::std::true_type
-{
-};
+{};
 
 } // namespace rust

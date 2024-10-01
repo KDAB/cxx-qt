@@ -16,8 +16,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QFont> : ::std::true_type
-{
-};
+{};
 
 namespace cxxqtlib1 {
 using QFontStyle = QFont::Style;

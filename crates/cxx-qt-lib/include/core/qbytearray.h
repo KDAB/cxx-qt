@@ -18,8 +18,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QByteArray> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 

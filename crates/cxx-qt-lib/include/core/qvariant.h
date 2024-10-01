@@ -39,8 +39,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QVariant> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 

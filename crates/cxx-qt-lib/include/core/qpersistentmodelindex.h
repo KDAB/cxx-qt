@@ -17,7 +17,6 @@ namespace rust {
 // This has static asserts in the cpp file to ensure this is valid.
 template<>
 struct IsRelocatable<QPersistentModelIndex> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust

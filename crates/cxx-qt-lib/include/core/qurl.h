@@ -20,8 +20,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QUrl> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 

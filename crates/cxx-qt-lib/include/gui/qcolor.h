@@ -23,8 +23,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QColor> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 #endif

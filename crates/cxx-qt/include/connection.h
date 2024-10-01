@@ -17,8 +17,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<::QMetaObject::Connection> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 

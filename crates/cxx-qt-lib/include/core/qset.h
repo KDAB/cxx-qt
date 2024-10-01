@@ -27,8 +27,7 @@ namespace rust {
 // This has static asserts in the cpp file to ensure this is valid.
 template<typename T>
 struct IsRelocatable<QSet<T>> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 
