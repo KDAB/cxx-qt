@@ -56,6 +56,7 @@ fn main() {
         "core/qelapsedtimer",
         "core/qcommandlineoption",
         "core/qcommandlineparser",
+        "core/qlocale",
         "gui/qapplication",
     ];
 
@@ -67,6 +68,7 @@ fn main() {
         "core/qelapsedtimer",
         "core/qcommandlineoption",
         "core/qcommandlineparser",
+        "core/qlocale",
         "gui/qapplication",
     ];
 

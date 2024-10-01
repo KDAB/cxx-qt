@@ -11,3 +11,9 @@ pub use qcommandlineoption::QCommandLineOption;
 
 mod qcommandlineparser;
 pub use qcommandlineparser::QCommandLineParser;
+
+mod qlocale;
+pub use qlocale::{
+    QLocale, QLocaleCurrencySymbolFormat, QLocaleFormatType, QLocaleLanguage,
+    QLocaleMeasurementSystem, QLocaleTagSeparator,
+};

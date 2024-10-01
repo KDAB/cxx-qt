@@ -67,6 +67,7 @@ add_executable(${APP_NAME}
     cpp/qhash.h
     cpp/qline.h
     cpp/qlinef.h
+    cpp/qlocale.h
     cpp/qlist.h
     cpp/qmap.h
     cpp/qmargins.h

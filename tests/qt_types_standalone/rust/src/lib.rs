@@ -17,6 +17,7 @@ mod qhash;
 mod qline;
 mod qlinef;
 mod qlist;
+mod qlocale;
 mod qmap;
 mod qmargins;
 mod qmarginsf;
