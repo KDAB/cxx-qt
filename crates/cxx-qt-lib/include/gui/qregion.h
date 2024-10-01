@@ -16,7 +16,6 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QRegion> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust

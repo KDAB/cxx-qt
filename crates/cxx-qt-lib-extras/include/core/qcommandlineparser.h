@@ -16,8 +16,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QCommandLineParser> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 

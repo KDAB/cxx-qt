@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4
       # Note ensure that matrix runner is updated too
       - run: |
-          pip install --user clang-format==14.0.6
+          pip install --user clang-format==18.1.8
           test -x ~/.local/bin/clang-format
           test -x /home/runner/.local/bin/clang-format
       - run: ./scripts/clang_format_check.sh /home/runner/.local/bin/clang-format .
@@ -413,7 +413,7 @@ jobs:
     - name: "Install clang-format"
       # Note ensure that clang-format runner is updated too
       run: |
-        pip install --user clang-format==14.0.6
+        pip install --user clang-format==18.1.8
         test -x ${{ matrix.clang_format_path }}
 
     - name: "[Ubuntu] Install dependencies"

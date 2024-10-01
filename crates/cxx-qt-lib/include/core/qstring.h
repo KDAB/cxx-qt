@@ -18,8 +18,7 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QString> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
 

@@ -17,8 +17,7 @@ namespace rust {
 // QImage has a move constructor, however it is basically trivial.
 template<>
 struct IsRelocatable<QImage> : ::std::true_type
-{
-};
+{};
 
 namespace cxxqtlib1 {
 using QImageFormat = QImage::Format;

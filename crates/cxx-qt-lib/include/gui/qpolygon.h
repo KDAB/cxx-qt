@@ -16,7 +16,6 @@ namespace rust {
 
 template<>
 struct IsRelocatable<QPolygon> : ::std::true_type
-{
-};
+{};
 
 } // namespace rust
