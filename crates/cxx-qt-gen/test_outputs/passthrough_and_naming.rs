@@ -462,7 +462,9 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "propertyNameChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_property_name_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
+    pub fn connect_property_name_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+    >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
         conn_type: cxx_qt::ConnectionType,
@@ -482,7 +484,9 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_property_name_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
+    pub fn on_property_name_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+    >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
@@ -503,7 +507,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type Id = cxx::type_id!(
         "::cxx_qt::multi_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerpropertyNameChanged"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_propertyNameChanged;
 fn call_MyObject_signal_handler_propertyNameChanged(
@@ -526,7 +530,7 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "ready"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
+    pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
         conn_type: cxx_qt::ConnectionType,
@@ -546,7 +550,7 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static>(
+    pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         mut closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
@@ -564,7 +568,7 @@ pub struct MyObjectCxxQtSignalClosureready {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosureready {
     type Id =
         cxx::type_id!("::cxx_qt::multi_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerready");
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>);
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_ready;
 fn call_MyObject_signal_handler_ready(
@@ -624,7 +628,7 @@ impl ffi::SecondObject {
     #[doc = "propertyNameChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_property_name_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static,
+        F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::SecondObject>,
         mut closure: F,
@@ -645,7 +649,9 @@ impl ffi::SecondObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_property_name_changed<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static>(
+    pub fn on_property_name_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send,
+    >(
         self: core::pin::Pin<&mut ffi::SecondObject>,
         mut closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
@@ -666,7 +672,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type Id = cxx::type_id!(
         "::second_object::rust::cxxqtgen1::SecondObjectCxxQtSignalHandlerpropertyNameChanged"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::SecondObject>);
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::SecondObject>) + Send;
 }
 use core::mem::drop as drop_SecondObject_signal_handler_propertyNameChanged;
 fn call_SecondObject_signal_handler_propertyNameChanged(
@@ -689,7 +695,7 @@ impl ffi::SecondObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "ready"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static>(
+    pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::SecondObject>,
         mut closure: F,
         conn_type: cxx_qt::ConnectionType,
@@ -709,7 +715,7 @@ impl ffi::SecondObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static>(
+    pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::SecondObject>,
         mut closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
@@ -727,7 +733,7 @@ pub struct SecondObjectCxxQtSignalClosureready {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for SecondObjectCxxQtSignalClosureready {
     type Id =
         cxx::type_id!("::second_object::rust::cxxqtgen1::SecondObjectCxxQtSignalHandlerready");
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::SecondObject>);
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::SecondObject>) + Send;
 }
 use core::mem::drop as drop_SecondObject_signal_handler_ready;
 fn call_SecondObject_signal_handler_ready(
@@ -786,7 +792,9 @@ impl ffi::QPushButton {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "clicked"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_clicked<F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static>(
+    pub fn connect_clicked<
+        F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static + Send,
+    >(
         self: core::pin::Pin<&mut ffi::QPushButton>,
         mut closure: F,
         conn_type: cxx_qt::ConnectionType,
@@ -806,7 +814,7 @@ impl ffi::QPushButton {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_clicked<F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static>(
+    pub fn on_clicked<F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::QPushButton>,
         mut closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
@@ -825,7 +833,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QPushButtonCxxQtSignal
     type Id = cxx::type_id!(
         "::cxx_qt::multi_object::rust::cxxqtgen1::QPushButtonCxxQtSignalHandlerclicked"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool);
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + Send;
 }
 use core::mem::drop as drop_QPushButton_signal_handler_clicked;
 fn call_QPushButton_signal_handler_clicked(
@@ -847,7 +855,7 @@ impl ffi::ExternObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "dataReady"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static>(
+    pub fn connect_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
         mut closure: F,
         conn_type: cxx_qt::ConnectionType,
@@ -861,7 +869,7 @@ impl ffi::ExternObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static>(
+    pub fn on_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
         mut closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
@@ -873,7 +881,7 @@ pub struct ExternObjectCxxQtSignalClosuredataReady {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for ExternObjectCxxQtSignalClosuredataReady {
     type Id =
         cxx::type_id!("::mynamespace::rust::cxxqtgen1::ExternObjectCxxQtSignalHandlerdataReady");
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::ExternObject>);
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::ExternObject>) + Send;
 }
 use core::mem::drop as drop_ExternObject_signal_handler_dataReady;
 fn call_ExternObject_signal_handler_dataReady(
@@ -896,7 +904,9 @@ impl ffi::ExternObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "errorOccurred"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_error_occurred<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static>(
+    pub fn connect_error_occurred<
+        F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send,
+    >(
         self: core::pin::Pin<&mut ffi::ExternObject>,
         mut closure: F,
         conn_type: cxx_qt::ConnectionType,
@@ -918,7 +928,7 @@ impl ffi::ExternObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_error_occurred<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static>(
+    pub fn on_error_occurred<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
         mut closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
@@ -941,7 +951,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type Id = cxx::type_id!(
         "::mynamespace::rust::cxxqtgen1::ExternObjectCxxQtSignalHandlererrorOccurred"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::ExternObject>);
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::ExternObject>) + Send;
 }
 use core::mem::drop as drop_ExternObject_signal_handler_errorOccurred;
 fn call_ExternObject_signal_handler_errorOccurred(
