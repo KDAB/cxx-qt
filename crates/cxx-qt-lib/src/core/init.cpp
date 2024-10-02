@@ -37,6 +37,10 @@ static const int register_QList_QDate =
   qRegisterMetaType<::QList_QDate>("QList_QDate");
 static const int register_QList_QDateTime =
   qRegisterMetaType<::QList_QDateTime>("QList_QDateTime");
+static const int register_QList_QLine =
+  qRegisterMetaType<::QList_QLine>("QList_QLine");
+static const int register_QList_QLineF =
+  qRegisterMetaType<::QList_QLineF>("QList_QLineF");
 static const int register_QList_QMargins =
   qRegisterMetaType<::QList_QMargins>("QList_QMargins");
 static const int register_QList_QMarginsF =
@@ -126,6 +130,10 @@ static const int register_QVector_QDate =
   qRegisterMetaType<::QVector_QDate>("QVector_QDate");
 static const int register_QVector_QDateTime =
   qRegisterMetaType<::QVector_QDateTime>("QVector_QDateTime");
+static const int register_QVector_QLine =
+  qRegisterMetaType<::QVector_QLine>("QVector_QLine");
+static const int register_QVector_QLineF =
+  qRegisterMetaType<::QVector_QLineF>("QVector_QLineF");
 static const int register_QVector_QMargins =
   qRegisterMetaType<::QVector_QMargins>("QVector_QMargins");
 static const int register_QVector_QMarginsF =

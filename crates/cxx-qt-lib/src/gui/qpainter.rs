@@ -159,6 +159,8 @@ mod ffi {
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qline.h");
         type QLine = crate::QLine;
+        include!("cxx-qt-lib/qlinef.h");
+        type QLineF = crate::QLineF;
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
         include!("cxx-qt-lib/qimage.h");
@@ -175,6 +177,9 @@ mod ffi {
         type QPolygon = crate::QPolygon;
         include!("cxx-qt-lib/qregion.h");
         type QRegion = crate::QRegion;
+        include!("cxx-qt-lib/qvector.h");
+        type QVector_QLine = crate::QVector<QLine>;
+        type QVector_QLineF = crate::QVector<QLineF>;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
@@ -238,6 +243,18 @@ mod ffi {
         /// Draws a line defined by line.
         #[rust_name = "draw_line"]
         fn drawLine(self: Pin<&mut QPainter>, line: &QLine);
+
+        /// Draws a line defined by line.
+        #[rust_name = "draw_linef"]
+        fn drawLine(self: Pin<&mut QPainter>, line: &QLineF);
+
+        /// Draws the set of lines defined by the list lines using the current pen and brush.
+        #[rust_name = "draw_lines"]
+        fn drawLines(self: Pin<&mut QPainter>, lines: &QVector_QLine);
+
+        /// Draws the set of lines defined by the list lines using the current pen and brush.
+        #[rust_name = "draw_linefs"]
+        fn drawLines(self: Pin<&mut QPainter>, lines: &QVector_QLineF);
 
         /// Draws the given painter path using the current pen for outline and the current brush for filling.
         #[rust_name = "draw_path"]

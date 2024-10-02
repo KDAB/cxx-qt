@@ -153,6 +153,8 @@ using QVector_QColor = QVector<::QColor>;
 #endif
 using QVector_QDate = QVector<::QDate>;
 using QVector_QDateTime = QVector<::QDateTime>;
+using QVector_QLine = QVector<::QLine>;
+using QVector_QLineF = QVector<::QLineF>;
 using QVector_QMargins = QVector<::QMargins>;
 using QVector_QMarginsF = QVector<::QMarginsF>;
 using QVector_QPersistentModelIndex = QVector<::QPersistentModelIndex>;
