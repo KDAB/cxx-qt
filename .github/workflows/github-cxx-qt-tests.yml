@@ -156,7 +156,7 @@ jobs:
       - name: "Install Dependencies"
         run: sudo apt-get update && sudo apt-get install -y ninja-build clang-format-12
       - name: Install Qt GCC
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           aqtversion: '==3.1.*'
           version: '6.2.4'
@@ -165,7 +165,7 @@ jobs:
           arch: 'gcc_64'
           cache: true
       - name: Install Qt WASM
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v4
         with:
           aqtversion: '==3.1.*'
           version: '6.2.4'
