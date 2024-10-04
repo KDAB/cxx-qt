@@ -41,5 +41,17 @@ qguiapplicationFont(const QGuiApplication& app)
   return app.font();
 }
 
+void
+qguiapplicationSetDesktopFileName(const QString& name)
+{
+  QGuiApplication::setDesktopFileName(name);
+}
+
+QString
+qguiapplicationDesktopFileName()
+{
+  return QGuiApplication::desktopFileName();
+}
+
 }
 }
