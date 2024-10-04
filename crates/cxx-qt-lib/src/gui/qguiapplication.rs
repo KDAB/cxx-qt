@@ -212,6 +212,6 @@ impl QGuiApplication {
 
     /// Returns the application desktop file name.
     pub fn desktop_file_name() -> QString {
-        ffi::qguiapplication_desktop_file_name();
+        ffi::qguiapplication_desktop_file_name()
     }
 }
