@@ -263,6 +263,11 @@ mod tests {
                     }
 
                     #[doc(hidden)]
+                    fn is_destroyed(cxx_qt_thread: &qobject::MyObjectCxxQtThread) -> bool {
+                        qobject::cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(cxx_qt_thread)
+                    }
+
+                    #[doc(hidden)]
                     fn queue<F>(cxx_qt_thread: &qobject::MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx::Exception>
                     where
                         F: FnOnce(core::pin::Pin<&mut qobject::MyObject>),

@@ -90,9 +90,9 @@ where
     /// be destroyed after the check but before the `queue` call.
     ///
     /// For example:
-    /// ```rust
+    /// ```rust,ignore
     /// if !thread.is_destroyed() {
-    ///     thread.queue(...).unwrap();
+    ///     thread.queue(/*...*/).unwrap();
     /// }
     /// ```
     /// In this scenario, the `QObject` might be destroyed between the
@@ -105,9 +105,9 @@ where
     /// However, `is_destroyed()` can still be useful in scenarios where you
     /// need to control loops or perform cleanup operations based on the
     /// destruction status of the `QObject`. For instance:
-    /// ```rust
+    /// ```rust,ignore
     /// while !thread.is_destroyed() {
-    ///     thread.queue(...).ok();
+    ///     thread.queue(/*...*/).ok();
     /// }
     /// ```
     pub fn is_destroyed(&self) -> bool {
