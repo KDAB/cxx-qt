@@ -135,6 +135,12 @@ mod ffi {
         #[cxx_name = "cxxQtThreadDrop"]
         #[namespace = "rust::cxxqt1"]
         fn cxx_qt_ffi_my_object_cxx_qt_thread_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
+        #[doc(hidden)]
+        #[cxx_name = "cxxQtThreadIsDestroyed"]
+        #[namespace = "rust::cxxqt1"]
+        fn cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(
+            cxx_qt_thread: &MyObjectCxxQtThread,
+        ) -> bool;
     }
     extern "Rust" {
         #[namespace = "cxx_qt::my_object::cxx_qt_my_object"]
@@ -249,6 +255,10 @@ impl cxx_qt::Threading for ffi::MyObject {
     type ThreadingTypeId = cxx::type_id!("cxx_qt::my_object::MyObjectCxxQtThread");
     fn qt_thread(&self) -> ffi::MyObjectCxxQtThread {
         ffi::cxx_qt_ffi_my_object_qt_thread(self)
+    }
+    #[doc(hidden)]
+    fn is_destroyed(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> bool {
+        ffi::cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(cxx_qt_thread)
     }
     #[doc(hidden)]
     fn queue<F>(

@@ -42,6 +42,10 @@ pub fn generate(
         .into_cxx_parts();
     let (thread_fn_name, thread_fn_attrs, thread_fn_qualified) =
         qobject_names.cxx_qt_ffi_method("qtThread").into_cxx_parts();
+    let (thread_is_destroyed_name, thread_is_destroyed_attrs, thread_is_destroyed_qualified) =
+        qobject_names
+            .cxx_qt_ffi_method("cxxQtThreadIsDestroyed")
+            .into_cxx_parts();
 
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
@@ -85,6 +89,10 @@ pub fn generate(
                     #[doc(hidden)]
                     #(#thread_drop_attrs)*
                     fn #thread_drop_name(cxx_qt_thread: &mut #cxx_qt_thread_ident);
+
+                    #[doc(hidden)]
+                    #(#thread_is_destroyed_attrs)*
+                    fn #thread_is_destroyed_name(cxx_qt_thread: &#cxx_qt_thread_ident) -> bool;
                 }
             },
             quote! {
@@ -103,6 +111,12 @@ pub fn generate(
                     fn qt_thread(&self) -> #module_ident::#cxx_qt_thread_ident
                     {
                         #thread_fn_qualified(self)
+                    }
+
+                    #[doc(hidden)]
+                    fn is_destroyed(cxx_qt_thread: &#module_ident::#cxx_qt_thread_ident) -> bool
+                    {
+                        #thread_is_destroyed_qualified(cxx_qt_thread)
                     }
 
                     #[doc(hidden)]
@@ -216,6 +230,12 @@ mod tests {
                     #[cxx_name = "cxxQtThreadDrop"]
                     #[namespace = "rust::cxxqt1"]
                     fn cxx_qt_ffi_my_object_cxx_qt_thread_drop(cxx_qt_thread: &mut MyObjectCxxQtThread);
+
+                    #[doc(hidden)]
+                    #[cxx_name = "cxxQtThreadIsDestroyed"]
+                    #[namespace = "rust::cxxqt1"]
+                    fn cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(cxx_qt_thread: &MyObjectCxxQtThread)
+                        -> bool;
                 }
             },
         );
@@ -240,6 +260,11 @@ mod tests {
                     fn qt_thread(&self) -> qobject::MyObjectCxxQtThread
                     {
                         qobject::cxx_qt_ffi_my_object_qt_thread(self)
+                    }
+
+                    #[doc(hidden)]
+                    fn is_destroyed(cxx_qt_thread: &qobject::MyObjectCxxQtThread) -> bool {
+                        qobject::cxx_qt_ffi_my_object_cxx_qt_thread_is_destroyed(cxx_qt_thread)
                     }
 
                     #[doc(hidden)]

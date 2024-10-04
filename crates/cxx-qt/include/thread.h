@@ -45,6 +45,12 @@ public:
   CxxQtThread(const CxxQtThread<T>& other) = default;
   CxxQtThread(CxxQtThread<T>&& other) = default;
 
+  bool isDestroyed() const
+  {
+    const auto guard = ::std::shared_lock(m_obj->mutex);
+    return m_obj->ptr == nullptr;
+  }
+
   template<typename A>
   void queue(::rust::Fn<void(T& self, ::rust::Box<A> arg)> func,
              ::rust::Box<A> arg) const
@@ -105,6 +111,13 @@ cxxQtThreadQueue(const CxxQtThread<T>& cxxQtThread,
                  ::rust::Box<A> arg)
 {
   cxxQtThread.queue(::std::move(func), ::std::move(arg));
+}
+
+template<typename T>
+bool
+cxxQtThreadIsDestroyed(const CxxQtThread<T>& cxxQtThread)
+{
+  return cxxQtThread.isDestroyed();
 }
 
 } // namespace cxxqt1

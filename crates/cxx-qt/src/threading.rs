@@ -80,4 +80,37 @@ where
     {
         T::queue(self, f)
     }
+
+    /// Checks whether the associated `QObject` has been destroyed.
+    ///
+    /// This method only confirms if the `QObject` has already been destroyed.
+    /// It does not guarantee that the `QObject` remains alive for any
+    /// subsequent operations. There is a potential race condition when using
+    /// `is_destroyed()` before calling `queue`. Specifically, the `QObject` may
+    /// be destroyed after the check but before the `queue` call.
+    ///
+    /// For example:
+    /// ```rust,ignore
+    /// if !thread.is_destroyed() {
+    ///     thread.queue(/*...*/).unwrap();
+    /// }
+    /// ```
+    /// In this scenario, the `QObject` might be destroyed between the
+    /// `is_destroyed` check and the `queue` invocation, resulting in a panic.
+    ///
+    /// To handle such cases safely, it is recommended to call `queue(...).ok()`
+    /// directly without checking `is_destroyed()`. This approach allows you to
+    /// handle the potential failure gracefully without risking a panic.
+    ///
+    /// However, `is_destroyed()` can still be useful in scenarios where you
+    /// need to control loops or perform cleanup operations based on the
+    /// destruction status of the `QObject`. For instance:
+    /// ```rust,ignore
+    /// while !thread.is_destroyed() {
+    ///     thread.queue(/*...*/).ok();
+    /// }
+    /// ```
+    pub fn is_destroyed(&self) -> bool {
+        T::is_destroyed(self)
+    }
 }
