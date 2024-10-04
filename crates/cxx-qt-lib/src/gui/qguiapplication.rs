@@ -83,6 +83,12 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_organization_name"]
         fn qapplicationSetOrganizationName(app: Pin<&mut QGuiApplication>, name: &QString);
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_set_desktop_file_name"]
+        fn qguiapplicationSetDesktopFileName(name: &QString);
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_desktop_file_name"]
+        fn qguiapplicationDesktopFileName() -> QString;
     }
 
     // QGuiApplication is not a trivial to CXX and is not relocatable in Qt
@@ -197,5 +203,15 @@ impl QGuiApplication {
     /// Sets the name of the organization that wrote this application
     pub fn set_organization_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qguiapplication_set_organization_name(self, name);
+    }
+
+    /// Changes the desktop file name to name.
+    pub fn set_desktop_file_name(name: &QString) {
+        ffi::qguiapplication_set_desktop_file_name(name);
+    }
+
+    /// Returns the application desktop file name.
+    pub fn desktop_file_name() -> QString {
+        ffi::qguiapplication_desktop_file_name()
     }
 }

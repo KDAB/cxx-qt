@@ -25,5 +25,11 @@ qguiapplicationSetFont(QGuiApplication& app, const QFont& font);
 QFont
 qguiapplicationFont(const QGuiApplication& app);
 
+void
+qguiapplicationSetDesktopFileName(const QString& name);
+
+QString
+qguiapplicationDesktopFileName();
+
 }
 }
