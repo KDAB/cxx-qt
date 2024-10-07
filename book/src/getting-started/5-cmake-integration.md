@@ -26,7 +26,7 @@ Pull out the `qml` folder back to the top level.
 
 ## C++ executable
 
-To start our QML application, we'll need a small `main.cpp` file with an ordinary `main` function. Puts this in a `cpp` folder to clearly separate the C++ and Rust code:
+To start our QML application, we'll need a small `main.cpp` file with an ordinary `main` function. Put this in a `cpp` folder to clearly separate the C++ and Rust code:
 
 ```cpp,ignore
 {{#include ../../../examples/qml_minimal/cpp/main.cpp:book_main_cpp}}
@@ -41,7 +41,7 @@ To include any of the generated files, use the crates name as the include direct
 The name of the header file will be the folder names, combined with the input rust file name of your `#[cxx_qt::bridge]`, followed by `.cxxqt.h`.
 So in our case: `#include <qml_minimal/src/cxxqt_object.cxxqt.h>`
 
-> Note any folders relative to the cargo manifest are considered hence the `src` folder.
+> **📝 Note**: any folders relative to the `Cargo.toml` file are considered hence the `src` folder.
 
 Including the generated header allows us to access the `MyObject` C++ class, just like any other C++ class.
 Inherit from it, connect signals and slots to it, put it in a QVector, do whatever you want with it.
@@ -78,16 +78,11 @@ In the end, your `Cargo.toml` should look similar to this.
 [dependencies]
 cxx = "1.0.95"
 cxx-qt = "0.6"
-cxx-qt-lib = "0.6"
+cxx-qt-lib = { version="0.6", features = ["qt_full"] }
 
-# cxx-qt-build generates C++ code from the `#[cxx_qt::bridge]` module
-# and compiles it together with the Rust static library
 [build-dependencies]
-cxx-qt-build = "0.6"
-
-[features]
-# This feature must be enabled for `cargo test` when linking Qt 6 statically.
-link_qt_object_files = [ "cxx-qt-build/link_qt_object_files" ]
+# The link_qt_object_files feature is required for statically linking Qt 6.
+cxx-qt-build = { version = "0.6", features = [ "link_qt_object_files" ] }
 ```
 
 We'll then also need to add a script named `build.rs` next to the `Cargo.toml`:
@@ -139,7 +134,7 @@ Download CXX-Qts CMake code with FetchContent:
 
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt_start}}
-        GIT_TAG v0.7.0
+        GIT_TAG v0.6.0
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt_end}}
 ```
 
@@ -150,7 +145,7 @@ This provides you with a few wrappers around [Corrosion](https://github.com/corr
         - This is usually not necessary. However, if you're importing the same crate with different feature sets in the same CMake build configuration, you will need to specify seperate `CXX_QT_EXPORT_DIR`s to avoid multiple versions of the crate exporting to the same directory.
     - `QMAKE` - Override the path to the QMAKE executable
 2. `cxx_qt_import_qml_module` - This function imports a QML modules as a new target. It requires the following arguments:
-    - TARGET_NAME - Specify the name of the CMake target that this function will create
+    - `TARGET_NAME` - Specify the name of the CMake target that this function will create
     - `URI` - The URI of the qml module to import - this needs to exactly match the URI in the `CxxQtBuilder::qml_module` call in your build script.
     - `SOURCE_CRATE` The crate that exports the QML module (this crate must have been imported with `cxx_qt_import_crate`).
 

@@ -25,6 +25,8 @@ If the Rust struct cannot implement `Default`, providing a custom constructor wi
 
 The C++ object will defer any state to the Rust struct, and is therefore only a thin wrapper.
 
+> **📝 Note**: The inner Rust struct of the QObject is owned by that QObject. So when the C++ object is destructed the inner Rust struct will be dropped as well.
+
 > See [`extern "RustQt"`](../bridge/extern_rustqt.md) for details on implementing properties, invokables, and signals.
 
 > See [nested objects](./nested_objects.md) for referencing another `QObject`.

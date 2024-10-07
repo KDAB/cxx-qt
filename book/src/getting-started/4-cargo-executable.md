@@ -31,7 +31,7 @@ We'll need `cxx`, `cxx-qt`, `cxx-qt-lib` and `cxx-qt-build`:
 {{#include ../../../examples/cargo_without_cmake/Cargo.toml:book_cargo_toml_no_cmake}}
 cxx = "1.0.95"
 cxx-qt = "0.6"
-cxx-qt-lib = "0.6"
+cxx-qt-lib = { version="0.6", features = ["qt_full"] }
 
 [build-dependencies]
 # The link_qt_object_files feature is required for statically linking Qt 6.
@@ -78,7 +78,7 @@ application in C++:
 
 To build and run the application, use `cargo run`.
 
-> Note that in order for CXX-Qt to work, the `qmake` executable must be located. This is because CXX-Qt relies on `qmake` to locate the necessary Qt libraries and header files on your system.
+> **📝 Note**: In order for CXX-Qt to work, the `qmake` executable must be located. This is because CXX-Qt relies on `qmake` to locate the necessary Qt libraries and header files on your system.
 >
 > `cxx-qt` will find `qmake` in the following order:
 >

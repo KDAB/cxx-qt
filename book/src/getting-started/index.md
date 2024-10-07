@@ -63,6 +63,6 @@ We will show two different ways to build the project.
 First we will build the CXX-Qt code [as a Rust executable](./4-cargo-executable.md) without requiring a C++ build system.
 Additionally, we will show how to integrate CXX-Qt into a C++ application by [building with CMake](./5-cmake-integration.md).
 
-**Note:** CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86_64). It should work on other platforms that Qt and Rust both support, however, these are not tested regularly.
+**📝 Note:** CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86_64). wasm32 is compiled, but not tested on CI. It should work on other platforms that Qt and Rust both support, however, these are not tested regularly.
 
 So, without further ado - let's [Get Started](./1-qobjects-in-rust.md)

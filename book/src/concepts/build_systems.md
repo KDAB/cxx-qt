@@ -16,6 +16,8 @@ CXX-Qt could work with any C++ build system so long as the `QMAKE`, `CXX_QT_EXPO
 Take a look at our CMake code for how this can be used.
 However, using C++ build systems besides Cargo or CMake with CXX-Qt is untested and the use of these environment variables is SemVer-exempt!
 
+For information on building for WebAssembly (wasm), see: [Building for Webassembly](./wasm-builds.md)
+
 ## `CxxQtBuilder`
 
 With both build systems a build script (`build.rs`) file needs to be used,
