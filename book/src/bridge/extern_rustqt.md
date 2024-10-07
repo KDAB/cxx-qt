@@ -21,9 +21,9 @@ mod ffi {
 }
 ```
 
-The `extern "RustQt"` section of a CXX bridge declares Rust types and signatures to be made available to Qt and C++.
+The `extern "RustQt"` section of a CXX-Qt bridge declares Rust types and signatures to be made available to Qt and C++.
 
-The CXX code generator uses your `extern "Rust"` section(s) to produce a C++ header file containing the corresponding C++ declarations. The generated header has the same file name as the input rust file but with `.cxxqt.h` file extension.
+The CXX-Qt code generator uses your `extern "RustQt"` section(s) to produce a C++ header file containing the corresponding C++ declarations. The generated header has the same file name as the input rust file but with `.cxxqt.h` file extension.
 
 A bridge module may contain zero or more `extern "RustQt"` blocks.
 
@@ -32,9 +32,11 @@ but allows for declaring Qt specific features on C++ types.
 
 ## `QObject`s
 
-Types specified with a `#[qobject]` attribute are generated in C++ as a [`QObject`](https://doc.qt.io/qt-6/qobject.html).
+The `#[qobject]` attribute may be placed on a type alias to generate a [`QObject`](https://doc.qt.io/qt-6/qobject.html) type in C++.
 
-The left side of the type specifies the C++ generated type and name, when referring to the C++ context this should be used. The right side of the type specifies which Rust type provides the inner implementation of the type (for example fields).
+The left side of the type alias specifies the QObject type generated in C++.
+When referring to the C++ context this should be used.
+The right side of the type specifies which Rust type provides the inner implementation of the type (for example fields).
 
 ```rust,ignore,noplayground
 #[cxx_qt::bridge]
@@ -48,6 +50,10 @@ mod ffi {
 #[derive(Default)]
 struct MyObjectRust;
 ```
+
+> **📝 Note**: At the moment, only `super::` is allowed as the path for the inner Rust type.
+> Therefore, the Rust type must be available just outside the bridge module.
+> You can bring any type into scope with a `pub use` directive if you want to reuse an existing type.
 
 ### QML Attributes
 
@@ -63,9 +69,9 @@ TODO: we need to add https://doc.qt.io/qt-6/qqmlengine.html#QML_ANONYMOUS
 TODO: we need to add https://doc.qt.io/qt-6/qqmlengine.html#QML_INTERFACE
 -->
 
-- [`qml_element`](https://doc.qt.io/qt-6/qqmlengine.html#QML_NAMED_ELEMENT): Declare type as a qml element. An alternative type name for QML can be used like `qml_element = "MyName"`
-- [`qml_uncreatable`](https://doc.qt.io/qt-6/qqmlengine.html#QML_UNCREATABLE): Mark the type as uncreatable from QML. It may still be returned by C++/Rust code.
-- [`qml_singleton`](https://doc.qt.io/qt-6/qqmlengine.html#QML_SINGLETON): An instance of the `QObject` will be instantiated as a singleton in QML.
+- [`#[qml_element]`](https://doc.qt.io/qt-6/qqmlengine.html#QML_NAMED_ELEMENT): Declare type as a qml element. An alternative type name for QML can be used like `#[qml_element = "MyName"]`
+- [`#[qml_uncreatable]`](https://doc.qt.io/qt-6/qqmlengine.html#QML_UNCREATABLE): Mark the type as uncreatable from QML. It may still be returned by C++/Rust code.
+- [`#[qml_singleton]`](https://doc.qt.io/qt-6/qqmlengine.html#QML_SINGLETON): An instance of the `QObject` will be instantiated as a singleton in QML.
 
 > The Rust file must be included within a [QML module in the `build.rs` file](../concepts/build_systems.md#qml-modules)
 
@@ -102,53 +108,58 @@ The `#[qproperty(TYPE, NAME, ...)]` attribute can be specified on a [`#[qobject]
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct_signature}}
 ```
 
-The type and name of the
+If no other attributes are specified on the property, CXX-Qt will generate setters and getters, as well as a "changed" signal automatically.
+The type and name of the property must then match a field in the inner Rust struct.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_struct}}
 ```
 
-For every `#[qproperty]`, CXX-Qt will generate setters and getters, as well as a "changed" signal.
+CXX-Qt will then generate these functions:
 
-On the C++ side:
+|                | C++                 | Rust                 |
+|----------------|---------------------|----------------------|
+| setter         | `set<Property>`[^1] | `set_<property>`     |
+| getter         | `get<Property>`[^1] | `<property>`         |
+| changed signal | `<property>Changed` | `<property>_changed` |
 
-- setter: `set<Property>`
-- getter: `get<Property>`
-- changed: `<Property>Changed`
+As with any [signal](#signals), CXX-Qt will generate the corresponding connection functions on the Rust side:
 
-On the Rust side:
+- connect: `connect_<property>_changed`
+- on: `on_<property>_changed`
 
-- setter: `set_<Property>`
-- getter: `<Property>`
-- changed: `<Property>_changed`
-
-The generated Rust methods for [signals](#signals):
-
-- connect: `connect_<Property>_changed`
-- on: `on_<Property>_changed`
-
-Where `<Property>` is the name of the property.
+Where `<property>` is the name of the property.
 
 These setters and getters assure that the changed signal is emitted every time the property is edited.
 
-It is also possible to specify custom getters, setters and notify signals, using flags passed like so:
+[^1]: For the C++ getters and setters, the first character of the property name will automatically be upper-cased. For single-word property names, this leads to camelCase naming, which is the default in Qt.
+
+### Custom Properties
+
+In case the automatically generated functions do not work for your use-case, you can disable CXX-Qts auto-generation and write a totally custom property.
+For example, this could be the case if your property doesn't correspond to any single field in the inner Rust struct.
+
+You can specify custom getters, setters and notify signals, using flags passed like so:
 `#[qproperty(TYPE, NAME, READ = myGetter, WRITE = mySetter, NOTIFY = myOnChanged)]`
-> Note: the key for the flags use all capitals like in the Qt version of qproperty
+> **📝 Note**: the key for the flags use all capitals like in the Qt version of qproperty
 
-It is also possible to use any combination of custom functions or omit them entirely, but if flags are specified, read must be included as all properties need to be able to be read.
+It is possible to use any combination of flags or omit some of them entirely, but if any flags are specified, the `READ` flag must be included.
 
-Using the read flag will cause CXX-Qt to generate a getter function with an automatic name based off the property. e.g. `#[qproperty(i32, num, READ)]` will have a getter function generated called get_num in Rust, and getNum in C++.
+If a custom function is specified for a flag, the function must be declared in the bridge and a corresponding implementation must exist.
 
-If a custom function is specified, an implementation both in qobject::MyObject and and export in the bridge is expected.
+Some of the flags may be passed with or without specifying a function (e.g. `READ` and `READ=...`).
+For these flags CXX-Qt will auto-generate the implementation if no function was provided, as outlined in the previous section.
+E.g. `#[qproperty(i32, num, READ)]` will automatically generate a getter function called `get_num` in Rust, and `getNum` in C++.
+Therefore, `#[qproperty(i32, num)]` is just shorthand for `#[qproperty(i32, num, READ, WRITE, NOTIFY)]`.
 
-Additionally, usng cxx_name and rust_name is possible similarly to the attributes avilable on other items. e.g. `#[qproperty(i32, num, cxx_name = "numberProp")]`
+Additionally, using `cxx_name` and `rust_name` is possible similarly to the attributes available on other items. e.g. `#[qproperty(i32, num, cxx_name = "numberProp")]`
 
 ### Examples
 
-- `#[qproperty(TYPE, NAME, READ)]` A read only property
-- `#[qproperty(TYPE, NAME, READ = myGetter, WRITE, NOTIFY)]` custom getter provided, but will generate setter and on-changed
+- `#[qproperty(TYPE, NAME, READ)]` A read only property with auto-generated getter
+- `#[qproperty(TYPE, NAME, READ = myGetter, WRITE, NOTIFY)]` custom getter provided, but auto-generated setter and changed signal
 - `#[qproperty(TYPE, NAME)]` is shorthand for `#[qproperty(TYPE, NAME, READ, WRITE, NOTIFY)]`
-- `#[qproperty(TYPE, NAME, WRITE)]` is an error as read was not explicitly passed
+- `#[qproperty(TYPE, NAME, WRITE)]` is an error as the `READ` flag is required
 
 ### Available Flags
 
@@ -160,14 +171,14 @@ Additionally, usng cxx_name and rust_name is possible similarly to the attribute
   - Specifies that the property should emit a notify signal on change, with optional user defined signal name
 - `CONSTANT`
   - Specifies that the property should be constant (implication is that the getter returns the same value every time for that particular instance)
-  - __`CONSTANT` is not available for properties which use `WRITE` or `NOTIFY` and will not compile__
+  - **`CONSTANT` is not available for properties which use `WRITE` or `NOTIFY` and will not compile**
 - `REQUIRED`
   - Specifies that the property must be set by a user of the class, useful in QML as the class cannot be instantiated unless the property has been set
 - `FINAL`
   - Specifies that the property will not be overriden by a derived class
 - `RESET = my_reset`
-  - Specifies a function to reset the property to a default value, user function __must__ be provided or it will not compile
-- `cxx_name = "myCxxName`
+  - Specifies a function to reset the property to a default value, user function **must** be provided or it will not compile
+- `cxx_name = "myCxxName"`
   - Specifies an alternative name to use on the C++ side, applying to the property name as well as autogenerated functions
 - `rust_name = "my_rust_name"`
   - Specifies an alternative name to use on the rust side, applying to the property name as well as autogenerated functions
@@ -175,13 +186,13 @@ Additionally, usng cxx_name and rust_name is possible similarly to the attribute
 ## Methods
 
 Any signature with a `self` parameter is interpreted as a Rust method and exposed to C++ method for the given type.
-The type much be either a shared reference `self: &T` or a pinned mutable reference `self: Pin<&mut T>`, where `T` is the [QObject](#qobjects) type.
+The type must be either a shared reference `self: &T` or a pinned mutable reference `self: Pin<&mut T>`, where `T` is the [QObject](#qobjects) type.
 
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/invokables.rs:book_cpp_method_signature}}
 ```
 
-Implementations of the method are then written as normal on the C++ type outside the bridge.
+Implementations of the method are then written as normal outside the bridge.
 
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/invokables.rs:book_cpp_method_impl}}
@@ -235,47 +246,45 @@ The `qsignal` attribute is used in an `extern "RustQt"` block to define [signals
 
 For every function signature in the `extern` block, CXX-Qt will generate a signal on the corresponding `QObject`.
 If the function has parameters, they will become the parameters for the corresponding signal.
+Signal functions do not need to be implemented manually.
 
-If a signal is defined on the base class of the `QObject` then `#[inherit]` can be used to indicate to CXX-Qt that the `Q_SIGNAL` does not need to be created in C++.
+If a signal is defined on the base class of the `QObject` then `#[inherit]` can be used, which will cause CXX-Qt to access the existing `Q_SIGNAL` from the base class.
 
-A full example can be found in the [qml features](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/signals.rs).
+A full example can be found in the [qml features example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/signals.rs).
 
-> Note that `#[cxx_name = "..."]` can also be used on a signal to declare a different name in C++ to Rust
+> **📝 Note**: `#[cxx_name="..."]` and `#[rust_name="..."]` can be used on a signal to declare a different name in C++ to Rust
 
-> Note using `pub(self)` as the visibility of the signal
+> **📝 Note**: using `pub(self)` as the visibility of the signal
 > allows for declaring private signals
 
 ### Connecting to a signal
 
-For every signal defined in the enum, two methods are generated.
+For every signal, CXX-Qt will generate two methods to connect to it.
 
   1. `on_<signal_name>`
   2. `connect_<signal_name>`
 
 The `on_<signal_name>` method takes a handler function as the parameter, which will be called when the signal is emitted.
-That handler function's first argument is the `QObject` and the remaining arguments are the signal parameters.
+That handler function's first argument is the `QObject` that emitted the signal and the remaining arguments are the signal parameters.
 
 The `connect_<signal_name>` function additionally takes the [Qt connection type](https://doc.qt.io/qt-6/qt.html#ConnectionType-enum) as a parameter.
-
-Note that by using the `#[inherit]` macro on a signal, connections can be made to property changes
-using the signal name `<property>Changed` with no parameters.
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_connect}}
 ```
 
-Each connection returns a `QMetaObjectConnectionGuard` which is used to manage the [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) connection.
+Each connection returns a `QMetaObjectConnectionGuard`, which is a RAII wrapper around the [`QMetaObject::Connection`](https://doc.qt.io/qt-6/qmetaobject-connection.html) and automatically disconnects the connection when the guard is dropped.
+This is similar to C++ `std::lock_guard`, `std::unique_ptr`, or Rusts `Box`.
 
-Note that the `QMetaObjectConnection` returned by CXX-Qt behaves a bit different from the Qt C++ implementation.
-
-When the `QMetaObjectConnectionGuard` is dropped, it automatically disconnects the connection, similar to how a C++ `std::unique_ptr` or Rusts `Box` behaves.
-If you don't want to store the `QMetaObjectConnectionGuard`, call `release`, which will drop the object without disconnecting and return the internal `QMetaObjecConnection`.
-
-> Note that the `QMetaObjectConnection` has a `disconnect` which can be called manually later
+Example:
 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/signals.rs:book_signals_disconnect}}
 ```
+
+If you don't want to store the `QMetaObjectConnectionGuard`, call `release`, which will turn it into the internal `QMetaObjectConnection`, which is a direct wrapper of `QMetaObject::Connection` and doesn't disconnect on drop.
+
+> **📝 Note**: The `QMetaObjectConnection` has a `disconnect` method which can be called manually later
 
 ### Emitting a signal
 

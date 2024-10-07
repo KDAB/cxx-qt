@@ -21,9 +21,10 @@ So what is in our toolbox for a typical Qt application?
 - QML - A declarative, flexible, dynamically-typed, interpreted language that is purpose built to define reactive and beautiful GUI layouts and widgets with quick iteration speed.
 - C++ - The traditional back-end of Qt - A fast, low-level language with a strong type system. C++ offers a rich ecosystem, many Qt-specific libraries and bare-metal performance. The cost when using C++ is that it is slow to develop, very error-prone and can easily lead to memory-issues, which can instantly crash your application and cause security issues.
 
-Notably absent then is a back-end language that allows us to get rid of the issues C++ has and provides us with a safe way to write fast back-end code.
+Notably absent then is a back-end language that allows us to get rid of the issues C++ has and provides us with a safe way to write high-performance back-end code.
 This of course is where Rust comes in.
-Whilst Rust doesn't have quite as rich of an ecosystem, it is typically faster to develop than C++, with easy dependency management, and most importantly, safe memory access.
+Rust offers a similar level of control and performance, but without many of the downsides of C++.
+Whilst Rusts ecosystem is still maturing, it is typically faster to develop than C++, with easy dependency management, and most importantly, safe memory access.
 Therefore, it is an ideal candidate to replace C++ for writing the back-end business-logic code that feeds the GUI with data.
 
 However, C++ as well as QML still have their place in Qt applications.
@@ -43,7 +44,9 @@ These concepts include:
   - Properties
   - Invokables/Slots
   - Signals
-- Enums
+  - Inheritance and overriding
+- Enums (`QEnum`)
+- Namespaces (`QNamespace`)
 
 As with CXX, to use these features you mark a Rust module with an attribute macro ([`#[cxx_qt::bridge]`](../bridge/index.md)).
 Inside this bridge, you then describe the bidirectional interface between your C++/Qt and Rust code.

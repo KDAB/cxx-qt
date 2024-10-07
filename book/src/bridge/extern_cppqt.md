@@ -31,11 +31,9 @@ but allows for declaring Qt specific features on C++ types.
 
 ## `QObject`s
 
-Types defined in C++ that are made available to Rust, but only behind an indirection.
+QObject types that are defined in C++ can be made available to Rust, by declaring them as [opaque types](https://cxx.rs/extern-c++.html#opaque-c-types) with a `#[qobject]` attribute.
 
-This is the same as [CXX Opaque C++ types](https://cxx.rs/extern-c++.html#opaque-c-types).
-
-> Note that types are required to have a `#[qobject]` attribute
+> **📝 Note**: Types inside `extern "C++Qt"` are currently required to have a `#[qobject]` attribute
 
 ```rust,ignore,noplayground
 #[cxx_qt::bridge]
@@ -54,7 +52,7 @@ TODO: use a real example from qml_features once closure support lands
 
 ## Methods
 
-Methods can be specified on the Qt type in the same way as [`extern "RustQt"` blocks](./extern_rustqt.md#methods).
+Methods can be specified on the QObject type in the same way as [`extern "RustQt"` blocks](./extern_rustqt.md#methods).
 
 This is the same as [CXX Functions and member functions](https://cxx.rs/extern-c++.html#functions-and-member-functions).
 
@@ -99,11 +97,10 @@ mod ffi {
 }
 ```
 
-This then causes CXX-Qt to generate Rust methods to connect to the `#[qsignal]` with a closure,
+This then causes CXX-Qt to generate Rust methods to emit and connect to the `#[qsignal]`,
 in the same way as a `#[qsignal]` in a [`extern "RustQt"` block](./extern_rustqt.md#signals).
 
-> Note using `pub(self)` as the visibility of the signal
-> allows for declaring private signals
+> **📝 Note**: Using `pub(self)` as the visibility of the signal allows for declaring private signals
 
 <!--
 TODO: use a real example from qml_features once closure support lands

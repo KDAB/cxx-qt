@@ -18,7 +18,7 @@ So let's add a `main.qml` file in a `qml` folder:
 ```
 
 If you're not familiar with QML, take a look at the [Qt QML intro](https://doc.qt.io/qt-6/qmlapplications.html).
-We of course also recommend our [QML Intro Training](https://www.kdab.com/software-services/on-site-training/qt-onsite/programming-qtqml-onsite-training/).
+We of course also recommend our [QML Intro Training](https://training.kdab.com/portfolio/introduction-to-qtqml/) and our [Introduction to Qt/QML YouTube series](https://www.youtube.com/playlist?list=PL6CJYn40gN6hdNC1IGQZfVI707dh9DPRc).
 
 This code will create a pretty simple GUI that consists of two `Label`s and two `Button`s.
 The important part here is the use of the `MyObject` type.
@@ -28,8 +28,6 @@ As it is just another `QObject` subclass, it can be used in Qt's property bindin
 
 The labels then simply display the data defined in the `MyObject` class.
 We can use the two buttons to interact with the `MyObject` instance.
-As you can see here, CXX-Qt has converted the snake_case of the function names to camelCase - `incrementNumber` and `sayHi`.
-This way the `MyObject` doesn't seem at all out of place in QML.
 
 It is again important to emphasize here that `MyObject` is just another `QObject` subclass and can be used just like any other `QObject` subclass.
 The only difference being that any invokable functions are defined in Rust, instead of C++.

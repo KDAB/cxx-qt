@@ -7,11 +7,11 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Traits
 
-Traits can be implemented (or in some cases negated) inside the [`#[cxx_qt::bridge]`](../bridge/index.md)
-similarly to [explicit shim trait impls](https://cxx.rs/extern-c++.html#explicit-shim-trait-impls) in CXX.
+CXX-Qt uses multiple traits to cleanly encode its behavior and supported features into Rusts type system.
 
-Except instead of the `T` being a generic it is the struct the trait is implemented for.
-This is because some traits themselves require generics.
+Some of these traits use a special syntax inside the [`#[cxx_qt::bridge]`](../bridge/index.md)
+similarly to [explicit shim trait impls](https://cxx.rs/extern-c++.html#explicit-shim-trait-impls) in CXX.
+Depending on the trait, this either tells CXX-Qt that it should automatically implement the trait, or that it should use an existing trait implementation for code generation.
 
 ```rust,ignore
 impl UniquePtr<A> {} // explicit CXX trait implementation of UniquePtr for A
@@ -19,7 +19,10 @@ impl UniquePtr<A> {} // explicit CXX trait implementation of UniquePtr for A
 impl cxx_qt::Trait for A {} // explicit CXX-Qt trait implementation of Trait for A
 ```
 
+For further documentation, refer to the documentation of the individual traits:
+
 - [CxxQtType](https://docs.rs/cxx-qt/latest/cxx_qt/trait.CxxQtType.html) - trait to reach the Rust implementation of a `QObject`
+  - This trait is automatically implemented for any `#[qobject]` type inside `extern "RustQt"` blocks.
 - [Constructor](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) - custom constructor
 - [Initialize](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Initialize.html) - execute Rust code when the object is constructed
 - [Threading](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Threading.html) - marker trait whether CXX-Qt threading should be enabled

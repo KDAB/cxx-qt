@@ -12,7 +12,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 Qt allows exposing enums to Qt's meta-object system, and thereby QML, with a set of macros:
 
 - [`Q_ENUM`][qenum] is used to expose an enum that is a member of a [`QObject`](../concepts/generated_qobject.md)
-- [`Q_ENUM_NS`][qenum-ns] is used to expose an enum that is in a namespace to the meta-object system.
+- [`Q_ENUM_NS`][qenum-ns] is used to expose an enum that is in a namespace.
 
 CXX-Qt has support for both of these macros through the `#[qenum]` attribute.
 
@@ -23,7 +23,7 @@ However, CXX only supports free enums that are not defined as part of a class.
 CXX-Qt doesn't change this, it only additionally exposes the enum as part of a `QObject` type to the meta-object system.
 So any `#[qenum]` in CXX-Qt is available as both a normal shared CXX enum and a `Q_ENUM` inside the associated `QObject`.
 
-To expose a [shared CXX enum][shared-cxx-enums] as a [`Q_ENUM`][qenum] inside a `QObject` class, add the `#[qenum(...)]` attribute to the enum definition in CXX.
+To expose a [shared enum][shared-cxx-enums] as a [`Q_ENUM`][qenum] inside a `QObject` class, add the `#[qenum(...)]` attribute to the enum definition.
 The argument to `#[qenum(...)]` must be the name of a `#[qobject]` that is defined in a `extern "RustQt"` block.
 
 It is currently not possible to add a `#[qenum(...)]` to any `extern "C++Qt"` `QObject`s or a `QObject` that is defined in another `#[cxx_qt::bridge]`.
@@ -44,6 +44,7 @@ pub mod qobject {
 Note that Qt provides access to enum variants through the name of the class it is registered with, not the enum name itself.
 A side effect of this behavior is that the enum itself doesn't have to be registered with QML.
 Only the `QObject` class has to be registered.
+
 In the previous example, the `#[qml_element]` attribute on the `#[qobject]` takes care of the registration.
 
 Usage from QML:
@@ -56,7 +57,7 @@ Usage from QML:
 
 If there is no class that the enum should be associated with, Qt still allows exposing the enum to the meta-object system, as long as it is inside a namespace.
 
-If there is a namespace associated with a [shared CXX enum][shared-cxx-enums] simply add the `#[qenum]` attribute and CXX-Qt will expose it using [`Q_ENUM_NS`][qenum-ns].
+If there is a namespace associated with a [shared enum][shared-cxx-enums] simply add the `#[qenum]` attribute and CXX-Qt will expose it using [`Q_ENUM_NS`][qenum-ns].
 
 Note that the namespace doesn't have to be specified on the enum directly, the enum can inherit the namespace from the surrounding bridge.
 This follows normal [CXX namespacing rules](https://cxx.rs/attributes.html#namespace).
@@ -70,9 +71,9 @@ pub mod qobject {
 }
 ```
 
-Unfortunately, an important Qt limitation also applies to CXX-Qt.
-Namely, for any given namespace, there must be at most **one** bridge that exposes `#[qenum]` enums through that namespace.
-One bridge may expose enums through multiple namespaces, however.
+> **📝 Note**: Unfortunately, an important Qt limitation also applies to CXX-Qt.
+> Namely, for any given namespace, there must be at most **one** bridge that exposes `#[qenum]` enums through that namespace.
+> One bridge may expose enums through multiple namespaces, however.
 
 ### Registering the namespaced enum with QML
 
