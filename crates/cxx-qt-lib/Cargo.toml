@@ -35,10 +35,10 @@ cxx-qt-build.workspace = true
 qt-build-utils.workspace = true
 
 [features]
-full_qt = ["qt_gui", "qt_qml", "qt_quickcontrols"]
-full = ["full_qt", "serde", "url", "time", "rgb", "http", "chrono", "bytes"]
+full = ["qt_full", "serde", "url", "time", "rgb", "http", "chrono", "bytes"]
 default = []
 
+qt_full = ["qt_gui", "qt_qml", "qt_quickcontrols"]
 qt_gui = []
 qt_qml = []
 qt_quickcontrols = []
