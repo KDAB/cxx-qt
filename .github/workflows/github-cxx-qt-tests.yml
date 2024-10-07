@@ -155,19 +155,9 @@ jobs:
           ./emsdk/emsdk activate 2.0.14
       - name: "Install Dependencies"
         run: sudo apt-get update && sudo apt-get install -y ninja-build clang-format-12
-      - name: Install Qt GCC
+      - name: Install Qt WASM & Desktop
         uses: jurplel/install-qt-action@v4
         with:
-          aqtversion: '==3.1.*'
-          version: '6.2.4'
-          host: 'linux'
-          target: 'desktop'
-          arch: 'gcc_64'
-          cache: true
-      - name: Install Qt WASM
-        uses: jurplel/install-qt-action@v4
-        with:
-          aqtversion: '==3.1.*'
           version: '6.2.4'
           host: 'linux'
           target: 'desktop'
