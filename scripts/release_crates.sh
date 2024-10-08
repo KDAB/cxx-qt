@@ -49,6 +49,18 @@ question_yesno "Have you run cargo login before and setup credentials"
 # cxx-qt-cmake (no dependencies)
 question_yesno "Have you created a new tag in the cxx-qt-cmake repo"
 
+# 5-cmake-integration.md has a GIT_TAG example pointing to the stable release
+question_yesno "Have you updated the GIT_TAG for cxx-qt-cmake in the book"
+
+# Cargo.toml version = "A.B.C"
+question_yesno "Have you updated the Cargo versions for cxx-qt crates in Cargo.toml and the book examples"
+
+# Unreleased to a tag with the date
+question_yesno "Have you created a release in the CHANGELOG.md file"
+
+# This also triggers a github pages build
+question_yesno "Have you created a tag in the cxx-qt repo"
+
 # No other dependencies
 release_crate "qt-build-utils"
 
