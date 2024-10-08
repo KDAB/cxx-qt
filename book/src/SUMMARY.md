@@ -29,3 +29,4 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   - [Traits](./bridge/traits.md)
 - [For Contributors: CXX-Qt Internals](./internals/index.md)
   - [Build System](./internals/build-system.md)
+  - [Crate Organization](./internals/crate-organization.md)
