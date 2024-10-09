@@ -111,6 +111,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object"]
         type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObject>;
         include!("cxx-qt/thread.h");
         #[doc(hidden)]

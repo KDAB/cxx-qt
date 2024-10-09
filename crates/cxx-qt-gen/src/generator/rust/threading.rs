@@ -47,6 +47,7 @@ pub fn generate(
             .cxx_qt_ffi_method("cxxQtThreadIsDestroyed")
             .into_cxx_parts();
 
+    let cxx_qt_thread_namespace = &namespace_ident.namespace;
     let namespace_internals = &namespace_ident.internal;
     let cxx_qt_thread_ident_type_id_str =
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
@@ -63,7 +64,7 @@ pub fn generate(
                     // For now we use a type alias in C++ then use it like a normal type here
                     // <https://github.com/dtolnay/cxx/issues/683>
                     #[doc(hidden)]
-                    // TODO: Generate the correct #[namespace] attribute.
+                    #[namespace = #cxx_qt_thread_namespace]
                     type #cxx_qt_thread_ident = cxx_qt::CxxQtThread<#cpp_struct_ident>;
                     include!("cxx-qt/thread.h");
 
@@ -201,6 +202,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[doc(hidden)]
+                    #[namespace = ""]
                     type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObject>;
                     include!("cxx-qt/thread.h");
 
