@@ -20,6 +20,7 @@ fn main() {
         .file("src/qline.rs")
         .file("src/qlinef.rs")
         .file("src/qlist.rs")
+        .file("src/qlocale.rs")
         .file("src/qmap.rs")
         .file("src/qmargins.rs")
         .file("src/qmarginsf.rs")
