@@ -618,14 +618,14 @@ impl QtBuild {
 
         let metatypes_json_path = PathBuf::from(&format!("{}.json", output_path.display()));
 
-        let mut include_args = String::new();
+        let mut include_args = vec![];
         // Qt includes
         for include_path in self
             .include_paths()
             .iter()
             .chain(arguments.include_paths.iter())
         {
-            include_args += &format!("-I {} ", include_path.display());
+            include_args.push(format!("-I{}", include_path.display()));
         }
 
         let mut cmd = Command::new(self.moc_executable.as_ref().unwrap());
@@ -634,7 +634,7 @@ impl QtBuild {
             cmd.arg(format!("-Muri={uri}"));
         }
 
-        cmd.args(include_args.trim_end().split(' '));
+        cmd.args(include_args);
         cmd.arg(input_path.to_str().unwrap())
             .arg("-o")
             .arg(output_path.to_str().unwrap())
