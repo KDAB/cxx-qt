@@ -9,12 +9,3 @@
 #include <cinttypes>
 
 #include <QtCore/QModelIndex>
-
-namespace rust {
-namespace cxxqtlib1 {
-
-::std::size_t
-qmodelindexInternalId(const QModelIndex& index);
-
-}
-}
