@@ -224,6 +224,9 @@ jobs:
           - name: Ubuntu 22.04 (gcc) Qt5
             os: ubuntu-22.04
             qt_version: 5
+            aqt_version: '5.15.2'
+            aqt_arch: 'gcc_64'
+            aqt_host: 'linux'
             vcpkg: off
             vcpkg_triplet: x64-linux-release
             cores: 4
@@ -234,17 +237,13 @@ jobs:
             compiler_cache_path: /home/runner/.cache/sccache
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
-            packages-extra: >-
-                qtbase5-dev
-                qtdeclarative5-dev
-                qtquickcontrols2-5-dev
-                qml-module-qtquick2
-                qml-module-qtquick-controls2
-                qml-module-qttest
             workspace: /home/runner/cxx-qt
           - name: Ubuntu 22.04 (gcc) Qt6
             os: ubuntu-22.04
             qt_version: 6
+            aqt_version: '6.7.3'
+            aqt_arch: 'linux_gcc_64'
+            aqt_host: 'linux'
             vcpkg: off
             vcpkg_triplet: x64-linux-release
             cores: 4
@@ -256,13 +255,6 @@ jobs:
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             packages-extra: >-
-                qt6-base-dev
-                qt6-declarative-dev
-                qt6-declarative-dev-tools
-                qml6-module-qtquick-controls
-                qml6-module-qtquick-window
-                qml6-module-qttest
-                qml6-module-qtqml-workerscript
                 libgl1-mesa-dev
                 libvulkan-dev
                 libxkbcommon-dev
@@ -271,7 +263,10 @@ jobs:
           - name: macOS 12 (clang) Qt5
             os: macos-12
             qt_version: 5
-            vcpkg: on
+            aqt_version: '5.15.2'
+            aqt_arch: 'clang_64'
+            aqt_host: 'mac'
+            vcpkg: off
             vcpkg_triplet: x64-osx-release
             cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
@@ -287,7 +282,10 @@ jobs:
           - name: macOS 12 (clang) Qt6
             os: macos-12
             qt_version: 6
-            vcpkg: on
+            aqt_version: '6.7.3'
+            aqt_arch: 'clang_64'
+            aqt_host: 'mac'
+            vcpkg: off
             vcpkg_triplet: x64-osx-release
             cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
@@ -304,7 +302,10 @@ jobs:
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
             qt_version: 5
-            vcpkg: on
+            aqt_version: '5.15.2'
+            aqt_arch: 'win64_msvc2019_64'
+            aqt_host: 'windows'
+            vcpkg: off
             # Use a short buildtrees root for building vcpkg
             vcpkg_buildtrees_root: C:\v
             vcpkg_triplet: x64-windows-release
@@ -322,7 +323,10 @@ jobs:
           - name: Windows 2022 (MSVC) Qt6
             os: windows-2022
             qt_version: 6
-            vcpkg: on
+            aqt_version: '6.7.3'
+            aqt_arch: 'win64_msvc2019_64'
+            aqt_host: 'windows'
+            vcpkg: off
             # Use a short buildtrees root for building vcpkg
             vcpkg_buildtrees_root: C:\v
             vcpkg_triplet: x64-windows-release
@@ -356,7 +360,7 @@ jobs:
     # action does not support cloning to a path outside GITHUB_WORKSPACE:
     # https://github.com/actions/checkout/issues/197
     - name: "Clone Git repository"
-      uses: LebedevRI/checkout@issue197
+      uses: actions/checkout@v4
       with:
         path: ${{ matrix.workspace }}
     # Ensure clippy and rustfmt is installed, they should come from github runner
@@ -408,6 +412,17 @@ jobs:
       run: |
         pip install --user clang-format==18.1.8
         test -x ${{ matrix.clang_format_path }}
+
+    # Version info found using https://ddalcino.github.io/aqt-list-server/
+    - name: "Install Qt"
+      uses: jurplel/install-qt-action@v4
+      with:
+        version: ${{ matrix.aqt_version }}
+        host: ${{ matrix.aqt_host }}
+        target: 'desktop'
+        arch: ${{ matrix.aqt_arch }}
+        tools: 'tools_cmake'
+        cache: true
 
     - name: "[Ubuntu] Install dependencies"
       if: runner.os == 'Linux'
