@@ -21,32 +21,32 @@ concurrency:
   cancel-in-progress: true
 jobs:
   clang_format:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       # Note ensure that matrix runner is updated too
       - run: |
-          pip install --user clang-format==18.1.8
+          pip install --user --break-system-packages clang-format==18.1.8
           test -x ~/.local/bin/clang-format
           test -x /home/runner/.local/bin/clang-format
       - run: ./scripts/clang_format_check.sh /home/runner/.local/bin/clang-format .
 
   license_check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@v4
 
   rust_format_check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - run: rustup component add rustfmt
       - run: cargo fmt --all --check --verbose
 
   markdown_lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       - uses: DavidAnson/markdownlint-cli2-action@v17
@@ -54,7 +54,7 @@ jobs:
           globs: '**/*.md'
 
   shellcheck:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
       # Shellcheck is likely already installed but lets ensure it is
@@ -66,7 +66,7 @@ jobs:
   coverage:
     # Run after pre checks
     needs: [ clang_format, license_check, rust_format_check, markdown_lint, shellcheck ]
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -96,9 +96,9 @@ jobs:
           verbose: true
 
   build-wasm:
-    name: Ubuntu 22.04 (wasm_32) Qt 6
+    name: Ubuntu 24.04 (wasm_32) Qt 6
     needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     env:
       SCCACHE_CACHE_SIZE: 600M
     steps:
@@ -116,7 +116,7 @@ jobs:
             ~/.cargo/bin/sccache
             ~/.cargo/bin/mdbook
             ~/.cargo/bin/mdbook-linkcheck
-          key: ubuntu-22.04_sccache-0.7.6_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+          key: ubuntu-24.04_sccache-0.7.6_mdbook-0.4.36_mdbook-linkcheck-0.7.7
       - name: "Build Rust tools"
         if: steps.rust-tools-cache.outputs.cache-hit != 'true'
         # Do not build with storage backends enabled, we only need local
@@ -137,13 +137,13 @@ jobs:
       #   with:
       #     update: true <------- THIS DOESN'T EXIST YET
       #     path: /home/runner/.cache/sccache
-      #     key: "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache"
+      #     key: "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache"
       - name: "Restore Compiler Cache"
         id: compiler-cache-restore
         uses: actions/cache/restore@v4
         with:
           path: /home/runner/.cache/sccache
-          key: "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache"
+          key: "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache"
       - name: "emsdk cache"
         uses: actions/cache@v4
         id: emsdk-cache
@@ -157,7 +157,11 @@ jobs:
           ./emsdk/emsdk install 2.0.14
           ./emsdk/emsdk activate 2.0.14
       - name: "Install Dependencies"
-        run: sudo apt-get update && sudo apt-get install -y ninja-build clang-format-12
+        run: | 
+          sudo apt-get update && sudo apt-get install -y ninja-build
+          pip install --user --break-system-packages clang-format==18.1.8
+          test -x ~/.local/bin/clang-format
+          test -x /home/runner/.local/bin/clang-format
       - name: Install Qt WASM & Desktop
         uses: jurplel/install-qt-action@v4
         with:
@@ -211,7 +215,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /home/runner/.cache/sccache
-          key: "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache"
+          key: "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache"
 
   build:
     # Run after pre checks
@@ -220,8 +224,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: Ubuntu 22.04 (gcc) Qt5
-            os: ubuntu-22.04
+          - name: Ubuntu 24.04 (gcc) Qt5
+            os: ubuntu-24.04
             qt_version: 5
             aqt_version: '5.15.2'
             aqt_arch: 'gcc_64'
@@ -234,10 +238,10 @@ jobs:
             compiler_cache_path: /home/runner/.cache/sccache
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
-          - name: Ubuntu 22.04 (gcc) Qt6
-            os: ubuntu-22.04
+          - name: Ubuntu 24.04 (gcc) Qt6
+            os: ubuntu-24.04
             qt_version: 6
-            aqt_version: '6.7.3'
+            aqt_version: '6.8.0'
             aqt_arch: 'linux_gcc_64'
             aqt_host: 'linux'
             cores: 4
@@ -253,8 +257,8 @@ jobs:
                 libvulkan-dev
                 libxkbcommon-dev
 
-          - name: macOS 12 (clang) Qt5
-            os: macos-12
+          - name: macOS 13 (clang) Qt5
+            os: macos-13
             qt_version: 5
             aqt_version: '5.15.2'
             aqt_arch: 'clang_64'
@@ -268,17 +272,17 @@ jobs:
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
-            clang_format_path: /Users/runner/Library/Python/3.12/bin/clang-format
+            clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
-          - name: macOS 12 (clang) Qt6
-            os: macos-12
+          - name: macOS 14 (clang) Qt6
+            os: macos-14
             qt_version: 6
-            aqt_version: '6.7.3'
+            aqt_version: '6.8.0'
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
-            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.7.3/macos/lib
+            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.8.0/macos/lib
             # https://doc.qt.io/qt-6.7/macos.html#target-platforms
             macosx_deployment_target: '13.0'
             cores: 3
@@ -287,7 +291,7 @@ jobs:
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
-            clang_format_path: /Users/runner/Library/Python/3.12/bin/clang-format
+            clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
@@ -307,7 +311,7 @@ jobs:
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
-          - name: Windows 2022 (MSVC) Qt6
+          - name: Windows 2022 (MSVC2019) Qt6
             os: windows-2022
             qt_version: 6
             aqt_version: '6.7.3'
@@ -322,6 +326,22 @@ jobs:
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
+          - name: Windows 2022 (MSVC2022) Qt6
+            os: windows-2022
+            qt_version: 6
+            aqt_version: '6.8.0'
+            aqt_arch: 'win64_msvc2022_64'
+            aqt_host: 'windows'
+            cores: 4
+            ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
+            exe_suffix: .exe
+            qt_qpa_platform: windows
+            compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
+            cargo_dir: C:\Users\runneradmin\.cargo
+            cc: cl
+            cxx: cl
+            workspace: C:\cxx-qt
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -384,7 +404,7 @@ jobs:
     - name: "Install clang-format"
       # Note ensure that clang-format runner is updated too
       run: |
-        pip install --user clang-format==18.1.8
+        pip install --user --break-system-packages clang-format==18.1.8
         test -x ${{ matrix.clang_format_path }}
 
     # Version info found using https://ddalcino.github.io/aqt-list-server/
