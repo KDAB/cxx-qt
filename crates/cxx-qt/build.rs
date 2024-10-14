@@ -51,6 +51,10 @@ fn main() {
     // Note, ensure our settings stay in sync across cxx-qt, cxx-qt-build, and cxx-qt-lib
     builder.cpp(true);
     builder.std("c++17");
+    // MacOS needs the framework path
+    for framework_path in qtbuild.framework_paths() {
+        builder.flag_if_supported(format!("-F{}", framework_path.display()));
+    }
     // MSVC
     builder.flag_if_supported("/Zc:__cplusplus");
     builder.flag_if_supported("/permissive-");
