@@ -52,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cxx_file_stem` has been removed from `#[cxx_qt::bridge]` and the source file name is now used for generated headers similar to CXX
 - Base attribute now takes an ident not a string, e.g. `#[base = ParentClass]` instead of `#[base = "ParentClass"]`
 - No Cxx-qt-lib features are on by default now, instead we have a 'full' feature for the previously enabled features, making them opt in
+- Removed implicit auto camel conversion with no attributes, instead use cxx_name and rust_name like CXX (this may come back but be explicit opt-in)
 
 ### Removed
 
