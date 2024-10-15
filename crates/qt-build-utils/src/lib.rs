@@ -86,7 +86,7 @@ pub fn setup_linker() {
         if vendor == "apple" {
             // Tell clang link to clang_rt as we build with -nodefaultlibs
             // otherwise we cannot use helpers from the compiler runtime in Qt
-            println!("cargo:rustc-link-arg=-fapple-link-rtlib");
+            println!("cargo::rustc-link-arg=-fapple-link-rtlib");
         }
     }
 
@@ -117,13 +117,13 @@ pub fn setup_linker() {
         // So, prefer lld and gold to mold for robustness on the widest range of systems.
         // mold can still be used by manually specifying it in ~/.cargo/config.toml or the RUSTFLAGS environment variable.
         if command_help_output("lld").is_ok() {
-            println!("cargo:rustc-link-arg=-fuse-ld=lld");
+            println!("cargo::rustc-link-arg=-fuse-ld=lld");
         } else if command_help_output("ld.gold").is_ok() {
-            println!("cargo:rustc-link-arg=-fuse-ld=gold");
+            println!("cargo::rustc-link-arg=-fuse-ld=gold");
         } else if command_help_output("mold").is_ok() {
-            println!("cargo:rustc-link-arg=-fuse-ld=mold");
+            println!("cargo::rustc-link-arg=-fuse-ld=mold");
         } else {
-            println!("cargo:warning=Neither mold, lld, nor gold linkers were found. Linking with GNU ld.bfd will likely fail.");
+            println!("cargo::warning=Neither mold, lld, nor gold linkers were found. Linking with GNU ld.bfd will likely fail.");
         }
     }
 }
@@ -243,8 +243,8 @@ impl QtBuild {
         if qt_modules.is_empty() {
             qt_modules.push("Core".to_string());
         }
-        println!("cargo:rerun-if-env-changed=QMAKE");
-        println!("cargo:rerun-if-env-changed=QT_VERSION_MAJOR");
+        println!("cargo::rerun-if-env-changed=QMAKE");
+        println!("cargo::rerun-if-env-changed=QT_VERSION_MAJOR");
         fn verify_candidate(candidate: &str) -> Result<(&str, versions::SemVer), QtBuildError> {
             match Command::new(candidate)
                 .args(["-query", "QT_VERSION"])
@@ -263,7 +263,7 @@ impl QtBuild {
                             let env_version = match env_version.trim().parse::<u32>() {
                                 Err(e) if *e.kind() == std::num::IntErrorKind::Empty => {
                                     println!(
-                                        "cargo:warning=QT_VERSION_MAJOR environment variable defined but empty"
+                                        "cargo::warning=QT_VERSION_MAJOR environment variable defined but empty"
                                     );
                                     return Ok((candidate, qmake_version));
                                 }
@@ -377,7 +377,7 @@ impl QtBuild {
         prl_path: &str,
         builder: &mut cc::Build,
     ) {
-        println!("cargo:rustc-link-lib={link_lib}");
+        println!("cargo::rustc-link-lib={link_lib}");
 
         match std::fs::read_to_string(prl_path) {
             Ok(prl) => {
@@ -395,7 +395,7 @@ impl QtBuild {
             }
             Err(e) => {
                 println!(
-                    "cargo:warning=Could not open {} file to read libraries to link: {}",
+                    "cargo::warning=Could not open {} file to read libraries to link: {}",
                     &prl_path, e
                 );
             }
@@ -424,7 +424,7 @@ impl QtBuild {
                 }
                 Err(e) => {
                     println!(
-                        "cargo:warning=failed checking for existence of {}: {}",
+                        "cargo::warning=failed checking for existence of {}: {}",
                         prl_path, e
                     );
                 }
@@ -441,7 +441,7 @@ impl QtBuild {
     pub fn cargo_link_libraries(&self, builder: &mut cc::Build) {
         let prefix_path = self.qmake_query("QT_INSTALL_PREFIX");
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
-        println!("cargo:rustc-link-search={lib_path}");
+        println!("cargo::rustc-link-search={lib_path}");
 
         let target = env::var("TARGET");
 
@@ -455,7 +455,7 @@ impl QtBuild {
         // as it appears that all rustc-link-search are added
         if let Ok(target) = &target {
             if target.contains("apple") {
-                println!("cargo:rustc-link-search=framework={lib_path}");
+                println!("cargo::rustc-link-search=framework={lib_path}");
             }
         }
 
@@ -510,7 +510,7 @@ impl QtBuild {
         };
         if emscripten_targeted {
             let platforms_path = format!("{}/platforms", self.qmake_query("QT_INSTALL_PLUGINS"));
-            println!("cargo:rustc-link-search={platforms_path}");
+            println!("cargo::rustc-link-search={platforms_path}");
             self.cargo_link_qt_library(
                 "qwasm",
                 &prefix_path,
