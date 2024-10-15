@@ -16,7 +16,7 @@ fn main() {
     let rust_bridges = ["src/connection.rs"];
 
     for bridge in &rust_bridges {
-        println!("cargo:rerun-if-changed={bridge}");
+        println!("cargo::rerun-if-changed={bridge}");
     }
 
     let mut builder = cxx_build::bridges(rust_bridges);
@@ -25,7 +25,7 @@ fn main() {
 
     for cpp_file in &cpp_files {
         builder.file(cpp_file);
-        println!("cargo:rerun-if-changed={cpp_file}");
+        println!("cargo::rerun-if-changed={cpp_file}");
     }
 
     // Write this library's manually written C++ headers to files and add them to include paths
