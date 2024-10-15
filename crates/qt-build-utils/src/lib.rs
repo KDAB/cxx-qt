@@ -68,6 +68,13 @@ fn command_help_output(command: &str) -> std::io::Result<std::process::Output> {
     Command::new(command).args(["--help"]).output()
 }
 
+/// Whether apple is the current target
+fn is_apple_target() -> bool {
+    env::var("TARGET")
+        .map(|target| target.contains("apple"))
+        .unwrap_or_else(|_| false)
+}
+
 /// Linking executables (including tests) with Cargo that link to Qt fails to link with GNU ld.bfd,
 /// which is the default on most Linux distributions, so use GNU ld.gold, lld, or mold instead.
 /// If you are using a C++ build system such as CMake to do the final link of the executable, you do
@@ -456,10 +463,8 @@ impl QtBuild {
         //
         // Note that this adds the framework path which allows for
         // includes such as <QtCore/QObject> to be resolved correctly
-        if let Ok(target) = &target {
-            if target.contains("apple") {
-                println!("cargo::rustc-link-search=framework={lib_path}");
-            }
+        if is_apple_target() {
+            println!("cargo::rustc-link-search=framework={lib_path}");
         }
 
         let prefix = match &target {
@@ -474,15 +479,10 @@ impl QtBuild {
         };
 
         for qt_module in &self.qt_modules {
-            let framework = match &target {
-                Ok(target) => {
-                    if target.contains("apple") {
-                        Path::new(&format!("{lib_path}/Qt{qt_module}.framework")).exists()
-                    } else {
-                        false
-                    }
-                }
-                Err(_) => false,
+            let framework = if is_apple_target() {
+                Path::new(&format!("{lib_path}/Qt{qt_module}.framework")).exists()
+            } else {
+                false
             };
 
             let (link_lib, prl_path) = if framework {
@@ -530,14 +530,11 @@ impl QtBuild {
     pub fn framework_paths(&self) -> Vec<PathBuf> {
         let mut framework_paths = vec![];
 
-        let target = env::var("TARGET");
-        if let Ok(target) = &target {
-            if target.contains("apple") {
-                // Note that this adds the framework path which allows for
-                // includes such as <QtCore/QObject> to be resolved correctly
-                let framework_path = self.qmake_query("QT_INSTALL_LIBS");
-                framework_paths.push(framework_path);
-            }
+        if is_apple_target() {
+            // Note that this adds the framework path which allows for
+            // includes such as <QtCore/QObject> to be resolved correctly
+            let framework_path = self.qmake_query("QT_INSTALL_LIBS");
+            framework_paths.push(framework_path);
         }
 
         framework_paths
@@ -552,10 +549,17 @@ impl QtBuild {
     /// to be passed to whichever tool you are using to invoke the C++ compiler.
     pub fn include_paths(&self) -> Vec<PathBuf> {
         let root_path = self.qmake_query("QT_INSTALL_HEADERS");
+        let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         let mut paths = Vec::new();
         for qt_module in &self.qt_modules {
             // Add the usual location for the Qt module
             paths.push(format!("{root_path}/Qt{qt_module}"));
+
+            // Ensure that we add any framework's headers path
+            let header_path = format!("{lib_path}/Qt{qt_module}.framework/Headers");
+            if is_apple_target() && Path::new(&header_path).exists() {
+                paths.push(header_path);
+            }
         }
 
         // Add the QT_INSTALL_HEADERS itself
