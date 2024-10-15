@@ -465,6 +465,11 @@ impl QtBuild {
         // includes such as <QtCore/QObject> to be resolved correctly
         if is_apple_target() {
             println!("cargo::rustc-link-search=framework={lib_path}");
+
+            // Ensure that any framework paths are set to -F
+            for framework_path in self.framework_paths() {
+                builder.flag_if_supported(format!("-F{}", framework_path.display()));
+            }
         }
 
         let prefix = match &target {
