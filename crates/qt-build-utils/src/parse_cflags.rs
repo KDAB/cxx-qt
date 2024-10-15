@@ -16,7 +16,7 @@ use std::{collections::HashSet, sync::OnceLock};
 #[cfg(feature = "link_qt_object_files")]
 static mut LINKED_OBJECT_FILES: OnceLock<HashSet<String>> = OnceLock::new();
 
-/// Extract the &str to pass to cargo:rustc-link-lib from a filename (just the file name, not including directories)
+/// Extract the &str to pass to cargo::rustc-link-lib from a filename (just the file name, not including directories)
 /// using target-specific logic.
 fn extract_lib_from_filename<'a>(target: &str, filename: &'a str) -> Option<&'a str> {
     fn test_suffixes<'b>(filename: &'b str, suffixes: &[&str]) -> Option<&'b str> {
@@ -38,7 +38,7 @@ fn extract_lib_from_filename<'a>(target: &str, filename: &'a str) -> Option<&'a 
         //   Instead, LINK examines each input file to determine what kind of file it is.
         //
         // However, rustc appends `.lib` to the string it receives from the -l command line argument,
-        // which it receives from Cargo via cargo:rustc-link-lib:
+        // which it receives from Cargo via cargo::rustc-link-lib:
         // https://github.com/rust-lang/rust/blob/657f246812ab2684e3c3954b1c77f98fd59e0b21/compiler/rustc_codegen_ssa/src/back/linker.rs#L828
         // https://github.com/rust-lang/rust/blob/657f246812ab2684e3c3954b1c77f98fd59e0b21/compiler/rustc_codegen_ssa/src/back/linker.rs#L843
         // So the only file extension that works for MSVC targets is `.lib`
@@ -128,10 +128,10 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
     for (flag, val) in parts {
         match flag {
             "-L" => {
-                println!("cargo:rustc-link-search=native={val}");
+                println!("cargo::rustc-link-search=native={val}");
             }
             "-F" => {
-                println!("cargo:rustc-link-search=framework={val}");
+                println!("cargo::rustc-link-search=framework={val}");
             }
             "-I" => (),
             "-l" => {
@@ -140,7 +140,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                     continue;
                 }
 
-                println!("cargo:rustc-link-lib={val}");
+                println!("cargo::rustc-link-lib={val}");
             }
             "-D" => (),
             _ => {}
@@ -159,7 +159,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
         match part {
             "-framework" => {
                 if let Some(lib) = iter.next() {
-                    println!("cargo:rustc-link-lib=framework={lib}");
+                    println!("cargo::rustc-link-lib=framework={lib}");
                 }
             }
             "-isystem" | "-iquote" | "-idirafter" => {}
@@ -196,11 +196,11 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                         } else {
                             match extract_lib_from_filename(target, &file_name) {
                                 Some(lib_basename) => {
-                                    println!("cargo:rustc-link-search={}", dir.display());
-                                    println!("cargo:rustc-link-lib={lib_basename}");
+                                    println!("cargo::rustc-link-search={}", dir.display());
+                                    println!("cargo::rustc-link-lib={lib_basename}");
                                 }
                                 None => {
-                                    println!("cargo:warning=File path {} found in .prl file for {name}, but could not extract library base name to pass to linker command line", path.display());
+                                    println!("cargo::warning=File path {} found in .prl file for {name}, but could not extract library base name to pass to linker command line", path.display());
                                 }
                             }
                         }
@@ -228,6 +228,6 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
             ld_option.push(subopt);
         }
 
-        println!("cargo:rustc-link-arg=-Wl,{}", ld_option.join(","));
+        println!("cargo::rustc-link-arg=-Wl,{}", ld_option.join(","));
     }
 }

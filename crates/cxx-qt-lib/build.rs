@@ -351,10 +351,10 @@ fn main() {
     builder = builder.cc_builder(move |cc| {
         for cpp_file in &cpp_files {
             cc.file(format!("src/{cpp_file}.cpp"));
-            println!("cargo:rerun-if-changed=src/{cpp_file}.cpp");
+            println!("cargo::rerun-if-changed=src/{cpp_file}.cpp");
         }
         cc.file("src/qt_types.cpp");
-        println!("cargo:rerun-if-changed=src/qt_types.cpp");
+        println!("cargo::rerun-if-changed=src/qt_types.cpp");
     });
 
     builder.build();

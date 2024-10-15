@@ -13,23 +13,23 @@ SCRIPTPATH=$(dirname "$SCRIPT")
 cd "$SCRIPTPATH/../"
 
 # Ensure that we do see a "Compiling" in the output
-# as if we do it means we have a cargo:rerun-if-changed incorrectly
+# as if we do it means we have a cargo::rerun-if-changed incorrectly
 function check_build_contains_compiling() {
     BUILD=$(cargo build -p qml-minimal-no-cmake 2>&1)
 
     if ! echo "$BUILD" | grep -q Compiling; then
-        echo "cargo build is missing text 'Compiling', likely an incorrect cargo:rerun-if-changed in a build script."
+        echo "cargo build is missing text 'Compiling', likely an incorrect cargo::rerun-if-changed in a build script."
         exit 1
     fi
 }
 
 # Ensure that we don't see any "Compiling" in the output
-# as if we do it means we have a cargo:rerun-if-changed incorrectly
+# as if we do it means we have a cargo::rerun-if-changed incorrectly
 function check_build_no_compiling() {
     BUILD=$(cargo build -p qml-minimal-no-cmake 2>&1)
 
     if echo "$BUILD" | grep -q Compiling; then
-        echo "cargo build contained text 'Compiling', likely an incorrect cargo:rerun-if-changed in a build script."
+        echo "cargo build contained text 'Compiling', likely an incorrect cargo::rerun-if-changed in a build script."
         exit 1
     fi
 }
