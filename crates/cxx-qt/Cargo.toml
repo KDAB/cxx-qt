@@ -17,13 +17,19 @@ readme = "README.md"
 keywords = ["cxx", "ffi", "QML", "Qt"]
 categories = ["api-bindings", "gui"]
 
+# When creating a library with cxx-qt-build, we need to set a fake "links" key
+# to make sure the build scripts are run in the correct order and the build scripts
+# can pass metadata from library to dependent.
+# See also: https://doc.rust-lang.org/cargo/reference/build-scripts.html#the-links-manifest-key
+links = "cxx-qt"
+
 [dependencies]
 cxx.workspace = true
 cxx-qt-macro.workspace = true
 static_assertions = "1.1.0"
 
 [build-dependencies]
-cxx-build.workspace = true
+cxx-qt-build.workspace = true
 qt-build-utils.workspace = true
 
 [dev-dependencies]

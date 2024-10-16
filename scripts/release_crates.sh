@@ -70,11 +70,11 @@ release_crate "cxx-qt-gen"
 # Requires cxx-qt-gen
 release_crate "cxx-qt-macro"
 
-# Requires cxx-qt-macro and qt-build-utils
-release_crate "cxx-qt"
-
-# Requires cxx-qt, cxx-qt-gen, and qt-build-utils
+# Requires cxx-qt-gen and qt-build-utils
 release_crate "cxx-qt-build"
+
+# Requires cxx-qt-build, cxx-qt-macro, and qt-build-utils
+release_crate "cxx-qt"
 
 # Requires cxx-qt, cxx-qt-build
 release_crate "cxx-qt-lib"
