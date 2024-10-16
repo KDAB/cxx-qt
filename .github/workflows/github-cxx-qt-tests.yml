@@ -266,6 +266,7 @@ jobs:
             aqt_version: '5.15.2'
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
+            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/5.15.2/clang_64/lib
             vcpkg: off
             vcpkg_triplet: x64-osx-release
             cores: 3
@@ -285,6 +286,7 @@ jobs:
             aqt_version: '6.7.3'
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
+            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.7.3/macos/lib
             vcpkg: off
             vcpkg_triplet: x64-osx-release
             cores: 3
@@ -498,6 +500,7 @@ jobs:
         RUSTC_WRAPPER: sccache
         QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
         QT_SELECT: qt${{ matrix.qt_version }}
+        DYLD_FRAMEWORK_PATH: ${{ matrix.dyld_framework_path }}
 
     - name: "Print compiler cache statistics"
       run: sccache --show-stats
