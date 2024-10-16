@@ -490,6 +490,9 @@ jobs:
         RUSTC_WRAPPER: sccache
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
+    # - name: Setup tmate session
+    #   if: runner.os == 'macOS'
+    #   uses: mxschmitt/action-tmate@v3
     - name: "Build"
       run: cmake --build build --config Release --parallel ${{ matrix.cores }}
       working-directory: ${{ matrix.workspace }}
