@@ -66,6 +66,13 @@
    ...
 }
 {
+   qt_5_ci_qoffscreen_leak
+   Memcheck:Leak
+   match-leak-kinds: definite
+   fun:_Znwm
+   obj:/home/runner/work/cxx-qt/Qt/5.15.2/gcc_64/plugins/platforms/libqoffscreen.so
+}
+{
    qt_6_hash_function_aeshash
    Memcheck:Addr16
    fun:_mm_loadu_si128
