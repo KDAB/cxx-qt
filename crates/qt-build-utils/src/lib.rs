@@ -469,6 +469,11 @@ impl QtBuild {
             // Ensure that any framework paths are set to -F
             for framework_path in self.framework_paths() {
                 builder.flag_if_supported(format!("-F{}", framework_path.display()));
+                // Also set the -rpath otherwise frameworks can not be found at runtime
+                println!(
+                    "cargo::rustc-link-arg=-Wl,-rpath,{}",
+                    framework_path.display()
+                );
             }
         }
 
