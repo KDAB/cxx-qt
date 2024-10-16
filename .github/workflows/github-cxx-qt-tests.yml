@@ -267,6 +267,8 @@ jobs:
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
             dyld_framework_path: /Users/runner/work/cxx-qt/Qt/5.15.2/clang_64/lib
+            # https://doc.qt.io/qt-5/macos.html#target-platforms
+            macosx_deployment_target: '10.13'
             vcpkg: off
             vcpkg_triplet: x64-osx-release
             cores: 3
@@ -287,6 +289,8 @@ jobs:
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
             dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.7.3/macos/lib
+            # https://doc.qt.io/qt-6.7/macos.html#target-platforms
+            macosx_deployment_target: '13.0'
             vcpkg: off
             vcpkg_triplet: x64-osx-release
             cores: 3
@@ -349,7 +353,7 @@ jobs:
     env:
         # Match the deployment target that Qt was built with via vcpkg, otherwise the following error occurs
         # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
-        MACOSX_DEPLOYMENT_TARGET: 12.7
+        MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
         # sccache is around 180-300M in size for a normal build
         # With GitHub caches we have a 10 GB limit / 6 conditions = 1666 MB
         # Allow a larger cache size so that code in branches can be cached
