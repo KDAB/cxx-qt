@@ -314,7 +314,7 @@ fn main() {
         .initializer("src/core/init.cpp")
         .export_include_prefixes([])
         .export_include_directory(header_dir(), "cxx-qt-lib")
-        .reexport_dependency("cxx-qt");
+        .reexport_dependency("cxx-qt-0-6-1");
 
     if qt_gui_enabled() {
         interface = interface
