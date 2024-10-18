@@ -101,3 +101,9 @@ target_link_libraries(${APP_NAME} PRIVATE
     Qt::Qml
     Qt::QuickControls2
 )
+
+if (APPLE AND USE_QT5)
+    # When building in CI with Qt 5 if we don't link to CoreFoundation
+    # we get linker failures due to functions related to timezones
+    target_link_libraries(${APP_NAME} PRIVATE "-framework CoreFoundation")
+endif()
