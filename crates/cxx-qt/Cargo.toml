@@ -21,7 +21,7 @@ categories = ["api-bindings", "gui"]
 # to make sure the build scripts are run in the correct order and the build scripts
 # can pass metadata from library to dependent.
 # See also: https://doc.rust-lang.org/cargo/reference/build-scripts.html#the-links-manifest-key
-links = "cxx-qt"
+links = "cxx-qt-0-6-1"
 
 [dependencies]
 cxx.workspace = true
