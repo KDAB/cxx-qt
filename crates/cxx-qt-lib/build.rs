@@ -313,7 +313,8 @@ fn main() {
     let mut interface = cxx_qt_build::Interface::default()
         .initializer("src/core/init.cpp")
         .export_include_prefixes([])
-        .export_include_directory(header_dir(), "cxx-qt-lib");
+        .export_include_directory(header_dir(), "cxx-qt-lib")
+        .reexport_dependency("cxx-qt");
 
     if qt_gui_enabled() {
         interface = interface

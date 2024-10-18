@@ -585,8 +585,7 @@ impl CxxQtBuilder {
 
     fn write_common_headers() {
         let header_root = dir::header_root();
-        // Write cxx-qt and cxx headers
-        cxx_qt::write_headers(header_root.join("cxx-qt"));
+        // Write cxx headers
         std::fs::create_dir_all(header_root.join("rust"))
             .expect("Could not create cxx header directory");
         let h_path = header_root.join("rust").join("cxx.h");
@@ -649,7 +648,7 @@ impl CxxQtBuilder {
         include_paths: &[impl AsRef<Path>],
         defines: &[(String, Option<String>)],
     ) {
-        // Note, ensure our settings stay in sync across cxx-qt, cxx-qt-build, and cxx-qt-lib
+        // Note, ensure our settings stay in sync across cxx-qt and cxx-qt-lib
         builder.cpp(true);
         builder.std("c++17");
         // MSVC
