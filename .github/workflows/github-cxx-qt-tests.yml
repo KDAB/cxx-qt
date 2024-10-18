@@ -198,7 +198,6 @@ jobs:
         # Updating th cache doesn't work from forks
         # So update it once it's merged into the repo
         if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
-        working-directory: /home/runner/cxx-qt
         continue-on-error: true
         run: |
           gh extension install actions/gh-actions-cache
@@ -227,8 +226,6 @@ jobs:
             aqt_version: '5.15.2'
             aqt_arch: 'gcc_64'
             aqt_host: 'linux'
-            vcpkg: off
-            vcpkg_triplet: x64-linux-release
             cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
@@ -237,15 +234,12 @@ jobs:
             compiler_cache_path: /home/runner/.cache/sccache
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
-            workspace: /home/runner/cxx-qt
           - name: Ubuntu 22.04 (gcc) Qt6
             os: ubuntu-22.04
             qt_version: 6
             aqt_version: '6.7.3'
             aqt_arch: 'linux_gcc_64'
             aqt_host: 'linux'
-            vcpkg: off
-            vcpkg_triplet: x64-linux-release
             cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
@@ -258,7 +252,6 @@ jobs:
                 libgl1-mesa-dev
                 libvulkan-dev
                 libxkbcommon-dev
-            workspace: /home/runner/cxx-qt
 
           - name: macOS 12 (clang) Qt5
             os: macos-12
@@ -269,8 +262,6 @@ jobs:
             dyld_framework_path: /Users/runner/work/cxx-qt/Qt/5.15.2/clang_64/lib
             # https://doc.qt.io/qt-5/macos.html#target-platforms
             macosx_deployment_target: '10.13'
-            vcpkg: off
-            vcpkg_triplet: x64-osx-release
             cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
@@ -279,7 +270,6 @@ jobs:
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             clang_format_path: /Users/runner/Library/Python/3.12/bin/clang-format
             cargo_dir: ~/.cargo
-            workspace: /Users/runner/cxx-qt
             cc: clang
             cxx: clang++
           - name: macOS 12 (clang) Qt6
@@ -291,8 +281,6 @@ jobs:
             dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.7.3/macos/lib
             # https://doc.qt.io/qt-6.7/macos.html#target-platforms
             macosx_deployment_target: '13.0'
-            vcpkg: off
-            vcpkg_triplet: x64-osx-release
             cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
@@ -301,7 +289,6 @@ jobs:
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             clang_format_path: /Users/runner/Library/Python/3.12/bin/clang-format
             cargo_dir: ~/.cargo
-            workspace: /Users/runner/cxx-qt
             cc: clang
             cxx: clang++
 
@@ -311,10 +298,6 @@ jobs:
             aqt_version: '5.15.2'
             aqt_arch: 'win64_msvc2019_64'
             aqt_host: 'windows'
-            vcpkg: off
-            # Use a short buildtrees root for building vcpkg
-            vcpkg_buildtrees_root: C:\v
-            vcpkg_triplet: x64-windows-release
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
@@ -324,18 +307,12 @@ jobs:
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
-            # The D drive runs out of space when building dependencies with vcpkg.
-            workspace: C:\cxx-qt
           - name: Windows 2022 (MSVC) Qt6
             os: windows-2022
             qt_version: 6
             aqt_version: '6.7.3'
             aqt_arch: 'win64_msvc2019_64'
             aqt_host: 'windows'
-            vcpkg: off
-            # Use a short buildtrees root for building vcpkg
-            vcpkg_buildtrees_root: C:\v
-            vcpkg_triplet: x64-windows-release
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
@@ -345,13 +322,10 @@ jobs:
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
-            # The D drive runs out of space when building dependencies with vcpkg.
-            workspace: C:\cxx-qt
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
     env:
-        # Match the deployment target that Qt was built with via vcpkg, otherwise the following error occurs
         # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
         MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
         # sccache is around 180-300M in size for a normal build
@@ -361,14 +335,8 @@ jobs:
         SCCACHE_CACHE_SIZE: 600M
 
     steps:
-    # On Windows, the D drive that the workspace is on by default runs out of space when
-    # vcpkg builds Qt, so the repo needs to be cloned to the C drive. GitHub's checkout
-    # action does not support cloning to a path outside GITHUB_WORKSPACE:
-    # https://github.com/actions/checkout/issues/197
     - name: "Clone Git repository"
       uses: actions/checkout@v4
-      with:
-        path: ${{ matrix.workspace }}
     # Ensure clippy and rustfmt is installed, they should come from github runner
     #
     # Note we still need rustfmt for the cxx-qt-gen tests
@@ -470,34 +438,24 @@ jobs:
       uses: seanmiddleditch/gha-setup-vsdevenv@v4
 
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
-    #
-    # Until debug and release packages are split we only build release packages for vcpkg
-    # to improve CI run times, hence VCPKG_HOST_TRIPLET and VCPKG_TARGET_TRIPLET
-    # https://github.com/microsoft/vcpkg/issues/1626
     - name: "Configure"
       run: >-
         cmake
         -D USE_QT5=${{ matrix.qt_version == 5 }}
         -D CMAKE_BUILD_TYPE=Release
-        -D VCPKG=${{ matrix.vcpkg }}
-        -D VCPKG_HOST_TRIPLET=${{ matrix.vcpkg_triplet }}
-        -D VCPKG_BUILDTREES_ROOT=${{ matrix.vcpkg_buildtrees_root  }}
-        -D VCPKG_TARGET_TRIPLET=${{ matrix.vcpkg_triplet }}
         -G Ninja
         -S . -B build
-      working-directory: ${{ matrix.workspace }}
       env:
         RUSTC_WRAPPER: sccache
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
     - name: "Build"
       run: cmake --build build --config Release --parallel ${{ matrix.cores }}
-      working-directory: ${{ matrix.workspace }}
       env:
         RUSTC_WRAPPER: sccache
     - name: "Test"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
-      working-directory: ${{ matrix.workspace }}/build
+      working-directory: ./build
       env:
         # Use the version of clang-format from pip
         CLANG_FORMAT_BINARY: ${{ matrix.clang_format_path }}
@@ -516,7 +474,6 @@ jobs:
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
       if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
-      working-directory: ${{ matrix.workspace }}
       continue-on-error: true
       run: |
         gh extension install actions/gh-actions-cache
@@ -531,15 +488,3 @@ jobs:
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
-
-    - name: Upload GitHub Actions artifacts of vcpkg logs
-      if: always()
-      uses: actions/upload-artifact@v4
-      with:
-        name: vcpkg-logs-${{ matrix.name }}
-        path: |
-          ${{ matrix.workspace }}/vcpkg/buildtrees/**/*.log
-          ${{ matrix.workspace }}/build/vcpkg-bootstrap.log
-          ${{ matrix.workspace }}/build/vcpkg-manifest-install.log
-          ${{ matrix.workspace }}/build/vcpkg_installed/vcpkg/issue_body.md
-        if-no-files-found: ignore
