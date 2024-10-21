@@ -52,14 +52,14 @@ mod tests {
 
     use super::*;
     use crate::generator::cpp::property::tests::require_header;
-    use crate::parser::AutoCase;
+    use crate::parser::CaseConversion;
     use crate::{parser::inherit::ParsedInheritedMethod, syntax::safety::Safety};
 
     fn generate_from_foreign(
         method: ForeignItemFn,
         base_class: Option<&str>,
     ) -> Result<GeneratedCppQObjectBlocks> {
-        let method = ParsedInheritedMethod::parse(method, Safety::Safe, AutoCase::None)?;
+        let method = ParsedInheritedMethod::parse(method, Safety::Safe, CaseConversion::none())?;
         let inherited_methods = vec![&method];
         let base_class = base_class.map(|s| s.to_owned());
         generate(&inherited_methods, &base_class, &TypeNames::default())

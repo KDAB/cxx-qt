@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `#[auto_case]` attribute for `extern` blocks, which will convert function names to the appropriate case
 - Support for further types: `QLine`, `QLineF`, `QImage`, `QPainter`, `QFont`, `QPen`, `QPolygon`, `QPolygonF`, `QRegion`, `QAnyStringView`
 - `internal_pointer_mut()` function on `QModelIndex`
 - `c_void` in CXX-Qt-lib for easy access to `void *`

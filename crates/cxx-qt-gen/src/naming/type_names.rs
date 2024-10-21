@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use super::Name;
-use crate::parser::AutoCase;
+use crate::parser::CaseConversion;
 use crate::syntax::attribute::attribute_get_path;
 use crate::{
     parser::{cxxqtdata::ParsedCxxQtData, qobject::ParsedQObject},
@@ -368,7 +368,7 @@ impl TypeNames {
             attrs,
             parent_namespace,
             Some(module_ident),
-            AutoCase::None,
+            CaseConversion::none(),
         )?;
 
         let entry = self.names.entry(name.rust.clone());

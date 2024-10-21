@@ -67,7 +67,7 @@ pub fn generate(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::AutoCase;
+    use crate::parser::CaseConversion;
     use crate::{
         generator::naming::qobject::tests::create_qobjectname, syntax::safety::Safety,
         tests::assert_tokens_eq,
@@ -78,7 +78,7 @@ mod tests {
         method: ForeignItemFn,
         safety: Safety,
     ) -> Result<GeneratedRustFragment> {
-        let method = ParsedInheritedMethod::parse(method, safety, AutoCase::None)?;
+        let method = ParsedInheritedMethod::parse(method, safety, CaseConversion::none())?;
         let inherited_methods = vec![&method];
         generate(&create_qobjectname(), &inherited_methods)
     }
