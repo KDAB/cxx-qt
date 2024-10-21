@@ -56,10 +56,12 @@ mod ffi {
         fn offsetFromUtc(self: &QDateTime) -> i32;
 
         /// Sets the timeSpec() to Qt::OffsetFromUTC and the offset to offsetSeconds.
+        #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[rust_name = "set_offset_from_utc"]
         fn setOffsetFromUtc(self: &mut QDateTime, offset_seconds: i32);
 
         /// Sets the time specification used in this datetime to spec. The datetime will refer to a different point in time.
+        #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[rust_name = "set_time_spec"]
         fn setTimeSpec(self: &mut QDateTime, spec: TimeSpec);
 
@@ -83,6 +85,7 @@ mod ffi {
         fn toOffsetFromUtc(self: &QDateTime, offset_seconds: i32) -> QDateTime;
 
         /// Returns a copy of this datetime converted to the given time spec.
+        #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[rust_name = "to_time_spec"]
         fn toTimeSpec(self: &QDateTime, spec: TimeSpec) -> QDateTime;
 
@@ -175,6 +178,7 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdatetime_init_from_date_and_time_time_zone"]
         fn construct(date: &QDate, time: &QTime, time_zone: &QTimeZone) -> QDateTime;
+        #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[doc(hidden)]
         #[rust_name = "qdatetime_init_from_date_and_time_time_spec"]
         fn construct(
@@ -264,6 +268,7 @@ impl QDateTime {
     }
 
     /// Construct a Rust QDateTime from a given QDate, QTime, Qt::TimeSpec, and offset
+    #[cfg(not(cxxqt_qt_version_at_least_6_8))]
     pub fn from_date_and_time_time_spec(
         date: &QDate,
         time: &QTime,
@@ -398,11 +403,11 @@ impl<Tz: chrono::TimeZone> TryFrom<chrono::DateTime<Tz>> for QDateTime {
     type Error = &'static str;
 
     fn try_from(value: chrono::DateTime<Tz>) -> Result<Self, Self::Error> {
-        Ok(QDateTime::from_date_and_time_time_spec(
+        let tz = crate::QTimeZone::from_offset_seconds(value.offset().fix().local_minus_utc());
+        Ok(QDateTime::from_date_and_time_time_zone(
             &QDate::from(value.date_naive()),
             &QTime::try_from(value.time())?,
-            ffi::TimeSpec::OffsetFromUTC,
-            value.offset().fix().local_minus_utc(),
+            tz.as_ref().ok_or("Could not construct timezone")?,
         ))
     }
 }
@@ -444,11 +449,11 @@ impl TryFrom<QDateTime> for chrono::DateTime<chrono::Utc> {
 #[cfg(feature = "time")]
 impl From<time::OffsetDateTime> for QDateTime {
     fn from(value: time::OffsetDateTime) -> Self {
-        QDateTime::from_date_and_time_time_spec(
+        let tz = crate::QTimeZone::from_offset_seconds(value.offset().whole_seconds());
+        QDateTime::from_date_and_time_time_zone(
             &QDate::from(value.date()),
             &QTime::from(value.time()),
-            ffi::TimeSpec::OffsetFromUTC,
-            value.offset().whole_seconds(),
+            tz.as_ref().expect("Could not construct timezone"),
         )
     }
 }
@@ -456,11 +461,11 @@ impl From<time::OffsetDateTime> for QDateTime {
 #[cfg(feature = "time")]
 impl From<time::PrimitiveDateTime> for QDateTime {
     fn from(value: time::PrimitiveDateTime) -> Self {
-        QDateTime::from_date_and_time_time_spec(
+        let tz = crate::QTimeZone::utc();
+        QDateTime::from_date_and_time_time_zone(
             &QDate::from(value.date()),
             &QTime::from(value.time()),
-            ffi::TimeSpec::UTC,
-            0,
+            tz.as_ref().expect("Could not construct timezone"),
         )
     }
 }

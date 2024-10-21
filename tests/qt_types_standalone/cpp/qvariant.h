@@ -163,7 +163,7 @@ private Q_SLOTS:
                            << VariantTest::QDate;
     QTest::newRow("QDateTime")
       << QVariant::fromValue<QDateTime>(
-           QDateTime(QDate(2021, 12, 31), QTime(4, 3, 2, 1), Qt::UTC))
+           QDateTime(QDate(2021, 12, 31), QTime(4, 3, 2, 1), QTimeZone::utc()))
       << VariantTest::QDateTime;
     QTest::newRow("QPoint")
       << QVariant::fromValue<QPoint>(QPoint(8, 9)) << VariantTest::QPoint;
