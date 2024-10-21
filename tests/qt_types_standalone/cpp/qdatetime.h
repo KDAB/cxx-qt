@@ -32,10 +32,10 @@ private Q_SLOTS:
 
   void read()
   {
-    QVERIFY(
-      read_qdatetime(QDateTime(QDate(2022, 1, 1), QTime(1, 2, 3, 4), Qt::UTC),
-                     QDate(2022, 1, 1),
-                     QTime(1, 2, 3, 4)));
+    QVERIFY(read_qdatetime(
+      QDateTime(QDate(2022, 1, 1), QTime(1, 2, 3, 4), QTimeZone::utc()),
+      QDate(2022, 1, 1),
+      QTime(1, 2, 3, 4)));
   }
 
   void clone()
