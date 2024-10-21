@@ -145,11 +145,23 @@ mod ffi {
         RelativeSize,
     }
 
+    #[repr(i32)]
+    enum DayOfWeek {
+        Monday = 1,
+        Tuesday = 2,
+        Wednesday = 3,
+        Thursday = 4,
+        Friday = 5,
+        Saturday = 6,
+        Sunday = 7,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
         type CaseSensitivity;
         type DateFormat;
+        type DayOfWeek;
         type SplitBehaviorFlags;
         type TimeSpec;
         type TransformationMode;
@@ -165,8 +177,8 @@ mod ffi {
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, FillRule, LayoutDirection,
-    PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
+    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, DayOfWeek, FillRule,
+    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
     TransformationMode,
 };
 

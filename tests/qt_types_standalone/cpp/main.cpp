@@ -20,6 +20,7 @@
 #include "qhash.h"
 #include "qline.h"
 #include "qlinef.h"
+#include "qlocale.h"
 #include "qlist.h"
 #include "qmap.h"
 #include "qmargins.h"
@@ -75,6 +76,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QHashTest));
   runTest(QScopedPointer<QObject>(new QLineTest));
   runTest(QScopedPointer<QObject>(new QLineFTest));
+  runTest(QScopedPointer<QObject>(new QLocaleTest));
   runTest(QScopedPointer<QObject>(new QListTest));
   runTest(QScopedPointer<QObject>(new QMapTest));
   runTest(QScopedPointer<QObject>(new QMarginsTest));
