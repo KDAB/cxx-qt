@@ -22,6 +22,7 @@ exclude = ["update_expected.sh"]
 proc-macro2.workspace = true
 syn.workspace = true
 quote.workspace = true
+convert_case = "0.6.0"
 clang-format = "0.3"
 indoc = "2.0"
 

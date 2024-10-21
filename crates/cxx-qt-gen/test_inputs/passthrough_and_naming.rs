@@ -135,12 +135,16 @@ pub mod ffi {
         type SecondObject = super::SecondObjectRust;
     }
 
+    #[auto_case]
     unsafe extern "RustQt" {
         #[qsignal]
         fn ready(self: Pin<&mut SecondObject>);
 
         #[qinvokable]
         fn invokable_name(self: Pin<&mut SecondObject>);
+
+        #[cxx_name = "myRenamedFunction"]
+        fn my_function(self: &SecondObject);
     }
 
     extern "RustQt" {

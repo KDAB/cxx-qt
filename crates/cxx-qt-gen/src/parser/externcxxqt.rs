@@ -4,9 +4,13 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    parser::{externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal},
+    parser::{
+        externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
+        CaseConversion,
+    },
     syntax::{attribute::attribute_get_path, expr::expr_to_string, safety::Safety},
 };
+use convert_case::Case;
 use syn::{spanned::Spanned, Error, ForeignItem, Ident, ItemForeignMod, Result, Token};
 
 /// Representation of an extern "C++Qt" block
@@ -30,7 +34,12 @@ impl ParsedExternCxxQt {
         module_ident: &Ident,
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
-        let attrs = require_attributes(&foreign_mod.attrs, &["namespace"])?;
+        let attrs = require_attributes(&foreign_mod.attrs, &["namespace", "auto_case"])?;
+
+        let auto_case = match attrs.get("auto_case") {
+            Some(_) => CaseConversion::new(None, Some(Case::Snake)), // For extern C++ and C++Qt blocks, we want to convert to snake
+            _ => CaseConversion::none(),
+        };
 
         let namespace = attrs
             .get("namespace")
@@ -57,7 +66,7 @@ impl ParsedExternCxxQt {
                 ForeignItem::Fn(foreign_fn) => {
                     // Test if the function is a signal
                     if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
-                        let mut signal = ParsedSignal::parse(foreign_fn, safe_call)?;
+                        let mut signal = ParsedSignal::parse(foreign_fn, safe_call, auto_case)?;
                         // extern "C++Qt" signals are always inherit = true
                         // as they always exist on an existing QObject
                         signal.inherit = true;
