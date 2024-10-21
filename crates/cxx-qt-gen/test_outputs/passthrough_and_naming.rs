@@ -240,10 +240,16 @@ pub mod ffi {
         );
     }
     extern "Rust" {
-        #[cxx_name = "invokable_name"]
+        #[cxx_name = "invokableName"]
         #[namespace = "second_object"]
         #[doc(hidden)]
         fn invokable_name(self: Pin<&mut SecondObject>);
+    }
+    extern "Rust" {
+        #[cxx_name = "myRenamedFunction"]
+        #[namespace = "second_object"]
+        #[doc(hidden)]
+        fn my_function(self: &SecondObject);
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]

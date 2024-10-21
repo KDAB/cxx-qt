@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::naming::Name;
-use crate::parser::AutoCase;
+use crate::parser::CaseConversion;
 use syn::{ForeignItemType, Ident, Result};
 
 /// A representation of a QObject to be generated in an extern C++ block
@@ -26,7 +26,7 @@ impl ParsedExternQObject {
                 &ty.attrs,
                 parent_namespace,
                 Some(module_ident),
-                AutoCase::None,
+                CaseConversion::none(),
             )?,
             declaration: ty,
         })

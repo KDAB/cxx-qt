@@ -6,7 +6,7 @@
 use super::qnamespace::ParsedQNamespace;
 use super::trait_impl::TraitImpl;
 use crate::naming::cpp::err_unsupported_item;
-use crate::parser::AutoCase;
+use crate::parser::CaseConversion;
 use crate::{
     parser::{
         externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod, method::ParsedMethod,
@@ -17,6 +17,7 @@ use crate::{
         path::path_compare_str, safety::Safety,
     },
 };
+use convert_case::Case;
 use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, ItemMacro, Meta, Result};
 
 pub struct ParsedCxxQtData {
@@ -131,8 +132,8 @@ impl ParsedCxxQtData {
         let attrs = require_attributes(&foreign_mod.attrs, &["namespace", "auto_case"])?;
 
         let auto_case = match attrs.get("auto_case") {
-            Some(_) => AutoCase::CamelCase,
-            _ => AutoCase::None,
+            Some(_) => CaseConversion::new(Some(Case::Camel), None), // For RustQt blocks, we want to convert to camel case
+            _ => CaseConversion::none(),
         };
 
         let namespace = attrs
@@ -346,6 +347,22 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_auto_case_override() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            #[auto_case]
+            unsafe extern "RustQt" {
+                #[cxx_name = "renamed"]
+                fn foo_bar(self: &MyObject);
+            }
+        };
+        cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert_eq!(cxx_qt_data.methods.len(), 1);
+        assert_eq!(cxx_qt_data.methods[0].name.cxx_unqualified(), "renamed");
+    }
+
+    #[test]
     fn test_parse_auto_case_foreign() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
@@ -356,7 +373,7 @@ mod tests {
                 type MyObject;
 
                 #[qsignal]
-                fn foo_bar(self: Pin<&mut MyObject>);
+                fn fooBar(self: Pin<&mut MyObject>);
             }
         };
         cxx_qt_data.parse_cxx_qt_item(item).unwrap();
@@ -365,8 +382,8 @@ mod tests {
         assert_eq!(
             cxx_qt_data.extern_cxxqt_blocks[0].signals[0]
                 .name
-                .cxx_unqualified(),
-            "fooBar"
+                .rust_unqualified(),
+            "foo_bar"
         );
     }
 

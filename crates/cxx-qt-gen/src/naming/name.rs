@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::AutoCase;
+use crate::parser::CaseConversion;
 use crate::syntax::{attribute::attribute_get_path, expr::expr_to_string};
-use convert_case::{Case, Casing};
+use convert_case::Casing;
 use quote::format_ident;
 use syn::{spanned::Spanned, Attribute, Error, Ident, Path, Result};
 
@@ -93,7 +93,7 @@ impl Name {
         attrs: &[Attribute],
         parent_namespace: Option<&str>,
         module: Option<&Ident>,
-        auto_case: AutoCase,
+        auto_case: CaseConversion,
     ) -> Result<Self> {
         // Find if there is a namespace (for C++ generation)
         let mut namespace = if let Some(attr) = attribute_get_path(attrs, &["namespace"]) {
@@ -116,7 +116,7 @@ impl Name {
             .transpose()?;
 
         // Find if there is a rust_name mapping
-        let rust_name = attribute_get_path(attrs, &["rust_name"])
+        let mut rust_name = attribute_get_path(attrs, &["rust_name"])
             .map(|attr| -> Result<_> {
                 Ok(format_ident!(
                     "{}",
@@ -126,9 +126,14 @@ impl Name {
             })
             .transpose()?;
 
-        if let AutoCase::CamelCase = auto_case {
+        if let Some(case) = auto_case.cxx {
             if cxx_name.is_none() {
-                cxx_name = Some(ident.to_string().to_case(Case::Camel));
+                cxx_name = Some(ident.to_string().to_case(case));
+            }
+        }
+        if let Some(case) = auto_case.rust {
+            if rust_name.is_none() {
+                rust_name = Some(format_ident!("{}", ident.to_string().to_case(case)));
             }
         }
 

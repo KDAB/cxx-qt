@@ -21,6 +21,7 @@ use crate::{
     naming::TypeNames,
     syntax::{expr::expr_to_string, path::path_compare_str, safety::Safety},
 };
+use convert_case::Case;
 use cxxqtdata::ParsedCxxQtData;
 use std::collections::BTreeMap;
 use syn::{
@@ -31,9 +32,22 @@ use syn::{
 };
 
 #[derive(Copy, Clone)]
-pub enum AutoCase {
-    None,
-    CamelCase,
+pub struct CaseConversion {
+    pub cxx: Option<Case>,
+    pub rust: Option<Case>,
+}
+
+impl CaseConversion {
+    pub fn none() -> Self {
+        Self {
+            cxx: None,
+            rust: None,
+        }
+    }
+
+    pub fn new(cxx: Option<Case>, rust: Option<Case>) -> Self {
+        Self { cxx, rust }
+    }
 }
 
 /// Validates that an invokable is either unsafe, or is in an unsafe extern block

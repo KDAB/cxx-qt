@@ -132,7 +132,7 @@ pub fn extract_qobject_ident(ty: &Type) -> Result<(Ident, Option<Mut>)> {
 #[cfg(test)]
 mod tests {
     use crate::parser::method::ParsedMethod;
-    use crate::parser::AutoCase;
+    use crate::parser::CaseConversion;
     use crate::syntax::safety::Safety;
     use crate::tests::assert_parse_errors;
     use syn::{parse_quote, ForeignItemFn, Type};
@@ -182,7 +182,7 @@ mod tests {
             #[qinvokable]
             unsafe fn test(self: Pin);
         };
-        let parsed = ParsedMethod::parse(method, Safety::Unsafe, AutoCase::None);
+        let parsed = ParsedMethod::parse(method, Safety::Unsafe, CaseConversion::none());
         assert!(parsed.is_err())
     }
 }
