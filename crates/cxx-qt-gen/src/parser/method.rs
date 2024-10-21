@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::parser::AutoCase;
 use crate::{
     naming::Name,
     parser::{check_safety, parameter::ParsedFunctionParameter, require_attributes},
@@ -70,7 +71,7 @@ impl ParsedMethod {
     pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
         Self {
             is_qinvokable: true,
-            ..Self::parse(method.clone(), Safety::Safe).unwrap()
+            ..Self::parse(method.clone(), Safety::Safe, AutoCase::None).unwrap()
         }
     }
 
@@ -101,7 +102,7 @@ impl ParsedMethod {
         Self { specifiers, ..self }
     }
 
-    pub fn parse(method: ForeignItemFn, safety: Safety) -> Result<Self> {
+    pub fn parse(method: ForeignItemFn, safety: Safety, auto_case: AutoCase) -> Result<Self> {
         check_safety(&method, &safety)?;
         let fields = MethodFields::parse(method)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;

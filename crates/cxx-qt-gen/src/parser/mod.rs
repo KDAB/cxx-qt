@@ -30,6 +30,12 @@ use syn::{
     Attribute, Error, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token, Visibility,
 };
 
+#[derive(Copy, Clone)]
+pub enum AutoCase {
+    None,
+    CamelCase,
+}
+
 /// Validates that an invokable is either unsafe, or is in an unsafe extern block
 fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
     if safety == &Safety::Unsafe && method.sig.unsafety.is_none() {
