@@ -331,6 +331,46 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_auto_case_rustqt() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            #[auto_case]
+            unsafe extern "RustQt" {
+                fn foo_bar(self: &MyObject);
+            }
+        };
+        cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert_eq!(cxx_qt_data.methods.len(), 1);
+        assert_eq!(cxx_qt_data.methods[0].name.cxx_unqualified(), "fooBar");
+    }
+
+    #[test]
+    fn test_parse_auto_case_foreign() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            #[auto_case]
+            unsafe extern "C++Qt" {
+                #[qobject]
+                type MyObject;
+
+                #[qsignal]
+                fn foo_bar(self: Pin<&mut MyObject>);
+            }
+        };
+        cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert_eq!(cxx_qt_data.extern_cxxqt_blocks.len(), 1);
+        assert_eq!(cxx_qt_data.extern_cxxqt_blocks[0].signals.len(), 1);
+        assert_eq!(
+            cxx_qt_data.extern_cxxqt_blocks[0].signals[0]
+                .name
+                .cxx_unqualified(),
+            "fooBar"
+        );
+    }
+
+    #[test]
     fn test_parse_impl_non_path() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 

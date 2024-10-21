@@ -104,7 +104,7 @@ impl ParsedMethod {
 
     pub fn parse(method: ForeignItemFn, safety: Safety, auto_case: AutoCase) -> Result<Self> {
         check_safety(&method, &safety)?;
-        let fields = MethodFields::parse(method)?;
+        let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         // Determine if the method is invokable
@@ -140,14 +140,15 @@ pub struct MethodFields {
 }
 
 impl MethodFields {
-    pub fn parse(method: ForeignItemFn) -> Result<Self> {
+    pub fn parse(method: ForeignItemFn, auto_case: AutoCase) -> Result<Self> {
         let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
         let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
         let mutable = mutability.is_some();
 
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
         let safe = method.sig.unsafety.is_none();
-        let name = Name::from_ident_and_attrs(&method.sig.ident, &method.attrs, None, None)?;
+        let name =
+            Name::from_ident_and_attrs(&method.sig.ident, &method.attrs, None, None, auto_case)?;
 
         Ok(MethodFields {
             method,
