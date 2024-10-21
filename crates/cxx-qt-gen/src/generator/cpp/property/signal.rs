@@ -6,6 +6,7 @@
 use syn::ForeignItemFn;
 
 use crate::naming::Name;
+use crate::parser::AutoCase;
 use crate::syntax::safety::Safety;
 use crate::{
     generator::naming::property::{NameState, QPropertyNames},
@@ -25,7 +26,7 @@ pub fn generate(idents: &QPropertyNames, qobject_name: &Name) -> Option<ParsedSi
             fn #notify_rust(self: Pin<&mut #cpp_class_rust>);
         };
 
-        Some(ParsedSignal::parse(method, Safety::Safe).unwrap())
+        Some(ParsedSignal::parse(method, Safety::Safe, AutoCase::None).unwrap())
     } else {
         None
     }

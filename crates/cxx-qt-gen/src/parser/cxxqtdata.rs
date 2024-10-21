@@ -6,6 +6,7 @@
 use super::qnamespace::ParsedQNamespace;
 use super::trait_impl::TraitImpl;
 use crate::naming::cpp::err_unsupported_item;
+use crate::parser::AutoCase;
 use crate::{
     parser::{
         externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod, method::ParsedMethod,
@@ -127,7 +128,12 @@ impl ParsedCxxQtData {
     }
 
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
-        let attrs = require_attributes(&foreign_mod.attrs, &["namespace"])?;
+        let attrs = require_attributes(&foreign_mod.attrs, &["namespace", "auto_case"])?;
+
+        let auto_case = match attrs.get("auto_case") {
+            Some(_) => AutoCase::CamelCase,
+            _ => AutoCase::None,
+        };
 
         let namespace = attrs
             .get("namespace")
@@ -146,7 +152,8 @@ impl ParsedCxxQtData {
                 ForeignItem::Fn(foreign_fn) => {
                     // Test if the function is a signal
                     if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
-                        let parsed_signal_method = ParsedSignal::parse(foreign_fn, safe_call)?;
+                        let parsed_signal_method =
+                            ParsedSignal::parse(foreign_fn, safe_call, auto_case)?;
                         self.signals.push(parsed_signal_method);
 
                         // Test if the function is an inheritance method
@@ -154,12 +161,12 @@ impl ParsedCxxQtData {
                         // Note that we need to test for qsignal first as qsignals have their own inherit meaning
                     } else if attribute_get_path(&foreign_fn.attrs, &["inherit"]).is_some() {
                         let parsed_inherited_method =
-                            ParsedInheritedMethod::parse(foreign_fn, safe_call)?;
+                            ParsedInheritedMethod::parse(foreign_fn, safe_call, auto_case)?;
 
                         self.inherited_methods.push(parsed_inherited_method);
                         // Remaining methods are either C++ methods or invokables
                     } else {
-                        let parsed_method = ParsedMethod::parse(foreign_fn, safe_call)?;
+                        let parsed_method = ParsedMethod::parse(foreign_fn, safe_call, auto_case)?;
                         self.methods.push(parsed_method);
                     }
                 }
