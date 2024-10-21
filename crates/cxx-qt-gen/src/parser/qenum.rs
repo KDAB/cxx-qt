@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::AutoCase;
 use crate::{naming::Name, parser::require_attributes, syntax::path::path_compare_str};
 use quote::ToTokens;
 use syn::{Ident, ItemEnum, Result, Variant};
@@ -62,8 +63,13 @@ impl ParsedQEnum {
             ));
         }
 
-        let name =
-            Name::from_ident_and_attrs(&qenum.ident, &qenum.attrs, parent_namespace, Some(module))?;
+        let name = Name::from_ident_and_attrs(
+            &qenum.ident,
+            &qenum.attrs,
+            parent_namespace,
+            Some(module),
+            AutoCase::None,
+        )?;
 
         if name.namespace().is_none() && qobject.is_none() {
             return Err(syn::Error::new_spanned(

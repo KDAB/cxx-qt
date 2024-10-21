@@ -29,7 +29,7 @@ impl ParsedInheritedMethod {
         let docs = extract_docs(&method.attrs);
 
         Ok(Self {
-            method_fields: MethodFields::parse(method)?,
+            method_fields: MethodFields::parse(method, auto_case)?,
             docs,
         })
     }

@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use super::Name;
+use crate::parser::AutoCase;
 use crate::syntax::attribute::attribute_get_path;
 use crate::{
     parser::{cxxqtdata::ParsedCxxQtData, qobject::ParsedQObject},
@@ -362,7 +363,13 @@ impl TypeNames {
         module_ident: &Ident,
         fallback: impl FnOnce(&mut Self, Name) -> Result<()>,
     ) -> Result<()> {
-        let name = Name::from_ident_and_attrs(ident, attrs, parent_namespace, Some(module_ident))?;
+        let name = Name::from_ident_and_attrs(
+            ident,
+            attrs,
+            parent_namespace,
+            Some(module_ident),
+            AutoCase::None,
+        )?;
 
         let entry = self.names.entry(name.rust.clone());
 

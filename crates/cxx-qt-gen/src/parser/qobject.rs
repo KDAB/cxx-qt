@@ -11,6 +11,7 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 
+use crate::parser::AutoCase;
 use syn::{Attribute, Error, Expr, Ident, Meta, Result};
 
 /// Metadata for registering QML element
@@ -110,6 +111,7 @@ impl ParsedQObject {
             &declaration.attrs,
             namespace,
             Some(module),
+            AutoCase::None,
         )?;
 
         // Find any QML metadata

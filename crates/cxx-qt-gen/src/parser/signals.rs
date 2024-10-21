@@ -36,7 +36,7 @@ impl ParsedSignal {
         check_safety(&method, &safety)?;
 
         let docs = extract_docs(&method.attrs);
-        let fields = MethodFields::parse(method)?;
+        let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         if !fields.mutable {
