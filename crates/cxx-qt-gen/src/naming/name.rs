@@ -126,13 +126,11 @@ impl Name {
             })
             .transpose()?;
 
-        if let Some(case) = auto_case.cxx {
-            if cxx_name.is_none() {
+        if cxx_name.is_none() && rust_name.is_none() {
+            if let Some(case) = auto_case.cxx {
                 cxx_name = Some(ident.to_string().to_case(case));
             }
-        }
-        if let Some(case) = auto_case.rust {
-            if rust_name.is_none() {
+            if let Some(case) = auto_case.rust {
                 rust_name = Some(format_ident!("{}", ident.to_string().to_case(case)));
             }
         }
@@ -151,7 +149,7 @@ impl Name {
         let cxx_ident = if cxx.is_none() && rust.is_some() {
             Some(self.rust.to_string())
         } else {
-            cxx.clone()
+            cxx
         };
         Self {
             rust: rust.unwrap_or_else(|| self.rust.clone()),
@@ -218,7 +216,7 @@ impl Name {
     /// 2. Any attributes like cxx_name and namespace
     /// 3. The rust_qualified path to access the function (if not needed use _ during destructuring)
     pub fn into_cxx_parts(self) -> (Ident, Vec<Attribute>, Path) {
-        let rust_qualified = self.rust_qualified().clone();
+        let rust_qualified = self.rust_qualified();
         let cxx_name: Option<Attribute> = self.cxx.map(|cxx| {
             syn::parse_quote! { #[cxx_name = #cxx] }
         });

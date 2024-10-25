@@ -28,13 +28,38 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Brace, Semi},
-    Attribute, Error, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token, Visibility,
+    Attribute, Error, Expr, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token, Visibility,
 };
 
 #[derive(Copy, Clone)]
 pub struct CaseConversion {
     pub cxx: Option<Case>,
     pub rust: Option<Case>,
+}
+
+/// Used to match the auto_case attributes and turn it into a Case to convert to
+fn meta_to_case(attr: &Attribute, default: Case) -> Result<Case> {
+    match &attr.meta {
+        Meta::Path(_) => Ok(default),
+        Meta::NameValue(case) => match &case.value {
+            Expr::Path(expr_path) => match expr_path.path.require_ident()?.to_string().as_str() {
+                "Camel" => Ok(Case::Camel),
+                "Snake" => Ok(Case::Snake),
+                _ => Err(Error::new(
+                    attr.span(),
+                    "Invalid case! You can use either `Camel` or `Snake`",
+                )),
+            },
+            _ => Err(Error::new(
+                attr.span(),
+                "Case should be specified as an identifier! Like `#[auto_cxx_name = Camel]`",
+            )),
+        },
+        _ => Err(Error::new(
+            attr.span(),
+            "Invalid attribute format! Use like `auto_cxx_name` or `auto_cxx_name = Camel`",
+        )),
+    }
 }
 
 impl CaseConversion {
@@ -45,15 +70,19 @@ impl CaseConversion {
         }
     }
 
-    pub fn new(cxx: Option<Case>, rust: Option<Case>) -> Self {
-        Self { cxx, rust }
-    }
+    /// Create a CaseConversion object from a Map of attributes, collected using `require_attributes`
+    /// Parses both `auto_cxx_name` and `auto_cxx_name = Camel`
+    pub fn from_attrs(attrs: &BTreeMap<&str, &Attribute>) -> Result<Self> {
+        let rust = attrs
+            .get("auto_rust_name")
+            .map(|attr| meta_to_case(attr, Case::Snake))
+            .transpose()?;
+        let cxx = attrs
+            .get("auto_cxx_name")
+            .map(|attr| meta_to_case(attr, Case::Camel))
+            .transpose()?;
 
-    pub fn from_attrs(attrs: &BTreeMap<&str, &Attribute>) -> Self {
-        Self {
-            rust: attrs.get("auto_rust_case").map(|_| Case::Snake),
-            cxx: attrs.get("auto_cxx_case").map(|_| Case::Camel),
-        }
+        Ok(Self { rust, cxx })
     }
 }
 

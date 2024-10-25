@@ -35,10 +35,10 @@ impl ParsedExternCxxQt {
     ) -> Result<Self> {
         let attrs = require_attributes(
             &foreign_mod.attrs,
-            &["namespace", "auto_cxx_case", "auto_rust_case"],
+            &["namespace", "auto_cxx_name", "auto_rust_name"],
         )?;
 
-        let auto_case = CaseConversion::from_attrs(&attrs);
+        let auto_case = CaseConversion::from_attrs(&attrs)?;
 
         let namespace = attrs
             .get("namespace")
@@ -48,7 +48,7 @@ impl ParsedExternCxxQt {
             .transpose()?;
 
         let mut extern_cxx_block = ParsedExternCxxQt {
-            namespace: namespace.clone(),
+            namespace,
             unsafety: foreign_mod.unsafety,
             ..Default::default()
         };

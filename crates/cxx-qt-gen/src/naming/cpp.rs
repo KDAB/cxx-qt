@@ -224,7 +224,7 @@ fn path_segment_to_string(segment: &PathSegment, type_names: &TypeNames) -> Resu
     let arg = match &*ident_string {
         "Pin" => {
             let mut args =
-                path_argument_to_string(&segment.arguments, type_names)?.unwrap_or_else(Vec::new);
+                path_argument_to_string(&segment.arguments, type_names)?.unwrap_or_default();
 
             if args.len() != 1 {
                 return Err(Error::new(segment.span(), "Pin must have one argument!"));
