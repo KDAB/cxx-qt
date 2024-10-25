@@ -48,6 +48,13 @@ impl CaseConversion {
     pub fn new(cxx: Option<Case>, rust: Option<Case>) -> Self {
         Self { cxx, rust }
     }
+
+    pub fn from_attrs(attrs: &BTreeMap<&str, &Attribute>) -> Self {
+        Self {
+            rust: attrs.get("auto_rust_case").map(|_| Case::Snake),
+            cxx: attrs.get("auto_cxx_case").map(|_| Case::Camel),
+        }
+    }
 }
 
 /// Validates that an invokable is either unsafe, or is in an unsafe extern block

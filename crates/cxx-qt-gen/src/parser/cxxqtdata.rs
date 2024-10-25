@@ -17,7 +17,6 @@ use crate::{
         path::path_compare_str, safety::Safety,
     },
 };
-use convert_case::Case;
 use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, ItemMacro, Meta, Result};
 
 pub struct ParsedCxxQtData {
@@ -129,12 +128,12 @@ impl ParsedCxxQtData {
     }
 
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
-        let attrs = require_attributes(&foreign_mod.attrs, &["namespace", "auto_case"])?;
+        let attrs = require_attributes(
+            &foreign_mod.attrs,
+            &["namespace", "auto_cxx_case", "auto_rust_case"],
+        )?;
 
-        let auto_case = match attrs.get("auto_case") {
-            Some(_) => CaseConversion::new(Some(Case::Camel), None), // For RustQt blocks, we want to convert to camel case
-            _ => CaseConversion::none(),
-        };
+        let auto_case = CaseConversion::from_attrs(&attrs);
 
         let namespace = attrs
             .get("namespace")
@@ -336,7 +335,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            #[auto_case]
+            #[auto_cxx_case]
             unsafe extern "RustQt" {
                 fn foo_bar(self: &MyObject);
             }
@@ -351,7 +350,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            #[auto_case]
+            #[auto_cxx_case]
             unsafe extern "RustQt" {
                 #[cxx_name = "renamed"]
                 fn foo_bar(self: &MyObject);
@@ -367,7 +366,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            #[auto_case]
+            #[auto_rust_case]
             unsafe extern "C++Qt" {
                 #[qobject]
                 type MyObject;
