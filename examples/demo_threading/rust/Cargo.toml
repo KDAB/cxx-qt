@@ -16,7 +16,7 @@ crate-type = ["staticlib"]
 async-std = "1.10"
 cxx.workspace = true
 cxx-qt.workspace = true
-cxx-qt-lib = { workspace = true, features = ["qt_full"] }
+cxx-qt-lib = { workspace = true, features = [] }
 futures = "0.3"
 futures-timer = "3.0"
 serde.workspace = true

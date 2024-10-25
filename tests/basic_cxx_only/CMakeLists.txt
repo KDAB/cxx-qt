@@ -43,7 +43,7 @@ if(NOT CxxQt_FOUND)
 endif()
 
 set(CRATE basic_cxx_only)
-cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
+cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE} QT_MODULES Qt::Core)
 
 add_executable(${APP_NAME}
     cpp/cxx_test.h

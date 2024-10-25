@@ -65,8 +65,8 @@ endif()
 
 # ANCHOR: book_cmake_use_cxx_qt
 # CXX-Qt (using Corrosion) creates a CMake target with the same name as the crate.
-cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES qml_minimal)
-target_link_libraries(qml_minimal INTERFACE Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
+cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES qml_minimal QT_MODULES Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
+target_link_libraries(qml_minimal INTERFACE Qt::Core)
 
 cxx_qt_import_qml_module(qml_minimal_qml_module
     URI "com.kdab.cxx_qt.demo"

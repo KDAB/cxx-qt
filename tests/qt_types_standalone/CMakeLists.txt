@@ -43,7 +43,11 @@ if(NOT CxxQt_FOUND)
 endif()
 
 set(CRATE qt_types_standalone)
-cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
+cxx_qt_import_crate(
+    MANIFEST_PATH rust/Cargo.toml
+    CRATES ${CRATE}
+    QT_MODULES Qt::Core Qt::Gui Qt::Qml
+)
 
 add_executable(${APP_NAME}
     cpp/main.cpp

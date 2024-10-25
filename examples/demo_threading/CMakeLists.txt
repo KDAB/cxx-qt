@@ -53,7 +53,10 @@ if(NOT CxxQt_FOUND)
 endif()
 
 set(CRATE cxx_qt_demo_threading)
-cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE})
+cxx_qt_import_crate(
+    MANIFEST_PATH rust/Cargo.toml
+    CRATES ${CRATE}
+    QT_MODULES Qt::Core)
 cxx_qt_import_qml_module(${CRATE}_qml
     URI "com.kdab.energy"
     SOURCE_CRATE ${CRATE})
