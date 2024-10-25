@@ -16,7 +16,7 @@ crate-type = ["staticlib"]
 [dependencies]
 cxx.workspace = true
 cxx-qt-gen.workspace = true
-cxx-qt-lib = { workspace = true, features = ["full"] }
+cxx-qt-lib = { workspace = true, features = ["qt_gui", "qt_qml"] }
 
 [build-dependencies]
 cxx-qt-build.workspace = true

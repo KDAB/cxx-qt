@@ -298,6 +298,10 @@ pub(crate) fn link_name() -> Option<String> {
     env::var("CARGO_MANIFEST_LINKS").ok()
 }
 
+fn qt_modules_import() -> Option<String> {
+    env::var("CXX_QT_QT_MODULES").ok()
+}
+
 fn static_lib_name() -> String {
     format!("{}-cxxqt-generated", crate_name())
 }
@@ -360,7 +364,30 @@ impl CxxQtBuilder {
     /// Create a new builder
     pub fn new() -> Self {
         let mut qt_modules = HashSet::new();
-        qt_modules.insert("Core".to_owned());
+
+        // Add any Qt modules from CMake
+        if let Some(modules) = qt_modules_import() {
+            qt_modules.extend(
+                modules
+                    // Each module is split by a comma
+                    .split(",")
+                    // Each module could be Qt::Core or Qt6::Core etc
+                    // we only want the last part
+                    .map(|module| {
+                        if let Some((_, end)) = module.rsplit_once("::") {
+                            end
+                        } else {
+                            module
+                        }
+                    })
+                    .map(str::to_owned),
+            );
+        } else {
+            // When building with Cargo we implicitly add Qt Core
+            // for CMake this must be set in CMake
+            qt_modules.insert("Core".to_owned());
+        }
+
         Self {
             rust_sources: vec![],
             qobject_headers: vec![],
@@ -437,6 +464,13 @@ impl CxxQtBuilder {
     /// It is therefore best practice to specify features on your crate that allow downstream users
     /// to disable any qt modules that are optional.
     pub fn qt_module(mut self, module: &str) -> Self {
+        // Ensure that CMake and Cargo build.rs are not out of sync
+        if qt_modules_import().is_some() && !self.qt_modules.contains(module) {
+            panic!("Qt module mismatch between cxx-qt-build and CMake!\n\
+                    Qt module '{module}' was not specified in CMake!\n\
+                    When building with CMake, all Qt modules must be specified with the QT_MODULES argument in cxx_qt_import_crate");
+        }
+
         self.qt_modules.insert(module.to_owned());
         self
     }
