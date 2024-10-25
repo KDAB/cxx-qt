@@ -135,7 +135,7 @@ pub mod ffi {
         type SecondObject = super::SecondObjectRust;
     }
 
-    #[auto_cxx_case]
+    #[auto_cxx_name]
     unsafe extern "RustQt" {
         #[qsignal]
         fn ready(self: Pin<&mut SecondObject>);

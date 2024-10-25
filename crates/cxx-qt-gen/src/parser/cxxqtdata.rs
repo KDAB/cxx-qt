@@ -130,10 +130,10 @@ impl ParsedCxxQtData {
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
         let attrs = require_attributes(
             &foreign_mod.attrs,
-            &["namespace", "auto_cxx_case", "auto_rust_case"],
+            &["namespace", "auto_cxx_name", "auto_rust_name"],
         )?;
 
-        let auto_case = CaseConversion::from_attrs(&attrs);
+        let auto_case = CaseConversion::from_attrs(&attrs)?;
 
         let namespace = attrs
             .get("namespace")
@@ -272,6 +272,21 @@ mod tests {
                     static COUNTER: usize;
                 }
             }
+            {
+                // Unsupported name for case conversion
+                #[auto_cxx_name = Foo]
+                extern "RustQt" {}
+            }
+            {
+                // Auto case uses ident not string
+                #[auto_cxx_name = "Camel"]
+                extern "RustQt" {}
+            }
+            {
+                // Unsupported format for case conversion macro
+                #[auto_cxx_name(a, b)]
+                extern "RustQt" {}
+            }
         }
     }
 
@@ -335,7 +350,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            #[auto_cxx_case]
+            #[auto_cxx_name]
             unsafe extern "RustQt" {
                 fn foo_bar(self: &MyObject);
             }
@@ -346,11 +361,28 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_auto_case_explicit() {
+        let mut cxx_qt_data = create_parsed_cxx_qt_data();
+
+        let item: Item = parse_quote! {
+            #[auto_cxx_name = Snake]
+            #[auto_rust_name = Snake]
+            unsafe extern "RustQt" {
+                fn fooBar(self: &MyObject);
+            }
+        };
+        cxx_qt_data.parse_cxx_qt_item(item).unwrap();
+        assert_eq!(cxx_qt_data.methods.len(), 1);
+        assert_eq!(cxx_qt_data.methods[0].name.cxx_unqualified(), "foo_bar");
+        assert_eq!(cxx_qt_data.methods[0].name.rust_unqualified(), "foo_bar");
+    }
+
+    #[test]
     fn test_parse_auto_case_override() {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            #[auto_cxx_case]
+            #[auto_cxx_name]
             unsafe extern "RustQt" {
                 #[cxx_name = "renamed"]
                 fn foo_bar(self: &MyObject);
@@ -366,7 +398,7 @@ mod tests {
         let mut cxx_qt_data = create_parsed_cxx_qt_data();
 
         let item: Item = parse_quote! {
-            #[auto_rust_case]
+            #[auto_rust_name]
             unsafe extern "C++Qt" {
                 #[qobject]
                 type MyObject;
