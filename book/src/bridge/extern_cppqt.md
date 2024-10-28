@@ -29,6 +29,8 @@ A bridge module may contain zero or more `extern "C++Qt"` blocks.
 This complements the [`extern "C++"` CXX section](https://cxx.rs/extern-c++.html)
 but allows for declaring Qt specific features on C++ types.
 
+Automatically converting to camel or snake case can be done through an [attribute](./attributes.md#automatic-case-conversion) at the block level.
+
 ## `QObject`s
 
 QObject types that are defined in C++ can be made available to Rust, by declaring them as [opaque types](https://cxx.rs/extern-c++.html#opaque-c-types) with a `#[qobject]` attribute.

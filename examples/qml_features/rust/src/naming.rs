@@ -23,6 +23,12 @@ pub mod qobject {
         #[rust_name = "plus_one"]
         fn increment_number(self: Pin<&mut NamedObject>);
     }
+
+    #[auto_cxx_name]
+    unsafe extern "RustQt" {
+        #[qinvokable]
+        fn get_num(self: &NamedObject) -> i32;
+    }
 }
 
 use std::pin::Pin;
@@ -38,5 +44,10 @@ impl qobject::NamedObject {
     pub fn plus_one(self: Pin<&mut Self>) {
         let previous = *self.num();
         self.set_num(previous + 1);
+    }
+
+    /// Method to return a greeting
+    pub fn get_num(&self) -> i32 {
+        42
     }
 }
