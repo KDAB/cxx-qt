@@ -24,5 +24,6 @@ TestCase {
         compare(obj.numberProp, 0);
         obj.increment();
         compare(obj.numberProp, 1);
+        compare(obj.getNum(), 42);
     }
 }

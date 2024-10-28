@@ -30,6 +30,8 @@ A bridge module may contain zero or more `extern "RustQt"` blocks.
 This complements the [`extern "Rust"` CXX section](https://cxx.rs/extern-rust.html)
 but allows for declaring Qt specific features on C++ types.
 
+Automatically converting to camel or snake case can be done through an [attribute](./attributes.md#automatic-case-conversion) at the block level.
+
 ## `QObject`s
 
 The `#[qobject]` attribute may be placed on a type alias to generate a [`QObject`](https://doc.qt.io/qt-6/qobject.html) type in C++.

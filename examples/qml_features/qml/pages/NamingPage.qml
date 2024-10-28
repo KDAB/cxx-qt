@@ -30,5 +30,12 @@ Page {
             text: qsTr("Increment Counter")
             onClicked: renamedObject.increment()
         }
+
+        Label {
+            Layout.fillWidth: true
+            horizontalAlignment: Text.AlignHCenter
+            text: qsTr("Meaning of life: %1").arg(renamedObject.getNum())
+            wrapMode: Text.Wrap
+        }
     }
 }
