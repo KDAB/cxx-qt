@@ -24,3 +24,6 @@ cxx-qt-build.workspace = true
 [features]
 default = []
 link_qt_object_files = ["cxx-qt-build/link_qt_object_files"]
+
+[lints]
+workspace = true

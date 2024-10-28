@@ -30,3 +30,6 @@ thiserror = "1.0"
 #
 # When linking Qt dynamically, this makes no difference.
 link_qt_object_files = []
+
+[lints]
+workspace = true
