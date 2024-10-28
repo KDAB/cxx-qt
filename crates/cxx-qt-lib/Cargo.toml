@@ -52,3 +52,6 @@ time = ["dep:time"]
 url = ["dep:url"]
 serde = ["dep:serde"]
 link_qt_object_files = ["cxx-qt-build/link_qt_object_files"]
+
+[lints]
+workspace = true

@@ -35,3 +35,6 @@ qt-build-utils.workspace = true
 
 [dev-dependencies]
 cxx.workspace = true
+
+[lints]
+workspace = true
