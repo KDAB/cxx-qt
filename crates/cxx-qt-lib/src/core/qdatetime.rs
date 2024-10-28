@@ -56,11 +56,15 @@ mod ffi {
         fn offsetFromUtc(self: &QDateTime) -> i32;
 
         /// Sets the timeSpec() to Qt::OffsetFromUTC and the offset to offsetSeconds.
+        ///
+        /// Note this method is only available with Qt < 6.8
         #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[rust_name = "set_offset_from_utc"]
         fn setOffsetFromUtc(self: &mut QDateTime, offset_seconds: i32);
 
         /// Sets the time specification used in this datetime to spec. The datetime will refer to a different point in time.
+        ///
+        /// Note this method is only available with Qt < 6.8
         #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[rust_name = "set_time_spec"]
         fn setTimeSpec(self: &mut QDateTime, spec: TimeSpec);
@@ -85,6 +89,8 @@ mod ffi {
         fn toOffsetFromUtc(self: &QDateTime, offset_seconds: i32) -> QDateTime;
 
         /// Returns a copy of this datetime converted to the given time spec.
+        ///
+        /// Note this method is only available with Qt < 6.8
         #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[rust_name = "to_time_spec"]
         fn toTimeSpec(self: &QDateTime, spec: TimeSpec) -> QDateTime;
@@ -268,6 +274,8 @@ impl QDateTime {
     }
 
     /// Construct a Rust QDateTime from a given QDate, QTime, Qt::TimeSpec, and offset
+    ///
+    /// Note this method is only available with Qt < 6.8
     #[cfg(not(cxxqt_qt_version_at_least_6_8))]
     pub fn from_date_and_time_time_spec(
         date: &QDate,
