@@ -77,12 +77,12 @@ In the end, your `Cargo.toml` should look similar to this.
 
 [dependencies]
 cxx = "1.0.95"
-cxx-qt = "0.6"
-cxx-qt-lib = { version="0.6", features = ["qt_full"] }
+cxx-qt = "0.7"
+cxx-qt-lib = { version="0.7", features = ["qt_full"] }
 
 [build-dependencies]
 # The link_qt_object_files feature is required for statically linking Qt 6.
-cxx-qt-build = { version = "0.6", features = [ "link_qt_object_files" ] }
+cxx-qt-build = { version = "0.7", features = [ "link_qt_object_files" ] }
 ```
 
 We'll then also need to add a script named `build.rs` next to the `Cargo.toml`:
@@ -134,7 +134,7 @@ Download CXX-Qts CMake code with FetchContent:
 
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt_start}}
-        GIT_TAG v0.6.0
+        GIT_TAG v0.7.0
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt_end}}
 ```
 
