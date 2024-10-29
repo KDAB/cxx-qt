@@ -35,7 +35,7 @@ For [`#[qproperty]`](./extern_rustqt.md#properties), a CXX or Rust name can be p
 > **📝 Note**: If an item has different C++ and Rust identifiers, it is always referenced by its Rust identifier inside the bridge, not its C++ identifier. (e.g. when referring to a QObject inside a `#[qenum(...)]` attribute)
 
 > **⚠️ Deprecation warning**:
-> CXX-Qt <0.6 did automatic case conversion if no `#[cxx_name = "..."]` or `#[rust_name = "..."]` is specified.
+> CXX-Qt <0.7 did automatic case conversion if no `#[cxx_name = "..."]` or `#[rust_name = "..."]` is specified.
 > Starting with CXX-Qt 0.7, this is no longer the case! Automatic case conversion will be opt-in instead.
 
 ### Automatic case conversion
