@@ -30,12 +30,12 @@ We'll need `cxx`, `cxx-qt`, `cxx-qt-lib` and `cxx-qt-build`:
 {{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_package_name}}
 {{#include ../../../examples/cargo_without_cmake/Cargo.toml:book_cargo_toml_no_cmake}}
 cxx = "1.0.95"
-cxx-qt = "0.6"
-cxx-qt-lib = { version="0.6", features = ["qt_full"] }
+cxx-qt = "0.7"
+cxx-qt-lib = { version="0.7", features = ["qt_full"] }
 
 [build-dependencies]
 # The link_qt_object_files feature is required for statically linking Qt 6.
-cxx-qt-build = { version = "0.6", features = [ "link_qt_object_files" ] }
+cxx-qt-build = { version = "0.7", features = [ "link_qt_object_files" ] }
 ```
 
 Now we'll add a `build.rs` script next to the `Cargo.toml` file.

@@ -47,7 +47,7 @@ function release_crate() {
 question_yesno "Have you run cargo login before and setup credentials"
 
 # cxx-qt-cmake (no dependencies)
-question_yesno "Have you created a new tag in the cxx-qt-cmake repo"
+question_yesno "Have you bumped the project version (in CMakeLists.txt) and created a new tag in the cxx-qt-cmake repo"
 
 # 5-cmake-integration.md has a GIT_TAG example pointing to the stable release
 question_yesno "Have you updated the GIT_TAG for cxx-qt-cmake in the book"
