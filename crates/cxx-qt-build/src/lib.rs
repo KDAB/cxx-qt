@@ -370,7 +370,7 @@ impl CxxQtBuilder {
             qt_modules.extend(
                 modules
                     // Each module is split by a comma
-                    .split(",")
+                    .split(',')
                     // Each module could be Qt::Core or Qt6::Core etc
                     // we only want the last part
                     .map(|module| {

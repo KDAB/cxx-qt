@@ -13,7 +13,7 @@ license.workspace = true
 description = "A set of macros for Qt/C++ interop in Rust"
 repository.workspace = true
 homepage = "https://kdab.github.io/cxx-qt/book/"
-rust-version = "1.66.1"
+rust-version.workspace = true
 
 [lib]
 proc-macro = true

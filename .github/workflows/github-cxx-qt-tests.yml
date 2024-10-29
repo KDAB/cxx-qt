@@ -42,6 +42,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
+      - run: rustup default 1.77.2
       - run: rustup component add rustfmt
       - run: cargo fmt --all --check --verbose
 
@@ -72,8 +73,9 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup toolchain
         run: |
+          rustup default 1.77.2
           cargo install grcov
-          rustup component add llvm-tools
+          rustup component add llvm-tools rustfmt
       - name: build
         env:
           RUSTFLAGS: -Cinstrument-coverage
@@ -106,7 +108,8 @@ jobs:
         uses: actions/checkout@v4
       - name: Setup toolchain
         run: |
-          rustup component add clippy rustfmt
+          rustup default 1.77.2
+          rustup component add rustfmt
           rustup target add wasm32-unknown-emscripten
       - name: "Rust tools cache"
         uses: actions/cache@v4
@@ -116,13 +119,14 @@ jobs:
             ~/.cargo/bin/sccache
             ~/.cargo/bin/mdbook
             ~/.cargo/bin/mdbook-linkcheck
-          key: ubuntu-24.04_sccache-0.7.6_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+          key: ubuntu-24.04_sccache-0.8.2_mdbook-0.4.36_mdbook-linkcheck-0.7.7
       - name: "Build Rust tools"
         if: steps.rust-tools-cache.outputs.cache-hit != 'true'
         # Do not build with storage backends enabled, we only need local
         run: |
-          cargo install --no-default-features sccache
-          cargo install mdbook mdbook-linkcheck
+          cargo install --no-default-features --version 0.8.2 sccache
+          cargo install --version 0.4.36 mdbook 
+          cargo install --version 0.7.7 mdbook-linkcheck
       # We want our compiler cache to always update to the newest state.
       # The best way for us to achieve this is to **always** update the cache after every landed commit.
       # That way it will closely follow our development.
@@ -366,10 +370,14 @@ jobs:
     - name: "Clone Git repository"
       uses: actions/checkout@v4
     # Ensure clippy and rustfmt is installed, they should come from github runner
+    # clippy version needs to be 1.78.0 for the MSRV lint
     #
     # Note we still need rustfmt for the cxx-qt-gen tests
     - name: "Install Rust toolchain"
-      run: rustup component add clippy rustfmt
+      run: |
+        rustup toolchain add 1.78.0 --component clippy
+        rustup default 1.77.2
+        rustup component add rustfmt
 
     - name: "Rust tools cache"
       uses: actions/cache@v4
@@ -379,13 +387,14 @@ jobs:
           ${{ matrix.cargo_dir }}/bin/sccache${{ matrix.exe_suffix }}
           ${{ matrix.cargo_dir }}/bin/mdbook${{ matrix.exe_suffix }}
           ${{ matrix.cargo_dir }}/bin/mdbook-linkcheck${{ matrix.exe_suffix }}
-        key: ${{ matrix.os }}_sccache-0.7.6_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+        key: ${{ matrix.os }}_sccache-0.8.2_mdbook-0.4.36_mdbook-linkcheck-0.7.7
     - name: "Build Rust tools"
       if: steps.rust-tools-cache.outputs.cache-hit != 'true'
       # Do not build with storage backends enabled, we only need local
       run: |
-        cargo install --no-default-features sccache
-        cargo install mdbook mdbook-linkcheck
+        cargo install --no-default-features --version 0.8.2 sccache
+        cargo install --version 0.4.36 mdbook 
+        cargo install --version 0.7.7 mdbook-linkcheck
 
     # We want our compiler cache to always update to the newest state.
     # The best way for us to achieve this is to **always** update the cache after every landed commit.

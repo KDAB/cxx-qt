@@ -18,7 +18,7 @@ exclude = [ "**/generate.sh" ]
 # can pass metadata from library to dependent.
 # See also: https://doc.rust-lang.org/cargo/reference/build-scripts.html#the-links-manifest-key
 links = "cxx-qt-lib"
-rust-version = "1.77.2"
+rust-version.workspace = true
 
 [dependencies]
 cxx.workspace = true
