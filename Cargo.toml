@@ -22,13 +22,13 @@ members = [
     "tests/qt_types_standalone/rust",
 ]
 resolver = "2"
-rust-version = "1.77.2"
 
 [workspace.package]
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/KDAB/cxx-qt/"
 version = "0.7.0"
+rust-version = "1.77.2" # Clippy needs to >= 1.78.0 for a lint, but the package can be 1.77.2
 
 # Note a version needs to be specified on dependencies of packages
 # we publish, otherwise crates.io complains as it doesn't know the version.

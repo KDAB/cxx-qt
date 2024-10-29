@@ -151,8 +151,9 @@ if(BUILD_TESTING)
     # Add CMake tests for `cargo test/clippy/fmt/doc`.
     add_test(NAME cargo_tests COMMAND cargo test --release --all-features --target-dir ${CARGO_TARGET_DIR})
     add_test(NAME cargo_doc COMMAND cargo doc --release --all-features --target-dir ${CARGO_TARGET_DIR})
-    add_test(NAME cargo_clippy COMMAND cargo clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
-    
+    # Minimum clippy version for the incompatible_msrv lint is 1.78.0
+    add_test(NAME cargo_clippy COMMAND cargo +1.78.0 clippy --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
+
     set_tests_properties(cargo_tests cargo_clippy PROPERTIES
         ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
     )
