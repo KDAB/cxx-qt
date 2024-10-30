@@ -238,6 +238,7 @@ jobs:
             compiler_cache_path: /home/runner/.cache/sccache
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
+            rustc_wrapper: sccache
           - name: Ubuntu 24.04 (gcc) Qt6
             os: ubuntu-24.04
             qt_version: 6
@@ -252,6 +253,7 @@ jobs:
             compiler_cache_path: /home/runner/.cache/sccache
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
+            rustc_wrapper: sccache
             packages-extra: >-
                 libgl1-mesa-dev
                 libvulkan-dev
@@ -276,6 +278,8 @@ jobs:
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
+            # sccache is disabled due on macOS to https://github.com/mozilla/sccache/issues/2092
+            cmake_args: -DSCCACHE=OFF
           - name: macOS 14 (clang) Qt6
             os: macos-14
             qt_version: 6
@@ -295,6 +299,8 @@ jobs:
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
+            # sccache is disabled on macOS due to https://github.com/mozilla/sccache/issues/2092
+            cmake_args: -DSCCACHE=OFF
 
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
@@ -311,6 +317,7 @@ jobs:
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
+            rustc_wrapper: sccache
           - name: Windows 2022 (MSVC2019) Qt6
             os: windows-2022
             qt_version: 6
@@ -326,6 +333,7 @@ jobs:
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
+            rustc_wrapper: sccache
           - name: Windows 2022 (MSVC2022) Qt6
             os: windows-2022
             qt_version: 6
@@ -341,7 +349,7 @@ jobs:
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
-            workspace: C:\cxx-qt
+            rustc_wrapper: sccache
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -460,26 +468,26 @@ jobs:
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
     - name: "Configure"
       run: >-
-        cmake
+        cmake ${{ matrix.cmake_args }}
         -D USE_QT5=${{ matrix.qt_version == 5 }}
         -D CMAKE_BUILD_TYPE=Release
         -G Ninja
         -S . -B build
       env:
-        RUSTC_WRAPPER: sccache
+        RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
     - name: "Build"
       run: cmake --build build --config Release --parallel ${{ matrix.cores }}
       env:
-        RUSTC_WRAPPER: sccache
+        RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
     - name: "Test"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
       working-directory: ./build
       env:
         # Use the version of clang-format from pip
         CLANG_FORMAT_BINARY: ${{ matrix.clang_format_path }}
-        RUSTC_WRAPPER: sccache
+        RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
         QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
         QT_SELECT: qt${{ matrix.qt_version }}
         DYLD_FRAMEWORK_PATH: ${{ matrix.dyld_framework_path }}
