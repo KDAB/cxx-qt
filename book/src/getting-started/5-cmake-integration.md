@@ -140,10 +140,11 @@ Download CXX-Qts CMake code with FetchContent:
 
 This provides you with a few wrappers around [Corrosion](https://github.com/corrosion-rs/corrosion), a tool for integrating Rust libraries into CMake:
 
-1. `cxx_qt_import_crate` - A wrapper around [corrosion_import_crate](https://corrosion-rs.github.io/corrosion/usage.html). It supports the same arguments as corrosion_import_crate, with two new optional arguments:
-    - `CXX_QT_EXPORT_DIR` - Manually specify the path where CXX-Qt artifacts will be exported to.
+1. `cxx_qt_import_crate` - A wrapper around [corrosion_import_crate](https://corrosion-rs.github.io/corrosion/usage.html). It supports the same arguments as corrosion_import_crate, with three new arguments:
+    - `QT_MODULES` *(required)* - The Qt modules to link to. Specify the corresponding CMake targets here.
+    - `CXX_QT_EXPORT_DIR` (optional) - Manually specify the path where CXX-Qt artifacts will be exported to.
         - This is usually not necessary. However, if you're importing the same crate with different feature sets in the same CMake build configuration, you will need to specify seperate `CXX_QT_EXPORT_DIR`s to avoid multiple versions of the crate exporting to the same directory.
-    - `QMAKE` - Override the path to the QMAKE executable
+    - `QMAKE` (optional) - Override the path to the QMAKE executable
 2. `cxx_qt_import_qml_module` - This function imports a QML modules as a new target. It requires the following arguments:
     - `TARGET_NAME` - Specify the name of the CMake target that this function will create
     - `URI` - The URI of the qml module to import - this needs to exactly match the URI in the `CxxQtBuilder::qml_module` call in your build script.
