@@ -6,10 +6,12 @@ mod ffi {
         type QPoint = cxx_qt_lib::QPoint;
     }
 
+    #[auto_cxx_name]
     extern "RustQt" {
         #[qobject]
         #[qproperty(i32, primitive)]
         #[qproperty(QPoint, trivial)]
+        #[qproperty(i32, prop_auto_cxx_name)]
         #[qproperty(i32, custom_function_prop, cxx_name = "customFunctionProp", READ = my_getter, WRITE = my_setter, NOTIFY)]
         #[qproperty(i32, readonly_prop, cxx_name = "readonlyProp", READ)]
         #[qproperty(

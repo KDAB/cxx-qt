@@ -57,6 +57,16 @@ mod ffi {
         fn set_trivial(self: Pin<&mut MyObject>, value: QPoint);
     }
     extern "Rust" {
+        #[cxx_name = "getPropAutoCxxName"]
+        #[namespace = "cxx_qt::my_object"]
+        unsafe fn prop_auto_cxx_name<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setPropAutoCxxName"]
+        #[namespace = "cxx_qt::my_object"]
+        fn set_prop_auto_cxx_name(self: Pin<&mut MyObject>, value: i32);
+    }
+    extern "Rust" {
         #[cxx_name = "getReadonlyProp"]
         #[namespace = "cxx_qt::my_object"]
         unsafe fn readonly_prop<'a>(self: &'a MyObject) -> &'a i32;
@@ -189,6 +199,40 @@ mod ffi {
         #[doc(hidden)]
         fn call_MyObject_signal_handler_trivialChanged(
             handler: &mut MyObjectCxxQtSignalHandlertrivialChanged,
+            self_value: Pin<&mut MyObject>,
+        );
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "propAutoCxxNameChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
+        #[namespace = "cxx_qt::my_object"]
+        fn prop_auto_cxx_name_changed(self: Pin<&mut MyObject>);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        type MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                super::MyObjectCxxQtSignalClosurepropAutoCxxNameChanged,
+            >;
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        #[cxx_name = "MyObject_propAutoCxxNameChangedConnect"]
+        fn MyObject_connect_prop_auto_cxx_name_changed(
+            self_value: Pin<&mut MyObject>,
+            signal_handler: MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_MyObject_signal_handler_propAutoCxxNameChanged(
+            handler: MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged,
+        );
+        #[doc(hidden)]
+        fn call_MyObject_signal_handler_propAutoCxxNameChanged(
+            handler: &mut MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged,
             self_value: Pin<&mut MyObject>,
         );
     }
@@ -398,6 +442,25 @@ impl ffi::MyObject {
         }
         self.as_mut().rust_mut().trivial = value;
         self.as_mut().trivial_changed();
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "prop_auto_cxx_name"]
+    pub fn prop_auto_cxx_name(&self) -> &i32 {
+        &self.prop_auto_cxx_name
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "prop_auto_cxx_name"]
+    pub fn set_prop_auto_cxx_name(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.prop_auto_cxx_name == value {
+            return;
+        }
+        self.as_mut().rust_mut().prop_auto_cxx_name = value;
+        self.as_mut().prop_auto_cxx_name_changed();
     }
 }
 impl ffi::MyObject {
@@ -645,6 +708,74 @@ cxx_qt::static_assertions::assert_eq_align!(
 );
 cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuretrivialChanged>,
+    [usize; 2]
+);
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "propAutoCxxNameChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    pub fn connect_prop_auto_cxx_name_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+    >(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_prop_auto_cxx_name_changed(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                MyObjectCxxQtSignalClosurepropAutoCxxNameChanged,
+            >::new(Box::new(closure)),
+            conn_type,
+        ))
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "propAutoCxxNameChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    pub fn on_prop_auto_cxx_name_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+    >(
+        self: core::pin::Pin<&mut ffi::MyObject>,
+        mut closure: F,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_prop_auto_cxx_name_changed(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                MyObjectCxxQtSignalClosurepropAutoCxxNameChanged,
+            >::new(Box::new(closure)),
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
+    }
+}
+#[doc(hidden)]
+pub struct MyObjectCxxQtSignalClosurepropAutoCxxNameChanged {}
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
+    for MyObjectCxxQtSignalClosurepropAutoCxxNameChanged
+{
+    type Id = cxx::type_id!(
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged"
+    );
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+}
+use core::mem::drop as drop_MyObject_signal_handler_propAutoCxxNameChanged;
+fn call_MyObject_signal_handler_propAutoCxxNameChanged(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
+        MyObjectCxxQtSignalClosurepropAutoCxxNameChanged,
+    >,
+    self_value: core::pin::Pin<&mut ffi::MyObject>,
+) {
+    handler.closure()(self_value);
+}
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurepropAutoCxxNameChanged>,
+    usize
+);
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurepropAutoCxxNameChanged>,
     [usize; 2]
 );
 impl ffi::MyObject {

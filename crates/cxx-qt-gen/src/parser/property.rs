@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::Name;
+use crate::parser::CaseConversion;
 use crate::syntax::expr::expr_to_string;
 use syn::{
     parse::{Error, ParseStream},
@@ -101,7 +102,7 @@ fn parse_meta(meta: Meta) -> Result<(Ident, Option<Ident>)> {
 }
 
 impl ParsedQProperty {
-    pub fn parse(attr: &Attribute) -> Result<Self> {
+    pub fn parse(attr: &Attribute, auto_case: CaseConversion) -> Result<Self> {
         attr.parse_args_with(|input: ParseStream| -> Result<Self> {
             let ty = input.parse()?;
             let _comma = input.parse::<Token![,]>()?;
@@ -110,7 +111,7 @@ impl ParsedQProperty {
             if input.is_empty() {
                 // No flags passed so desugar: #[qproperty(T, ident)] -> #[qproperty(T, ident, read, write, notify)]
                 Ok(Self {
-                    name: Name::new(ident),
+                    name: Name::new(ident).with_options(None, None, auto_case),
                     ty,
                     flags: QPropertyFlags::default(),
                 })
@@ -189,7 +190,7 @@ impl ParsedQProperty {
                     ))
                 }
 
-                let name = Name::new(ident).with_options(cxx_name.map(|ident| ident.to_string()), rust_name);
+                let name = Name::new(ident).with_options(cxx_name.map(|ident| ident.to_string()), rust_name, auto_case);
 
                 // This check is needed otherwise this fn would error unless READ, WRITE, etc... was passed with cxx_name
                 if read_required {
@@ -225,14 +226,20 @@ impl ParsedQProperty {
     }
 }
 #[cfg(test)]
-pub fn mock_property(mut input: ItemStruct) -> ParsedQProperty {
-    ParsedQProperty::parse(&input.attrs.remove(0)).unwrap()
+pub fn mock_property(input: ItemStruct) -> ParsedQProperty {
+    mock_property_case(input, CaseConversion::none())
+}
+
+#[cfg(test)]
+fn mock_property_case(mut input: ItemStruct, auto_case: CaseConversion) -> ParsedQProperty {
+    ParsedQProperty::parse(&input.attrs.remove(0), auto_case).unwrap()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
     use crate::tests::assert_parse_errors;
+    use convert_case::Case;
     use quote::format_ident;
     use syn::{parse_quote, ItemStruct};
 
@@ -242,16 +249,71 @@ mod tests {
             #[qproperty(T, name, cxx_name = "myName", rust_name = "my_name")]
             struct MyStruct;
         };
-        let property = mock_property(input);
 
-        assert_eq!(property.name.cxx_unqualified(), "myName");
-        assert_eq!(property.name.rust_unqualified(), "my_name");
+        // Should follow rust and cxx name
+        {
+            let property = mock_property(input.clone());
+            assert_eq!(property.name.cxx_unqualified(), "myName");
+            assert_eq!(property.name.rust_unqualified(), "my_name");
+        }
+
+        // Should ignore any auto casing
+        {
+            let auto_case = CaseConversion {
+                cxx: Some(Case::Snake),
+                rust: Some(Case::Camel),
+            };
+            let property = mock_property_case(input, auto_case);
+            assert_eq!(property.name.cxx_unqualified(), "myName");
+            assert_eq!(property.name.rust_unqualified(), "my_name");
+        }
+    }
+
+    #[test]
+    fn test_parse_named_property_casing() {
+        let input: ItemStruct = parse_quote! {
+            #[qproperty(T, myMixed_name)]
+            struct MyStruct;
+        };
+
+        // cxx_name to camel
+        {
+            let auto_case = CaseConversion {
+                cxx: Some(Case::Camel),
+                rust: None,
+            };
+            let property = mock_property_case(input.clone(), auto_case);
+            assert_eq!(property.name.cxx_unqualified(), "myMixedName");
+            assert_eq!(property.name.rust_unqualified(), "myMixed_name");
+        }
+
+        // rust_name to camel
+        {
+            let auto_case = CaseConversion {
+                cxx: None,
+                rust: Some(Case::Camel),
+            };
+            let property = mock_property_case(input.clone(), auto_case);
+            assert_eq!(property.name.cxx_unqualified(), "myMixed_name");
+            assert_eq!(property.name.rust_unqualified(), "myMixedName");
+        }
+
+        // cxx_name to camel, rust_name to snake
+        {
+            let auto_case = CaseConversion {
+                cxx: Some(Case::Camel),
+                rust: Some(Case::Snake),
+            };
+            let property = mock_property_case(input, auto_case);
+            assert_eq!(property.name.cxx_unqualified(), "myMixedName");
+            assert_eq!(property.name.rust_unqualified(), "my_mixed_name");
+        }
     }
 
     #[test]
     fn test_parse_invalid() {
         assert_parse_errors! {
-            |attr| ParsedQProperty::parse(&attr) =>
+            |attr| ParsedQProperty::parse(&attr, CaseConversion::none()) =>
 
             // Non-constant property with constant flag
             { #[qproperty(T, name, READ, WRITE, NOTIFY, CONSTANT)] }

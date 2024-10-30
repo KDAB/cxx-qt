@@ -67,6 +67,7 @@ pub mod tests {
     use crate::naming::Name;
     use crate::parser::property::{mock_property, QPropertyFlags};
     use crate::parser::qobject::ParsedQObject;
+    use crate::parser::CaseConversion;
     use crate::{CppFragment, Parser};
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
@@ -94,7 +95,7 @@ pub mod tests {
     }
 
     fn setup_generated(input: &mut ItemStruct) -> Result<GeneratedCppQObjectBlocks> {
-        let property = ParsedQProperty::parse(&input.attrs.remove(0))?;
+        let property = ParsedQProperty::parse(&input.attrs.remove(0), CaseConversion::none())?;
 
         let properties = vec![property];
 

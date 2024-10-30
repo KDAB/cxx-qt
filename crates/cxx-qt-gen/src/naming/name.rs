@@ -111,12 +111,12 @@ impl Name {
         }
 
         // Find if there is a cxx_name mapping (for C++ generation)
-        let mut cxx_name = attribute_get_path(attrs, &["cxx_name"])
+        let cxx_name = attribute_get_path(attrs, &["cxx_name"])
             .map(|attr| -> Result<_> { expr_to_string(&attr.meta.require_name_value()?.value) })
             .transpose()?;
 
         // Find if there is a rust_name mapping
-        let mut rust_name = attribute_get_path(attrs, &["rust_name"])
+        let rust_name = attribute_get_path(attrs, &["rust_name"])
             .map(|attr| -> Result<_> {
                 Ok(format_ident!(
                     "{}",
@@ -126,36 +126,50 @@ impl Name {
             })
             .transpose()?;
 
-        if cxx_name.is_none() && rust_name.is_none() {
-            if let Some(case) = auto_case.cxx {
-                cxx_name = Some(ident.to_string().to_case(case));
-            }
-            if let Some(case) = auto_case.rust {
-                rust_name = Some(format_ident!("{}", ident.to_string().to_case(case)));
-            }
-        }
-
         Ok(Self {
             rust: ident.clone(),
             cxx: None,
             namespace,
             module: module.cloned().map(Path::from),
         }
-        .with_options(cxx_name, rust_name))
+        .with_options(cxx_name, rust_name, auto_case))
     }
 
     /// Applies naming options to an existing name, applying logic about what should cause renaming
-    pub fn with_options(self, cxx: Option<String>, rust: Option<Ident>) -> Self {
-        let cxx_ident = if cxx.is_none() && rust.is_some() {
-            Some(self.rust.to_string())
-        } else {
-            cxx
-        };
-        Self {
-            rust: rust.unwrap_or_else(|| self.rust.clone()),
-            cxx: cxx_ident,
-            ..self
+    pub fn with_options(
+        self,
+        mut cxx_name: Option<String>,
+        mut rust_name: Option<Ident>,
+        auto_case: CaseConversion,
+    ) -> Self {
+        // Determine any automatic casing when there is no cxx_name or rust_name
+        if cxx_name.is_none() && rust_name.is_none() {
+            if let Some(case) = auto_case.cxx {
+                cxx_name = Some(self.rust_unqualified().to_string().to_case(case));
+            }
+
+            if let Some(case) = auto_case.rust {
+                rust_name = Some(format_ident!(
+                    "{}",
+                    self.rust_unqualified().to_string().to_case(case)
+                ));
+            }
         }
+
+        // Use the rust name if there is one or fallback to the original ident
+        let rust = rust_name.unwrap_or_else(|| self.rust.clone());
+
+        // Use the cxx name if there is one or fallback to the original ident
+        // But only if it is different to the resultant rust ident
+        let cxx = cxx_name.or_else(|| {
+            if rust != self.rust {
+                Some(self.rust.to_string())
+            } else {
+                None
+            }
+        });
+
+        Self { rust, cxx, ..self }
     }
 
     /// Get the unqualified name of the type in C++.

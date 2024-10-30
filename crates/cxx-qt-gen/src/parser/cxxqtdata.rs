@@ -178,6 +178,7 @@ impl ParsedCxxQtData {
                         foreign_alias,
                         namespace.as_deref(),
                         &self.module_ident,
+                        auto_case,
                     )?;
 
                     // Note that we assume a compiler error will occur later
