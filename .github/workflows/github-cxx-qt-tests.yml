@@ -447,19 +447,6 @@ jobs:
       # automake is needed for building libicu which is a dependency of Qt
       run: brew install automake autoconf-archive ninja
 
-    # Note that for nuget uploads to work this must be run as the kdab user
-    # eg a branch on the kdab repo rather than a users fork
-    #
-    # Otherwise you may see the following error:
-    # Pushing NuGet to "cxx-qt-github-packages" failed. Use --debug for more information.
-    - name: "Authenticate to GitHub Packages"
-      if: runner.os != 'Linux' && github.repository_owner == 'KDAB'
-      shell: bash
-      run: |
-        nuget sources add -Name cxx-qt-github-packages -Source https://nuget.pkg.github.com/KDAB/index.json -Username KDAB -Password ${{ secrets.GITHUB_TOKEN }} -NonInteractive
-        nuget setapikey ${{ secrets.GITHUB_TOKEN }} -Source cxx-qt-github-packages -NonInteractive
-        echo "VCPKG_BINARY_SOURCES=clear;nuget,cxx-qt-github-packages,readwrite;" >> "${GITHUB_ENV}"
-
     # Required for CMake to find Ninja
     - name: "[Windows] Set up MSVC Developer Command Prompt"
       if: runner.os == 'Windows'
