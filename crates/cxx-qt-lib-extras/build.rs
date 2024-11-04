@@ -46,7 +46,7 @@ fn main() {
         // Disable exporting the standard include directory, as we are exporting custom headers
         .export_include_prefixes([])
         .export_include_directory(header_dir(), "cxx-qt-lib-extras")
-        .reexport_dependency("cxx-qt-lib");
+        .reexport_dependency("cxx-qt-lib-0-6-1");
 
     let mut builder = CxxQtBuilder::library(interface)
         .qt_module("Gui")

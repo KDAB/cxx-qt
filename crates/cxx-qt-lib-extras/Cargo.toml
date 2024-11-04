@@ -11,7 +11,7 @@ license.workspace = true
 description = "Extra Qt types for integrating `cxx-qt` crate with `cxx` that are not available in `cxx-qt-lib`"
 repository.workspace = true
 
-links = "cxx-qt-lib-extras"
+links = "cxx-qt-lib-extras-0-6-1"
 
 [dependencies]
 cxx.workspace = true
