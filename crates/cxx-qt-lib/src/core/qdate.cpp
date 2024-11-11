@@ -22,22 +22,16 @@ namespace rust {
 namespace cxxqtlib1 {
 
 QDate
-qdateAddDays(const QDate& date, ::std::int64_t ndays)
-{
-  return date.addDays(static_cast<qint64>(ndays));
-}
-
-QDate
 qdateCurrentDate()
 {
   return QDate::currentDate();
 }
 
-::std::int64_t
+qint64
 qdateDaysTo(const QDate& date, QDate d)
 {
   // In Qt 5 d is const-ref, in Qt 6 it is value
-  return static_cast<::std::int64_t>(date.daysTo(d));
+  return date.daysTo(d);
 }
 
 QDate

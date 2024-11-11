@@ -10,6 +10,9 @@ mod qmodelindex_cxx {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qmodelindex.h");
         type QModelIndex = cxx_qt_lib::QModelIndex;
+
+        include!("cxx-qt-lib/qtypes.h");
+        type quintptr = cxx_qt_lib::quintptr;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -23,7 +26,7 @@ mod qmodelindex_cxx {
         fn read_qmodelindex(i: &QModelIndex) -> bool;
         fn clone_qmodelindex(i: &QModelIndex) -> QModelIndex;
         fn internal_pointer_qmodelindex(i: &QModelIndex) -> *mut c_void;
-        fn internal_id_qmodelindex(i: &QModelIndex) -> usize;
+        fn internal_id_qmodelindex(i: &QModelIndex) -> quintptr;
     }
 }
 
@@ -43,6 +46,6 @@ fn internal_pointer_qmodelindex(i: &QModelIndex) -> *mut qmodelindex_cxx::c_void
     i.internal_pointer_mut()
 }
 
-fn internal_id_qmodelindex(i: &QModelIndex) -> usize {
+fn internal_id_qmodelindex(i: &QModelIndex) -> cxx_qt_lib::quintptr {
     i.internal_id()
 }
