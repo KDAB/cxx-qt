@@ -83,6 +83,7 @@ fn generate_default_constructor(
         }],
         cxx_qt_mod_contents: vec![parse_quote! {
             #[doc(hidden)]
+            #[allow(clippy::unnecessary_box_returns)]
             pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
                 // Wrapping the call to Default::default in a Box::new call leads
                 // to a nicer error message, as it's not trying to infer trait bounds
