@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Joshua Goins <josh@redstrate.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::QString;
+use crate::{QByteArray, QString};
 use core::ffi::c_void;
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
@@ -14,6 +14,9 @@ mod ffi {
         include!("cxx-qt-lib/qanystringview.h");
         type QAnyStringView<'a> = super::QAnyStringView<'a>;
 
+        include!("cxx-qt-lib/qbytearray.h");
+        type QByteArray = crate::QByteArray;
+
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
@@ -24,6 +27,10 @@ mod ffi {
         /// Returns true if this string is null; otherwise returns false.
         #[rust_name = "is_null"]
         fn isNull(self: &QAnyStringView) -> bool;
+
+        /// Returns a deep copy of this string view's data as a QString.
+        #[rust_name = "to_qstring"]
+        fn toString(self: &QAnyStringView) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -35,13 +42,16 @@ mod ffi {
         fn construct() -> QAnyStringView<'static>;
         #[doc(hidden)]
         #[rust_name = "QAnyStringView_init_from_rust_string"]
-        fn qanystringviewInitFromRustString<'a>(string: &str) -> QAnyStringView<'a>;
+        fn qanystringviewInitFromRustString<'a>(string: &'a str) -> QAnyStringView<'a>;
+        #[doc(hidden)]
+        #[rust_name = "QAnyStringView_init_from_qbytearray"]
+        fn construct<'a>(bytes: &'a QByteArray) -> QAnyStringView<'a>;
         #[doc(hidden)]
         #[rust_name = "QAnyStringView_init_from_qstring"]
-        fn qanystringviewInitFromQString<'a>(string: &QString) -> QAnyStringView<'a>;
+        fn construct<'a>(string: &'a QString) -> QAnyStringView<'a>;
         #[doc(hidden)]
         #[rust_name = "QAnyStringView_init_from_QAnyStringView"]
-        fn construct<'a>(string: &QAnyStringView) -> QAnyStringView<'a>;
+        fn construct<'a>(string: &QAnyStringView<'a>) -> QAnyStringView<'a>;
 
         #[doc(hidden)]
         #[rust_name = "QAnyStringView_eq"]
@@ -90,14 +100,21 @@ impl Eq for QAnyStringView<'_> {}
 
 impl<'a> From<&'a str> for QAnyStringView<'a> {
     /// Constructs a QAnyStringView from a Rust string
-    fn from(str: &str) -> Self {
+    fn from(str: &'a str) -> QAnyStringView<'a> {
         ffi::QAnyStringView_init_from_rust_string(str)
     }
 }
 
-impl From<&QString> for QAnyStringView<'_> {
+impl<'a> From<&'a QByteArray> for QAnyStringView<'a> {
+    /// Constructs a QAnyStringView from a QByteArray
+    fn from(bytes: &'a QByteArray) -> QAnyStringView<'a> {
+        ffi::QAnyStringView_init_from_qbytearray(bytes)
+    }
+}
+
+impl<'a> From<&'a QString> for QAnyStringView<'a> {
     /// Constructs a QAnyStringView from a QString
-    fn from(string: &QString) -> Self {
+    fn from(string: &'a QString) -> QAnyStringView<'a> {
         ffi::QAnyStringView_init_from_qstring(string)
     }
 }
