@@ -158,6 +158,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks, include_path: &str) -> S
     formatdoc! {r#"
         #pragma once
 
+        #include <cxx-qt/trycatch.h>
         {includes}
 
         {forward_declare}
@@ -255,6 +256,7 @@ mod tests {
         let expected = indoc! {r#"
 #pragma once
 
+#include <cxx-qt/trycatch.h>
 #include <cxx-qt/type.h>
 
 class MyObject;

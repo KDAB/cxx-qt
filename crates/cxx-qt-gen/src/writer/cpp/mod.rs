@@ -336,6 +336,7 @@ mod tests {
         indoc! {r#"
         #pragma once
 
+        #include <cxx-qt/trycatch.h>
         #include <test>
 
         namespace cxx_qt::my_object {
@@ -390,6 +391,7 @@ mod tests {
         indoc! {r#"
         #pragma once
 
+        #include <cxx-qt/trycatch.h>
         #include <test>
 
         namespace cxx_qt {
@@ -469,6 +471,7 @@ mod tests {
         indoc! {r#"
         #pragma once
 
+        #include <cxx-qt/trycatch.h>
         #include <test>
 
         class MyObject;

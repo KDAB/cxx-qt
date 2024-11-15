@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cxx-qt/signalhandler.h>
+#include <cxx-qt/trycatch.h>
 #include <cxx-qt/type.h>
 
 namespace cxx_qt::my_object {

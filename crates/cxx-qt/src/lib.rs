@@ -345,6 +345,7 @@ pub fn write_headers(directory: impl AsRef<Path>) {
         ),
         (include_str!("../include/thread.h"), "thread.h"),
         (include_str!("../include/threading.h"), "threading.h"),
+        (include_str!("../include/trycatch.h"), "trycatch.h"),
         (include_str!("../include/type.h"), "type.h"),
     ] {
         // Note that we do not need rerun-if-changed for these files

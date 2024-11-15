@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cxx-qt/trycatch.h>
 #include <cxx-qt/type.h>
 
 class MyObject;

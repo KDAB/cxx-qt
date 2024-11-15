@@ -22,6 +22,7 @@ fn write_headers() {
         "signalhandler.h",
         "thread.h",
         "threading.h",
+        "trycatch.h",
         "type.h",
     ] {
         println!("cargo::rerun-if-changed=include/{file_path}");
