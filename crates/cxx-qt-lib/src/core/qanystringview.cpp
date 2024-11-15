@@ -32,12 +32,6 @@ qanystringviewInitFromRustString(::rust::Str string)
   return QAnyStringView(string.data(), string.size());
 }
 
-QAnyStringView
-qanystringviewInitFromQString(const QString& string)
-{
-  return QAnyStringView(string);
-}
-
 ::rust::isize
 qanystringviewLen(const QAnyStringView& string)
 {
