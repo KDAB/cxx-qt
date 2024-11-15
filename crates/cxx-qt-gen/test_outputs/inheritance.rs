@@ -1,4 +1,5 @@
 #[cxx::bridge(namespace = "")]
+#[allow(unused_unsafe)]
 mod inheritance {
     extern "C++" {
         include!("cxx-qt-lib/qmodelindex.h");

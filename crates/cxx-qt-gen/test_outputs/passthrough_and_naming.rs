@@ -1,4 +1,5 @@
 #[cxx::bridge(namespace = "cxx_qt::multi_object")]
+#[allow(unused_unsafe)]
 pub mod ffi {
     const MAX: u16 = 65535;
     enum Event {

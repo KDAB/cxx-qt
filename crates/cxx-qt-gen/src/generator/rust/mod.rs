@@ -78,6 +78,10 @@ impl GeneratedRustBlocks {
         );
         let cxx_mod = parse_quote! {
             #[cxx::bridge(namespace = #namespace)]
+            // We need to allow for unused unsafe otherwise we get build failures
+            // due to changes in CXX 1.0.130
+            // https://github.com/dtolnay/cxx/commit/46fedc68464f80587057c436b4f6b6debeb9f714
+            #[allow(unused_unsafe)]
             #(#docs)*
             #module
         };
