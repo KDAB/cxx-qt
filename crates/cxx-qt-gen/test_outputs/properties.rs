@@ -1,4 +1,5 @@
 #[cxx::bridge(namespace = "cxx_qt::my_object")]
+#[allow(unused_unsafe)]
 mod ffi {
     #[namespace = ""]
     unsafe extern "C++" {
