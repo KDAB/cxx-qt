@@ -590,6 +590,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     [usize; 2]
 );
 #[doc(hidden)]
+#[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
@@ -755,6 +756,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     [usize; 2]
 );
 #[doc(hidden)]
+#[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_SecondObjectRust() -> std::boxed::Box<SecondObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
@@ -774,6 +776,7 @@ impl ::cxx_qt::CxxQtType for ffi::SecondObject {
     }
 }
 #[doc(hidden)]
+#[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_ThirdObjectRust() -> std::boxed::Box<ThirdObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
