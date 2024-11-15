@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <mutex>
 #include <shared_mutex>
@@ -58,8 +59,14 @@ public:
     // Ensure that we can read the pointer and it's not being written to
     const auto guard = ::std::shared_lock(m_obj->mutex);
     if (!m_obj->ptr) {
+#if defined(RUST_CXX_NO_EXCEPTIONS)
+      std::cerr << "Cannot queue function pointer as object has been destroyed"
+                << std::endl;
+      std::abort();
+#else
       throw ::std::runtime_error(
         "Cannot queue function pointer as object has been destroyed");
+#endif
       return;
     }
 
@@ -81,8 +88,15 @@ public:
     // Add the lambda to the queue
     if (!QMetaObject::invokeMethod(
           m_obj->ptr, ::std::move(lambda), Qt::QueuedConnection)) {
+#if defined(RUST_CXX_NO_EXCEPTIONS)
+      std::cerr
+        << "Cannot queue function pointer as invokeMethod on object failed"
+        << std::endl;
+      std::abort();
+#else
       throw ::std::runtime_error(
         "Cannot queue function pointer as invokeMethod on object failed");
+#endif
     }
   }
 

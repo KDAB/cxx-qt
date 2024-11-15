@@ -185,6 +185,8 @@ jobs:
       - name: "Build"
         env:
           RUSTC_WRAPPER: sccache
+          # Ensure that we do not generate any exceptions in CXX
+          CXXFLAGS: "-DRUST_CXX_NO_EXCEPTIONS"
         run: cmake --build build --parallel 4
       - name: Test output files exist
         run: |
