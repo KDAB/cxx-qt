@@ -406,6 +406,7 @@ pub fn generate(
             #[doc(hidden)]
             #[allow(unused_variables)]
             #[allow(clippy::extra_unused_lifetimes)]
+            #[allow(clippy::unnecessary_box_returns)]
             // If we use the lifetime here for casting to the specific Constructor type, then
             // clippy for some reason thinks that the lifetime is unused even though it is used
             // by the `as` expression.
@@ -492,6 +493,7 @@ mod tests {
             &blocks.cxx_qt_mod_contents[0],
             quote! {
                 #[doc(hidden)]
+                #[allow(clippy::unnecessary_box_returns)]
                 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust>
                 {
                     std::boxed::Box::new(core::default::Default::default())
@@ -600,6 +602,7 @@ mod tests {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
                 #[allow(clippy::extra_unused_lifetimes)]
+                #[allow(clippy::unnecessary_box_returns)]
                 pub fn new_rs_MyObject_0(new_arguments: qobject::CxxQtConstructorNewArgumentsMyObject0) -> std::boxed::Box<MyObjectRust> {
                     std::boxed::Box::new(
                         <qobject::MyObject as cxx_qt::Constructor<()> >::new(())
@@ -733,6 +736,7 @@ mod tests {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
                 #[allow(clippy::extra_unused_lifetimes)]
+                #[allow(clippy::unnecessary_box_returns)]
                 pub fn new_rs_MyObject_1(new_arguments: qobject::CxxQtConstructorNewArgumentsMyObject1) -> std::boxed::Box<MyObjectRust> {
                     std::boxed::Box::new(
                         <qobject::MyObject as cxx_qt::Constructor<(*const QObject,)> >::new(
