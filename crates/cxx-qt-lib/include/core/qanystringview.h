@@ -27,10 +27,6 @@ namespace cxxqtlib1 {
 
 QAnyStringView
 qanystringviewInitFromRustString(::rust::Str string);
-QAnyStringView
-qanystringviewInitFromQString(const QString& string);
-::rust::String
-qanystringviewToRustString(const QAnyStringView& string);
 
 ::rust::isize
 qanystringviewLen(const QAnyStringView& string);
