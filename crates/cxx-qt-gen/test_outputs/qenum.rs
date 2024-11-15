@@ -145,6 +145,7 @@ mod ffi {
     }
 }
 #[doc(hidden)]
+#[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
@@ -164,6 +165,7 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
     }
 }
 #[doc(hidden)]
+#[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_InternalObject() -> std::boxed::Box<InternalObject> {
     std::boxed::Box::new(core::default::Default::default())
 }

@@ -324,6 +324,7 @@ pub fn route_arguments_MyObject_0<'a>(
 #[doc(hidden)]
 #[allow(unused_variables)]
 #[allow(clippy::extra_unused_lifetimes)]
+#[allow(clippy::unnecessary_box_returns)]
 pub fn new_rs_MyObject_0<'a>(
     new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject0<'a>,
 ) -> std::boxed::Box<MyObjectRust> {
@@ -356,6 +357,7 @@ pub fn route_arguments_MyObject_1() -> ffi::CxxQtConstructorArgumentsMyObject1 {
 #[doc(hidden)]
 #[allow(unused_variables)]
 #[allow(clippy::extra_unused_lifetimes)]
+#[allow(clippy::unnecessary_box_returns)]
 pub fn new_rs_MyObject_1(
     new_arguments: ffi::CxxQtConstructorNewArgumentsMyObject1,
 ) -> std::boxed::Box<MyObjectRust> {
