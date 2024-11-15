@@ -20,17 +20,27 @@ mod qanystringview_cxx {
 
     extern "Rust" {
         fn construct_qanystringview(str: &str) -> QAnyStringView;
+    }
+
+    // This method must be unsafe otherwise we hit
+    // must be `unsafe fn` in order to expose explicit lifetimes to C++
+    //
+    // But then Rust complains about unused unsafe so we need to allow for this
+    #[allow(unused_unsafe)]
+    extern "Rust" {
         unsafe fn construct_qanystringview_qstring<'a>(str: &'a QString) -> QAnyStringView<'a>;
-        unsafe fn clone_qanystringview<'a>(l: &'a QAnyStringView) -> QAnyStringView<'a>;
+        unsafe fn clone_qanystringview<'a>(l: &QAnyStringView<'a>) -> QAnyStringView<'a>;
     }
 }
 
-fn construct_qanystringview(str: &str) -> QAnyStringView {
+fn construct_qanystringview<'a>(str: &'a str) -> QAnyStringView<'a> {
     QAnyStringView::from(str)
 }
-fn construct_qanystringview_qstring(str: &QString) -> QAnyStringView {
+
+fn construct_qanystringview_qstring<'a>(str: &'a QString) -> QAnyStringView<'a> {
     QAnyStringView::from(str)
 }
-fn clone_qanystringview<'a>(l: &'a QAnyStringView) -> QAnyStringView<'a> {
+
+fn clone_qanystringview<'a>(l: &QAnyStringView<'a>) -> QAnyStringView<'a> {
     l.clone()
 }
