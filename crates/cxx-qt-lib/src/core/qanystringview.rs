@@ -95,6 +95,13 @@ impl<'a> From<&'a str> for QAnyStringView<'a> {
     }
 }
 
+impl<'a> From<&'a String> for QAnyStringView<'a> {
+    /// Constructs a QAnyStringView from a &String
+    fn from(string: &'a String) -> Self {
+        string.as_str().into()
+    }
+}
+
 impl From<&QString> for QAnyStringView<'_> {
     /// Constructs a QAnyStringView from a QString
     fn from(string: &QString) -> Self {
