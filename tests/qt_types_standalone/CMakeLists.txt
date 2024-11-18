@@ -24,10 +24,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml Test)
+    find_package(Qt6 COMPONENTS Core Gui Widgets Qml Test)
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Qml Test QuickControls2 REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS Core Gui Widgets Qml Test QuickControls2 REQUIRED)
 endif()
 
 find_package(CxxQt QUIET)
