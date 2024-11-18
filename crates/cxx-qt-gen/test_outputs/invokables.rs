@@ -126,7 +126,7 @@ mod ffi {
             cxx_qt_thread: &MyObjectCxxQtThread,
             func: fn(Pin<&mut MyObject>, Box<MyObjectCxxQtThreadQueuedFn>),
             arg: Box<MyObjectCxxQtThreadQueuedFn>,
-        ) -> Result<()>;
+        ) -> u8;
         #[doc(hidden)]
         #[cxx_name = "cxxQtThreadClone"]
         #[namespace = "rust::cxxqt1"]
@@ -262,7 +262,7 @@ impl cxx_qt::Threading for ffi::MyObject {
     fn queue<F>(
         cxx_qt_thread: &ffi::MyObjectCxxQtThread,
         f: F,
-    ) -> std::result::Result<(), cxx::Exception>
+    ) -> std::result::Result<(), cxx_qt::ThreadingQueueError>
     where
         F: FnOnce(core::pin::Pin<&mut ffi::MyObject>),
         F: Send + 'static,
@@ -278,7 +278,14 @@ impl cxx_qt::Threading for ffi::MyObject {
         let arg = MyObjectCxxQtThreadQueuedFn {
             inner: std::boxed::Box::new(f),
         };
-        ffi::cxx_qt_ffi_MyObject_cxxQtThreadQueue(cxx_qt_thread, func, std::boxed::Box::new(arg))
+        match ffi::cxx_qt_ffi_MyObject_cxxQtThreadQueue(
+            cxx_qt_thread,
+            func,
+            std::boxed::Box::new(arg),
+        ) {
+            0 => Ok(()),
+            others => Err(others.into()),
+        }
     }
     #[doc(hidden)]
     fn threading_clone(cxx_qt_thread: &ffi::MyObjectCxxQtThread) -> ffi::MyObjectCxxQtThread {

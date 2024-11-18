@@ -27,6 +27,7 @@ links = "cxx-qt"
 cxx.workspace = true
 cxx-qt-macro.workspace = true
 static_assertions = "1.1.0"
+thiserror.workspace = true
 
 [build-dependencies]
 cxx-qt-build.workspace = true
