@@ -202,6 +202,7 @@ private Q_SLOTS:
   // Tests that we can build an empty QObject end to end
   void testEmpty() { Empty empty; }
 
+#ifndef RUST_CXX_NO_EXCEPTION
   void testThrowException()
   {
     cxx_qt::my_object::MyObject obj;
@@ -216,6 +217,7 @@ private Q_SLOTS:
 
     QCOMPARE(thrown, true);
   }
+#endif
 };
 
 QTEST_MAIN(CxxQtTest)
