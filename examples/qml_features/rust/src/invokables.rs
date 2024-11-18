@@ -45,7 +45,7 @@ pub mod qobject {
         /// Immutable invokable method that returns the QColor
         #[qinvokable]
         #[cxx_name = "loadColor"]
-        fn load_color(self: &RustInvokables) -> Result<QColor>;
+        fn load_color(self: &RustInvokables) -> QColor;
 
         /// Mutable invokable method that stores a color
         #[qinvokable]
@@ -96,8 +96,8 @@ impl Default for RustInvokablesRust {
 // ANCHOR: book_invokable_impl
 impl qobject::RustInvokables {
     /// Immutable invokable method that returns the QColor
-    pub fn load_color(&self) -> Result<QColor, i32> {
-        Ok(self.as_qcolor())
+    pub fn load_color(&self) -> QColor {
+        self.as_qcolor()
     }
 
     /// Mutable invokable method that stores a color
