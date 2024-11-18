@@ -17,6 +17,7 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
             let vis = &item.vis;
             let variants = &item.variants;
             let docs = &qenum.docs;
+            let cfgs = &qenum.cfgs;
 
             let cxx_namespace = if namespace.is_none() {
                 quote! {}
@@ -27,6 +28,7 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
                 parse_quote_spanned! {
                     item.span() =>
                     #[repr(i32)]
+                    #(#cfgs)*
                     #(#docs)*
                     #cxx_namespace
                     #vis enum #qenum_ident {
@@ -36,6 +38,7 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
                 parse_quote_spanned! {
                     item.span() =>
                     extern "C++" {
+                        #(#cfgs)*
                         #cxx_namespace
                         type #qenum_ident;
                     }

@@ -83,6 +83,8 @@ impl ParsedQObject {
     ) -> Result<Self> {
         let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
         // TODO: handle docs through to generation
+        //
+        // TODO: handle cfgs on qobject
         let has_qobject_macro = attributes.contains_key("qobject");
 
         let base_class = attributes
