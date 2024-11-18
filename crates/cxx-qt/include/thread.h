@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <cstdint>
 #include <iostream>
 #include <memory>
 #include <mutex>
@@ -53,21 +54,16 @@ public:
   }
 
   template<typename A>
-  void queue(::rust::Fn<void(T& self, ::rust::Box<A> arg)> func,
-             ::rust::Box<A> arg) const
+  ::std::uint8_t queue(::rust::Fn<void(T& self, ::rust::Box<A> arg)> func,
+                       ::rust::Box<A> arg) const
   {
+    const static ::std::uint8_t sObjectDestroyed = 1;
+    const static ::std::uint8_t sInvokeMethodFailed = 2;
+
     // Ensure that we can read the pointer and it's not being written to
     const auto guard = ::std::shared_lock(m_obj->mutex);
     if (!m_obj->ptr) {
-#if defined(RUST_CXX_NO_EXCEPTIONS)
-      std::cerr << "Cannot queue function pointer as object has been destroyed"
-                << std::endl;
-      std::abort();
-#else
-      throw ::std::runtime_error(
-        "Cannot queue function pointer as object has been destroyed");
-#endif
-      return;
+      return sObjectDestroyed;
     }
 
     // Construct the lambda
@@ -88,16 +84,10 @@ public:
     // Add the lambda to the queue
     if (!QMetaObject::invokeMethod(
           m_obj->ptr, ::std::move(lambda), Qt::QueuedConnection)) {
-#if defined(RUST_CXX_NO_EXCEPTIONS)
-      std::cerr
-        << "Cannot queue function pointer as invokeMethod on object failed"
-        << std::endl;
-      std::abort();
-#else
-      throw ::std::runtime_error(
-        "Cannot queue function pointer as invokeMethod on object failed");
-#endif
+      return sInvokeMethodFailed;
     }
+
+    return 0;
   }
 
 private:
@@ -119,12 +109,12 @@ cxxQtThreadDrop(CxxQtThread<T>& cxxQtThread)
 }
 
 template<typename A, typename T>
-void
+::std::uint8_t
 cxxQtThreadQueue(const CxxQtThread<T>& cxxQtThread,
                  ::rust::Fn<void(T& self, ::rust::Box<A> arg)> func,
                  ::rust::Box<A> arg)
 {
-  cxxQtThread.queue(::std::move(func), ::std::move(arg));
+  return cxxQtThread.queue(::std::move(func), ::std::move(arg));
 }
 
 template<typename T>

@@ -16,7 +16,7 @@ rust-version.workspace = true
 [dependencies]
 cc.workspace = true
 versions = "6.3"
-thiserror = "1.0"
+thiserror.workspace = true
 
 [features]
 # When Cargo links an executable, whether a bin crate or test executable,

@@ -22,7 +22,7 @@ pub use cxx_qt_macro::qobject;
 
 pub use connection::{ConnectionType, QMetaObjectConnection};
 pub use connectionguard::QMetaObjectConnectionGuard;
-pub use threading::CxxQtThread;
+pub use threading::{CxxQtThread, ThreadingQueueError};
 
 // Export static assertions that can then be used in cxx-qt-gen generation
 //
@@ -109,7 +109,7 @@ pub trait Threading: Sized {
     fn is_destroyed(cxx_qt_thread: &CxxQtThread<Self>) -> bool;
 
     #[doc(hidden)]
-    fn queue<F>(cxx_qt_thread: &CxxQtThread<Self>, f: F) -> Result<(), cxx::Exception>
+    fn queue<F>(cxx_qt_thread: &CxxQtThread<Self>, f: F) -> Result<(), ThreadingQueueError>
     where
         F: FnOnce(core::pin::Pin<&mut Self>),
         F: Send + 'static;
