@@ -82,6 +82,7 @@ impl ParsedQObject {
         auto_case: CaseConversion,
     ) -> Result<Self> {
         let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
+        // TODO: handle docs through to generation
         let has_qobject_macro = attributes.contains_key("qobject");
 
         let base_class = attributes

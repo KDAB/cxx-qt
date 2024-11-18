@@ -78,6 +78,8 @@ impl ParsedExternCxxQt {
                 }
                 ForeignItem::Type(foreign_ty) => {
                     // Test that there is a #[qobject] attribute on any type
+                    //
+                    // TODO: what happens to any docs here?
                     if attribute_get_path(&foreign_ty.attrs, &["qobject"]).is_some() {
                         let extern_ty =
                             ParsedExternQObject::parse(foreign_ty, module_ident, parent_namespace)?;
