@@ -128,6 +128,7 @@ impl ParsedCxxQtData {
     }
 
     fn parse_foreign_mod_rust_qt(&mut self, mut foreign_mod: ItemForeignMod) -> Result<()> {
+        // TODO: support cfg on foreign mod blocks
         let attrs = require_attributes(
             &foreign_mod.attrs,
             &["namespace", "auto_cxx_name", "auto_rust_name"],

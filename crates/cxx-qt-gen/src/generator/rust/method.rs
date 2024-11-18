@@ -40,6 +40,7 @@ pub fn generate_rust_methods(
             std::mem::swap(&mut unsafe_call, &mut None);
         }
 
+        let cfgs = &invokable.cfgs;
         let cxx_namespace = qobject_names.namespace_tokens();
 
         let fragment = RustFragmentPair {
@@ -56,6 +57,7 @@ pub fn generate_rust_methods(
                     // A Namespace from cxx_qt::bridge would be automatically applied to all children
                     // but to apply it to only certain types, it is needed here too
                     #cxx_namespace
+                    #(#cfgs)*
                     #[doc(hidden)]
                     #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }

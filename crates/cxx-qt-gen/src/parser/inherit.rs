@@ -4,7 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
-    check_safety, extract_docs, method::MethodFields, require_attributes, CaseConversion,
+    check_safety, extract_cfgs, extract_docs, method::MethodFields, require_attributes,
+    CaseConversion,
 };
 use crate::syntax::safety::Safety;
 use core::ops::Deref;
@@ -17,20 +18,30 @@ pub struct ParsedInheritedMethod {
     pub method_fields: MethodFields,
     /// All the docs (each line) of the inherited method
     pub docs: Vec<Attribute>,
+    /// Cfgs for the inherited method
+    pub cfgs: Vec<Attribute>,
 }
 
 impl ParsedInheritedMethod {
-    const ALLOWED_ATTRS: [&'static str; 5] =
-        ["cxx_name", "rust_name", "qinvokable", "doc", "inherit"];
+    const ALLOWED_ATTRS: [&'static str; 6] = [
+        "cxx_name",
+        "rust_name",
+        "qinvokable",
+        "doc",
+        "inherit",
+        "cfg",
+    ];
 
     pub fn parse(method: ForeignItemFn, safety: Safety, auto_case: CaseConversion) -> Result<Self> {
         check_safety(&method, &safety)?;
         require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
         let docs = extract_docs(&method.attrs);
+        let cfgs = extract_cfgs(&method.attrs);
 
         Ok(Self {
             method_fields: MethodFields::parse(method, auto_case)?,
             docs,
+            cfgs,
         })
     }
 
