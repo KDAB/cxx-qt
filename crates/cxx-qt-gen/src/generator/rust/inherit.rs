@@ -46,6 +46,7 @@ pub fn generate(
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }
             let doc_comments = &method.docs;
+            let cfgs = &method.cfgs;
             let namespace = qobject_names.namespace_tokens();
 
             syn::parse2(quote_spanned! {
@@ -53,6 +54,7 @@ pub fn generate(
                 #unsafe_block extern "C++" {
                     #[cxx_name = #cxx_name_string]
                     #namespace
+                    #(#cfgs)*
                     #(#doc_comments)*
                     #unsafe_call fn #ident(#self_param, #(#parameters),*) #return_type;
                 }

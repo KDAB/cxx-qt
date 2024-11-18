@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::parser::CaseConversion;
 use crate::{
-    parser::{check_safety, extract_docs, method::MethodFields, require_attributes},
+    parser::{check_safety, extract_cfgs, extract_docs, method::MethodFields, require_attributes},
     syntax::{path::path_compare_str, safety::Safety},
 };
 use core::ops::Deref;
@@ -21,6 +21,8 @@ pub struct ParsedSignal {
     pub private: bool,
     /// All the doc attributes (each line) of the signal
     pub docs: Vec<Attribute>,
+    /// Cfgs for signal
+    pub cfgs: Vec<Attribute>,
 }
 
 impl ParsedSignal {
@@ -36,6 +38,7 @@ impl ParsedSignal {
         check_safety(&method, &safety)?;
 
         let docs = extract_docs(&method.attrs);
+        let cfgs = extract_cfgs(&method.attrs);
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
@@ -59,6 +62,7 @@ impl ParsedSignal {
             inherit,
             private,
             docs,
+            cfgs,
         })
     }
 }

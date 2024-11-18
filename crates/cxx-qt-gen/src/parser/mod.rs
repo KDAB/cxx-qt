@@ -98,6 +98,15 @@ fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
     }
 }
 
+/// Iterate the attributes of the method to extract cfg attributes
+pub fn extract_cfgs(attrs: &[Attribute]) -> Vec<Attribute> {
+    attrs
+        .iter()
+        .filter(|attr| path_compare_str(attr.meta.path(), &["cfg"]))
+        .cloned()
+        .collect()
+}
+
 /// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
 pub fn extract_docs(attrs: &[Attribute]) -> Vec<Attribute> {
     attrs
