@@ -518,6 +518,7 @@ mod ffi {
 
         /// Returns a native name of the territory for the locale. For example "España" for Spanish/Spain locale.
         #[rust_name = "native_territory_name"]
+        #[cfg(cxxqt_qt_version_major = "6")]
         fn nativeTerritoryName(self: &QLocale) -> QString;
 
     }
