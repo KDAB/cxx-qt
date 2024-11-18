@@ -5,8 +5,34 @@
 
 use core::{marker::PhantomData, mem::MaybeUninit, pin::Pin};
 use cxx::ExternType;
+use thiserror::Error;
 
 use crate::Threading;
+
+/// Errors that can occur from CXX-Qt
+#[derive(Error, Debug)]
+#[non_exhaustive]
+pub enum ThreadingQueueError {
+    /// Threading failed as the object has been destroyed
+    #[error("Cannot queue function pointer as object has been destroyed")]
+    ObjectDestroyed,
+    /// Threading failed calling invokeMethod on the object
+    #[error("Cannot queue function pointer as invokeMethod on object failed")]
+    InvokeMethodFailed,
+    /// Threading failed with unknown error
+    #[error("Cannot queue as an unknown error occurred")]
+    Unknown,
+}
+
+impl From<u8> for ThreadingQueueError {
+    fn from(value: u8) -> Self {
+        match value {
+            1 => Self::ObjectDestroyed,
+            2 => Self::InvokeMethodFailed,
+            _others => Self::Unknown,
+        }
+    }
+}
 
 /// A threading helper which is created from a QObject that implements [Threading].
 ///
@@ -73,7 +99,7 @@ where
     ///
     /// The first argument of the closure is a pinned mutable reference to the QObject.
     /// With this parameter, you can then update the QObject to reflect any state changes that have occured in the background thread.
-    pub fn queue<F>(&self, f: F) -> Result<(), cxx::Exception>
+    pub fn queue<F>(&self, f: F) -> Result<(), crate::ThreadingQueueError>
     where
         F: FnOnce(Pin<&mut T>),
         F: Send + 'static,
