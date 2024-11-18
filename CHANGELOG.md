@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Build warnings due to unused unsafe blocks since CXX 1.0.130
+- Build failures with WASM due to `cc` crate setting `-fno-exceptions` since 1.2.0
 
 ## [0.7.0](https://github.com/KDAB/cxx-qt/compare/v0.6.1...v0.7.0) - 2024-10-30
 

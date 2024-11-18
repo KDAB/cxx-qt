@@ -55,7 +55,8 @@ if(NOT CxxQt_FOUND)
         CxxQt
         GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
         # ANCHOR_END: book_cmake_find_cxx_qt_start
-        GIT_TAG main
+        GIT_TAG wasm-set-cxxflags
+        # GIT_TAG main
         # ANCHOR: book_cmake_find_cxx_qt_end
     )
 

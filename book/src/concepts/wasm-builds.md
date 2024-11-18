@@ -190,3 +190,12 @@ error[E0433]: failed to resolve: use of undeclared type `IovLen`
 `socket2` is a dependency of `async-io`, which is a dependency of `async-std`.
 
 There is discussion around supporting wasm in the GitHub repository for `async-std`, and the progress is being tracked [here](https://github.com/async-rs/async-std/issues/220).
+
+### Cannot use throw / try catch with exceptions disabled
+
+CXX and CXX-Qt can generate code that attempts to use exceptions but these are disabled
+for most WASM platforms.
+
+The cmake-qt-cmake builder will attempt to set a define of `RUST_CXX_NO_EXCEPTIONS` which should
+causes the code not to be compiled. But if this doesn't work try adding `-DRUST_CXX_NO_EXCEPTIONS`
+to a `CXXFLAGS` enviornment variable while building.

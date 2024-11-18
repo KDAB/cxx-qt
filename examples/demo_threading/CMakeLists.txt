@@ -46,7 +46,8 @@ if(NOT CxxQt_FOUND)
     FetchContent_Declare(
         CxxQt
         GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
-        GIT_TAG main
+        GIT_TAG wasm-set-cxxflags
+        # GIT_TAG main
     )
 
     FetchContent_MakeAvailable(CxxQt)
