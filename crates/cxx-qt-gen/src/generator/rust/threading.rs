@@ -81,7 +81,7 @@ pub fn generate(
                         cxx_qt_thread: &#cxx_qt_thread_ident,
                         func: fn(Pin<&mut #cpp_struct_ident>, Box<#cxx_qt_thread_queued_fn_ident>),
                         arg: Box<#cxx_qt_thread_queued_fn_ident>,
-                    ) -> Result<()>;
+                    ) -> u8;
 
                     #[doc(hidden)]
                     #(#thread_clone_attrs)*
@@ -121,7 +121,7 @@ pub fn generate(
                     }
 
                     #[doc(hidden)]
-                    fn queue<F>(cxx_qt_thread: &#module_ident::#cxx_qt_thread_ident, f: F) -> std::result::Result<(), cxx::Exception>
+                    fn queue<F>(cxx_qt_thread: &#module_ident::#cxx_qt_thread_ident, f: F) -> std::result::Result<(), cxx_qt::ThreadingQueueError>
                     where
                         F: FnOnce(core::pin::Pin<&mut #qualified_impl>),
                         F: Send + 'static,
@@ -138,7 +138,10 @@ pub fn generate(
                             (arg.inner)(obj)
                         }
                         let arg = #cxx_qt_thread_queued_fn_ident { inner: std::boxed::Box::new(f) };
-                        #thread_queue_qualified(cxx_qt_thread, func, std::boxed::Box::new(arg))
+                        match #thread_queue_qualified(cxx_qt_thread, func, std::boxed::Box::new(arg)) {
+                            0 => Ok(()),
+                            others => Err(others.into()),
+                        }
                     }
 
                     #[doc(hidden)]
@@ -221,7 +224,7 @@ mod tests {
                         cxx_qt_thread: &MyObjectCxxQtThread,
                         func: fn(Pin<&mut MyObject>, Box<MyObjectCxxQtThreadQueuedFn>),
                         arg: Box<MyObjectCxxQtThreadQueuedFn>,
-                    ) -> Result<()>;
+                    ) -> u8;
 
                     #[doc(hidden)]
                     #[cxx_name = "cxxQtThreadClone"]
@@ -269,7 +272,7 @@ mod tests {
                     }
 
                     #[doc(hidden)]
-                    fn queue<F>(cxx_qt_thread: &qobject::MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx::Exception>
+                    fn queue<F>(cxx_qt_thread: &qobject::MyObjectCxxQtThread, f: F) -> std::result::Result<(), cxx_qt::ThreadingQueueError>
                     where
                         F: FnOnce(core::pin::Pin<&mut qobject::MyObject>),
                         F: Send + 'static,
@@ -286,7 +289,10 @@ mod tests {
                             (arg.inner)(obj)
                         }
                         let arg = MyObjectCxxQtThreadQueuedFn { inner: std::boxed::Box::new(f) };
-                        qobject::cxx_qt_ffi_MyObject_cxxQtThreadQueue(cxx_qt_thread, func, std::boxed::Box::new(arg))
+                        match qobject::cxx_qt_ffi_MyObject_cxxQtThreadQueue(cxx_qt_thread, func, std::boxed::Box::new(arg)) {
+                            0 => Ok(()),
+                            others => Err(others.into()),
+                        }
                     }
 
                     #[doc(hidden)]
