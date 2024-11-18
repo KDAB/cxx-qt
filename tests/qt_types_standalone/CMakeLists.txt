@@ -46,7 +46,7 @@ set(CRATE qt_types_standalone)
 cxx_qt_import_crate(
     MANIFEST_PATH rust/Cargo.toml
     CRATES ${CRATE}
-    QT_MODULES Qt::Core Qt::Gui Qt::Qml
+    QT_MODULES Qt::Core Qt::Gui Qt::Widgets Qt::Qml Qt::QuickControls2
 )
 
 if(BUILD_WASN)
