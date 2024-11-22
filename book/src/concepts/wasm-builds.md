@@ -85,6 +85,17 @@ set(THREADS_PREFER_PTHREAD_FLAG ON)
 find_package(Threads REQUIRED)
 ```
 
+Any Rust crate that is imported via corrosion needs to have `-DRUST_CXX_NO_EXCEPTIONS` set otherwise `cxx` fails to build.
+
+```cmake
+if(BUILD_WASN)
+    # Add -DRUST_CXX_NO_EXCEPTIONS to CXXFLAGS, as WASM does not support exceptions
+    set(EMSCRIPTEN_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    list(APPEND EMSCRIPTEN_CXX_FLAGS "-DRUST_CXX_NO_EXCEPTIONS")
+    corrosion_set_env_vars(${CRATE} "CXXFLAGS=${EMSCRIPTEN_CXX_FLAGS}")
+endif()
+```
+
 Using CMake, `add_executable` will not output an HTML file when targeting wasm. In order to render an HTML file, one must use `qt_add_executable` in its place. Assuming a project has a CMake flag `BUILD_WASM` to toggle wasm and native builds, one could write the following:
 
 ```cmake
