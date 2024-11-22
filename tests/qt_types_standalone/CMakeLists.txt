@@ -49,6 +49,13 @@ cxx_qt_import_crate(
     QT_MODULES Qt::Core Qt::Gui Qt::Qml
 )
 
+if(BUILD_WASN)
+    # Add -DRUST_CXX_NO_EXCEPTIONS to CXXFLAGS, as WASM does not support exceptions
+    set(EMSCRIPTEN_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    list(APPEND EMSCRIPTEN_CXX_FLAGS "-DRUST_CXX_NO_EXCEPTIONS")
+    corrosion_set_env_vars(${CRATE} "CXXFLAGS=${EMSCRIPTEN_CXX_FLAGS}")
+endif()
+
 add_executable(${APP_NAME}
     cpp/main.cpp
     cpp/qbytearray.h
