@@ -77,6 +77,11 @@ cxx_qt_import_qml_module(qml_minimal_qml_module
 
 # Define the executable with the C++ source
 if(BUILD_WASM)
+    # Add -DRUST_CXX_NO_EXCEPTIONS to CXXFLAGS, as WASM does not support exceptions
+    set(EMSCRIPTEN_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    list(APPEND EMSCRIPTEN_CXX_FLAGS "-DRUST_CXX_NO_EXCEPTIONS")
+    corrosion_set_env_vars(qml_minimal "CXXFLAGS=${EMSCRIPTEN_CXX_FLAGS}")
+
     # Currently need to use qt_add_executable
     # for WASM builds, otherwise there is no
     # HTML output.
