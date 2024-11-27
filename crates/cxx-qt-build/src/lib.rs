@@ -638,7 +638,6 @@ impl CxxQtBuilder {
             let source = dependency.path.join("include").join(include_prefix);
 
             let dest = dir::header_root().join(include_prefix);
-            #[cfg(unix)]
             if dir::symlinks_conflict(&dest, &source).expect("Failed to canonicalize symlink!") {
                 panic!(
                         "Conflicting include_prefixes for {include_prefix}!\nDependency {dep_name} conflicts with existing include path",
