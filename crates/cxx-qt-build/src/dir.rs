@@ -8,7 +8,7 @@
 use crate::{crate_name, module_name_from_uri};
 use std::io::Result;
 use std::{
-    env,
+    env, fs,
     path::{Path, PathBuf},
 };
 
@@ -80,4 +80,51 @@ pub(crate) fn out() -> PathBuf {
 
 pub(crate) fn is_exporting() -> bool {
     export().is_some()
+}
+
+/// Two dependencies may be reexporting the same shared dependency, which will
+/// result in conflicting symlinks.
+/// Try detecting this by resolving the symlinks and checking whether this leads us
+/// to the same paths. If so, it's the same include path for the same prefix, which
+/// is fine.
+#[cfg(unix)]
+pub(crate) fn symlinks_conflict(
+    symlink: impl AsRef<Path>,
+    target: impl AsRef<Path>,
+) -> Result<bool> {
+    if !symlink.as_ref().exists() {
+        return Ok(false);
+    }
+    let symlink = fs::canonicalize(symlink)?;
+    let target = fs::canonicalize(target)?;
+    Ok(symlink == target)
+}
+
+pub(crate) fn symlink_or_copy_directory(
+    source: impl AsRef<Path>,
+    dest: impl AsRef<Path>,
+) -> Result<()> {
+    #[cfg(unix)]
+    let result = std::os::unix::fs::symlink(source, dest);
+
+    #[cfg(not(unix))]
+    let result = copy_dir_all(source.as_ref(), dest.as_ref());
+
+    result
+}
+
+#[cfg(not(unix))]
+fn copy_dir_all(source: &Path, dest: &Path) -> Result<()> {
+    fs::create_dir_all(dest)?;
+    for entry in fs::read_dir(source)? {
+        let entry = entry?;
+        let target_path = entry.path();
+        let link_path = dest.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            copy_dir_all(&target_path, &link_path)?;
+        } else {
+            fs::copy(&target_path, &link_path)?;
+        }
+    }
+    Ok(())
 }
