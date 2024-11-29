@@ -46,6 +46,13 @@ use cxx_qt_gen::{
     GeneratedRustBlocks, Parser,
 };
 
+// On Unix platforms, included files are symlinked into destination folders.
+// On non-Unix platforms, due to poor support for symlinking, included files are deep copied.
+#[cfg(unix)]
+const INCLUDE_VERB: &str = "create symlink";
+#[cfg(not(unix))]
+const INCLUDE_VERB: &str = "deep copy files";
+
 // TODO: we need to eventually support having multiple modules defined in a single file. This
 // is currently an issue because we are using the Rust file name to derive the cpp file name
 // and are blindly re-writing files.
@@ -631,23 +638,28 @@ impl CxxQtBuilder {
     }
 
     // A dependency can specify which of its own include paths it wants to export.
-    // Set up each of these exported include paths as symlinks in our own include directory.
+    // Set up each of these exported include paths as symlinks in our own include directory,
+    // or deep copy the files if the platform does not support symlinks.
     fn include_dependency(&mut self, dependency: &Dependency) {
+        let header_root = dir::header_root();
+        let dependency_root = dependency.path.join("include");
         for include_prefix in &dependency.manifest.exported_include_prefixes {
             // setup include directory
-            let source = dependency.path.join("include").join(include_prefix);
+            let source = dependency_root.join(include_prefix);
+            let dest = header_root.join(include_prefix);
 
-            let dest = dir::header_root().join(include_prefix);
-            #[cfg(unix)]
-            if dir::symlinks_conflict(&dest, &source).expect("Failed to canonicalize symlink!") {
-                panic!(
+            match dir::symlink_or_copy_directory(source, dest) {
+                Ok(true) => (),
+                Ok(false) => {
+                    panic!(
                         "Conflicting include_prefixes for {include_prefix}!\nDependency {dep_name} conflicts with existing include path",
                         dep_name = dependency.manifest.name,
                     );
+                }
+                Err(e) => {
+                    panic!("Could not {INCLUDE_VERB} for include_prefix {include_prefix}: {e:?}");
+                }
             }
-            dir::symlink_or_copy_directory(source, dest).unwrap_or_else(|_| {
-                panic!("Could not create symlink for include_prefix {include_prefix}!")
-            });
         }
     }
 
@@ -993,17 +1005,18 @@ impl CxxQtBuilder {
     }
 
     fn write_interface_include_dirs(&self) {
-        if let Some(interface) = &self.public_interface {
-            for (header_dir, dest) in &interface.exported_include_directories {
-                dir::symlink_or_copy_directory(header_dir, dir::header_root().join(dest))
-                    .unwrap_or_else(|_| {
-                        panic!(
-                            "Failed to create symlink `{}` for export_include_directory: {}",
-                            dest,
-                            header_dir.to_string_lossy()
-                        )
-                    });
-            }
+        let Some(interface) = &self.public_interface else {
+            return;
+        };
+        let header_root = dir::header_root();
+        for (header_dir, dest) in &interface.exported_include_directories {
+            let dest_dir = header_root.join(dest);
+            if let Err(e) = dir::symlink_or_copy_directory(header_dir, dest_dir) {
+                panic!(
+                        "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
+                        dir_name = header_dir.to_string_lossy()
+                    )
+            };
         }
     }
 

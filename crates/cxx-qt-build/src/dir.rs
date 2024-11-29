@@ -82,49 +82,72 @@ pub(crate) fn is_exporting() -> bool {
     export().is_some()
 }
 
-/// Two dependencies may be reexporting the same shared dependency, which will
-/// result in conflicting symlinks.
-/// Try detecting this by resolving the symlinks and checking whether this leads us
-/// to the same paths. If so, it's the same include path for the same prefix, which
-/// is fine.
 #[cfg(unix)]
-pub(crate) fn symlinks_conflict(
-    symlink: impl AsRef<Path>,
-    target: impl AsRef<Path>,
-) -> Result<bool> {
-    if !symlink.as_ref().exists() {
-        return Ok(false);
-    }
-    let symlink = fs::canonicalize(symlink)?;
-    let target = fs::canonicalize(target)?;
-    Ok(symlink == target)
-}
-
 pub(crate) fn symlink_or_copy_directory(
     source: impl AsRef<Path>,
     dest: impl AsRef<Path>,
-) -> Result<()> {
-    #[cfg(unix)]
-    let result = std::os::unix::fs::symlink(source, dest);
-
-    #[cfg(not(unix))]
-    let result = copy_dir_all(source.as_ref(), dest.as_ref());
-
-    result
+) -> Result<bool> {
+    match std::os::unix::fs::symlink(&source, &dest) {
+        Ok(()) => Ok(true),
+        Err(e) if e.kind() != std::io::ErrorKind::AlreadyExists => Err(e),
+        // Two dependencies may be reexporting the same shared dependency, which will
+        // result in conflicting symlinks.
+        // Try detecting this by resolving the symlinks and checking whether this leads us
+        // to the same paths. If so, it's the same include path for the same prefix, which
+        // is fine.
+        Err(_) => Ok(fs::canonicalize(source)? == fs::canonicalize(dest)?),
+    }
 }
 
 #[cfg(not(unix))]
-fn copy_dir_all(source: &Path, dest: &Path) -> Result<()> {
+pub(crate) fn symlink_or_copy_directory(
+    source: impl AsRef<Path>,
+    dest: impl AsRef<Path>,
+) -> Result<bool> {
+    deep_copy_directory(source.as_ref(), dest.as_ref())
+}
+
+#[cfg(not(unix))]
+fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
     fs::create_dir_all(dest)?;
     for entry in fs::read_dir(source)? {
         let entry = entry?;
-        let target_path = entry.path();
-        let link_path = dest.join(entry.file_name());
+        let source_path = entry.path();
+        let dest_path = dest.join(entry.file_name());
         if entry.file_type()?.is_dir() {
-            copy_dir_all(&target_path, &link_path)?;
-        } else {
-            fs::copy(&target_path, &link_path)?;
+            if deep_copy_directory(&source_path, &dest_path)? {
+                continue;
+            }
+            return Ok(false);
+        }
+        if !dest_path.try_exists()? {
+            fs::copy(&source_path, &dest_path)?;
+            continue;
+        }
+        if files_conflict(&source_path, &dest_path)? {
+            return Ok(false);
         }
     }
-    Ok(())
+    Ok(true)
+}
+
+#[cfg(not(unix))]
+fn files_conflict(source: &Path, dest: &Path) -> Result<bool> {
+    let mut source = File::open(source)?;
+    let mut dest = File::open(dest)?;
+    if source.metadata()?.len() != dest.metadata()?.len() {
+        return Ok(true);
+    }
+    let mut source_buf = [0; 1024];
+    let mut dest_buf = [0; 1024];
+    loop {
+        let source_n = source.read(&mut source_buf)?;
+        let dest_n = dest.read(&mut dest_buf)?;
+        if source_n == 0 && dest_n == 0 {
+            return Ok(false);
+        }
+        if &source_buf[..source_n] != &dest_buf[..dest_n] {
+            return Ok(true);
+        }
+    }
 }
