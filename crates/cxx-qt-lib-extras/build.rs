@@ -57,6 +57,7 @@ fn main() {
         "core/qcommandlineoption",
         "core/qcommandlineparser",
         "gui/qapplication",
+        "gui/qpushbutton",
     ];
 
     for rust_source in &rust_bridges {
@@ -68,6 +69,7 @@ fn main() {
         "core/qcommandlineoption",
         "core/qcommandlineparser",
         "gui/qapplication",
+        "gui/qpushbutton",
     ];
 
     builder = builder.cc_builder(move |cc| {
