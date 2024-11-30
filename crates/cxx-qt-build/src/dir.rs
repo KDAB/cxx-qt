@@ -133,8 +133,8 @@ fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
 
 #[cfg(not(unix))]
 fn files_conflict(source: &Path, dest: &Path) -> Result<bool> {
-    let mut source = File::open(source)?;
-    let mut dest = File::open(dest)?;
+    let mut source = fs::File::open(source)?;
+    let mut dest = fs::File::open(dest)?;
     if source.metadata()?.len() != dest.metadata()?.len() {
         return Ok(true);
     }
