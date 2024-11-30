@@ -30,6 +30,10 @@ mod ffi {
         /// Returns a list of all the strings containing the substring str.
         fn filter(self: &QStringList, str: &QString, cs: CaseSensitivity) -> QStringList;
 
+        /// Returns true if the list has size 0; otherwise returns false.
+        #[rust_name = "is_empty"]
+        fn isEmpty(self: &QStringList) -> bool;
+
         /// Joins all the string list's strings into a single string with each element
         /// separated by the given separator (which can be an empty string).
         fn join(self: &QStringList, separator: &QString) -> QString;
