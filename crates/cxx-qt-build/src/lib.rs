@@ -17,6 +17,7 @@ mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
 pub mod dir;
+use dir::INCLUDE_VERB;
 
 mod dependencies;
 pub use dependencies::Interface;
@@ -45,13 +46,6 @@ use cxx_qt_gen::{
     parse_qt_file, write_cpp, write_rust, CppFragment, CxxQtItem, GeneratedCppBlocks,
     GeneratedRustBlocks, Parser,
 };
-
-// On Unix platforms, included files are symlinked into destination folders.
-// On non-Unix platforms, due to poor support for symlinking, included files are deep copied.
-#[cfg(unix)]
-const INCLUDE_VERB: &str = "create symlink";
-#[cfg(not(unix))]
-const INCLUDE_VERB: &str = "deep copy files";
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
 // is currently an issue because we are using the Rust file name to derive the cpp file name
