@@ -136,25 +136,27 @@ fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
     Ok(true)
 }
 
-#[cfg(not(unix))]
 fn files_conflict(source: &Path, dest: &Path) -> Result<bool> {
     use fs::File;
-    use std::io::Read;
-    let mut source = File::open(source)?;
-    let mut dest = File::open(dest)?;
+    use std::io::{BufRead, BufReader};
+    let source = File::open(source)?;
+    let dest = File::open(dest)?;
     if source.metadata()?.len() != dest.metadata()?.len() {
         return Ok(true);
     }
-    let mut source_buf = [0; 1024];
-    let mut dest_buf = [0; 1024];
+    let mut source = BufReader::new(source);
+    let mut dest = BufReader::new(dest);
     loop {
-        let source_n = source.read(&mut source_buf)?;
-        let dest_n = dest.read(&mut dest_buf)?;
-        if source_n == 0 && dest_n == 0 {
+        let source_bytes = source.fill_buf()?;
+        let bytes_len = source_bytes.len();
+        if bytes_len == 0 {
             return Ok(false);
         }
-        if &source_buf[..source_n] != &dest_buf[..dest_n] {
+        let dest_bytes = dest.fill_buf()?;
+        if source_bytes != dest_bytes {
             return Ok(true);
         }
+        source.consume(bytes_len);
+        dest.consume(bytes_len);
     }
 }
