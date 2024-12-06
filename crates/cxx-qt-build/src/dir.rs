@@ -136,6 +136,7 @@ fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
     Ok(true)
 }
 
+#[cfg(not(unix))]
 fn files_conflict(source: &Path, dest: &Path) -> Result<bool> {
     use fs::File;
     use std::io::{BufRead, BufReader};
