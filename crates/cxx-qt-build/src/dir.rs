@@ -122,9 +122,7 @@ fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
         }
         if !dest_path.try_exists()? {
             fs::copy(&source_path, &dest_path)?;
-            continue;
-        }
-        if files_conflict(&source_path, &dest_path)? {
+        else if files_conflict(&source_path, &dest_path)? {
             return Ok(false);
         }
     }
