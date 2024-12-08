@@ -22,5 +22,16 @@ qqmlapplicationengineAsQQmlEngine(QQmlApplicationEngine& engine)
   return static_cast<QQmlEngine&>(engine);
 }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 5, 0))
+void*
+qqmlapplicationengineSingletonInstance(QQmlApplicationEngine& engine,
+                                       QAnyStringView uri,
+                                       QAnyStringView typeName)
+{
+  return reinterpret_cast<void*>(
+    engine.singletonInstance<QObject*>(uri, typeName));
+}
+#endif
+
 }
 }
