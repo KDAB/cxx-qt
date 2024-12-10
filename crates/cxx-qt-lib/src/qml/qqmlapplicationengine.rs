@@ -68,6 +68,9 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+        type c_void = crate::c_void;
+
         #[doc(hidden)]
         #[rust_name = "qqmlapplicationengine_new"]
         fn qqmlapplicationengineNew() -> UniquePtr<QQmlApplicationEngine>;
@@ -79,6 +82,24 @@ mod ffi {
         ) -> Pin<&mut QQmlEngine>;
     }
 
+    #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qanystringview.h");
+        type QAnyStringView<'a> = crate::QAnyStringView<'a>;
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qqmlapplicationengine_singleton_instance"]
+        fn qqmlapplicationengineSingletonInstance(
+            ptr: Pin<&mut QQmlApplicationEngine>,
+            uri: QAnyStringView,
+            typeName: QAnyStringView,
+        ) -> *mut c_void;
+    }
+
     // QQmlApplicationEngine is not a trivial to CXX and is not relocatable in Qt
     // as the following fails in C++. So we cannot mark it as a trivial type
     // and need to use references or pointers.
@@ -86,6 +107,8 @@ mod ffi {
     impl UniquePtr<QQmlApplicationEngine> {}
 }
 
+#[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
+use crate::QAnyStringView;
 use crate::QQmlEngine;
 use core::pin::Pin;
 
@@ -100,5 +123,22 @@ impl QQmlApplicationEngine {
     /// Create a new QQmlApplicationEngine
     pub fn new() -> cxx::UniquePtr<Self> {
         ffi::qqmlapplicationengine_new()
+    }
+
+    /// Returns the instance of a singleton type named typeName from the module specified by uri.
+    /// This function was introduced in Qt 6.5.
+    #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
+    pub fn singleton_instance<T>(
+        self: Pin<&mut Self>,
+        uri: QAnyStringView,
+        type_name: QAnyStringView,
+    ) -> Option<&mut T> {
+        unsafe {
+            let ptr = ffi::qqmlapplicationengine_singleton_instance(self, uri, type_name);
+            if ptr.is_null() {
+                return None;
+            }
+            Some(&mut *(ptr as *mut T))
+        }
     }
 }
