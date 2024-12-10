@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - QObject subclasses can now inherit from other CXX-Qt generated QObject classes
 - `BUILD_WASM` CMake option to support WebAssembly builds and a book page for building for WASM
 - Add support for cxx_name and rust_name on qproperty attributes which applies to the QProperty generated as well as functions
+- Add support for loading QML files in `QQmlApplicationEngine` from modules with `loadFromModule`.
 
 ### Changed
 
