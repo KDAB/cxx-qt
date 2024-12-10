@@ -14,6 +14,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type TimeSpec = crate::TimeSpec;
+        type DateFormat = crate::DateFormat;
     }
 
     unsafe extern "C++" {
@@ -169,6 +170,8 @@ mod ffi {
         fn qdatetimeToSecsSinceEpoch(datetime: &QDateTime) -> i64;
         #[rust_name = "qdatetime_settimezone"]
         fn qdatetimeSetTimeZone(datetime: &mut QDateTime, time_zone: &QTimeZone);
+        #[rust_name = "qdatetime_from_string"]
+        fn qdatetimeFromQString(string: &QString, format: DateFormat) -> QDateTime;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -296,6 +299,16 @@ impl QDateTime {
     /// Coordinated Universal Time (Qt::UTC) and converted to the given spec.
     pub fn from_secs_since_epoch(secs: i64, time_zone: &ffi::QTimeZone) -> Self {
         ffi::qdatetime_from_secs_since_epoch(secs, time_zone)
+    }
+
+    /// Returns the datetime represented in the string as a QDateTime using the format given, or None if this is not possible.
+    pub fn from_string(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
+        let date = ffi::qdatetime_from_string(string, format);
+        if date.is_valid() {
+            Some(date)
+        } else {
+            None
+        }
     }
 
     /// Returns the number of milliseconds from this datetime to the other datetime.
