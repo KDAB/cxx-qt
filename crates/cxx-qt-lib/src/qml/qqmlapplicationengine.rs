@@ -12,9 +12,19 @@ mod ffi {
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
+        include!(<QQmlImageProviderBase>);
+        type QQmlImageProviderBase;
+        include!(<QtQuick/QQuickImageProvider>);
+        type QQuickImageProvider;
+        include!(<QtQuick/QQuickAsyncImageProvider>);
+        type QQuickAsyncImageProvider;
 
         include!("cxx-qt-lib/qqmlapplicationengine.h");
         type QQmlApplicationEngine;
+
+        #[doc(hidden)]
+        #[rust_name = "add_image_provider_internal"]
+        unsafe fn addImageProvider(self: Pin<&mut QQmlApplicationEngine>, provider_id: &QString, provider: *mut QQmlImageProviderBase);
 
         /// Adds path as a directory where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "add_import_path"]
@@ -90,6 +100,14 @@ use crate::QQmlEngine;
 use core::pin::Pin;
 
 pub use ffi::QQmlApplicationEngine;
+use crate::QString;
+use ffi::QQmlImageProviderBase;
+
+#[allow(dead_code)]
+pub enum QQmlImageProviderBasePointer {
+    QQuickImageProvider(*mut ffi::QQuickImageProvider),
+    QQuickAsyncImageProvider(*mut ffi::QQuickAsyncImageProvider)
+}
 
 impl QQmlApplicationEngine {
     /// Convert the existing [QQmlApplicationEngine] to a [QQmlEngine]
@@ -100,5 +118,18 @@ impl QQmlApplicationEngine {
     /// Create a new QQmlApplicationEngine
     pub fn new() -> cxx::UniquePtr<Self> {
         ffi::qqmlapplicationengine_new()
+    }
+
+    /// Sets the provider to use for images requested via the image: url scheme, with host proveri_id. The QQmlEngine takes ownership of provider.
+    pub unsafe fn add_image_provider(self: Pin<&mut QQmlApplicationEngine>, provider_id: &QString, provider: QQmlImageProviderBasePointer) {
+        let ptr = match provider {
+            QQmlImageProviderBasePointer::QQuickAsyncImageProvider(ptr) => {
+                ptr as *mut QQmlImageProviderBase
+            },
+            QQmlImageProviderBasePointer::QQuickImageProvider(ptr) => {
+                ptr as *mut QQmlImageProviderBase
+            }
+        };
+        self.add_image_provider_internal(provider_id, ptr);
     }
 }
