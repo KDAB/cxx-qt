@@ -15,9 +15,9 @@ use std::{
 /// On Unix platforms, included files are symlinked into destination folders.
 /// On non-Unix platforms, due to poor support for symlinking, included files are deep copied.
 #[cfg(unix)]
-pub const INCLUDE_VERB: &str = "create symlink";
+pub(crate) const INCLUDE_VERB: &str = "create symlink";
 #[cfg(not(unix))]
-pub const INCLUDE_VERB: &str = "deep copy files";
+pub(crate) const INCLUDE_VERB: &str = "deep copy files";
 
 // Clean a directory by removing it and recreating it.
 pub(crate) fn clean(path: impl AsRef<Path>) -> Result<()> {
