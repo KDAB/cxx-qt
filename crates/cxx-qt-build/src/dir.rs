@@ -16,6 +16,8 @@ use std::{
 /// On non-Unix platforms, due to poor support for symlinking, included files are deep copied.
 #[cfg(unix)]
 pub(crate) const INCLUDE_VERB: &str = "create symlink";
+/// On Unix platforms, included files are symlinked into destination folders.
+/// On non-Unix platforms, due to poor support for symlinking, included files are deep copied.
 #[cfg(not(unix))]
 pub(crate) const INCLUDE_VERB: &str = "deep copy files";
 
