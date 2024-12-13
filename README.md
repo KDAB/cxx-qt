@@ -84,6 +84,16 @@ bindings for QWidgets APIs.
 
 ### Clone the Git repository
 
+This repository contains symbolic links, which requires some setup on Windows 10 before cloning the repository.
+First, [enable Windows Developer Mode](https://learn.microsoft.com/en-us/gaming/game-bar/guide/developer-mode)
+to avoid needing administrator privileges to create symlinks. Then, enable symlinks in Git:
+
+```shell
+git config --global core.symlinks true
+```
+
+Now clone the Git repository:
+
 ```shell
 git clone https://github.com/KDAB/cxx-qt.git
 ```
