@@ -17,6 +17,7 @@ mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
 pub mod dir;
+use dir::INCLUDE_VERB;
 
 mod dependencies;
 pub use dependencies::Interface;
@@ -630,49 +631,28 @@ impl CxxQtBuilder {
         }
     }
 
-    fn symlink_directory(target: impl AsRef<Path>, link: impl AsRef<Path>) -> std::io::Result<()> {
-        #[cfg(unix)]
-        let result = std::os::unix::fs::symlink(target, link);
-
-        #[cfg(windows)]
-        let result = std::os::windows::fs::symlink_dir(target, link);
-
-        // TODO: If it's neither unix nor windows, we should probably just deep-copy the
-        // dependency headers into our own include directory.
-        #[cfg(not(any(unix, windows)))]
-        panic!("Cxx-Qt-build: Unsupported platform! Only unix and windows are currently supported! Please file a bug report in the CXX-Qt repository.");
-
-        result
-    }
-
     // A dependency can specify which of its own include paths it wants to export.
-    // Set up each of these exported include paths as symlinks in our own include directory.
+    // Set up each of these exported include paths as symlinks in our own include directory,
+    // or deep copy the files if the platform does not support symlinks.
     fn include_dependency(&mut self, dependency: &Dependency) {
+        let header_root = dir::header_root();
+        let dependency_root = dependency.path.join("include");
         for include_prefix in &dependency.manifest.exported_include_prefixes {
             // setup include directory
-            let target = dependency.path.join("include").join(include_prefix);
+            let source = dependency_root.join(include_prefix);
+            let dest = header_root.join(include_prefix);
 
-            let symlink = dir::header_root().join(include_prefix);
-            if symlink.exists() {
-                // Two dependencies may be reexporting the same shared dependency, which will
-                // result in conflicting symlinks.
-                // Try detecting this by resolving the symlinks and checking whether this leads us
-                // to the same paths. If so, it's the same include path for the same prefix, which
-                // is fine.
-                let symlink =
-                    std::fs::canonicalize(symlink).expect("Failed to canonicalize symlink!");
-                let target =
-                    std::fs::canonicalize(target).expect("Failed to canonicalize symlink target!");
-                if symlink != target {
+            match dir::symlink_or_copy_directory(source, dest) {
+                Ok(true) => (),
+                Ok(false) => {
                     panic!(
                         "Conflicting include_prefixes for {include_prefix}!\nDependency {dep_name} conflicts with existing include path",
                         dep_name = dependency.manifest.name,
                     );
                 }
-            } else {
-                Self::symlink_directory(target, symlink).unwrap_or_else(|_| {
-                    panic!("Could not create symlink for include_prefix {include_prefix}!")
-                });
+                Err(e) => {
+                    panic!("Could not {INCLUDE_VERB} for include_prefix {include_prefix}: {e:?}");
+                }
             }
         }
     }
@@ -1019,17 +999,18 @@ impl CxxQtBuilder {
     }
 
     fn write_interface_include_dirs(&self) {
-        if let Some(interface) = &self.public_interface {
-            for (header_dir, symlink) in &interface.exported_include_directories {
-                Self::symlink_directory(header_dir, dir::header_root().join(symlink))
-                    .unwrap_or_else(|_| {
-                        panic!(
-                            "Failed to create symlink `{}` for export_include_directory: {}",
-                            symlink,
-                            header_dir.to_string_lossy()
-                        )
-                    });
-            }
+        let Some(interface) = &self.public_interface else {
+            return;
+        };
+        let header_root = dir::header_root();
+        for (header_dir, dest) in &interface.exported_include_directories {
+            let dest_dir = header_root.join(dest);
+            if let Err(e) = dir::symlink_or_copy_directory(header_dir, dest_dir) {
+                panic!(
+                        "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
+                        dir_name = header_dir.to_string_lossy()
+                    )
+            };
         }
     }
 
