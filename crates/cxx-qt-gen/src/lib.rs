@@ -17,6 +17,7 @@ mod writer;
 pub use generator::{
     cpp::{fragment::CppFragment, GeneratedCppBlocks},
     rust::GeneratedRustBlocks,
+    GeneratedOpt,
 };
 pub use parser::Parser;
 pub use syntax::{parse_qt_file, CxxQtFile, CxxQtItem};
@@ -158,7 +159,8 @@ mod tests {
     ) {
         let parser = Parser::from(syn::parse_str(input).unwrap()).unwrap();
 
-        let generated_cpp = GeneratedCppBlocks::from(&parser).unwrap();
+        let opt = GeneratedOpt::default();
+        let generated_cpp = GeneratedCppBlocks::from(&parser, &opt).unwrap();
         let (mut header, mut source) =
             require_pair(&write_cpp(&generated_cpp, "directory/file_ident")).unwrap();
         header = sanitize_code(header);

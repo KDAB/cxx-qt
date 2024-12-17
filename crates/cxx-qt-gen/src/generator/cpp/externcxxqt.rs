@@ -4,8 +4,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::cpp::signal::generate_cpp_signal, naming::TypeNames,
-    parser::externcxxqt::ParsedExternCxxQt, CppFragment,
+    generator::{cfg::try_eval_attributes, cpp::signal::generate_cpp_signal, GeneratedOpt},
+    naming::TypeNames,
+    parser::externcxxqt::ParsedExternCxxQt,
+    CppFragment,
 };
 use std::collections::BTreeSet;
 use syn::Result;
@@ -23,11 +25,17 @@ pub struct GeneratedCppExternCxxQtBlocks {
 pub fn generate(
     blocks: &[ParsedExternCxxQt],
     type_names: &TypeNames,
+    opt: &GeneratedOpt,
 ) -> Result<Vec<GeneratedCppExternCxxQtBlocks>> {
     let mut out = vec![];
 
     for block in blocks {
         for signal in &block.signals {
+            // Skip if the cfg attributes are not resolved to true
+            if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &signal.cfgs)? {
+                continue;
+            }
+
             let mut block = GeneratedCppExternCxxQtBlocks::default();
             let qobject_name = type_names.lookup(&signal.qobject_ident)?;
             let data = generate_cpp_signal(signal, qobject_name, type_names)?;
@@ -70,9 +78,10 @@ mod tests {
         .unwrap()];
 
         // Unknown types
-        assert!(generate(&blocks, &TypeNames::default()).is_err());
+        let opt = GeneratedOpt::default();
+        assert!(generate(&blocks, &TypeNames::default(), &opt).is_err());
 
-        let generated = generate(&blocks, &TypeNames::mock()).unwrap();
+        let generated = generate(&blocks, &TypeNames::mock(), &opt).unwrap();
         assert_eq!(generated.len(), 2);
     }
 
@@ -97,7 +106,7 @@ mod tests {
         let mut type_names = TypeNames::default();
         type_names.mock_insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
-        let generated = generate(&blocks, &type_names).unwrap();
+        let generated = generate(&blocks, &type_names, &GeneratedOpt::default()).unwrap();
         assert_eq!(generated.len(), 1);
     }
 }
