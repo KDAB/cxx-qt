@@ -20,6 +20,7 @@ exclude = ["update_expected.sh"]
 rust-version = "1.64.0"
 
 [dependencies]
+cxx-gen.workspace = true
 proc-macro2.workspace = true
 syn.workspace = true
 quote.workspace = true

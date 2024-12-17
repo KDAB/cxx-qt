@@ -43,7 +43,7 @@ use std::{
 };
 
 use cxx_qt_gen::{
-    parse_qt_file, write_cpp, write_rust, CppFragment, CxxQtItem, GeneratedCppBlocks,
+    parse_qt_file, write_cpp, write_rust, CppFragment, CxxQtItem, GeneratedCppBlocks, GeneratedOpt,
     GeneratedRustBlocks, Parser,
 };
 
@@ -103,6 +103,9 @@ impl GeneratedCpp {
         // The include path we inject needs any prefix (eg the crate name) too
         let include_ident = format!("{include_prefix}/{file_ident}");
 
+        let mut cxx_qt_opt = GeneratedOpt::default();
+        cxx_qt_opt.cfg_evaluator = Box::new(cfg_evaluator::CargoEnvCfgEvaluator);
+
         // Loop through the items looking for any CXX or CXX-Qt blocks
         let mut found_bridge = false;
         for item in &file.items {
@@ -132,7 +135,7 @@ impl GeneratedCpp {
                     let parser = Parser::from(m.clone())
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
-                    let generated_cpp = GeneratedCppBlocks::from(&parser)
+                    let generated_cpp = GeneratedCppBlocks::from(&parser, &cxx_qt_opt)
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
                     let generated_rust = GeneratedRustBlocks::from(&parser)

@@ -5,7 +5,11 @@
 use indoc::formatdoc;
 
 use crate::{
-    generator::cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
+    generator::{
+        cfg::try_eval_attributes,
+        cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
+        GeneratedOpt,
+    },
     naming::cpp::syn_type_to_cpp_return_type,
     naming::TypeNames,
     parser::inherit::ParsedInheritedMethod,
@@ -17,10 +21,16 @@ pub fn generate(
     inherited_methods: &[&ParsedInheritedMethod],
     base_class: &Option<String>,
     type_names: &TypeNames,
+    opt: &GeneratedOpt,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     for &method in inherited_methods {
+        // Skip if the cfg attributes are not resolved to true
+        if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &method.cfgs)? {
+            continue;
+        }
+
         let return_type = syn_type_to_cpp_return_type(&method.method.sig.output, type_names)?;
         // Note that no qobject macro with no base class is an error
         //
@@ -47,6 +57,7 @@ pub fn generate(
 
 #[cfg(test)]
 mod tests {
+    use crate::generator::TestCfgEvaluator;
     use pretty_assertions::assert_str_eq;
     use syn::{parse_quote, ForeignItemFn};
 
@@ -62,13 +73,39 @@ mod tests {
         let method = ParsedInheritedMethod::parse(method, Safety::Safe, CaseConversion::none())?;
         let inherited_methods = vec![&method];
         let base_class = base_class.map(|s| s.to_owned());
-        generate(&inherited_methods, &base_class, &TypeNames::default())
+        generate(
+            &inherited_methods,
+            &base_class,
+            &TypeNames::default(),
+            &GeneratedOpt::default(),
+        )
     }
 
     fn assert_generated_eq(expected: &str, generated: &GeneratedCppQObjectBlocks) {
         assert_eq!(generated.methods.len(), 1);
         let header = require_header(&generated.methods[0]).unwrap();
         assert_str_eq!(header, expected);
+    }
+
+    #[test]
+    fn test_cfg() {
+        let method = parse_quote! {
+            #[cfg(test_cfg_disabled)]
+            fn test(self: &T, a: B, b: C);
+        };
+        let method =
+            ParsedInheritedMethod::parse(method, Safety::Safe, CaseConversion::none()).unwrap();
+        let inherited_methods = vec![&method];
+        let base_class = Some("TestBaseClass".to_owned());
+        let opt = GeneratedOpt {
+            cfg_evaluator: Box::new(TestCfgEvaluator {
+                result: Some(false),
+            }),
+        };
+        let generated =
+            generate(&inherited_methods, &base_class, &TypeNames::default(), &opt).unwrap();
+
+        assert!(generated.methods.is_empty());
     }
 
     #[test]
