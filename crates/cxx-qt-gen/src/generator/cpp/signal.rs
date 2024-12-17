@@ -5,11 +5,13 @@
 
 use crate::{
     generator::{
+        cfg::try_eval_attributes,
         cpp::{fragment::CppFragment, qobject::GeneratedCppQObjectBlocks},
         naming::{
             qobject::QObjectNames,
             signals::{QSignalHelperNames, QSignalNames},
         },
+        GeneratedOpt,
     },
     naming::{cpp::syn_type_to_cpp_type, Name, TypeNames},
     parser::{parameter::ParsedFunctionParameter, signals::ParsedSignal},
@@ -82,8 +84,14 @@ pub fn generate_cpp_signal(
     signal: &ParsedSignal,
     qobject_name: &Name,
     type_names: &TypeNames,
+    opt: &GeneratedOpt,
 ) -> Result<CppSignalFragment> {
     let mut generated = CppSignalFragment::default();
+
+    // Skip if the cfg attributes are not resolved to true
+    if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &signal.cfgs)? {
+        return Ok(generated);
+    }
 
     // Add the include we need
     generated
@@ -192,16 +200,19 @@ pub fn generate_cpp_signals(
     signals: &Vec<&ParsedSignal>,
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
+    opt: &GeneratedOpt,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
 
     for &signal in signals {
-        let mut block = GeneratedCppQObjectBlocks::default();
-        let data = generate_cpp_signal(signal, &qobject_idents.name, type_names)?;
-        block.includes = data.includes;
-        block.forward_declares_namespaced = data.forward_declares;
-        block.fragments = data.fragments;
-        block.methods = data.methods;
+        let data = generate_cpp_signal(signal, &qobject_idents.name, type_names, opt)?;
+        let mut block = GeneratedCppQObjectBlocks {
+            includes: data.includes,
+            forward_declares_namespaced: data.forward_declares,
+            fragments: data.fragments,
+            methods: data.methods,
+            ..Default::default()
+        };
         generated.append(&mut block);
     }
 
@@ -214,9 +225,31 @@ mod tests {
 
     use crate::generator::cpp::property::tests::{require_header, require_pair};
     use crate::generator::naming::qobject::tests::create_qobjectname;
+    use crate::generator::TestCfgEvaluator;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use syn::{parse_quote, ForeignItemFn};
+
+    #[test]
+    fn test_generate_cpp_signal_cfg() {
+        let method: ForeignItemFn = parse_quote! {
+            #[cfg(test_cfg_disabled)]
+            #[cxx_name = "dataChanged"]
+            fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
+        };
+        let signal = ParsedSignal::mock(&method);
+        let signals = vec![&signal];
+        let qobject_idents = create_qobjectname();
+        let type_names = TypeNames::mock();
+        let opt = GeneratedOpt {
+            cfg_evaluator: Box::new(TestCfgEvaluator {
+                result: Some(false),
+            }),
+        };
+        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names, &opt).unwrap();
+
+        assert_eq!(generated.methods.len(), 0);
+    }
 
     #[test]
     fn test_generate_cpp_signals() {
@@ -230,7 +263,13 @@ mod tests {
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
-        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_signals(
+            &signals,
+            &qobject_idents,
+            &type_names,
+            &GeneratedOpt::default(),
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = require_header(&generated.methods[0]).unwrap();
@@ -311,7 +350,13 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("A", None, Some("A1"), None);
 
-        let generated = generate_cpp_signals(&signals, &qobject_idents, &type_names).unwrap();
+        let generated = generate_cpp_signals(
+            &signals,
+            &qobject_idents,
+            &type_names,
+            &GeneratedOpt::default(),
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 1);
         let header = require_header(&generated.methods[0]).unwrap();
@@ -388,8 +433,13 @@ mod tests {
 
         let signals = vec![&signal];
         let qobject_idents = create_qobjectname();
-        let generated =
-            generate_cpp_signals(&signals, &qobject_idents, &TypeNames::mock()).unwrap();
+        let generated = generate_cpp_signals(
+            &signals,
+            &qobject_idents,
+            &TypeNames::mock(),
+            &GeneratedOpt::default(),
+        )
+        .unwrap();
 
         assert_eq!(generated.methods.len(), 0);
         assert_eq!(generated.fragments.len(), 1);
@@ -464,7 +514,9 @@ mod tests {
         let mut type_names = TypeNames::default();
         type_names.mock_insert("MyObject", None, None, None);
         let qobject_name = type_names.lookup(&signal.qobject_ident).unwrap();
-        let generated = generate_cpp_signal(&signal, qobject_name, &type_names).unwrap();
+        let generated =
+            generate_cpp_signal(&signal, qobject_name, &type_names, &GeneratedOpt::default())
+                .unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 
@@ -541,7 +593,9 @@ mod tests {
         let mut type_names = TypeNames::default();
         type_names.mock_insert("MyObject", None, Some("ObjCpp"), Some("mynamespace"));
         let qobject_name = type_names.lookup(&signal.qobject_ident).unwrap();
-        let generated = generate_cpp_signal(&signal, qobject_name, &type_names).unwrap();
+        let generated =
+            generate_cpp_signal(&signal, qobject_name, &type_names, &GeneratedOpt::default())
+                .unwrap();
 
         assert_eq!(generated.methods.len(), 0);
 

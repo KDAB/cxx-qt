@@ -23,7 +23,10 @@ use std::collections::BTreeSet;
 use crate::generator::cpp::fragment::CppNamedType;
 use crate::naming::cpp::syn_type_to_cpp_type;
 use crate::naming::TypeNames;
-use crate::{generator::structuring, parser::Parser};
+use crate::{
+    generator::{structuring, GeneratedOpt},
+    parser::Parser,
+};
 use externcxxqt::GeneratedCppExternCxxQtBlocks;
 use qobject::GeneratedCppQObject;
 use syn::{FnArg, ForeignItemFn, Pat, PatIdent, PatType, Result};
@@ -42,7 +45,7 @@ pub struct GeneratedCppBlocks {
 
 impl GeneratedCppBlocks {
     /// Create a [GeneratedCppBlocks] from the given [Parser] object
-    pub fn from(parser: &Parser) -> Result<GeneratedCppBlocks> {
+    pub fn from(parser: &Parser, opt: &GeneratedOpt) -> Result<GeneratedCppBlocks> {
         let structures = structuring::Structures::new(&parser.cxx_qt_data)?;
 
         let mut includes = BTreeSet::new();
@@ -58,7 +61,8 @@ impl GeneratedCppBlocks {
                 .cxx_qt_data
                 .qenums
                 .iter()
-                .map(|parsed_qenum| qenum::generate_declaration(parsed_qenum, &mut includes)),
+                .map(|parsed_qenum| qenum::generate_declaration(parsed_qenum, &mut includes, opt))
+                .collect::<Result<Vec<String>>>()?,
         );
         Ok(GeneratedCppBlocks {
             forward_declares,
@@ -66,11 +70,12 @@ impl GeneratedCppBlocks {
             qobjects: structures
                 .qobjects
                 .iter()
-                .map(|qobject| GeneratedCppQObject::from(qobject, &parser.type_names))
+                .map(|qobject| GeneratedCppQObject::from(qobject, &parser.type_names, opt))
                 .collect::<Result<Vec<GeneratedCppQObject>>>()?,
             extern_cxx_qt: externcxxqt::generate(
                 &parser.cxx_qt_data.extern_cxxqt_blocks,
                 &parser.type_names,
+                opt,
             )?,
         })
     }
@@ -125,7 +130,8 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
 
-        let cpp = GeneratedCppBlocks::from(&parser).unwrap();
+        let opt = GeneratedOpt::default();
+        let cpp = GeneratedCppBlocks::from(&parser, &opt).unwrap();
         assert_eq!(cpp.qobjects.len(), 1);
         assert_eq!(cpp.qobjects[0].name.namespace(), None);
     }
@@ -143,7 +149,8 @@ mod tests {
         };
         let parser = Parser::from(module).unwrap();
 
-        let cpp = GeneratedCppBlocks::from(&parser).unwrap();
+        let opt = GeneratedOpt::default();
+        let cpp = GeneratedCppBlocks::from(&parser, &opt).unwrap();
         assert_eq!(cpp.qobjects[0].name.namespace(), Some("cxx_qt"));
     }
 }
