@@ -26,7 +26,8 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
-    const ALLOWED_ATTRS: [&'static str; 5] = ["cxx_name", "rust_name", "inherit", "doc", "qsignal"];
+    const ALLOWED_ATTRS: [&'static str; 6] =
+        ["cfg", "cxx_name", "rust_name", "inherit", "doc", "qsignal"];
 
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
