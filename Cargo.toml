@@ -13,6 +13,7 @@ members = [
     "crates/cxx-qt-lib-extras",
 
     "examples/cargo_without_cmake",
+    "examples/todo_app",
     "examples/demo_threading/rust",
     "examples/qml_features/rust",
     "examples/qml_minimal/rust",
