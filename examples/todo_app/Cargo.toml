@@ -1,0 +1,17 @@
+# SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
+[package]
+name = "cxx-qt-todo-app"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+cxx.workspace = true
+cxx-qt.workspace = true
+cxx-qt-lib = { workspace = true, features = ["full"] }
+
+[build-dependencies]
+cxx-qt-build = { workspace = true, features = ["link_qt_object_files"] }
