@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- New example: ToDo app
 - `#[auto_cxx_name]` and `#[auto_rust_name]` attributes for `extern` blocks, which will convert the case of names, automatically camelCase for cxx, and snake_case for rust
 - Support for further types: `QLine`, `QLineF`, `QImage`, `QPainter`, `QFont`, `QPen`, `QPolygon`, `QPolygonF`, `QRegion`, `QAnyStringView`
 - `internal_pointer_mut()` function on `QModelIndex`
