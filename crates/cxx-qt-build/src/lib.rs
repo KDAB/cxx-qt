@@ -377,6 +377,7 @@ pub struct CxxQtBuilder {
     include_prefix: String,
     crate_include_root: Option<String>,
     additional_include_dirs: Vec<PathBuf>,
+    qml_qobjects: Vec<(PathBuf, PathBuf)>,
 }
 
 impl CxxQtBuilder {
@@ -418,6 +419,7 @@ impl CxxQtBuilder {
             include_prefix: crate_name(),
             crate_include_root: Some(String::new()),
             additional_include_dirs: vec![],
+            qml_qobjects: vec![],
         }
     }
 
@@ -585,6 +587,22 @@ impl CxxQtBuilder {
         let opts = opts.into();
         println!("cargo::rerun-if-changed={}", opts.path.display());
         self.qobject_headers.push(opts);
+        self
+    }
+
+    /// Specify a C++ header and source file containing a Q_OBJECT macro to run [moc](https://doc.qt.io/qt-6/moc.html) on.
+    /// Unlike [CxxQtBuilder::qobject_header], it includes the generated metatypes.json, so that C++ classes can be included
+    /// in QML modules.
+    pub fn qml_qobject(
+        mut self,
+        qobject_header: impl AsRef<Path>,
+        qobject_source: impl AsRef<Path>,
+    ) -> Self {
+        let qobject_header = qobject_header.as_ref().to_path_buf();
+        let qobject_source = qobject_source.as_ref().to_path_buf();
+        println!("cargo::rerun-if-changed={}", qobject_header.display());
+        println!("cargo::rerun-if-changed={}", qobject_source.display());
+        self.qml_qobjects.push((qobject_header, qobject_source));
         self
     }
 
@@ -867,6 +885,22 @@ impl CxxQtBuilder {
                     cc_builder.file(moc_products.cpp);
                     qml_metatypes_json.push(moc_products.metatypes_json);
                 }
+            }
+
+            for (qobject_header, qobject_source) in &self.qml_qobjects {
+                cc_builder.file(qobject_source);
+                if let Some(dir) = qobject_header.parent() {
+                    moc_include_paths.insert(dir.to_path_buf());
+                }
+                let moc_products = qtbuild.moc(
+                    qobject_header,
+                    MocArguments::default().uri(qml_module.uri.clone()),
+                );
+                if let Some(dir) = moc_products.cpp.parent() {
+                    moc_include_paths.insert(dir.to_path_buf());
+                }
+                cc_builder.file(moc_products.cpp);
+                qml_metatypes_json.push(moc_products.metatypes_json);
             }
 
             let qml_module_registration_files = qtbuild.register_qml_module(
