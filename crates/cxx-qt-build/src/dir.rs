@@ -156,7 +156,8 @@ fn files_conflict(source: &Path, dest: &Path) -> Result<bool> {
             return Ok(false);
         }
         let dest_bytes = dest.fill_buf()?;
-        if source_bytes != dest_bytes {
+        let bytes_len = bytes_len.min(dest_bytes.len());
+        if source_bytes[..bytes_len] != dest_bytes[..bytes_len] {
             return Ok(true);
         }
         source.consume(bytes_len);
