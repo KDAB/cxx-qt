@@ -152,11 +152,11 @@ fn files_conflict(source: &Path, dest: &Path) -> Result<bool> {
     loop {
         let source_bytes = source.fill_buf()?;
         let bytes_len = source_bytes.len();
+        let dest_bytes = dest.fill_buf()?;
+        let bytes_len = bytes_len.min(dest_bytes.len());
         if bytes_len == 0 {
             return Ok(false);
         }
-        let dest_bytes = dest.fill_buf()?;
-        let bytes_len = bytes_len.min(dest_bytes.len());
         if source_bytes[..bytes_len] != dest_bytes[..bytes_len] {
             return Ok(true);
         }
