@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #[cfg(not(target_os = "emscripten"))]
 use crate::QDateTime;
-use crate::{QByteArray, QDate, QPersistentModelIndex, QString, QTime, QUrl};
+use crate::{QByteArray, QDate, QPersistentModelIndex, QString, QTime, QUrl, QUuid};
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 
@@ -262,6 +262,7 @@ impl_qset_element!(
 impl_qset_element!(QString, qset_qstring, "QSet_QString");
 impl_qset_element!(QTime, qset_qtime, "QSet_QTime");
 impl_qset_element!(QUrl, qset_qurl, "QSet_QUrl");
+impl_qset_element!(QUuid, qset_quuid, "QSet_QUuid");
 impl_qset_element!(u8, qset_u8, "QSet_u8");
 impl_qset_element!(u16, qset_u16, "QSet_u16");
 impl_qset_element!(u32, qset_u32, "QSet_u32");

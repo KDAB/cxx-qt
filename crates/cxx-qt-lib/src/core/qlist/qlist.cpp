@@ -57,6 +57,7 @@ CXX_QT_QLIST_ASSERTS(::QSizeF, QSizeF);
 CXX_QT_QLIST_ASSERTS(::QString, QString);
 CXX_QT_QLIST_ASSERTS(::QTime, QTime);
 CXX_QT_QLIST_ASSERTS(::QUrl, QUrl);
+CXX_QT_QLIST_ASSERTS(::QUuid, QUuid);
 CXX_QT_QLIST_ASSERTS(::QVariant, QVariant);
 CXX_QT_QLIST_ASSERTS(::std::uint8_t, u8);
 CXX_QT_QLIST_ASSERTS(::std::uint16_t, u16);

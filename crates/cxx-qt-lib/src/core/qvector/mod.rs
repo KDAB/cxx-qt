@@ -9,7 +9,7 @@ use crate::QColor;
 use crate::QDateTime;
 use crate::{
     QByteArray, QDate, QLine, QLineF, QMargins, QMarginsF, QPersistentModelIndex, QPoint, QPointF,
-    QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QVariant,
+    QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QUuid, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
@@ -373,6 +373,7 @@ impl_qvector_element!(QSizeF, qvector_qsizef, "QVector_QSizeF");
 impl_qvector_element!(QString, qvector_qstring, "QVector_QString");
 impl_qvector_element!(QTime, qvector_qtime, "QVector_QTime");
 impl_qvector_element!(QUrl, qvector_qurl, "QVector_QUrl");
+impl_qvector_element!(QUuid, qvector_quuid, "QVector_QUuid");
 impl_qvector_element!(QVariant, qvector_qvariant, "QVector_QVariant");
 impl_qvector_element!(u8, qvector_u8, "QVector_u8");
 impl_qvector_element!(u16, qvector_u16, "QVector_u16");

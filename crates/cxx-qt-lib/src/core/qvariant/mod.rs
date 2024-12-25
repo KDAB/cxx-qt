@@ -181,6 +181,7 @@ impl_qvariant_value!(crate::QString, qvariant_qstring);
 impl_qvariant_value!(crate::QStringList, qvariant_qstringlist);
 impl_qvariant_value!(crate::QTime, qvariant_qtime);
 impl_qvariant_value!(crate::QUrl, qvariant_qurl);
+impl_qvariant_value!(crate::QUuid, qvariant_quuid);
 impl_qvariant_value!(u8, qvariant_u8);
 impl_qvariant_value!(u16, qvariant_u16);
 impl_qvariant_value!(u32, qvariant_u32);
