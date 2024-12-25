@@ -200,7 +200,7 @@ impl QUuid {
     }
 
     /// Returns the memory representation of this UUID as a byte array in big-endian byte order.
-    pub const fn to_bytes(self) -> [u8; 16] {
+    pub const fn to_bytes(&self) -> [u8; 16] {
         let [b0, b1, b2, b3] = self.data1.to_ne_bytes();
         let [b4, b5] = self.data2.to_ne_bytes();
         let [b6, b7] = self.data3.to_ne_bytes();
@@ -225,7 +225,7 @@ impl QUuid {
     }
 
     /// Returns the memory representation of this UUID as a 128-bit integer.
-    pub const fn to_u128(self) -> u128 {
+    pub const fn to_u128(&self) -> u128 {
         u128::from_be_bytes(self.to_bytes())
     }
 }
