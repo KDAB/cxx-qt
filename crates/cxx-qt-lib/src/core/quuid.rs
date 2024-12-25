@@ -181,8 +181,8 @@ impl QUuid {
         }
     }
 
-    pub const fn as_fields(&self) -> (u32, u16, u16, [u8; 8]) {
-        (self.data1, self.data2, self.data3, self.data4)
+    pub const fn as_fields(&self) -> (u32, u16, u16, &[u8; 8]) {
+        (self.data1, self.data2, self.data3, &self.data4)
     }
 
     /// Creates a UUID from its representation as a byte array in big endian.
@@ -365,7 +365,7 @@ mod test {
     #[test]
     fn quuid_fields_round_trip() {
         let uuid = QUuid::new_v4();
-        let (d1, d2, d3, d4) = uuid.as_fields();
+        let (d1, d2, d3, &d4) = uuid.as_fields();
         let roundtrip = QUuid::from_fields(d1, d2, d3, d4);
         assert_eq!(uuid, roundtrip)
     }
