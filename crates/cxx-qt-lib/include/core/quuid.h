@@ -14,12 +14,6 @@
 using QUuidVariant = QUuid::Variant;
 using QUuidVersion = QUuid::Version;
 
-#if QT_VERSION >= QT_VERSION_CHECK(6, 3, 0)
-using QUuidFromStringParam = const QString&;
-#else
-using QUuidFromStringParam = QAnyStringView;
-#endif
-
 namespace rust {
 namespace cxxqtlib1 {
 QUuid
