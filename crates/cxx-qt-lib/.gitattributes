@@ -1,0 +1,4 @@
+src/core/qlist/qlist_*.rs linguist-generated=true
+src/core/qset/qset_*.rs linguist-generated=true
+src/core/qvariant/qvariant_*.rs linguist-generated=true
+src/core/qvector/qvector_*.rs linguist-generated=true
