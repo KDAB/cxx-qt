@@ -36,6 +36,18 @@ static_assert(QTypeInfo<QStringList>::isRelocatable);
 namespace rust {
 namespace cxxqtlib1 {
 
+const QList<QString>&
+qstringlistAsQListQStringRef(const QStringList& list)
+{
+  return static_cast<const QList<QString>&>(list);
+}
+
+QList<QString>&
+qstringlistAsQListQStringRef(QStringList& list)
+{
+  return static_cast<QList<QString>&>(list);
+}
+
 QStringList
 qstringlistFromQListQString(const QList<QString>& list)
 {
