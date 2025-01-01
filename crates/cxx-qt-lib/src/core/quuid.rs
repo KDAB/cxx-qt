@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::QString;
 use cxx::{type_id, ExternType};
-use std::fmt;
+use std::{fmt, mem};
 #[cfg(feature = "uuid")]
 use uuid::Uuid;
 
@@ -189,38 +189,30 @@ impl QUuid {
         (self.data1, self.data2, self.data3, &self.data4)
     }
 
-    /// Creates a UUID from its representation as a byte array in big endian.
-    pub const fn from_bytes(bytes: [u8; 16]) -> Self {
+    const fn to_big_endian(self) -> Self {
         #[cfg(target_endian = "big")]
-        let [b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, ba, bb, bc, bd, be, bf] = bytes;
+        {
+            self
+        }
         #[cfg(target_endian = "little")]
-        let [b3, b2, b1, b0, b5, b4, b7, b6, b8, b9, ba, bb, bc, bd, be, bf] = bytes;
-        Self {
-            data1: u32::from_ne_bytes([b0, b1, b2, b3]),
-            data2: u16::from_ne_bytes([b4, b5]),
-            data3: u16::from_ne_bytes([b6, b7]),
-            data4: [b8, b9, ba, bb, bc, bd, be, bf],
+        {
+            Self {
+                data1: self.data1.swap_bytes(),
+                data2: self.data2.swap_bytes(),
+                data3: self.data3.swap_bytes(),
+                data4: self.data4,
+            }
         }
     }
 
+    /// Creates a UUID from its representation as a byte array in big endian.
+    pub const fn from_bytes(bytes: [u8; 16]) -> Self {
+        unsafe { mem::transmute::<[u8; 16], Self>(bytes) }.to_big_endian()
+    }
+
     /// Returns the memory representation of this UUID as a byte array in big-endian byte order.
-    pub const fn to_bytes(&self) -> [u8; 16] {
-        let [b0, b1, b2, b3] = self.data1.to_ne_bytes();
-        let [b4, b5] = self.data2.to_ne_bytes();
-        let [b6, b7] = self.data3.to_ne_bytes();
-        let [b8, b9, ba, bb, bc, bd, be, bf] = self.data4;
-        #[cfg(target_endian = "big")]
-        {
-            [
-                b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, ba, bb, bc, bd, be, bf,
-            ]
-        }
-        #[cfg(target_endian = "little")]
-        {
-            [
-                b3, b2, b1, b0, b5, b4, b7, b6, b8, b9, ba, bb, bc, bd, be, bf,
-            ]
-        }
+    pub const fn to_bytes(self) -> [u8; 16] {
+        unsafe { mem::transmute::<Self, [u8; 16]>(self.to_big_endian()) }
     }
 
     /// Creates a UUID from its representation as a 128-bit integer.
