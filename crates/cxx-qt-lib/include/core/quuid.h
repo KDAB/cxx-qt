@@ -28,6 +28,13 @@ QString
 quuidToString(const QUuid& uuid);
 
 QUuid
-quuidFromString(QAnyStringView string);
+quuidFromString(const QString& string);
+
+QUuid
+quuidFromStr(rust::Str string);
+
+QUuid
+quuidFromRfc4122(const QByteArray& bytes);
+
 }
 }

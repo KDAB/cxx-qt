@@ -59,14 +59,25 @@ quuidToString(const QUuid& uuid)
 }
 
 QUuid
-quuidFromString(QAnyStringView string)
+quuidFromString(const QString& string)
+{
+  return QUuid::fromString(string);
+}
+
+QUuid
+quuidFromStr(rust::Str string)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
-  return QUuid::fromString(string); // we can use UTF8 strings directly
+  return QUuid::fromString(QAnyStringView(string.data(), string.length()));
 #else
-  return QUuid::fromString(QString(string));
+  return QUuid::fromString(QString::fromLatin1(string.data(), string.length()));
 #endif
 }
 
+QUuid
+quuidFromRfc4122(const QByteArray& bytes)
+{
+  return QUuid::fromRfc4122(bytes);
+}
 }
 }

@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Joshua Booth <joshua.n.booth@gmail.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::QString;
+use crate::{QByteArray, QString};
 use cxx::{type_id, ExternType};
 use std::{fmt, mem};
 #[cfg(feature = "uuid")]
@@ -50,7 +50,6 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
-        type QAnyStringView<'a> = crate::QAnyStringView<'a>;
     }
 
     unsafe extern "C++" {
@@ -90,7 +89,13 @@ mod ffi {
         fn quuidToString(uuid: &QUuid) -> QString;
         #[doc(hidden)]
         #[rust_name = "quuid_from_string"]
-        fn quuidFromString(string: QAnyStringView) -> QUuid;
+        fn quuidFromString(string: &QString) -> QUuid;
+        #[doc(hidden)]
+        #[rust_name = "quuid_from_str"]
+        fn quuidFromStr(string: &str) -> QUuid;
+        #[doc(hidden)]
+        #[rust_name = "quuid_from_rfc_4122"]
+        fn quuidFromRfc4122(bytes: &QByteArray) -> QUuid;
     }
 }
 
@@ -164,16 +169,15 @@ impl QUuid {
         ffi::quuid_create_uuid_v5(namespace, data)
     }
 
-    /// Creates a QUuid object from the string text, which must be formatted as five hex fields
-    /// separated by '-', e.g., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
-    /// digit. The curly braces shown here are optional, but it is normal to include them.
+    /// Creates a `QUuid` object from the binary representation of the UUID.
+    /// The byte array is in big endian format, and formatted according to RFC 4122, section 4.1.2 -
+    /// "Layout and byte order".
     ///
-    /// If the conversion fails, a null UUID is returned.
-    pub fn from_string<'a, S>(s: S) -> Self
-    where
-        S: Into<crate::QAnyStringView<'a>>,
-    {
-        ffi::quuid_from_string(s.into())
+    /// The byte array accepted is NOT a human readable format.
+    ///
+    /// If the conversion fails, a null UUID is created.
+    pub fn from_rfc_4122(bytes: &QByteArray) -> Self {
+        ffi::quuid_from_rfc_4122(bytes)
     }
 
     /// Creates a UUID with the value specified by the parameters.
@@ -259,6 +263,67 @@ impl From<u128> for QUuid {
 impl From<QUuid> for u128 {
     fn from(value: QUuid) -> Self {
         value.to_u128()
+    }
+}
+
+impl From<[u8; 16]> for QUuid {
+    /// See [`QUuid::from_bytes`].
+    fn from(value: [u8; 16]) -> Self {
+        Self::from_bytes(value)
+    }
+}
+
+impl From<QUuid> for [u8; 16] {
+    /// See [`QUuid::to_bytes`].
+    fn from(value: QUuid) -> Self {
+        value.to_bytes()
+    }
+}
+
+impl From<&QString> for QUuid {
+    /// Creates a QUuid object from the string text, which must be formatted as five hex fields
+    /// separated by '-', e.g., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
+    /// digit. The curly braces shown here are optional, but it is normal to include them.
+    ///
+    /// If the conversion fails, a null UUID is returned.
+    fn from(value: &QString) -> Self {
+        ffi::quuid_from_string(value)
+    }
+}
+
+impl From<&str> for QUuid {
+    /// Creates a QUuid object from the string text, which must be formatted as five hex fields
+    /// separated by '-', e.g., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
+    /// digit. The curly braces shown here are optional, but it is normal to include them.
+    ///
+    /// If the conversion fails, a null UUID is returned.
+    fn from(value: &str) -> Self {
+        ffi::quuid_from_str(value)
+    }
+}
+
+impl From<&String> for QUuid {
+    /// Creates a QUuid object from the string text, which must be formatted as five hex fields
+    /// separated by '-', e.g., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
+    /// digit. The curly braces shown here are optional, but it is normal to include them.
+    ///
+    /// If the conversion fails, a null UUID is returned.
+    fn from(value: &String) -> Self {
+        ffi::quuid_from_str(value)
+    }
+}
+
+impl From<&QByteArray> for QUuid {
+    /// See [`QUuid::from_rfc_4122`].
+    fn from(value: &QByteArray) -> Self {
+        ffi::quuid_from_rfc_4122(value)
+    }
+}
+
+impl From<QUuid> for QByteArray {
+    /// See [`QUuid::to_rfc_4122`].
+    fn from(value: QUuid) -> Self {
+        value.to_rfc_4122()
     }
 }
 
@@ -365,9 +430,16 @@ mod test {
     }
 
     #[test]
-    fn quuid_string_round_trip() {
+    fn quuid_qstring_round_trip() {
         let uuid = QUuid::create_uuid();
-        let roundtrip = QUuid::from_string(&QString::from(&uuid.to_string()));
+        let roundtrip = QUuid::from(&QString::from(&uuid.to_string()));
+        assert_eq!(uuid, roundtrip)
+    }
+
+    #[test]
+    fn quuid_str_round_trip() {
+        let uuid = QUuid::create_uuid();
+        let roundtrip = QUuid::from(&uuid.to_string());
         assert_eq!(uuid, roundtrip)
     }
 
@@ -383,6 +455,13 @@ mod test {
     fn quuid_bytes_round_trip() {
         let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_bytes(uuid.to_bytes());
+        assert_eq!(uuid, roundtrip)
+    }
+
+    #[test]
+    fn quuid_qbytearray_round_trip() {
+        let uuid = QUuid::create_uuid();
+        let roundtrip = QUuid::from_rfc_4122(&uuid.to_rfc_4122());
         assert_eq!(uuid, roundtrip)
     }
 
