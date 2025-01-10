@@ -189,7 +189,59 @@ impl QUuid {
         (self.data1, self.data2, self.data3, &self.data4)
     }
 
-    const fn to_big_endian(self) -> Self {
+    /// Creates a UUID from its representation as a byte array in big endian.
+    pub const fn from_bytes(bytes: [u8; 16]) -> Self {
+        // On big endian targets, this is a no-op.
+        // On little endian targets, it swaps the bytes of each integer field (data1, data2, data3).
+        unsafe { mem::transmute::<[u8; 16], Self>(bytes) }.to_be()
+    }
+
+    /// Returns the memory representation of this UUID as a byte array in big-endian byte order.
+    pub const fn to_bytes(self) -> [u8; 16] {
+        // On big endian targets, this is a no-op.
+        // On little endian targets, it swaps the bytes of each integer field (data1, data2, data3).
+        unsafe { mem::transmute::<Self, [u8; 16]>(self.to_be()) }
+    }
+
+    /// Creates a UUID from its representation as a 128-bit integer.
+    pub const fn from_u128(data: u128) -> Self {
+        Self::from_bytes(data.to_be_bytes())
+    }
+
+    /// Returns the memory representation of this UUID as a 128-bit integer.
+    pub const fn to_u128(&self) -> u128 {
+        u128::from_be_bytes(self.to_bytes())
+    }
+
+    /// Converts self to big endian from the target’s endianness.
+    // This function is analogous to [`u8::to_be`](https://doc.rust-lang.org/src/core/num/uint_macros.rs.html#399-431).
+    ///
+    /// On big endian this is a no-op. On little endian the bytes are swapped.
+    ///
+    /// This is useful for converting between QUuids and byte arrays because byte array
+    /// representations of UUIDs are always in big endian mode.
+    ///
+    /// # Examples
+    ///
+    /// Basic usage:
+    ///
+    /// ```
+    /// let d1 = 0x1A;
+    /// let d2 = 0x1B;
+    /// let d3 = 0x1C;
+    /// let d4 = [0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8];
+    /// let uuid = QUuid::from_fields(d1, d2, d3, d4);
+    ///
+    /// if cfg!(target_endian = "big") {
+    ///     assert_eq!(uuid.to_be(), uuid)
+    /// } else {
+    ///     assert_eq!(
+    ///         uuid.to_be(),
+    ///         QUuid::from_fields(d1.swap_bytes(), d2.swap_bytes(), d3.swap_bytes(), d4)
+    ///     );
+    /// }
+    /// ```
+    const fn to_be(self) -> Self {
         #[cfg(target_endian = "big")]
         {
             self
@@ -203,26 +255,6 @@ impl QUuid {
                 data4: self.data4,
             }
         }
-    }
-
-    /// Creates a UUID from its representation as a byte array in big endian.
-    pub const fn from_bytes(bytes: [u8; 16]) -> Self {
-        unsafe { mem::transmute::<[u8; 16], Self>(bytes) }.to_big_endian()
-    }
-
-    /// Returns the memory representation of this UUID as a byte array in big-endian byte order.
-    pub const fn to_bytes(self) -> [u8; 16] {
-        unsafe { mem::transmute::<Self, [u8; 16]>(self.to_big_endian()) }
-    }
-
-    /// Creates a UUID from its representation as a 128-bit integer.
-    pub const fn from_u128(data: u128) -> Self {
-        Self::from_bytes(data.to_be_bytes())
-    }
-
-    /// Returns the memory representation of this UUID as a 128-bit integer.
-    pub const fn to_u128(&self) -> u128 {
-        u128::from_be_bytes(self.to_bytes())
     }
 }
 
