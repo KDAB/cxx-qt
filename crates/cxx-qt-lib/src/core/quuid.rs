@@ -59,11 +59,6 @@ mod ffi {
         type QUuidVariant;
         type QUuidVersion;
 
-        /// Returns true if this is the null UUID `{00000000-0000-0000-0000-000000000000}`.
-        /// otherwise returns false.
-        #[rust_name = "is_null"]
-        fn isNull(self: &QUuid) -> bool;
-
         /// Returns the value in the variant field of the UUID. If the return value is
         /// `QUuidVariant::DCE`, call `version()` to see which layout it uses. The null UUID is
         /// considered to be of an unknown variant.
@@ -140,6 +135,12 @@ impl QUuid {
             data3: 0,
             data4: [0; 8],
         }
+    }
+
+    /// Returns `true` if this is the null UUID {00000000-0000-0000-0000-000000000000};
+    /// otherwise returns `false`.
+    pub const fn is_null(&self) -> bool {
+        (unsafe { std::mem::transmute::<QUuid, u128>(*self) }) == 0
     }
 
     /// This function returns a new UUID with variant `QUuidVariant::DCE` and version
