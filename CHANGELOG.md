@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.7.0...HEAD)
 
+### Added
+
+- Add binding for `singletonInstance` of `QQmlApplicationEngine`, allowing access to singleton instances registered in the QML engine.
+
 ### Fixed
 
 - Build warnings due to unused unsafe blocks since CXX 1.0.130
