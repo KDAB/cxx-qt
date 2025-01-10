@@ -8,9 +8,18 @@
 use crate::{crate_name, module_name_from_uri};
 use std::io::Result;
 use std::{
-    env,
+    env, fs,
     path::{Path, PathBuf},
 };
+
+/// On Unix platforms, included files are symlinked into destination folders.
+/// On non-Unix platforms, due to poor support for symlinking, included files are deep copied.
+#[cfg(unix)]
+pub(crate) const INCLUDE_VERB: &str = "create symlink";
+/// On Unix platforms, included files are symlinked into destination folders.
+/// On non-Unix platforms, due to poor support for symlinking, included files are deep copied.
+#[cfg(not(unix))]
+pub(crate) const INCLUDE_VERB: &str = "deep copy files";
 
 // Clean a directory by removing it and recreating it.
 pub(crate) fn clean(path: impl AsRef<Path>) -> Result<()> {
@@ -80,4 +89,78 @@ pub(crate) fn out() -> PathBuf {
 
 pub(crate) fn is_exporting() -> bool {
     export().is_some()
+}
+
+#[cfg(unix)]
+pub(crate) fn symlink_or_copy_directory(
+    source: impl AsRef<Path>,
+    dest: impl AsRef<Path>,
+) -> Result<bool> {
+    match std::os::unix::fs::symlink(&source, &dest) {
+        Ok(()) => Ok(true),
+        Err(e) if e.kind() != std::io::ErrorKind::AlreadyExists => Err(e),
+        // Two dependencies may be reexporting the same shared dependency, which will
+        // result in conflicting symlinks.
+        // Try detecting this by resolving the symlinks and checking whether this leads us
+        // to the same paths. If so, it's the same include path for the same prefix, which
+        // is fine.
+        Err(_) => Ok(fs::canonicalize(source)? == fs::canonicalize(dest)?),
+    }
+}
+
+#[cfg(not(unix))]
+pub(crate) fn symlink_or_copy_directory(
+    source: impl AsRef<Path>,
+    dest: impl AsRef<Path>,
+) -> Result<bool> {
+    deep_copy_directory(source.as_ref(), dest.as_ref())
+}
+
+#[cfg(not(unix))]
+fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
+    fs::create_dir_all(dest)?;
+    for entry in fs::read_dir(source)? {
+        let entry = entry?;
+        let source_path = entry.path();
+        let dest_path = dest.join(entry.file_name());
+        if entry.file_type()?.is_dir() {
+            if deep_copy_directory(&source_path, &dest_path)? {
+                continue;
+            }
+            return Ok(false);
+        }
+        if !dest_path.try_exists()? {
+            fs::copy(&source_path, &dest_path)?;
+        } else if files_conflict(&source_path, &dest_path)? {
+            return Ok(false);
+        }
+    }
+    Ok(true)
+}
+
+#[cfg(not(unix))]
+fn files_conflict(source: &Path, dest: &Path) -> Result<bool> {
+    use fs::File;
+    use std::io::{BufRead, BufReader};
+    let source = File::open(source)?;
+    let dest = File::open(dest)?;
+    if source.metadata()?.len() != dest.metadata()?.len() {
+        return Ok(true);
+    }
+    let mut source = BufReader::new(source);
+    let mut dest = BufReader::new(dest);
+    loop {
+        let source_bytes = source.fill_buf()?;
+        let bytes_len = source_bytes.len();
+        let dest_bytes = dest.fill_buf()?;
+        let bytes_len = bytes_len.min(dest_bytes.len());
+        if bytes_len == 0 {
+            return Ok(false);
+        }
+        if source_bytes[..bytes_len] != dest_bytes[..bytes_len] {
+            return Ok(true);
+        }
+        source.consume(bytes_len);
+        dest.consume(bytes_len);
+    }
 }
