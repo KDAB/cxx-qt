@@ -1,3 +1,8 @@
+# SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Joshua Booth <joshua.n.booth@gmail.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+
 src/core/qlist/qlist_*.rs linguist-generated=true
 src/core/qset/qset_*.rs linguist-generated=true
 src/core/qvariant/qvariant_*.rs linguist-generated=true
