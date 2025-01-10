@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.7.0...HEAD)
 
+### Added
+
+- `QDateTime::from_string` to parse `QDateTime` from a `QString`.
+
 ### Fixed
 
 - Build warnings due to unused unsafe blocks since CXX 1.0.130
