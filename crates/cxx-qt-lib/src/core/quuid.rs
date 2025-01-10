@@ -82,14 +82,14 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "quuid_new_v3"]
-        fn quuidNewV3(ns: &QUuid, data: &[u8]) -> QUuid;
+        #[rust_name = "quuid_create_uuid_v3"]
+        fn quuidCreateUuidV3(ns: &QUuid, data: &[u8]) -> QUuid;
         #[doc(hidden)]
-        #[rust_name = "quuid_new_v4"]
-        fn quuidNewV4() -> QUuid;
+        #[rust_name = "quuid_create_uuid"]
+        fn quuidCreateUuid() -> QUuid;
         #[doc(hidden)]
-        #[rust_name = "quuid_new_v5"]
-        fn quuidNewV5(ns: &QUuid, data: &[u8]) -> QUuid;
+        #[rust_name = "quuid_create_uuid_v5"]
+        fn quuidCreateUuidV5(ns: &QUuid, data: &[u8]) -> QUuid;
         #[doc(hidden)]
         #[rust_name = "quuid_to_string"]
         fn quuidToString(uuid: &QUuid) -> QString;
@@ -145,22 +145,22 @@ impl QUuid {
     /// This function returns a new UUID with variant `QUuidVariant::DCE` and version
     /// `QUuidVersion::Md5`. `namespace` is the namespace and `data` is the basic data as described
     /// by RFC 4122.
-    pub fn new_v3(namespace: &Self, data: &[u8]) -> Self {
-        ffi::quuid_new_v3(namespace, data)
+    pub fn create_uuid_v3(namespace: &Self, data: &[u8]) -> Self {
+        ffi::quuid_create_uuid_v3(namespace, data)
     }
 
     /// On any platform other than Windows, this function returns a new UUID with variant
     /// `QUuidVariant::DCE` and version `QUuidVersion::Random`. On Windows, a GUID is generated using
     /// the Windows API and will be of the type that the API decides to create.
-    pub fn new_v4() -> Self {
-        ffi::quuid_new_v4()
+    pub fn create_uuid() -> Self {
+        ffi::quuid_create_uuid()
     }
 
     /// This function returns a new UUID with variant `QUuidVariant::DCE` and version
     /// `QUuidVersion::Sha1`. `namespace` is the namespace and `data` is the basic data as described
     /// by RFC 4122.
-    pub fn new_v5(namespace: &Self, data: &[u8]) -> Self {
-        ffi::quuid_new_v5(namespace, data)
+    pub fn create_uuid_v5(namespace: &Self, data: &[u8]) -> Self {
+        ffi::quuid_create_uuid_v5(namespace, data)
     }
 
     /// Creates a QUuid object from the string text, which must be formatted as five hex fields
@@ -282,13 +282,13 @@ mod test {
 
     #[test]
     fn quuid_is_not_null() {
-        assert!(!QUuid::new_v4().is_null())
+        assert!(!QUuid::create_uuid().is_null())
     }
 
     #[test]
     fn quuid_variant() {
         assert_eq!(
-            [QUuid::null().variant(), QUuid::new_v4().variant()],
+            [QUuid::null().variant(), QUuid::create_uuid().variant()],
             [QUuidVariant::VarUnknown, QUuidVariant::DCE]
         );
     }
@@ -298,9 +298,9 @@ mod test {
         assert_eq!(
             [
                 QUuid::null().version(),
-                QUuid::new_v3(NAMESPACE_DNS, &[]).version(),
-                QUuid::new_v4().version(),
-                QUuid::new_v5(NAMESPACE_DNS, &[]).version(),
+                QUuid::create_uuid_v3(NAMESPACE_DNS, &[]).version(),
+                QUuid::create_uuid().version(),
+                QUuid::create_uuid_v5(NAMESPACE_DNS, &[]).version(),
             ],
             [
                 QUuidVersion::VerUnknown,
@@ -325,20 +325,20 @@ mod test {
     #[test]
     fn quuid_new_v3() {
         assert_eq!(
-            QUuid::new_v3(NAMESPACE_DNS, "testdata".as_bytes()),
+            QUuid::create_uuid_v3(NAMESPACE_DNS, "testdata".as_bytes()),
             QUuid::from_u128(0x5157facac7e1345c927671c2c6d41e7a)
         );
     }
 
     #[test]
     fn quuid_new_v4() {
-        assert_ne!(QUuid::new_v4(), QUuid::new_v4());
+        assert_ne!(QUuid::create_uuid(), QUuid::create_uuid());
     }
 
     #[test]
     fn quuid_new_v5() {
         assert_eq!(
-            QUuid::new_v5(NAMESPACE_DNS, "testdata".as_bytes()),
+            QUuid::create_uuid_v5(NAMESPACE_DNS, "testdata".as_bytes()),
             QUuid::from_u128(0x7e95e361a22c51c18c297ac24cb61e83)
         );
     }
@@ -353,14 +353,14 @@ mod test {
 
     #[test]
     fn quuid_string_round_trip() {
-        let uuid = QUuid::new_v4();
+        let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_string(&QString::from(&uuid.to_string()));
         assert_eq!(uuid, roundtrip)
     }
 
     #[test]
     fn quuid_fields_round_trip() {
-        let uuid = QUuid::new_v4();
+        let uuid = QUuid::create_uuid();
         let (d1, d2, d3, &d4) = uuid.as_fields();
         let roundtrip = QUuid::from_fields(d1, d2, d3, d4);
         assert_eq!(uuid, roundtrip)
@@ -368,14 +368,14 @@ mod test {
 
     #[test]
     fn quuid_bytes_round_trip() {
-        let uuid = QUuid::new_v4();
+        let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_bytes(uuid.to_bytes());
         assert_eq!(uuid, roundtrip)
     }
 
     #[test]
     fn quuid_u128_round_trip() {
-        let uuid = QUuid::new_v4();
+        let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_u128(uuid.to_u128());
         assert_eq!(uuid, roundtrip)
     }

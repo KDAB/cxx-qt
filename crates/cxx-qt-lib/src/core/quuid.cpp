@@ -35,19 +35,19 @@ static_assert(QTypeInfo<QUuid>::isRelocatable, "QUuid must be relocatable!");
 namespace rust {
 namespace cxxqtlib1 {
 QUuid
-quuidNewV3(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice)
+quuidCreateUuidV3(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice)
 {
   return QUuid::createUuidV3(ns, byteView(slice));
 }
 
 QUuid
-quuidNewV4()
+quuidCreateUuid()
 {
   return QUuid::createUuid();
 }
 
 QUuid
-quuidNewV5(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice)
+quuidCreateUuidV5(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice)
 {
   return QUuid::createUuidV5(ns, byteView(slice));
 }

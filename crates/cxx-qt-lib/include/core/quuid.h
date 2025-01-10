@@ -16,13 +16,13 @@ using QUuidVersion = QUuid::Version;
 namespace rust {
 namespace cxxqtlib1 {
 QUuid
-quuidNewV3(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice);
+quuidCreateUuidV3(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice);
 
 QUuid
-quuidNewV4();
+quuidCreateUuid();
 
 QUuid
-quuidNewV5(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice);
+quuidCreateUuidV5(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice);
 
 QString
 quuidToString(const QUuid& uuid);
