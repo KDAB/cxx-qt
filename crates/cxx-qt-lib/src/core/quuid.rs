@@ -75,7 +75,7 @@ mod ffi {
 
         /// Returns the binary representation of this UUID. The byte array is in big endian format,
         /// and formatted according to RFC 4122, section 4.1.2 - "Layout and byte order".
-        #[rust_name = "to_rfc_122"]
+        #[rust_name = "to_rfc_4122"]
         fn toRfc4122(self: &QUuid) -> QByteArray;
     }
 
