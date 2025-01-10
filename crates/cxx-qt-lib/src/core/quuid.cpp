@@ -18,6 +18,8 @@ assert_alignment_and_size(QUuid, {
 static_assert(::std::is_trivially_copyable<QUuid>::value,
               "QUuid must be trivially copyable!");
 
+static_assert(QTypeInfo<QUuid>::isRelocatable, "QUuid must be relocatable!");
+
 #if QT_VERSION >= QT_VERSION_CHECK(6, 8, 0)
 #define byteView(slice) QByteArrayView(slice.data(), slice.length())
 #elif QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
