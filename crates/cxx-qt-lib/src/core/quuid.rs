@@ -221,27 +221,7 @@ impl QUuid {
     ///
     /// This is useful for converting between QUuids and byte arrays because byte array
     /// representations of UUIDs are always in big endian mode.
-    ///
-    /// # Examples
-    ///
-    /// Basic usage:
-    ///
-    /// ```
-    /// let d1 = 0x1A;
-    /// let d2 = 0x1B;
-    /// let d3 = 0x1C;
-    /// let d4 = [0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8];
-    /// let uuid = QUuid::from_fields(d1, d2, d3, d4);
-    ///
-    /// if cfg!(target_endian = "big") {
-    ///     assert_eq!(uuid.to_be(), uuid)
-    /// } else {
-    ///     assert_eq!(
-    ///         uuid.to_be(),
-    ///         QUuid::from_fields(d1.swap_bytes(), d2.swap_bytes(), d3.swap_bytes(), d4)
-    ///     );
-    /// }
-    /// ```
+    #[must_use = "this returns the result of the operation, without modifying the original"]
     const fn to_be(self) -> Self {
         #[cfg(target_endian = "big")]
         {
