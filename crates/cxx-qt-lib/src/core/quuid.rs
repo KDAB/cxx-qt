@@ -312,7 +312,7 @@ mod test {
     }
 
     #[test]
-    fn quuid_to_rfc_122() {
+    fn quuid_to_rfc_4122() {
         let bytes = <[u8; 16]>::try_from("random test data".as_bytes()).unwrap();
         assert_eq!(Vec::from(&QUuid::from_bytes(bytes).to_rfc_122()), bytes)
     }
