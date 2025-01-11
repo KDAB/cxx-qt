@@ -266,20 +266,6 @@ impl From<QUuid> for u128 {
     }
 }
 
-impl From<[u8; 16]> for QUuid {
-    /// See [`QUuid::from_bytes`].
-    fn from(value: [u8; 16]) -> Self {
-        Self::from_bytes(value)
-    }
-}
-
-impl From<QUuid> for [u8; 16] {
-    /// See [`QUuid::to_bytes`].
-    fn from(value: QUuid) -> Self {
-        value.to_bytes()
-    }
-}
-
 impl From<&QString> for QUuid {
     /// Creates a QUuid object from the string text, which must be formatted as five hex fields
     /// separated by '-', e.g., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
