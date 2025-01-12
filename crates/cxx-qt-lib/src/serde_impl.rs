@@ -15,26 +15,42 @@ use std::num::NonZeroIsize;
 
 /// Serializes and deserializes a time-like value using an ISO-8601 string as the intermediary.
 macro_rules! datetime_impl {
-    ($t:ident, $construct:expr, $expected:literal) => {
+    ($t:ident, $construct:expr, $f:expr, $expected:literal) => {
         impl Serialize for $t {
             fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-                self.to_format(DateFormat::ISODate).serialize(serializer)
+                self.to_format($f).serialize(serializer)
             }
         }
 
         impl<'de> Deserialize<'de> for $t {
             fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-                let string = <&str>::deserialize(deserializer)?;
-                $construct(&QString::from(string), DateFormat::ISODate)
-                    .ok_or(D::Error::invalid_value(Unexpected::Str(string), &$expected))
+                let string = QString::deserialize(deserializer)?;
+                $construct(&string, $f).ok_or_else(|| {
+                    D::Error::invalid_value(Unexpected::Str(&String::from(&string)), &$expected)
+                })
             }
         }
     };
 }
 
-datetime_impl!(QDate, QDate::from_string_enum, "ISO-8601 date");
-datetime_impl!(QDateTime, QDateTime::from_string, "ISO-8601 datetime");
-datetime_impl!(QTime, QTime::from_string_enum_opt, "ISO-8601 time");
+datetime_impl!(
+    QDate,
+    QDate::from_string_enum,
+    DateFormat::ISODate,
+    "ISO-8601 date"
+);
+datetime_impl!(
+    QDateTime,
+    QDateTime::from_string,
+    DateFormat::ISODateWithMs,
+    "ISO-8601 datetime"
+);
+datetime_impl!(
+    QTime,
+    QTime::from_string_enum_opt,
+    DateFormat::ISODateWithMs,
+    "ISO-8601 time"
+);
 
 /// Serde deserializers provide an `Option<usize>` size hint, but Qt containers use signed types
 /// for size. This helper function converts between the two.
@@ -96,7 +112,7 @@ macro_rules! seq_impl {
                 let visitor = SeqVisitor {
                     marker: PhantomData,
                 };
-                deserializer.deserialize_map(visitor)
+                deserializer.deserialize_seq(visitor)
             }
         }
     };
@@ -144,7 +160,7 @@ macro_rules! deref_impl {
                 }
 
                 let visitor = SeqVisitor;
-                deserializer.deserialize_map(visitor)
+                deserializer.deserialize_seq(visitor)
             }
         }
     };
@@ -156,3 +172,18 @@ deref_impl!(QStringList);
 deref_impl!(crate::QPolygon);
 #[cfg(feature = "qt_gui")]
 deref_impl!(crate::QPolygonF);
+
+#[cfg(test)]
+pub fn roundtrip<T>(value: &T) -> T
+where
+    T: Serialize + serde::de::DeserializeOwned,
+{
+    let serialized = serde_json::to_value(value).expect("error serializing value");
+    match serde_json::from_value(serialized) {
+        Ok(deserialized) => deserialized,
+        Err(e) => panic!(
+            "error deserializing {}: {e}",
+            serde_json::to_value(value).unwrap()
+        ),
+    }
+}
