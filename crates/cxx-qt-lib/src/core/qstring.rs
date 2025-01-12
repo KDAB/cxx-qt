@@ -199,7 +199,7 @@ use serde::{Deserialize, Serialize};
 /// Note that QString is a UTF-16 whereas Rust strings are a UTF-8
 #[repr(C)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(from = "String", into = "String"))]
+#[cfg_attr(feature = "serde", serde(from = "&str", into = "String"))]
 pub struct QString {
     /// The layout has changed between Qt 5 and Qt 6
     ///
