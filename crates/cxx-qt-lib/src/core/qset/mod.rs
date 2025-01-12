@@ -111,6 +111,12 @@ where
     pub fn remove(&mut self, value: &T) -> bool {
         T::remove(self, value)
     }
+
+    /// Reserve the specified capacity to prevent repeated allocations
+    /// when the maximum size is known.
+    pub fn reserve(&mut self, size: isize) {
+        T::reserve(self, size);
+    }
 }
 
 impl<T> QSet<T>
@@ -191,6 +197,7 @@ pub trait QSetElement: Sized {
     fn insert_clone(set: &mut QSet<Self>, value: &Self);
     fn len(set: &QSet<Self>) -> isize;
     fn remove(set: &mut QSet<Self>, value: &Self) -> bool;
+    fn reserve(set: &mut QSet<Self>, size: isize);
 }
 
 macro_rules! impl_qset_element {
@@ -238,6 +245,10 @@ macro_rules! impl_qset_element {
 
             fn remove(set: &mut QSet<Self>, value: &Self) -> bool {
                 set.cxx_remove(value)
+            }
+
+            fn reserve(set: &mut QSet<Self>, size: isize) {
+                $module::reserve(set, size);
             }
         }
     };
