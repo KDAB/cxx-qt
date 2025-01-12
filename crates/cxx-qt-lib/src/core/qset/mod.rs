@@ -69,7 +69,7 @@ where
     T: QSetElement + std::fmt::Debug,
 {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.debug_list().entries(self.iter()).finish()
+        f.debug_set().entries(self.iter()).finish()
     }
 }
 
