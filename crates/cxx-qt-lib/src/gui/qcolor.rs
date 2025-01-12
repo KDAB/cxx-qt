@@ -270,8 +270,13 @@ mod ffi {
 
 pub use ffi::{QColorNameFormat, QColorSpec};
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize, Serializer};
+
 /// The QColor class provides colors based on RGB, HSL, HSV or CMYK values.
 #[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(Deserialize))]
+#[cfg_attr(feature = "serde", serde(try_from = "&str"))]
 #[repr(C)]
 pub struct QColor {
     _cspec: MaybeUninit<i32>,
@@ -629,6 +634,18 @@ impl From<&QColor> for rgb::RGBA8 {
             b: value.blue() as u8,
             a: value.alpha() as u8,
         }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for QColor {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let format = if self.alpha() == 0 {
+            ffi::QColorNameFormat::HexRgb
+        } else {
+            ffi::QColorNameFormat::HexArgb
+        };
+        self.name(format).serialize(serializer)
     }
 }
 
