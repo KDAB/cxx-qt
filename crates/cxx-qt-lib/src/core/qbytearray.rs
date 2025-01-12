@@ -105,13 +105,8 @@ mod ffi {
     }
 }
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize, Serializer};
-
 /// The QByteArray class provides an array of bytes.
 #[repr(C)]
-#[cfg_attr(feature = "serde", derive(Deserialize))]
-#[cfg_attr(feature = "serde", serde(from = "&[u8]"))]
 pub struct QByteArray {
     /// The layout has changed between Qt 5 and Qt 6
     ///
@@ -326,9 +321,50 @@ impl QByteArray {
 }
 
 #[cfg(feature = "serde")]
-impl Serialize for QByteArray {
-    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        self.as_slice().serialize(serializer)
+impl serde::Serialize for QByteArray {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.serialize_bytes(self.as_slice())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QByteArray {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{Error as DeError, SeqAccess, Visitor};
+
+        struct BytesVisitor;
+
+        impl<'de> Visitor<'de> for BytesVisitor {
+            type Value = QByteArray;
+
+            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+                formatter.write_str("an array of bytes")
+            }
+
+            fn visit_bytes<E: DeError>(self, v: &[u8]) -> Result<Self::Value, E> {
+                Ok(Self::Value::from(v))
+            }
+
+            fn visit_str<E: DeError>(self, v: &str) -> Result<Self::Value, E> {
+                Ok(Self::Value::from(v))
+            }
+
+            fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
+                let mut values = Self::Value::default();
+                if let Some(size_hint) = seq.size_hint() {
+                    if size_hint != 0 && size_hint <= isize::MAX as usize {
+                        values.reserve(size_hint as isize);
+                    }
+                }
+                while let Some(value) = seq.next_element()? {
+                    values.append(value);
+                }
+                Ok(values)
+            }
+        }
+
+        let visitor = BytesVisitor;
+        deserializer.deserialize_byte_buf(visitor)
     }
 }
 
