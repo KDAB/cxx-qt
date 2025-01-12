@@ -105,8 +105,13 @@ mod ffi {
     }
 }
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize, Serializer};
+
 /// The QByteArray class provides an array of bytes.
 #[repr(C)]
+#[cfg_attr(feature = "serde", derive(Deserialize))]
+#[cfg_attr(feature = "serde", serde(from = "&[u8]"))]
 pub struct QByteArray {
     /// The layout has changed between Qt 5 and Qt 6
     ///
@@ -317,6 +322,13 @@ impl QByteArray {
     /// Returns a copy of this byte array with spacing characters removed from the start and end.
     pub fn trimmed(&self) -> Self {
         ffi::qbytearray_trimmed(self)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for QByteArray {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.as_slice().serialize(serializer)
     }
 }
 
