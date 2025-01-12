@@ -103,6 +103,9 @@ pub use qvariant::{QVariant, QVariantValue};
 mod qvector;
 pub use qvector::{QVector, QVectorElement};
 
+#[cfg(feature = "serde")]
+mod serde_impl;
+
 #[cxx::bridge]
 mod ffi {
     #[namespace = "rust::cxxqtlib1"]

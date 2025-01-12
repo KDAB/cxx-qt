@@ -70,5 +70,7 @@ void
 qdatetimeSetTimeZone(QDateTime& datetime, const QTimeZone& timeZone);
 QDateTime
 qdatetimeFromQString(const QString& string, Qt::DateFormat format);
+QString
+qdatetimeToFormat(const QDateTime& datetime, Qt::DateFormat format);
 }
 }

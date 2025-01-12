@@ -102,6 +102,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdate_to_format"]
         fn qdateToFormat(date: &QDate, format: &QString) -> QString;
+
+        #[doc(hidden)]
+        #[rust_name = "qdate_to_format_enum"]
+        fn qdateToFormat(date: &QDate, format: DateFormat) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -176,7 +180,7 @@ impl QDate {
         Self { jd }
     }
 
-    /// Returns the QTime represented by the string, using the format given, or None if the string cannot be parsed.
+    /// Returns the QDate represented by the string, using the format given, or None if the string cannot be parsed.
     pub fn from_string(string: &ffi::QString, format: &ffi::QString) -> Option<Self> {
         let date = ffi::qdate_from_string(string, format);
         if date.is_valid() {
@@ -186,7 +190,7 @@ impl QDate {
         }
     }
 
-    /// Returns the time represented in the string as a QTime using the format given, or None if this is not possible.
+    /// Returns the time represented in the string as a QDate using the format given, or None if this is not possible.
     pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
         let date = ffi::qdate_from_string_enum(string, format);
         if date.is_valid() {
@@ -194,6 +198,11 @@ impl QDate {
         } else {
             None
         }
+    }
+
+    /// Returns the QDate as a string in the format given.
+    pub fn to_format(&self, format: ffi::DateFormat) -> ffi::QString {
+        ffi::qdate_to_format_enum(self, format)
     }
 
     /// Returns true if the specified year is a leap year in the Gregorian calendar; otherwise returns false.

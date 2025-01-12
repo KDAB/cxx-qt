@@ -26,6 +26,8 @@ QTime
 qtimeFromString(const QString& string, const QString& format);
 QTime
 qtimeFromString(const QString& string, Qt::DateFormat format);
+QString
+qtimeToFormat(const QTime& time, Qt::DateFormat format);
 // In Qt 5 t is const-ref, in Qt 6 it is value
 ::std::int32_t
 qtimeSecsTo(const QTime& time, QTime t);

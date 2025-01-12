@@ -168,10 +168,15 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdatetime_to_secs_since_epoch"]
         fn qdatetimeToSecsSinceEpoch(datetime: &QDateTime) -> i64;
+        #[doc(hidden)]
         #[rust_name = "qdatetime_settimezone"]
         fn qdatetimeSetTimeZone(datetime: &mut QDateTime, time_zone: &QTimeZone);
+        #[doc(hidden)]
         #[rust_name = "qdatetime_from_string"]
         fn qdatetimeFromQString(string: &QString, format: DateFormat) -> QDateTime;
+        #[doc(hidden)]
+        #[rust_name = "qdatetime_to_format"]
+        fn qdatetimeToFormat(datetime: &QDateTime, format: DateFormat) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -309,6 +314,11 @@ impl QDateTime {
         } else {
             None
         }
+    }
+
+    /// Returns the datetime as a string in the format given.
+    pub fn to_format(&self, format: ffi::DateFormat) -> ffi::QString {
+        ffi::qdatetime_to_format(self, format)
     }
 
     /// Returns the number of milliseconds from this datetime to the other datetime.

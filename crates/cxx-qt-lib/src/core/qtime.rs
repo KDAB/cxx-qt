@@ -88,6 +88,10 @@ mod ffi {
         fn qtimeFromString(string: &QString, format: DateFormat) -> QTime;
 
         #[doc(hidden)]
+        #[rust_name = "qtime_to_format"]
+        fn qtimeToFormat(time: &QTime, format: DateFormat) -> QString;
+
+        #[doc(hidden)]
         #[rust_name = "qtime_msecs_to"]
         fn qtimeMSecsTo(time: &QTime, t: QTime) -> i32;
 
@@ -140,9 +144,34 @@ impl QTime {
         ffi::qtime_from_string(string, format)
     }
 
+    /// Returns the QTime represented by the string, using the format given, or None if the string cannot be parsed.
+    pub fn from_string_opt(string: &ffi::QString, format: &ffi::QString) -> Option<Self> {
+        let time = ffi::qtime_from_string(string, format);
+        if time.is_valid() {
+            Some(time)
+        } else {
+            None
+        }
+    }
+
     /// Returns the time represented in the string as a QTime using the format given, or an invalid time if this is not possible.
     pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Self {
         ffi::qtime_from_string_enum(string, format)
+    }
+
+    /// Returns the time represented in the string as a QTime using the format given, or None if this is not possible.
+    pub fn from_string_enum_opt(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
+        let time = ffi::qtime_from_string_enum(string, format);
+        if time.is_valid() {
+            Some(time)
+        } else {
+            None
+        }
+    }
+
+    /// Returns the QDate as a string in the format given.
+    pub fn to_format(&self, format: ffi::DateFormat) -> ffi::QString {
+        ffi::qtime_to_format(self, format)
     }
 
     /// Returns the number of milliseconds from this time to t.
