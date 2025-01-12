@@ -93,8 +93,12 @@ mod ffi {
     }
 }
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// The QPoint struct defines a point in the plane using integer precision.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct QPoint {
     x: i32,

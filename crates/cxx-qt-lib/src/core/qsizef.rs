@@ -116,9 +116,12 @@ mod ffi {
         fn operatorDiv(a: f64, b: &QSizeF) -> QSizeF;
     }
 }
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 /// The QSizeF class defines the size of a two-dimensional object using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct QSizeF {
     width: f64,

@@ -269,9 +269,12 @@ mod ffi {
         fn operatorMinus(a: &QRectF, b: &QMarginsF) -> QRectF;
     }
 }
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 /// The QRectF struct defines a rectangle in the plane using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct QRectF {
     xp: f64,

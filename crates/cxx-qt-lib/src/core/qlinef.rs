@@ -131,8 +131,12 @@ mod ffi {
     }
 }
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// The QLineF class provides a two-dimensional vector using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct QLineF {
     pt1: QPointF,
