@@ -64,6 +64,15 @@ where
 
 impl<T> Eq for QSet<T> where T: QSetElement + PartialEq {}
 
+impl<T> std::fmt::Debug for QSet<T>
+where
+    T: QSetElement + std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_list().entries(self.iter()).finish()
+    }
+}
+
 impl<T> QSet<T>
 where
     T: QSetElement,

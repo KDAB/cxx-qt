@@ -159,6 +159,12 @@ impl PartialEq for QPolygon {
     }
 }
 
+impl std::fmt::Debug for QPolygon {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        QVector::fmt(self, f)
+    }
+}
+
 impl std::fmt::Display for QPolygon {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", ffi::qpolygon_to_qstring(self))
