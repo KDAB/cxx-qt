@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{QVector, QPoint, QRect};
+use crate::{QPoint, QRect, QVector};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
 use std::ops::{Deref, DerefMut};

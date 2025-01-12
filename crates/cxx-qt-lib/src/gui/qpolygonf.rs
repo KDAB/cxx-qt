@@ -6,7 +6,7 @@ use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
 use std::ops::{Deref, DerefMut};
 
-use crate::{QVector, QPointF};
+use crate::{QPointF, QVector};
 
 #[cxx::bridge]
 mod ffi {
