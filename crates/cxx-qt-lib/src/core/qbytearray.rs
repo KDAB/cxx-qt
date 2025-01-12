@@ -381,6 +381,13 @@ mod tests {
     #[cfg(feature = "bytes")]
     use super::*;
 
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qbytearray_serde() {
+        let qbytearray = QByteArray::from("KDAB");
+        assert_eq!(crate::serde_impl::roundtrip(&qbytearray), qbytearray)
+    }
+
     #[cfg(feature = "bytes")]
     #[test]
     fn test_bytes() {

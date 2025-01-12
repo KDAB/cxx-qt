@@ -665,8 +665,14 @@ unsafe impl ExternType for QColor {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "rgb")]
     use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn serde_qcolor() {
+        let qcolor = QColor::from_rgba(10, 20, 30, 40);
+        assert_eq!(crate::serde_impl::roundtrip(&qcolor), qcolor);
+    }
 
     #[cfg(feature = "rgb")]
     #[test]

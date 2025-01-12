@@ -555,6 +555,17 @@ mod test {
         assert_eq!(qdatetime_b.cmp(&qdatetime_a), Ordering::Greater);
         assert_eq!(qdatetime_a.cmp(&qdatetime_a), Ordering::Equal);
     }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qdatetime_serde() {
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 1, 1, 1),
+            &ffi::QTimeZone::utc(),
+        );
+        assert_eq!(crate::serde_impl::roundtrip(&qdatetime), qdatetime);
+    }
 }
 
 #[cfg(test)]

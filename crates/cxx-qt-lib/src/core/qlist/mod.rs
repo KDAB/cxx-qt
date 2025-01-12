@@ -398,4 +398,11 @@ mod test {
         let qlist = QList::<u8>::from(array);
         assert_eq!(Vec::from(&qlist), array);
     }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qlist_serde() {
+        let qlist = QList::<u8>::from([0, 1, 2]);
+        assert_eq!(crate::serde_impl::roundtrip(&qlist), qlist);
+    }
 }

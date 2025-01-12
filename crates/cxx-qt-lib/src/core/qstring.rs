@@ -462,6 +462,13 @@ impl<'de> serde::Deserialize<'de> for QString {
 mod test {
     use super::*;
 
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qstring_serde() {
+        let qstring = QString::from("KDAB");
+        assert_eq!(crate::serde_impl::roundtrip(&qstring), qstring);
+    }
+
     #[test]
     fn test_ordering() {
         let qstring_a = QString::from("a");

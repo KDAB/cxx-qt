@@ -35,6 +35,9 @@ serde = { version = "1", features=["derive"], optional = true }
 cxx-qt-build.workspace = true
 qt-build-utils.workspace = true
 
+[dev-dependencies]
+serde_json = "1.0.135"
+
 [features]
 full = ["qt_full", "serde", "url", "time", "rgb", "http", "chrono", "bytes"]
 default = []

@@ -286,3 +286,18 @@ impl_qset_element!(u8, qset_u8, "QSet_u8");
 impl_qset_element!(u16, qset_u16, "QSet_u16");
 impl_qset_element!(u32, qset_u32, "QSet_u32");
 impl_qset_element!(u64, qset_u64, "QSet_u64");
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qset_serde() {
+        let mut set = QSet::default();
+        set.insert(0);
+        set.insert(1);
+        set.insert(2);
+        assert_eq!(crate::serde_impl::roundtrip(&set), set)
+    }
+}

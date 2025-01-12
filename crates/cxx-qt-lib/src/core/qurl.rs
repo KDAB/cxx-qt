@@ -534,8 +534,14 @@ unsafe impl ExternType for QUrl {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(any(feature = "http", feature = "url"))]
     use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qurl_serde() {
+        let qurl = QUrl::from("https://github.com/kdab/cxx-qt");
+        assert_eq!(crate::serde_impl::roundtrip(&qurl), qurl);
+    }
 
     #[cfg(feature = "http")]
     #[test]

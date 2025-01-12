@@ -299,6 +299,13 @@ mod test {
         assert_eq!(QDate::from(naive), qdate);
     }
 
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qdate_serde() {
+        let qdate = QDate::new(2023, 1, 1);
+        assert_eq!(crate::serde_impl::roundtrip(&qdate), qdate);
+    }
+
     #[cfg(feature = "chrono")]
     #[test]
     fn qdate_to_chrono_naive() {

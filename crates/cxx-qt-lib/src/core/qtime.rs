@@ -296,6 +296,18 @@ unsafe impl ExternType for QTime {
 }
 
 #[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qtime_serde() {
+        let qtime = QTime::new(1, 2, 3, 4);
+        assert_eq!(crate::serde_impl::roundtrip(&qtime), qtime);
+    }
+}
+
+#[cfg(test)]
 #[cfg(feature = "chrono")]
 mod test_chrono {
     use super::*;
