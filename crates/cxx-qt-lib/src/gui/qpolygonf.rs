@@ -4,6 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use std::ops::{Deref, DerefMut};
+
+use crate::{QList, QPointF};
 
 #[cxx::bridge]
 mod ffi {
@@ -14,6 +17,9 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        include!("cxx-qt-lib/qlist.h");
+        type QList_QPointF = crate::QList<QPointF>;
+
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qrectf.h");
@@ -86,6 +92,15 @@ mod ffi {
         #[rust_name = "qpolygonf_to_qstring"]
         fn toQString(value: &QPolygonF) -> QString;
     }
+
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qpolygonf_as_qlist_qpointf_ref"]
+        fn qpolygonfAsQListQPointFRef(shape: &QPolygonF) -> &QList_QPointF;
+        #[rust_name = "qpolygonf_as_qlist_qpointf_ref_mut"]
+        fn qpolygonfAsQListQPointFRef(shape: &mut QPolygonF) -> &mut QList_QPointF;
+    }
 }
 
 /// The QPolygonF class provides a list of QPointF.
@@ -133,6 +148,20 @@ impl std::fmt::Display for QPolygonF {
 }
 
 impl Eq for QPolygonF {}
+
+impl Deref for QPolygonF {
+    type Target = QList<QPointF>;
+
+    fn deref(&self) -> &Self::Target {
+        ffi::qpolygonf_as_qlist_qpointf_ref(self)
+    }
+}
+
+impl DerefMut for QPolygonF {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        ffi::qpolygonf_as_qlist_qpointf_ref_mut(self)
+    }
+}
 
 // Safety:
 //
