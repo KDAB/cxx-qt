@@ -12,7 +12,6 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{self, Formatter};
 use std::marker::PhantomData;
 use std::num::NonZeroIsize;
-use std::ops::Deref;
 
 /// Serializes and deserializes a time-like value using an ISO-8601 string as the intermediary.
 macro_rules! datetime_impl {
@@ -112,7 +111,7 @@ macro_rules! deref_impl {
     ($t:ty) => {
         impl Serialize for $t {
             fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-                <Self as Deref>::Target::serialize(self, serializer)
+                (**self).serialize(serializer)
             }
         }
 
