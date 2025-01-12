@@ -640,7 +640,7 @@ impl From<&QColor> for rgb::RGBA8 {
 #[cfg(feature = "serde")]
 impl Serialize for QColor {
     fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        let format = if self.alpha() == 0 {
+        let format = if self.alpha() == 255 {
             ffi::QColorNameFormat::HexRgb
         } else {
             ffi::QColorNameFormat::HexArgb
