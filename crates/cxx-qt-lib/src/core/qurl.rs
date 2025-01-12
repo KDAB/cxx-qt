@@ -190,7 +190,12 @@ mod ffi {
     }
 }
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize, Serializer};
+
 /// The QUrl class provides a convenient interface for working with URLs.
+#[cfg_attr(feature = "serde", derive(Deserialize))]
+#[cfg_attr(feature = "serde", serde(from = "&str"))]
 #[repr(C)]
 pub struct QUrl {
     _space: MaybeUninit<usize>,
@@ -506,6 +511,13 @@ impl TryFrom<&QUrl> for url::Url {
 
     fn try_from(value: &QUrl) -> Result<Self, Self::Error> {
         url::Url::parse(value.to_string().as_str())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl Serialize for QUrl {
+    fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        ffi::qurl_to_rust_string(self).serialize(serializer)
     }
 }
 
