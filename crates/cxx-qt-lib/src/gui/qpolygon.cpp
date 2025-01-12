@@ -35,16 +35,16 @@ static_assert(QTypeInfo<QPolygon>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {
-const QList<QPoint>&
-qpolygonAsQListQPointRef(const QPolygon& shape)
+const QVector<QPoint>&
+qpolygonAsQVectorQPointRef(const QPolygon& shape)
 {
-  return static_cast<const QList<QPoint>&>(shape);
+  return static_cast<const QVector<QPoint>&>(shape);
 }
 
-QList<QPoint>&
-qpolygonAsQListQPointRefMut(QPolygon& shape)
+QVector<QPoint>&
+qpolygonAsQVectorQPointRefMut(QPolygon& shape)
 {
-  return static_cast<QList<QPoint>&>(shape);
+  return static_cast<QVector<QPoint>&>(shape);
 }
 
 }

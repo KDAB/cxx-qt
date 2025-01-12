@@ -12,6 +12,7 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{self, Formatter};
 use std::marker::PhantomData;
 use std::num::NonZeroIsize;
+use std::ops::Deref;
 
 /// Serializes and deserializes a time-like value using an ISO-8601 string as the intermediary.
 macro_rules! datetime_impl {
@@ -106,12 +107,12 @@ seq_impl!(QList, QListElement, QList::append);
 seq_impl!(QSet, QSetElement, QSet::insert);
 seq_impl!(QVector, QVectorElement, QVector::append);
 
-/// Like seq_impl, but for Qt classes that dereference to QList.
-macro_rules! list_impl {
+/// Like seq_impl, but for Qt classes that dereference to a container.
+macro_rules! deref_impl {
     ($t:ty) => {
         impl Serialize for $t {
             fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-                QList::serialize(self, serializer)
+                <Self as Deref>::Target::serialize(self, serializer)
             }
         }
 
@@ -150,9 +151,9 @@ macro_rules! list_impl {
     };
 }
 
-list_impl!(QStringList);
+deref_impl!(QStringList);
 
 #[cfg(feature = "qt_gui")]
-list_impl!(crate::QPolygon);
+deref_impl!(crate::QPolygon);
 #[cfg(feature = "qt_gui")]
-list_impl!(crate::QPolygonF);
+deref_impl!(crate::QPolygonF);

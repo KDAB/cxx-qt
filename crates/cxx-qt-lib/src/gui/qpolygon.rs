@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{QList, QPoint, QRect};
+use crate::{QVector, QPoint, QRect};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
 use std::ops::{Deref, DerefMut};
@@ -16,8 +16,8 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qlist.h");
-        type QList_QPoint = crate::QList<QPoint>;
+        include!("cxx-qt-lib/qvector.h");
+        type QVector_QPoint = crate::QVector<QPoint>;
 
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
@@ -105,10 +105,10 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "qpolygon_as_qlist_qpoint_ref"]
-        fn qpolygonAsQListQPointRef(shape: &QPolygon) -> &QList_QPoint;
-        #[rust_name = "qpolygon_as_qlist_qpoint_ref_mut"]
-        fn qpolygonAsQListQPointRef(shape: &mut QPolygon) -> &mut QList_QPoint;
+        #[rust_name = "qpolygon_as_qvector_qpoint_ref"]
+        fn qpolygonAsQVectorQPointRef(shape: &QPolygon) -> &QVector_QPoint;
+        #[rust_name = "qpolygon_as_qvector_qpoint_ref_mut"]
+        fn qpolygonAsQVectorQPointRef(shape: &mut QPolygon) -> &mut QVector_QPoint;
     }
 }
 
@@ -168,16 +168,16 @@ impl std::fmt::Display for QPolygon {
 impl Eq for QPolygon {}
 
 impl Deref for QPolygon {
-    type Target = QList<QPoint>;
+    type Target = QVector<QPoint>;
 
     fn deref(&self) -> &Self::Target {
-        ffi::qpolygon_as_qlist_qpoint_ref(self)
+        ffi::qpolygon_as_qvector_qpoint_ref(self)
     }
 }
 
 impl DerefMut for QPolygon {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        ffi::qpolygon_as_qlist_qpoint_ref_mut(self)
+        ffi::qpolygon_as_qvector_qpoint_ref_mut(self)
     }
 }
 

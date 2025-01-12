@@ -6,7 +6,7 @@ use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
 use std::ops::{Deref, DerefMut};
 
-use crate::{QList, QPointF};
+use crate::{QVector, QPointF};
 
 #[cxx::bridge]
 mod ffi {
@@ -17,8 +17,8 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qlist.h");
-        type QList_QPointF = crate::QList<QPointF>;
+        include!("cxx-qt-lib/qvector.h");
+        type QVector_QPointF = crate::QVector<QPointF>;
 
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
@@ -96,10 +96,10 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "qpolygonf_as_qlist_qpointf_ref"]
-        fn qpolygonfAsQListQPointFRef(shape: &QPolygonF) -> &QList_QPointF;
-        #[rust_name = "qpolygonf_as_qlist_qpointf_ref_mut"]
-        fn qpolygonfAsQListQPointFRef(shape: &mut QPolygonF) -> &mut QList_QPointF;
+        #[rust_name = "qpolygonf_as_qvector_qpointf_ref"]
+        fn qpolygonfAsQVectorQPointFRef(shape: &QPolygonF) -> &QVector_QPointF;
+        #[rust_name = "qpolygonf_as_qvector_qpointf_ref_mut"]
+        fn qpolygonfAsQVectorQPointFRef(shape: &mut QPolygonF) -> &mut QVector_QPointF;
     }
 }
 
@@ -150,16 +150,16 @@ impl std::fmt::Display for QPolygonF {
 impl Eq for QPolygonF {}
 
 impl Deref for QPolygonF {
-    type Target = QList<QPointF>;
+    type Target = QVector<QPointF>;
 
     fn deref(&self) -> &Self::Target {
-        ffi::qpolygonf_as_qlist_qpointf_ref(self)
+        ffi::qpolygonf_as_qvector_qpointf_ref(self)
     }
 }
 
 impl DerefMut for QPolygonF {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        ffi::qpolygonf_as_qlist_qpointf_ref_mut(self)
+        ffi::qpolygonf_as_qvector_qpointf_ref_mut(self)
     }
 }
 
