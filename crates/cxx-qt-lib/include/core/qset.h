@@ -71,7 +71,7 @@ void
 qsetReserve(QSet<T>& s, ::rust::isize size) noexcept
 {
   Q_ASSERT(size >= 0);
-  // Qt has an int Qt 6 has a qsizetype
+  // Qt 5 has an int Qt 6 has a qsizetype
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
   s.reserve(static_cast<qsizetype>(size));
 #else
