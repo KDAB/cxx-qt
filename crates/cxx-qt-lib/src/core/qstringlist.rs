@@ -5,6 +5,7 @@
 use crate::{QList, QString};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use std::ops::{Deref, DerefMut};
 
 #[cxx::bridge]
 mod ffi {
@@ -79,6 +80,11 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qstringlist_as_qlist_qstring_ref"]
+        fn qstringlistAsQListQStringRef(list: &QStringList) -> &QList_QString;
+        #[rust_name = "qstringlist_as_qlist_qstring_ref_mut"]
+        fn qstringlistAsQListQStringRef(list: &mut QStringList) -> &mut QList_QString;
         #[doc(hidden)]
         #[rust_name = "qstringlist_from_qlist_qstring"]
         fn qstringlistFromQListQString(list: &QList_QString) -> QStringList;
@@ -174,10 +180,39 @@ impl From<&QStringList> for QList<QString> {
     }
 }
 
+impl Deref for QStringList {
+    type Target = QList<QString>;
+
+    fn deref(&self) -> &Self::Target {
+        ffi::qstringlist_as_qlist_qstring_ref(self)
+    }
+}
+
+impl DerefMut for QStringList {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        ffi::qstringlist_as_qlist_qstring_ref_mut(self)
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
 unsafe impl ExternType for QStringList {
     type Id = type_id!("QStringList");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn deref() {
+        let mut list = QStringList::default();
+        list.append(QString::from("element"));
+        assert_eq!(
+            list.get(0).map(|s| s.to_string()),
+            Some("element".to_owned())
+        );
+    }
 }
