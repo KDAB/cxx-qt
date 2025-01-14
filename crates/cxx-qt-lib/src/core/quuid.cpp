@@ -52,12 +52,6 @@ quuidCreateUuidV5(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice)
   return QUuid::createUuidV5(ns, byteView(slice));
 }
 
-QString
-quuidToString(const QUuid& uuid)
-{
-  return uuid.toString();
-}
-
 QUuid
 quuidFromString(const QString& string)
 {

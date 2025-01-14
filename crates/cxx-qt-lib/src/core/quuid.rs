@@ -12,6 +12,21 @@ use uuid::Uuid;
 mod ffi {
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    enum QUuidStringFormat {
+        /// Five hex fields, separated by dashes and surrounded by braces.
+        /// Example: {00000000-0000-0000-0000-000000000000}.
+        WithBraces = 0,
+        /// Only the five dash-separated fields, without the braces.
+        /// Example: 00000000-0000-0000-0000-000000000000.
+        WithoutBraces = 1,
+        /// Only the hex digits, without braces or dashes.
+        /// Example: 00000000000000000000000000000000.
+        /// Note that QUuid cannot parse this back again as input.
+        Id128 = 3,
+    }
+
+    #[repr(i32)]
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QUuidVariant {
         /// Variant is unknown
         VarUnknown = -1,
@@ -55,8 +70,14 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/quuid.h");
         type QUuid = super::QUuid;
+        type QUuidStringFormat;
         type QUuidVariant;
         type QUuidVersion;
+
+        /// Returns the string representation of this QUuid, with the formatting controlled by the
+        /// `mode` parameter.
+        #[rust_name = "to_format"]
+        fn toString(self: &QUuid, mode: QUuidStringFormat) -> QString;
 
         /// Returns the value in the variant field of the UUID. If the return value is
         /// `QUuidVariant::DCE`, call `version()` to see which layout it uses. The null UUID is
@@ -85,9 +106,6 @@ mod ffi {
         #[rust_name = "quuid_create_uuid_v5"]
         fn quuidCreateUuidV5(ns: &QUuid, data: &[u8]) -> QUuid;
         #[doc(hidden)]
-        #[rust_name = "quuid_to_string"]
-        fn quuidToString(uuid: &QUuid) -> QString;
-        #[doc(hidden)]
         #[rust_name = "quuid_from_string"]
         fn quuidFromString(string: &QString) -> QUuid;
         #[doc(hidden)]
@@ -99,7 +117,7 @@ mod ffi {
     }
 }
 
-pub use ffi::{QUuidVariant, QUuidVersion};
+pub use ffi::{QUuidStringFormat, QUuidVariant, QUuidVersion};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(C)]
@@ -120,13 +138,13 @@ impl Default for QUuid {
 
 impl fmt::Display for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        ffi::quuid_to_string(self).fmt(f)
+        self.to_format(QUuidStringFormat::WithoutBraces).fmt(f)
     }
 }
 
 impl fmt::Debug for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        ffi::quuid_to_string(self).fmt(f)
+        self.to_format(QUuidStringFormat::WithoutBraces).fmt(f)
     }
 }
 
@@ -250,7 +268,7 @@ unsafe impl ExternType for QUuid {
 
 impl From<QUuid> for QString {
     fn from(value: QUuid) -> Self {
-        ffi::quuid_to_string(&value)
+        value.to_format(QUuidStringFormat::WithBraces)
     }
 }
 
@@ -333,6 +351,29 @@ impl From<QUuid> for Uuid {
     }
 }
 
+#[cfg(feature = "serde")]
+impl serde::Serialize for QUuid {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        if serializer.is_human_readable() {
+            self.to_format(QUuidStringFormat::WithoutBraces)
+                .serialize(serializer)
+        } else {
+            self.to_bytes().serialize(serializer)
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QUuid {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        if deserializer.is_human_readable() {
+            QString::deserialize(deserializer).map(|s| Self::from(&s))
+        } else {
+            <[u8; 16]>::deserialize(deserializer).map(Self::from_bytes)
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -411,7 +452,7 @@ mod test {
     fn quuid_to_string() {
         assert_eq!(
             QUuid::from_u128(0x7e95e361a22c51c18c297ac24cb61e83).to_string(),
-            "{7e95e361-a22c-51c1-8c29-7ac24cb61e83}"
+            "7e95e361-a22c-51c1-8c29-7ac24cb61e83"
         )
     }
 
@@ -456,5 +497,13 @@ mod test {
         let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_u128(uuid.to_u128());
         assert_eq!(uuid, roundtrip)
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn quuid_serde() {
+        let uuid = QUuid::create_uuid();
+        let roundtrip = crate::serde_impl::roundtrip(&uuid);
+        assert_eq!(roundtrip, uuid)
     }
 }
