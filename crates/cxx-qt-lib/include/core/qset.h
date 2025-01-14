@@ -17,6 +17,7 @@
 #include <QtCore/QString>
 #include <QtCore/QTime>
 #include <QtCore/QUrl>
+#include <QtCore/QUuid>
 
 #include "rust/cxx.h"
 
@@ -97,6 +98,7 @@ using QSet_QPersistentModelIndex = QSet<::QPersistentModelIndex>;
 using QSet_QString = QSet<::QString>;
 using QSet_QTime = QSet<::QTime>;
 using QSet_QUrl = QSet<::QUrl>;
+using QSet_QUuid = QSet<::QUuid>;
 using QSet_u8 = QSet<::std::uint8_t>;
 using QSet_u16 = QSet<::std::uint16_t>;
 using QSet_u32 = QSet<::std::uint32_t>;

@@ -9,7 +9,7 @@ use crate::QColor;
 use crate::QDateTime;
 use crate::{
     QByteArray, QDate, QLine, QLineF, QMargins, QMarginsF, QPersistentModelIndex, QPoint, QPointF,
-    QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QVariant,
+    QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QUuid, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
@@ -382,6 +382,7 @@ impl_qlist_element!(QSizeF, qlist_qsizef, "QList_QSizeF");
 impl_qlist_element!(QString, qlist_qstring, "QList_QString");
 impl_qlist_element!(QTime, qlist_qtime, "QList_QTime");
 impl_qlist_element!(QUrl, qlist_qurl, "QList_QUrl");
+impl_qlist_element!(QUuid, qlist_quuid, "QList_QUuid");
 impl_qlist_element!(QVariant, qlist_qvariant, "QList_QVariant");
 impl_qlist_element!(u8, qlist_u8, "QList_u8");
 impl_qlist_element!(u16, qlist_u16, "QList_u16");
