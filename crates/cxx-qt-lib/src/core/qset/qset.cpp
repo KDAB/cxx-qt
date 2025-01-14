@@ -34,6 +34,7 @@ CXX_QT_QSET_ASSERTS(::QPersistentModelIndex, QPersistentModelIndex);
 CXX_QT_QSET_ASSERTS(::QString, QString);
 CXX_QT_QSET_ASSERTS(::QTime, QTime);
 CXX_QT_QSET_ASSERTS(::QUrl, QUrl);
+CXX_QT_QSET_ASSERTS(::QUuid, QUuid);
 CXX_QT_QSET_ASSERTS(::std::uint8_t, u8);
 CXX_QT_QSET_ASSERTS(::std::uint16_t, u16);
 CXX_QT_QSET_ASSERTS(::std::uint32_t, u32);

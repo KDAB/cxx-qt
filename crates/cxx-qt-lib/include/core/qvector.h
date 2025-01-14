@@ -25,6 +25,7 @@
 #include <QtCore/QString>
 #include <QtCore/QTime>
 #include <QtCore/QUrl>
+#include <QtCore/QUuid>
 #include <QtCore/QVariant>
 
 #ifdef CXX_QT_GUI_FEATURE
@@ -167,6 +168,7 @@ using QVector_QSizeF = QVector<::QSizeF>;
 using QVector_QString = QVector<::QString>;
 using QVector_QTime = QVector<::QTime>;
 using QVector_QUrl = QVector<::QUrl>;
+using QVector_QUuid = QVector<::QUuid>;
 using QVector_QVariant = QVector<::QVariant>;
 using QVector_u8 = QVector<::std::uint8_t>;
 using QVector_u16 = QVector<::std::uint16_t>;
