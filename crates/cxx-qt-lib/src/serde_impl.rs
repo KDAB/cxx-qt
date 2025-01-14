@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{
-    DateFormat, QDate, QDateTime, QList, QListElement, QSet, QSetElement, QString, QStringList,
-    QTime, QVector, QVectorElement,
+    DateFormat, QDate, QList, QListElement, QSet, QSetElement, QString, QStringList, QTime,
+    QVector, QVectorElement,
 };
 use cxx::ExternType;
 use serde::de::{Error as _, SeqAccess, Unexpected, Visitor};
@@ -15,7 +15,7 @@ use std::num::NonZeroIsize;
 
 /// Serializes and deserializes a time-like value using an ISO-8601 string as the intermediary.
 macro_rules! datetime_impl {
-    ($t:ident, $construct:expr, $f:expr, $expected:literal) => {
+    ($t:ty, $construct:expr, $f:expr, $expected:literal) => {
         impl Serialize for $t {
             fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
                 self.to_format($f).serialize(serializer)
@@ -40,16 +40,17 @@ datetime_impl!(
     "ISO-8601 date"
 );
 datetime_impl!(
-    QDateTime,
-    QDateTime::from_string,
-    DateFormat::ISODateWithMs,
-    "ISO-8601 datetime"
-);
-datetime_impl!(
     QTime,
     QTime::from_string_enum_opt,
     DateFormat::ISODateWithMs,
     "ISO-8601 time"
+);
+#[cfg(not(target_os = "emscripten"))]
+datetime_impl!(
+    crate::QDateTime,
+    crate::QDateTime::from_string,
+    DateFormat::ISODateWithMs,
+    "ISO-8601 datetime"
 );
 
 /// Serde deserializers provide an `Option<usize>` size hint, but Qt containers use signed types
