@@ -27,6 +27,7 @@ serde_json = "1.0"
 
 [features]
 link_qt_object_files = ["qt-build-utils/link_qt_object_files"]
+cmake = ["qt-build-utils/cmake"]
 
 [lints]
 workspace = true

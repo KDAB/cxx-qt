@@ -558,6 +558,30 @@ impl QtBuild {
     /// Get the include paths for Qt, including Qt module subdirectories. This is intended
     /// to be passed to whichever tool you are using to invoke the C++ compiler.
     pub fn include_paths(&self) -> Vec<PathBuf> {
+        #[cfg(feature = "cmake")]
+        {
+            let Ok(package) = cmake_package::find_package(format!("Qt{}", self.version.major))
+                .components(self.qt_modules.clone())
+                .find()
+            else {
+                return Vec::default();
+            };
+
+            let mut paths = Vec::new();
+            for qt_module in &self.qt_modules {
+                if let Some(target) = package.target(format!("Qt::{}", qt_module)) {
+                    paths.extend(target.include_directories);
+                }
+            }
+
+            return paths
+                .iter()
+                .map(PathBuf::from)
+                // Only add paths if they exist
+                .filter(|path| path.exists())
+                .collect();
+        }
+
         let root_path = self.qmake_query("QT_INSTALL_HEADERS");
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         let mut paths = Vec::new();
@@ -591,6 +615,27 @@ impl QtBuild {
     /// Lazy load the path of a Qt executable tool
     /// Skip doing this in the constructor because not every user of this crate will use each tool
     fn get_qt_tool(&self, tool_name: &str) -> Result<String, ()> {
+        #[cfg(feature = "cmake")]
+        {
+            // QML tools live in the QML target, of course
+            let tools_component = if tool_name.contains("qml") {
+                "QmlTools"
+            } else {
+                "CoreTools"
+            };
+
+            let Ok(package) = cmake_package::find_package(format!("Qt{}", self.version.major))
+                .components([tools_component.into()])
+                .find()
+            else {
+                return Err(());
+            };
+            let Some(target) = package.target(format!("Qt6::{}", tool_name)) else {
+                return Err(());
+            };
+            return target.location.ok_or(());
+        }
+
         // "qmake -query" exposes a list of paths that describe where Qt executables and libraries
         // are located, as well as where new executables & libraries should be installed to.
         // We can use these variables to find any Qt tool.
