@@ -83,6 +83,8 @@ mod ffi {
         include!("cxx-qt-lib/qsizef.h");
         #[allow(dead_code)]
         type QSizeF = crate::QSizeF;
+        type QImageCleanupFunction = super::QImageCleanupFunction;
+        type uchar;
 
         /// Returns true if all the colors in the image are shades of gray
         #[rust_name = "all_gray"]
@@ -236,6 +238,7 @@ mod ffi {
         include!("cxx-qt-lib/common.h");
         type QImageFormat;
         type QImageInvertMode;
+        type c_void = crate::c_void;
 
         #[doc(hidden)]
         #[rust_name = "qimage_init_default"]
@@ -260,6 +263,31 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qimage_eq"]
         fn operatorEq(a: &QImage, b: &QImage) -> bool;
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qimage_init_from_raw_parts_mut"]
+        unsafe fn construct(
+            data: *mut uchar,
+            width: i32,
+            height: i32,
+            format: QImageFormat,
+            cleanup_function: QImageCleanupFunction,
+            cleanup_info: *mut c_void,
+        ) -> QImage;
+
+        #[doc(hidden)]
+        #[rust_name = "qimage_init_from_raw_parts"]
+        unsafe fn construct(
+            data: *const uchar,
+            width: i32,
+            height: i32,
+            format: QImageFormat,
+            cleanup_function: QImageCleanupFunction,
+            cleanup_info: *mut c_void,
+        ) -> QImage;
     }
 }
 
@@ -316,6 +344,17 @@ impl Drop for QImage {
     }
 }
 
+// Static assertions on the C++ side assert that this type is equal to:
+// void(*)(void*)
+#[repr(transparent)]
+struct QImageCleanupFunction(extern "C" fn(*mut ffi::c_void));
+
+unsafe impl ExternType for QImageCleanupFunction {
+    type Id = type_id!("QImageCleanupFunction");
+
+    type Kind = cxx::kind::Trivial;
+}
+
 impl QImage {
     /// Convert raw image data to a [`QImage`].
     ///
@@ -332,6 +371,79 @@ impl QImage {
             None
         }
     }
+
+    /// Constructs a QImage from an existing memory buffer.
+    ///
+    /// # Safety
+    /// For details on safety see the [Qt documentation](https://doc.qt.io/qt-6/qimage.html#QImage-7)
+    pub unsafe fn from_raw_parts(
+        data: *const ffi::uchar,
+        width: i32,
+        height: i32,
+        format: QImageFormat,
+        cleanup_function: extern "C" fn(x: *mut ffi::c_void),
+        cleanup_info: *mut ffi::c_void,
+    ) -> Self {
+        ffi::qimage_init_from_raw_parts(
+            data,
+            width,
+            height,
+            format,
+            QImageCleanupFunction(cleanup_function),
+            cleanup_info,
+        )
+    }
+
+    /// Constructs a QImage from an existing mutable memory buffer.
+    ///
+    /// # Safety
+    /// For details on safety see the [Qt documentation](https://doc.qt.io/qt-6/qimage.html#QImage-8)
+    pub unsafe fn from_raw_parts_mut(
+        data: *mut ffi::uchar,
+        width: i32,
+        height: i32,
+        format: QImageFormat,
+        cleanup_function: extern "C" fn(x: *mut ffi::c_void),
+        cleanup_info: *mut ffi::c_void,
+    ) -> Self {
+        ffi::qimage_init_from_raw_parts_mut(
+            data,
+            width,
+            height,
+            format,
+            QImageCleanupFunction(cleanup_function),
+            cleanup_info,
+        )
+    }
+
+    /// Constructs a QImage from the raw data inside a `Vec<u8>`.
+    ///
+    /// # Safety
+    /// This function is unsafe because it requires that the data matches the given QImageFormat,
+    /// width and height.
+    ///
+    /// It is a convenience function around [Self::from_raw_parts_mut].
+    pub unsafe fn from_raw_bytes(
+        data: Vec<u8>,
+        width: i32,
+        height: i32,
+        format: QImageFormat,
+    ) -> Self {
+        extern "C" fn delete_boxed_vec(boxed_vec: *mut ffi::c_void) {
+            // Safety: This is safe to do, as we only call this function from the destructor of a QImage
+            // that is created by the call below.
+            // In this case the *mut ffi::c_void is actually a `*mut Vec<u8>` that was created by
+            // Box::into_raw(), so can be re-created by Box::from_raw().
+            // QImage also guarantees that this is only called once when the last copy is destroyed.
+            let the_box: Box<Vec<u8>> = unsafe { Box::from_raw(boxed_vec as *mut Vec<u8>) };
+            drop(the_box);
+        }
+        let data = Box::new(data);
+        let bytes = data.as_ptr() as *mut ffi::uchar;
+        let raw_box = Box::into_raw(data) as *mut ffi::c_void;
+        QImage::from_raw_parts_mut(bytes, width, height, format, delete_boxed_vec, raw_box)
+    }
+
     /// Returns a number that identifies the contents of this QImage object.
     pub fn cache_key(&self) -> i64 {
         ffi::qimage_cache_key(self)
@@ -347,9 +459,40 @@ impl QImage {
     }
 }
 
+#[cfg(any(feature = "image-v0-24", feature = "image-v0-25"))]
+macro_rules! from_image {
+    ($crt:ident) => {
+        impl From<$crt::RgbaImage> for QImage {
+            fn from(image: $crt::RgbaImage) -> QImage {
+                let width = image.width() as i32;
+                let height = image.height() as i32;
+                // SAFETY: The RgbaImage has the same format as RGBA8888 and the number of
+                // pixels is correct for the images width and height, which is guaranteed by
+                // RgbaImage.
+                unsafe {
+                    QImage::from_raw_bytes(
+                        image.into_raw(),
+                        width,
+                        height,
+                        QImageFormat::Format_RGBA8888,
+                    )
+                }
+            }
+        }
+    };
+}
+
+#[cfg(feature = "image-v0-24")]
+from_image!(image_v0_24);
+
+#[cfg(feature = "image-v0-25")]
+from_image!(image_v0_25);
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::QColor;
+
     #[test]
     fn test_default_values() {
         let default_image = QImage::default();
@@ -378,4 +521,65 @@ mod tests {
         assert_eq!(qimage.height(), qimage2.height());
         assert_eq!(qimage.format(), qimage2.format());
     }
+
+    #[test]
+    fn test_from_raw_bytes() {
+        let bytes: Vec<u8> = vec![
+            0x01, 0x02, 0x03, 0x04, // Pixel 1
+            0x05, 0x06, 0x07, 0x08, // Pixel 2
+        ];
+
+        let qimage = unsafe { QImage::from_raw_bytes(bytes, 2, 1, QImageFormat::Format_RGBA8888) };
+        assert_eq!(qimage.width(), 2);
+        assert_eq!(qimage.height(), 1);
+        assert_eq!(
+            qimage.pixel_color(0, 0),
+            QColor::from_rgba(0x01, 0x02, 0x03, 0x04),
+        );
+        assert_eq!(
+            qimage.pixel_color(1, 0),
+            QColor::from_rgba(0x05, 0x06, 0x07, 0x08),
+        );
+    }
+
+    #[cfg(any(feature = "image-v0-24", feature = "image-v0-25"))]
+    macro_rules! test_image_crate {
+        ($crt:ident: $test_name:ident) => {
+            #[test]
+            fn $test_name() {
+                use $crt::{Rgba, RgbaImage};
+
+                // Create a sample RgbaImage
+                let width = 2;
+                let height = 2;
+                let mut rgba_image = RgbaImage::new(width, height);
+                rgba_image.put_pixel(0, 0, Rgba([255, 0, 0, 255])); // Red pixel
+                rgba_image.put_pixel(1, 0, Rgba([0, 255, 0, 255])); // Green pixel
+                rgba_image.put_pixel(0, 1, Rgba([0, 0, 255, 255])); // Blue pixel
+                rgba_image.put_pixel(1, 1, Rgba([255, 255, 0, 255])); // Yellow pixel
+
+                // Convert RgbaImage to QImage
+                let qimage: QImage = rgba_image.into();
+
+                // Verify the conversion
+                assert_eq!(qimage.width(), width as i32);
+                assert_eq!(qimage.height(), height as i32);
+
+                // Verify the pixel data
+                assert_eq!(qimage.pixel_color(0, 0), QColor::from_rgba(255, 0, 0, 255)); // Red pixel
+                assert_eq!(qimage.pixel_color(1, 0), QColor::from_rgba(0, 255, 0, 255)); // Green pixel
+                assert_eq!(qimage.pixel_color(0, 1), QColor::from_rgba(0, 0, 255, 255)); // Blue pixel
+                assert_eq!(
+                    qimage.pixel_color(1, 1),
+                    QColor::from_rgba(255, 255, 0, 255)
+                ); // Yellow pixel
+            }
+        };
+    }
+
+    #[cfg(feature = "image-v0-24")]
+    test_image_crate!(image_v0_24: test_image_v0_24_to_qimage);
+
+    #[cfg(feature = "image-v0-25")]
+    test_image_crate!(image_v0_25: test_image_v0_25_to_qimage);
 }
