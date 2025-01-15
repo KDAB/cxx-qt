@@ -79,6 +79,10 @@ pub struct QMessageLogContext<'a> {
     _phantom: PhantomData<&'a c_char>,
 }
 
+const_assert!(
+    size_of::<QMessageLogContext>() == (size_of::<i32>() * 2) + (size_of::<*const c_char>() * 3)
+);
+
 impl<'a> QMessageLogContext<'a> {
     pub fn new(
         file: &'a CStr,
@@ -125,5 +129,6 @@ unsafe impl ExternType for QMessageLogContext<'_> {
     type Kind = cxx::kind::Trivial;
 }
 
+use crate::const_assert;
 use crate::core::qtlogging::ffi::category;
 pub use ffi::{qt_message_output, QtMsgType};
