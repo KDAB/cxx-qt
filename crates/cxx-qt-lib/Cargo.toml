@@ -31,13 +31,19 @@ time = { version = "0.3.20", optional = true }
 url = { version = "2.3", optional = true }
 uuid = { version = "1.1.0", optional = true }
 serde = { version = "1", features=["derive"], optional = true }
+# Note: The image crate is not yet at 1.0 and a new version is released regularly.
+# To avoid a breaking change at each update, we don't specify a default version, and make the versions explicit.
+# Once 1.0 is released, we can add a dependency on `image`, which would then be `image = "1"`
+# Also, disable the default features, we don't need any, so they would be included unnecessarily and raise the MSRV unnecessarily.
+image-v0-24 = { version = "0.24", optional = true, package = "image", default-features = false }
+image-v0-25 = { version = "0.25", optional = true, package = "image", default-features = false }
 
 [build-dependencies]
 cxx-qt-build.workspace = true
 qt-build-utils.workspace = true
 
 [features]
-full = ["qt_full", "serde", "url", "uuid", "time", "rgb", "http", "chrono", "bytes"]
+full = ["qt_full", "serde", "url", "uuid", "time", "rgb", "http", "chrono", "bytes", "image-v0-24", "image-v0-25"]
 default = []
 
 qt_full = ["qt_gui", "qt_qml", "qt_quickcontrols"]
@@ -53,6 +59,8 @@ time = ["dep:time"]
 url = ["dep:url"]
 serde = ["dep:serde"]
 uuid = ["dep:uuid"]
+image-v0-24 = ["dep:image-v0-24"]
+image-v0-25 = ["dep:image-v0-25"]
 link_qt_object_files = ["cxx-qt-build/link_qt_object_files"]
 
 [lints]

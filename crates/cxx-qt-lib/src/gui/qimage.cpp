@@ -36,6 +36,8 @@ assert_alignment_and_size(QImage, {
 });
 #endif
 
+static_assert(std::is_same_v<QImageCleanupFunction, void (*)(void*)>);
+
 namespace rust {
 namespace cxxqtlib1 {
 
