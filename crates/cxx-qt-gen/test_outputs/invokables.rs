@@ -307,7 +307,11 @@ impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
 }
+impl ::cxx_qt::Downcast for ffi::MyObject {}
 #[doc(hidden)]
 pub fn route_arguments_MyObject_0<'a>(
     arg0: i32,

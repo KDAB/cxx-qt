@@ -164,7 +164,11 @@ impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
 }
+impl ::cxx_qt::Downcast for ffi::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
@@ -188,7 +192,11 @@ impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyRenamedObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
         ffi::cxx_qt_ffi_CxxName_upcastPtr(this)
     }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
 }
+impl ::cxx_qt::Downcast for ffi::MyRenamedObject {}
 #[doc(hidden)]
 pub fn create_rs_InternalObject() -> std::boxed::Box<InternalObject> {
     std::boxed::Box::new(core::default::Default::default())

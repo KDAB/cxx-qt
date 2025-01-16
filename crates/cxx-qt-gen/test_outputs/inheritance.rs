@@ -89,7 +89,11 @@ impl ::cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject
     unsafe fn upcast_ptr(this: *const Self) -> *const inheritance::QAbstractItemModel {
         inheritance::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
 }
+impl ::cxx_qt::Downcast for inheritance::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())

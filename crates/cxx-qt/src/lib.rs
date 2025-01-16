@@ -132,6 +132,10 @@ pub trait Upcast<T> {
     /// Internal function, Should not be implemented manually
     unsafe fn upcast_ptr(this: *const Self) -> *const T;
 
+    #[doc(hidden)]
+    /// Internal function, Should not be implemented manually
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self>;
+
     /// Upcast a reference to a reference to the base class
     fn upcast(&self) -> &T {
         let ptr = self as *const Self;
@@ -157,6 +161,14 @@ pub trait Upcast<T> {
             let base = Self::upcast_ptr(this) as *mut T;
             Pin::new_unchecked(&mut *base)
         }
+    }
+}
+
+/// Trait for downcasting to a subclass, provided the subclass implements Upcast to this type
+pub trait Downcast: Sized {
+    /// Downcast to a subclass of this, given that the subclass upcasts to this type
+    fn downcast<Sub: Upcast<Self>>(&self) -> Option<&Sub> {
+        unsafe { Sub::from_base_ptr(self as *const Self).map(|sub| &*sub) }
     }
 }
 

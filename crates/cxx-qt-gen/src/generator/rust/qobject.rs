@@ -105,6 +105,7 @@ impl GeneratedRustFragment {
             .cxx_qt_ffi_method("upcastPtr")
             .into_cxx_parts();
 
+        //TODO! placeholder, use the right dynamic_cast function in from_base_ptr
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote! {
                 extern "C++" {
@@ -113,13 +114,22 @@ impl GeneratedRustFragment {
                     unsafe fn #upcast_fn(thiz: *const #struct_name_unqualified) -> *const #base_unqualified;
                 }
             }],
-            implementation: vec![quote! {
-                impl ::cxx_qt::Upcast<#base_qualified> for #struct_name{
-                    unsafe fn upcast_ptr(this: *const Self) -> *const #base_qualified {
-                        #upcast_fn_qualified(this)
+            implementation: vec![
+                quote! {
+                    impl ::cxx_qt::Upcast<#base_qualified> for #struct_name{
+                        unsafe fn upcast_ptr(this: *const Self) -> *const #base_qualified {
+                            #upcast_fn_qualified(this)
+                        }
+
+                        unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+                            None
+                        }
                     }
-                }
-            }],
+                },
+                quote! {
+                    impl ::cxx_qt::Downcast for #struct_name {}
+                },
+            ],
         };
         blocks
             .cxx_mod_contents

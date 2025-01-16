@@ -612,7 +612,11 @@ impl ::cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ffi::QStringListModel {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
 }
+impl ::cxx_qt::Downcast for ffi::MyObject {}
 #[doc(hidden)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
@@ -782,7 +786,11 @@ impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::SecondObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
         ffi::cxx_qt_ffi_SecondObject_upcastPtr(this)
     }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
 }
+impl ::cxx_qt::Downcast for ffi::SecondObject {}
 #[doc(hidden)]
 pub fn create_rs_SecondObjectRust() -> std::boxed::Box<SecondObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
@@ -806,7 +814,11 @@ impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyRustName {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
         ffi::cxx_qt_ffi_MyCxxName_upcastPtr(this)
     }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
 }
+impl ::cxx_qt::Downcast for ffi::MyRustName {}
 #[doc(hidden)]
 pub fn create_rs_ThirdObjectRust() -> std::boxed::Box<ThirdObjectRust> {
     std::boxed::Box::new(core::default::Default::default())

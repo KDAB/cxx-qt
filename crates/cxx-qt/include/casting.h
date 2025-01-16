@@ -15,4 +15,6 @@ upcastPtr(const Sub* sub)
   return static_cast<const Base*>(sub);
 }
 
+// TODO! add base_ptr downcasting function here
+
 }
