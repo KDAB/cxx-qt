@@ -165,6 +165,12 @@ pub mod ffi {
             self_value: Pin<&mut MyObject>,
         );
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QStringListModel;
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::multi_object::cxx_qt_MyObject"]
@@ -281,6 +287,12 @@ pub mod ffi {
             self_value: Pin<&mut SecondObject>,
         );
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_SecondObject_upcastPtr(thiz: *const SecondObject) -> *const QObject;
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "second_object::cxx_qt_SecondObject"]
@@ -316,6 +328,12 @@ pub mod ffi {
     extern "Rust" {
         #[namespace = "my_namespace"]
         type ThirdObjectRust;
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyCxxName_upcastPtr(thiz: *const MyRustName) -> *const QObject;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -439,11 +457,12 @@ pub mod ffi {
             self_value: Pin<&mut ExternObject>,
         );
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[namespace = ""]
+        type QObject = cxx_qt::qobject::QObject;
+    }
 }
-impl cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {}
-#[allow(unused_imports)]
-#[allow(dead_code)]
-use ffi::QStringListModel as _;
 impl ffi::MyObject {
     #[doc = "Getter for the Q_PROPERTY "]
     #[doc = "property_name"]
@@ -590,6 +609,11 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureready>,
     [usize; 2]
 );
+impl ::cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ffi::QStringListModel {
+        ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
+    }
+}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
@@ -756,6 +780,11 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<SecondObjectCxxQtSignalClosureready>,
     [usize; 2]
 );
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::SecondObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_SecondObject_upcastPtr(this)
+    }
+}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_SecondObjectRust() -> std::boxed::Box<SecondObjectRust> {
@@ -774,6 +803,11 @@ impl ::cxx_qt::CxxQtType for ffi::SecondObject {
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         ffi::cxx_qt_ffi_SecondObject_unsafeRustMut(self)
+    }
+}
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyRustName {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_MyCxxName_upcastPtr(this)
     }
 }
 #[doc(hidden)]
