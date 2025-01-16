@@ -219,7 +219,7 @@ impl QUuid {
     }
 
     /// Converts self to big endian from the target’s endianness.
-    // This function is analogous to [`u8::to_be`](https://doc.rust-lang.org/src/core/num/uint_macros.rs.html#399-431).
+    /// This function is analogous to [`u8::to_be`](https://doc.rust-lang.org/src/core/num/uint_macros.rs.html#399-431).
     ///
     /// On big endian this is a no-op. On little endian the bytes are swapped.
     ///
