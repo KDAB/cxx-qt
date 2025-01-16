@@ -32,30 +32,26 @@ pub fn generate(
         let cxx_namespace = qobject_names.namespace_tokens();
 
         Ok(Some(GeneratedRustFragment {
-            cxx_mod_contents: vec![
-                parse_quote! {
-                    extern "Rust" {
-                        #[cxx_name = #getter_cpp]
-                        // Needed for QObjects to have a namespace on their type or extern block
-                        //
-                        // A Namespace from cxx_qt::bridge would be automatically applied to all children
-                        // but to apply it to only certain types, it is needed here too
-                        #cxx_namespace
-                        unsafe fn #getter_rust<'a>(self: &'a #cpp_class_name_rust) -> &'a #cxx_ty;
+            cxx_mod_contents: vec![parse_quote! {
+                extern "Rust" {
+                    #[cxx_name = #getter_cpp]
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #cxx_namespace
+                    unsafe fn #getter_rust<'a>(self: &'a #cpp_class_name_rust) -> &'a #cxx_ty;
+                }
+            }],
+            cxx_qt_mod_contents: vec![parse_quote! {
+                impl #qualified_impl {
+                    #[doc = "Getter for the Q_PROPERTY "]
+                    #[doc = #ident_str]
+                    pub fn #getter_rust(&self) -> &#qualified_ty {
+                        &self.#ident
                     }
                 }
-            ],
-            cxx_qt_mod_contents: vec![
-                parse_quote! {
-                    impl #qualified_impl {
-                        #[doc = "Getter for the Q_PROPERTY "]
-                        #[doc = #ident_str]
-                        pub fn #getter_rust(&self) -> &#qualified_ty {
-                            &self.#ident
-                        }
-                    }
-                }
-            ],
+            }],
         }))
     } else {
         Ok(None)

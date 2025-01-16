@@ -31,12 +31,12 @@ pub fn generate_rust_properties(
     for property in properties {
         let idents = QPropertyNames::try_from_property(property, structured_qobject)?;
 
-        if let Some(mut getter) = getter::generate(&idents, qobject_names, &property.ty, type_names)? {
-            generated.append(&mut getter);
+        if let Some(getter) = getter::generate(&idents, qobject_names, &property.ty, type_names)? {
+            generated.append(getter);
         };
 
-        if let Some(mut setter) = setter::generate(&idents, qobject_names, &property.ty, type_names)? {
-            generated.append(&mut setter);
+        if let Some(setter) = setter::generate(&idents, qobject_names, &property.ty, type_names)? {
+            generated.append(setter);
         }
 
         if let Some(notify) = signal::generate(&idents, qobject_names) {
@@ -44,8 +44,8 @@ pub fn generate_rust_properties(
         }
     }
 
-    generated.append(&mut generate_rust_signals(
-        &signals.iter().collect(),
+    generated.append(generate_rust_signals(
+        &signals.iter().collect::<Vec<_>>(),
         qobject_names,
         type_names,
     )?);
