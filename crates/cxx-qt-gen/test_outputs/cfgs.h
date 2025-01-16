@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstdint>
+#include <cxx-qt/casting.h>
 #include <cxx-qt/signalhandler.h>
 #include <cxx-qt/type.h>
 

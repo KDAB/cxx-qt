@@ -134,6 +134,10 @@ pub trait Upcast<T> {
     /// Internal function, Should not be implemented manually
     unsafe fn upcast_ptr(this: *const Self) -> *const T;
 
+    #[doc(hidden)]
+    /// Internal function, Should not be implemented manually
+    unsafe fn from_base_ptr(base: *const T) -> *const Self;
+
     /// Upcast a reference to a reference to the base class
     fn upcast(&self) -> &T {
         let ptr = self as *const Self;
@@ -161,6 +165,23 @@ pub trait Upcast<T> {
         }
     }
 }
+
+/// Trait for downcasting to a subclass, provided the subclass implements Upcast to this type
+pub trait Downcast: Sized {
+    /// try Downcast to a subclass of this, given that the subclass upcasts to this type
+    fn downcast<Sub: Upcast<Self>>(&self) -> Option<&Sub> {
+        unsafe {
+            let ptr = Sub::from_base_ptr(self as *const Self);
+            if ptr.is_null() {
+                None
+            } else {
+                Some(&*ptr)
+            }
+        }
+    }
+}
+
+impl<T: Sized> Downcast for T {}
 
 /// This trait can be implemented on any [CxxQtType] to define a
 /// custom constructor in C++ for the QObject.

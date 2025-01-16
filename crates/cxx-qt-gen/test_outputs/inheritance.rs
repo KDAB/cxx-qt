@@ -67,6 +67,12 @@ mod inheritance {
         #[namespace = "rust::cxxqt1"]
         unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject)
             -> *const QAbstractItemModel;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_downcastPtr(
+            base: *const QAbstractItemModel,
+        ) -> *const MyObject;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -89,6 +95,9 @@ mod inheritance {
 impl ::cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const inheritance::QAbstractItemModel {
         inheritance::cxx_qt_ffi_MyObject_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const inheritance::QAbstractItemModel) -> *const Self {
+        inheritance::cxx_qt_ffi_MyObject_downcastPtr(base)
     }
 }
 #[doc(hidden)]
