@@ -7,12 +7,12 @@ use crate::generator::rust::get_params_tokens;
 use crate::{
     generator::{
         naming::qobject::QObjectNames,
-        rust::fragment::{GeneratedRustFragment, RustFragmentPair},
+        rust::fragment::GeneratedRustFragment,
     },
     parser::method::ParsedMethod,
 };
-use quote::{quote, quote_spanned};
-use syn::{spanned::Spanned, Result};
+use quote::quote;
+use syn::{parse_quote_spanned, spanned::Spanned, Result};
 
 pub fn generate_rust_methods(
     invokables: &Vec<&ParsedMethod>,
@@ -43,34 +43,29 @@ pub fn generate_rust_methods(
         let cfgs = &invokable.cfgs;
         let cxx_namespace = qobject_names.namespace_tokens();
 
-        let fragment = RustFragmentPair {
-            cxx_bridge: vec![quote_spanned! {
-                invokable.method.span() =>
-                // Note: extern "Rust" block does not need to be unsafe
-                extern "Rust" {
-                    // Note that we are exposing a Rust method on the C++ type to C++
-                    //
-                    // CXX ends up generating the source, then we generate the matching header.
-                    #[cxx_name = #invokable_ident_cpp]
-                    // Needed for QObjects to have a namespace on their type or extern block
-                    //
-                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
-                    // but to apply it to only certain types, it is needed here too
-                    #cxx_namespace
-                    #(#cfgs)*
-                    #[doc(hidden)]
-                    #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
+        generated.append(&mut GeneratedRustFragment {
+            cxx_mod_contents: vec![
+                parse_quote_spanned! {
+                    invokable.method.span() =>
+                    // Note: extern "Rust" block does not need to be unsafe
+                    extern "Rust" {
+                        // Note that we are exposing a Rust method on the C++ type to C++
+                        //
+                        // CXX ends up generating the source, then we generate the matching header.
+                        #[cxx_name = #invokable_ident_cpp]
+                        // Needed for QObjects to have a namespace on their type or extern block
+                        //
+                        // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                        // but to apply it to only certain types, it is needed here too
+                        #cxx_namespace
+                        #(#cfgs)*
+                        #[doc(hidden)]
+                        #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
+                    }
                 }
-            }],
-            implementation: vec![],
-        };
-
-        generated
-            .cxx_mod_contents
-            .append(&mut fragment.cxx_bridge_as_items()?);
-        generated
-            .cxx_qt_mod_contents
-            .append(&mut fragment.implementation_as_items()?);
+            ],
+            cxx_qt_mod_contents: vec![],
+        });
     }
 
     Ok(generated)

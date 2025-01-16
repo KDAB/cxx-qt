@@ -8,7 +8,7 @@ use crate::{
         naming::{namespace::NamespaceName, qobject::QObjectNames},
         rust::{
             constructor, cxxqttype,
-            fragment::{GeneratedRustFragment, RustFragmentPair},
+            fragment::GeneratedRustFragment,
             inherit,
             method::generate_rust_methods,
             property::generate_rust_properties,
@@ -19,7 +19,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::{parse_quote, Ident, Result};
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
@@ -63,17 +63,14 @@ impl GeneratedRustFragment {
         // If this type is a singleton then we need to add an include
         if let Some(qml_metadata) = &qobject.qml_metadata {
             if qml_metadata.singleton {
-                let fragment = RustFragmentPair {
-                    cxx_bridge: vec![quote! {
+                generated.append(&mut GeneratedRustFragment {
+                    cxx_mod_contents: vec![parse_quote! {
                         unsafe extern "C++" {
                             include!(<QtQml/QQmlEngine>);
                         }
                     }],
-                    implementation: vec![],
-                };
-                generated
-                    .cxx_mod_contents
-                    .append(&mut fragment.cxx_bridge_as_items()?);
+                    cxx_qt_mod_contents: vec![],
+                })
             }
         }
 
@@ -105,7 +102,6 @@ fn generate_qobject_definitions(
     base: Option<Ident>,
     type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
-    let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
 
@@ -128,11 +124,11 @@ fn generate_qobject_definitions(
     let base_upcast = if let Some(base) = base {
         let base_name = type_names.lookup(&base)?.rust_qualified();
         vec![
-            quote! { impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {} },
+            parse_quote! { impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {} },
             // Until we can actually implement the Upcast trait properly, we just need to silence
             // the warning that the base class is otherwise unused.
             // This can be done with an unnamed import and the right attributes
-            quote! {
+            parse_quote! {
                 #[allow(unused_imports)]
                 #[allow(dead_code)]
                 use #base_name as _;
@@ -142,9 +138,9 @@ fn generate_qobject_definitions(
         vec![]
     };
 
-    let fragment = RustFragmentPair {
-        cxx_bridge: vec![
-            quote! {
+    Ok(GeneratedRustFragment {
+        cxx_mod_contents: vec![
+            parse_quote! {
                 unsafe extern "C++" {
                     #[doc = "The C++ type for the QObject "]
                     #[doc = #rust_struct_name_rust_str]
@@ -157,7 +153,7 @@ fn generate_qobject_definitions(
                     type #cpp_class_name_rust;
                 }
             },
-            quote! {
+            parse_quote! {
                 extern "Rust" {
                     // Needed for QObjects to have a namespace on their type or extern block
                     //
@@ -168,17 +164,8 @@ fn generate_qobject_definitions(
                 }
             },
         ],
-        implementation: base_upcast,
-    };
-
-    generated
-        .cxx_mod_contents
-        .append(&mut fragment.cxx_bridge_as_items()?);
-    generated
-        .cxx_qt_mod_contents
-        .append(&mut fragment.implementation_as_items()?);
-
-    Ok(generated)
+        cxx_qt_mod_contents: base_upcast
+    })
 }
 
 #[cfg(test)]
