@@ -5,70 +5,64 @@
 
 use crate::generator::rust::get_params_tokens;
 use crate::{
-    generator::{
-        naming::qobject::QObjectNames,
-        rust::fragment::GeneratedRustFragment,
-    },
+    generator::{naming::qobject::QObjectNames, rust::fragment::GeneratedRustFragment},
     parser::method::ParsedMethod,
 };
 use quote::quote;
 use syn::{parse_quote_spanned, spanned::Spanned, Result};
 
 pub fn generate_rust_methods(
-    invokables: &Vec<&ParsedMethod>,
+    invokables: &[&ParsedMethod],
     qobject_names: &QObjectNames,
 ) -> Result<GeneratedRustFragment> {
-    let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
-    for &invokable in invokables {
-        // TODO: once we aren't using qobject::T in the extern "RustQt"
-        // we can just pass through the original ExternFn block and add the attribute?
-        let invokable_ident_cpp = invokable.name.cxx_unqualified();
-        let invokable_ident_rust = invokable.name.rust_unqualified();
+    let generated = invokables
+        .iter()
+        .map(|invokable| {
+            // TODO: once we aren't using qobject::T in the extern "RustQt"
+            // we can just pass through the original ExternFn block and add the attribute?
+            let invokable_ident_cpp = invokable.name.cxx_unqualified();
+            let invokable_ident_rust = invokable.name.rust_unqualified();
 
-        let parameter_signatures = get_params_tokens(
-            invokable.mutable,
-            &invokable.parameters,
-            cpp_class_name_rust,
-        );
+            let parameter_signatures = get_params_tokens(
+                invokable.mutable,
+                &invokable.parameters,
+                cpp_class_name_rust,
+            );
 
-        let return_type = &invokable.method.sig.output;
+            let return_type = &invokable.method.sig.output;
 
-        let mut unsafe_call = Some(quote! { unsafe });
-        if invokable.safe {
-            std::mem::swap(&mut unsafe_call, &mut None);
-        }
+            let mut unsafe_call = Some(quote! { unsafe });
+            if invokable.safe {
+                std::mem::swap(&mut unsafe_call, &mut None);
+            }
 
-        let cfgs = &invokable.cfgs;
-        let cxx_namespace = qobject_names.namespace_tokens();
+            let cfgs = &invokable.cfgs;
+            let cxx_namespace = qobject_names.namespace_tokens();
 
-        generated.append(&mut GeneratedRustFragment {
-            cxx_mod_contents: vec![
-                parse_quote_spanned! {
-                    invokable.method.span() =>
-                    // Note: extern "Rust" block does not need to be unsafe
-                    extern "Rust" {
-                        // Note that we are exposing a Rust method on the C++ type to C++
-                        //
-                        // CXX ends up generating the source, then we generate the matching header.
-                        #[cxx_name = #invokable_ident_cpp]
-                        // Needed for QObjects to have a namespace on their type or extern block
-                        //
-                        // A Namespace from cxx_qt::bridge would be automatically applied to all children
-                        // but to apply it to only certain types, it is needed here too
-                        #cxx_namespace
-                        #(#cfgs)*
-                        #[doc(hidden)]
-                        #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
-                    }
+            GeneratedRustFragment::from_cxx_item(parse_quote_spanned! {
+                invokable.method.span() =>
+                // Note: extern "Rust" block does not need to be unsafe
+                extern "Rust" {
+                    // Note that we are exposing a Rust method on the C++ type to C++
+                    //
+                    // CXX ends up generating the source, then we generate the matching header.
+                    #[cxx_name = #invokable_ident_cpp]
+                    // Needed for QObjects to have a namespace on their type or extern block
+                    //
+                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                    // but to apply it to only certain types, it is needed here too
+                    #cxx_namespace
+                    #(#cfgs)*
+                    #[doc(hidden)]
+                    #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }
-            ],
-            cxx_qt_mod_contents: vec![],
-        });
-    }
+            })
+        })
+        .collect::<Vec<_>>();
 
-    Ok(generated)
+    Ok(GeneratedRustFragment::flatten(generated))
 }
 
 #[cfg(test)]
@@ -106,7 +100,7 @@ mod tests {
         let qobject_names = create_qobjectname();
 
         let generated =
-            generate_rust_methods(&invokables.iter().collect(), &qobject_names).unwrap();
+            generate_rust_methods(&invokables.iter().collect::<Vec<_>>(), &qobject_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 0);
