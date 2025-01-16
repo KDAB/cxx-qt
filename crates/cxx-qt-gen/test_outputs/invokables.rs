@@ -162,6 +162,10 @@ mod ffi {
         #[cxx_name = "upcastPtr"]
         #[namespace = "rust::cxxqt1"]
         unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_downcastPtr(base: *const QObject) -> *const MyObject;
     }
     #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
     #[cxx_name = "CxxQtConstructorArguments0"]
@@ -325,6 +329,9 @@ pub struct MyObjectCxxQtThreadQueuedFn {
 impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::qobject::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_MyObject_downcastPtr(base)
     }
 }
 #[doc(hidden)]
