@@ -9,10 +9,13 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
+use std::ops::Deref;
+use std::pin::Pin;
 use std::{fs::File, io::Write, path::Path};
 
 mod connection;
 mod connectionguard;
+pub mod qobject;
 #[doc(hidden)]
 pub mod signalhandler;
 mod threading;
@@ -123,10 +126,41 @@ pub trait Threading: Sized {
     fn threading_drop(cxx_qt_thread: &mut CxxQtThread<Self>);
 }
 
-/// Placeholder for upcasting objects, suppresses dead code warning
-#[allow(dead_code)]
-#[doc(hidden)]
-pub trait Upcast<T> {}
+/// This trait is automatically implemented by CXX-Qt and should not be manually implemented
+/// Allows upcasting to either QObject or the provided base class of a type
+/// Will not be implemented if no types inherit from QObject or base.
+pub trait Upcast<T> {
+    #[doc(hidden)]
+    /// Internal function, Should not be implemented manually
+    unsafe fn upcast_ptr(this: *const Self) -> *const T;
+
+    /// Upcast a reference to a reference to the base class
+    fn upcast(&self) -> &T {
+        let ptr = self as *const Self;
+        unsafe {
+            let base = Self::upcast_ptr(ptr);
+            &*base
+        }
+    }
+
+    /// Upcast a mutable reference to a mutable reference to the base class
+    fn upcast_mut(&mut self) -> &mut T {
+        let ptr = self as *const Self;
+        unsafe {
+            let base = Self::upcast_ptr(ptr) as *mut T;
+            &mut *base
+        }
+    }
+
+    /// Upcast a pinned mutable reference to a pinned mutable reference to the base class
+    fn upcast_pin(self: Pin<&mut Self>) -> Pin<&mut T> {
+        let this = self.deref() as *const Self;
+        unsafe {
+            let base = Self::upcast_ptr(this) as *mut T;
+            Pin::new_unchecked(&mut *base)
+        }
+    }
+}
 
 /// This trait can be implemented on any [CxxQtType] to define a
 /// custom constructor in C++ for the QObject.

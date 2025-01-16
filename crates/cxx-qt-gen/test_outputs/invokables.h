@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cxx-qt/casting.h>
 #include <cxx-qt/threading.h>
 #include <cxx-qt/type.h>
 
