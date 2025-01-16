@@ -15,4 +15,12 @@ upcastPtr(const Sub* sub)
   return static_cast<const Base*>(sub);
 }
 
+template<typename Sub, typename Base>
+const Sub*
+downcastPtr(const Base* base)
+{
+  static_assert(std::is_base_of_v<Base, Sub>);
+  return dynamic_cast<const Sub*>(base);
+}
+
 }

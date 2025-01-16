@@ -16,7 +16,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::{format_ident, quote};
-use syn::{parse_quote, Ident, Result};
+use syn::{parse_quote, Result};
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
@@ -30,7 +30,7 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
 
         let mut generated = vec![
-            generate_qobject_definitions(&qobject_names, qobject.base_class.clone(), type_names)?,
+            generate_qobject_definitions(&qobject_names)?,
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
@@ -62,17 +62,7 @@ impl GeneratedRustFragment {
             )?);
         }
 
-        generated.extend(vec![
-            constructor::generate(
-                &structured_qobject.constructors,
-                &qobject_names,
-                &namespace_idents,
-                type_names,
-            )?,
-            cxxqttype::generate(&qobject_names, type_names)?,
-        ]);
         // Generate casting impl
-        let mut blocks = GeneratedRustFragment::default();
         let base = structured_qobject
             .declaration
             .base_class
@@ -92,12 +82,20 @@ impl GeneratedRustFragment {
         let (upcast_fn, upcast_fn_attrs, upcast_fn_qualified) = qobject_names
             .cxx_qt_ffi_method("upcastPtr")
             .into_cxx_parts();
-        let fragment = GeneratedRustFragment {
+        let (downcast_fn, downcast_fn_attrs, downcast_fn_qualified) = qobject_names
+            .cxx_qt_ffi_method("downcastPtr")
+            .into_cxx_parts();
+
+        generated.push(GeneratedRustFragment {
             cxx_mod_contents: vec![parse_quote! {
                 extern "C++" {
                     #[doc(hidden)]
                     #(#upcast_fn_attrs)*
                     unsafe fn #upcast_fn(thiz: *const #struct_name_unqualified) -> *const #base_unqualified;
+
+                    #[doc(hidden)]
+                    #(#downcast_fn_attrs)*
+                    unsafe fn #downcast_fn(base: *const #base_unqualified) -> *const #struct_name_unqualified;
                 }
             }],
             cxx_qt_mod_contents: vec![parse_quote! {
@@ -105,19 +103,23 @@ impl GeneratedRustFragment {
                     unsafe fn upcast_ptr(this: *const Self) -> *const #base_qualified {
                         #upcast_fn_qualified(this)
                     }
+
+                    unsafe fn from_base_ptr(base: *const #base_qualified) -> *const Self {
+                        #downcast_fn_qualified(base)
+                    }
                 }
             }],
-        };
+        });
 
-        generated.push(fragment);
-        generated.push(blocks);
-
-        generated.push(constructor::generate(
-            &structured_qobject.constructors,
-            &qobject_names,
-            &namespace_idents,
-            type_names,
-        )?);
+        generated.extend(vec![
+            constructor::generate(
+                &structured_qobject.constructors,
+                &qobject_names,
+                &namespace_idents,
+                type_names,
+            )?,
+            cxxqttype::generate(&qobject_names, type_names)?,
+        ]);
 
         Ok(GeneratedRustFragment::flatten(generated))
     }
@@ -256,6 +258,11 @@ mod tests {
                     #[cxx_name = "upcastPtr"]
                     #[namespace = "rust::cxxqt1"]
                     unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QObject;
+
+                    #[doc(hidden)]
+                    #[cxx_name = "downcastPtr"]
+                    #[namespace = "rust::cxxqt1"]
+                    unsafe fn cxx_qt_ffi_MyObject_downcastPtr(base: *const QObject) -> *const MyObject;
                 }
             },
         );

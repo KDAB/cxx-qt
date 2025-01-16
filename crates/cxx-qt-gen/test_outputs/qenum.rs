@@ -95,6 +95,10 @@ mod ffi {
         #[cxx_name = "upcastPtr"]
         #[namespace = "rust::cxxqt1"]
         unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_downcastPtr(base: *const QObject) -> *const MyObject;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -135,6 +139,10 @@ mod ffi {
         #[cxx_name = "upcastPtr"]
         #[namespace = "rust::cxxqt1"]
         unsafe fn cxx_qt_ffi_CxxName_upcastPtr(thiz: *const MyRenamedObject) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_CxxName_downcastPtr(base: *const QObject) -> *const MyRenamedObject;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -165,6 +173,9 @@ impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::qobject::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_MyObject_downcastPtr(base)
+    }
 }
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
@@ -189,6 +200,9 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
 impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyRenamedObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
         ffi::cxx_qt_ffi_CxxName_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::qobject::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_CxxName_downcastPtr(base)
     }
 }
 #[doc(hidden)]
