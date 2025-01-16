@@ -10,7 +10,7 @@ use crate::{
             qobject::QObjectNames,
             signals::{QSignalHelperNames, QSignalNames},
         },
-        rust::fragment::{GeneratedRustFragment, RustFragmentPair},
+        rust::fragment::GeneratedRustFragment,
     },
     naming::{rust::syn_type_cxx_bridge_to_qualified, Name, TypeNames},
     parser::signals::ParsedSignal,
@@ -94,8 +94,6 @@ pub fn generate_rust_signal(
         std::mem::swap(&mut unsafe_call, &mut unsafe_block);
     }
 
-    let mut cxx_bridge = vec![];
-
     let rust_class_name = qobject_name.rust_unqualified();
 
     let cpp_ident = idents.name.cxx_unqualified();
@@ -114,9 +112,18 @@ pub fn generate_rust_signal(
 
     let return_type = &signal.method.sig.output;
 
+    let closure_struct = idents_helper.struct_closure;
+    let signal_handler_alias = idents_helper.handler_alias;
+    let signal_handler_alias_namespaced_str = idents_helper.handler_alias_namespaced.to_string();
+    let signal_handler_call = idents_helper.function_call;
+    let signal_handler_drop = idents_helper.function_drop;
+    let namespace_str = idents_helper.namespace.to_string();
+
+    let mut cxx_mod_contents = vec![];
+
     // TODO: what happens with RustQt signals, can they be private yet?
     if !signal.private {
-        cxx_bridge.push(quote! {
+        cxx_mod_contents.push(parse_quote! {
             #unsafe_block extern "C++" {
                 #[cxx_name = #cpp_ident]
                 #(#cfgs)*
@@ -127,41 +134,35 @@ pub fn generate_rust_signal(
         });
     }
 
-    let closure_struct = idents_helper.struct_closure;
-    let signal_handler_alias = idents_helper.handler_alias;
-    let signal_handler_alias_namespaced_str = idents_helper.handler_alias_namespaced.to_string();
-    let signal_handler_call = idents_helper.function_call;
-    let signal_handler_drop = idents_helper.function_drop;
-    let namespace_str = idents_helper.namespace.to_string();
+    cxx_mod_contents.extend(vec![
+        parse_quote! {
+                unsafe extern "C++" {
+                    #[doc(hidden)]
+                    #[namespace = #namespace_str]
+                    type #signal_handler_alias = cxx_qt::signalhandler::CxxQtSignalHandler<super::#closure_struct>;
 
-    cxx_bridge.push(quote! {
-        unsafe extern "C++" {
-            #[doc(hidden)]
-            #[namespace = #namespace_str]
-            type #signal_handler_alias = cxx_qt::signalhandler::CxxQtSignalHandler<super::#closure_struct>;
+                    #[doc(hidden)]
+                    #[namespace = #namespace_str]
+                    #[cxx_name = #free_connect_ident_cpp]
+                    fn #free_connect_ident_rust(self_value: #self_type_cxx, signal_handler: #signal_handler_alias, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+                }
+        },
+        parse_quote! {
+                #[namespace = #namespace_str]
+                extern "Rust" {
+                    #[doc(hidden)]
+                    fn #signal_handler_drop(handler: #signal_handler_alias);
 
-            #[doc(hidden)]
-            #[namespace = #namespace_str]
-            #[cxx_name = #free_connect_ident_cpp]
-            fn #free_connect_ident_rust(self_value: #self_type_cxx, signal_handler: #signal_handler_alias, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
-        }
-    });
+                    #[doc(hidden)]
+                    #unsafe_call fn #signal_handler_call(handler: &mut #signal_handler_alias, self_value: #self_type_cxx, #(#parameters_cxx),*);
+                }
+        },
+    ]);
 
-    cxx_bridge.push(quote! {
-        #[namespace = #namespace_str]
-        extern "Rust" {
-            #[doc(hidden)]
-            fn #signal_handler_drop(handler: #signal_handler_alias);
-
-            #[doc(hidden)]
-            #unsafe_call fn #signal_handler_call(handler: &mut #signal_handler_alias, self_value: #self_type_cxx, #(#parameters_cxx),*);
-        }
-    });
-
-    let fragment = RustFragmentPair {
-        cxx_bridge,
-        implementation: vec![
-            quote! {
+    Ok(GeneratedRustFragment {
+        cxx_mod_contents,
+        cxx_qt_mod_contents: vec![
+            parse_quote! {
                 impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = #signal_name_cpp]
@@ -176,7 +177,7 @@ pub fn generate_rust_signal(
                     }
                 }
             },
-            quote! {
+            parse_quote! {
                 impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = #signal_name_cpp]
@@ -193,20 +194,20 @@ pub fn generate_rust_signal(
                     }
                 }
             },
-            quote! {
+            parse_quote! {
                 #[doc(hidden)]
                 pub struct #closure_struct {}
             },
-            quote! {
+            parse_quote! {
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for #closure_struct {
                     type Id = cxx::type_id!(#signal_handler_alias_namespaced_str);
                     type FnType = dyn FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + Send;
                 }
             },
-            quote! {
+            parse_quote! {
                 use core::mem::drop as #signal_handler_drop;
             },
-            quote! {
+            parse_quote! {
                 fn #signal_handler_call(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>,
                     self_value: #self_type_qualified,
@@ -215,24 +216,14 @@ pub fn generate_rust_signal(
                     handler.closure()(self_value, #(#parameters_name),*);
                 }
             },
-            quote! {
+            parse_quote! {
                 cxx_qt::static_assertions::assert_eq_align!(cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>, usize);
             },
-            quote! {
+            parse_quote! {
                 cxx_qt::static_assertions::assert_eq_size!(cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>, [usize; 2]);
             },
         ],
-    };
-
-    let mut generated = GeneratedRustFragment::default();
-    generated
-        .cxx_mod_contents
-        .append(&mut fragment.cxx_bridge_as_items()?);
-    generated
-        .cxx_qt_mod_contents
-        .append(&mut fragment.implementation_as_items()?);
-
-    Ok(generated)
+    })
 }
 
 pub fn generate_rust_signals(

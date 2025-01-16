@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{
     generator::rust::{
-        fragment::{GeneratedRustFragment, RustFragmentPair},
+        fragment::GeneratedRustFragment,
         signals::generate_rust_signal,
     },
     naming::TypeNames,
@@ -12,7 +12,7 @@ use crate::{
     syntax::path::path_compare_str,
 };
 use quote::quote;
-use syn::{Attribute, Result};
+use syn::{parse_quote, Attribute, Result};
 
 impl GeneratedRustFragment {
     pub fn from_extern_cxx_qt(
@@ -66,20 +66,19 @@ impl GeneratedRustFragment {
             })
             .collect::<Vec<_>>();
 
-        let fragment = RustFragmentPair {
-            cxx_bridge: vec![quote! {
+        generated.append(&mut GeneratedRustFragment {
+            cxx_mod_contents: vec![
+                parse_quote! {
                 #extern_block_namespace
                 #unsafety extern "C++" {
                     #(#items)*
 
                     #(#types)*
                 }
-            }],
-            implementation: vec![],
-        };
-        generated
-            .cxx_mod_contents
-            .append(&mut fragment.cxx_bridge_as_items()?);
+            }
+            ],
+            cxx_qt_mod_contents: vec![],
+        });
 
         // Build the signals
         for signal in &extern_cxxqt_block.signals {
