@@ -31,22 +31,12 @@ pub fn generate_rust_properties(
     for property in properties {
         let idents = QPropertyNames::try_from_property(property, structured_qobject)?;
 
-        if let Some(getter) = getter::generate(&idents, qobject_names, &property.ty, type_names)? {
-            generated
-                .cxx_mod_contents
-                .append(&mut getter.cxx_bridge_as_items()?);
-            generated
-                .cxx_qt_mod_contents
-                .append(&mut getter.implementation_as_items()?);
+        if let Some(mut getter) = getter::generate(&idents, qobject_names, &property.ty, type_names)? {
+            generated.append(&mut getter);
         };
 
-        if let Some(setter) = setter::generate(&idents, qobject_names, &property.ty, type_names)? {
-            generated
-                .cxx_mod_contents
-                .append(&mut setter.cxx_bridge_as_items()?);
-            generated
-                .cxx_qt_mod_contents
-                .append(&mut setter.implementation_as_items()?);
+        if let Some(mut setter) = setter::generate(&idents, qobject_names, &property.ty, type_names)? {
+            generated.append(&mut setter);
         }
 
         if let Some(notify) = signal::generate(&idents, qobject_names) {

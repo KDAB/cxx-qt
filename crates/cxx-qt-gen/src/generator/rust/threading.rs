@@ -4,27 +4,21 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::{
-        naming::{
-            namespace::{namespace_combine_ident, NamespaceName},
-            qobject::QObjectNames,
-        },
-        rust::fragment::GeneratedRustFragment,
+    generator::naming::{
+        namespace::{namespace_combine_ident, NamespaceName},
+        qobject::QObjectNames,
     },
     naming::TypeNames,
 };
-use quote::quote;
-use syn::Result;
+use syn::{parse_quote, Result};
 
-use super::fragment::RustFragmentPair;
+use super::fragment::GeneratedRustFragment;
 
 pub fn generate(
     qobject_names: &QObjectNames,
     namespace_ident: &NamespaceName,
     type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
-    let mut blocks = GeneratedRustFragment::default();
-
     let module_ident = qobject_names.name.require_module()?;
 
     let cpp_struct_ident = qobject_names.name.rust_unqualified();
@@ -53,9 +47,9 @@ pub fn generate(
         namespace_combine_ident(&namespace_ident.namespace, cxx_qt_thread_ident);
     let qualified_impl = type_names.rust_qualified(cpp_struct_ident)?;
 
-    let fragment = RustFragmentPair {
-        cxx_bridge: vec![
-            quote! {
+    Ok(GeneratedRustFragment {
+        cxx_mod_contents: vec![
+            parse_quote! {
                 unsafe extern "C++" {
                     // Specialised version of CxxQtThread, which can be moved into other threads.
                     //
@@ -96,15 +90,15 @@ pub fn generate(
                     fn #thread_is_destroyed_name(cxx_qt_thread: &#cxx_qt_thread_ident) -> bool;
                 }
             },
-            quote! {
+            parse_quote! {
                 extern "Rust" {
                     #[namespace = #namespace_internals]
                     type #cxx_qt_thread_queued_fn_ident;
                 }
             },
         ],
-        implementation: vec![
-            quote! {
+        cxx_qt_mod_contents: vec![
+            parse_quote! {
                 impl cxx_qt::Threading for #qualified_impl {
                     type BoxedQueuedFn = #cxx_qt_thread_queued_fn_ident;
                     type ThreadingTypeId = cxx::type_id!(#cxx_qt_thread_ident_type_id_str);
@@ -157,7 +151,7 @@ pub fn generate(
                     }
                 }
             },
-            quote! {
+            parse_quote! {
                 #[doc(hidden)]
                 pub struct #cxx_qt_thread_queued_fn_ident {
                     // An opaque Rust type is required to be Sized.
@@ -166,16 +160,7 @@ pub fn generate(
                 }
             },
         ],
-    };
-
-    blocks
-        .cxx_mod_contents
-        .append(&mut fragment.cxx_bridge_as_items()?);
-    blocks
-        .cxx_qt_mod_contents
-        .append(&mut fragment.implementation_as_items()?);
-
-    Ok(blocks)
+    })
 }
 
 #[cfg(test)]
@@ -184,6 +169,7 @@ mod tests {
 
     use crate::naming::TypeNames;
     use crate::tests::assert_tokens_eq;
+    use quote::quote;
 
     use crate::parser::qobject::tests::create_parsed_qobject;
 
