@@ -19,6 +19,7 @@ fn write_headers() {
 
     for file_path in [
         "connection.h",
+        "casting.h",
         "signalhandler.h",
         "thread.h",
         "threading.h",
@@ -40,7 +41,7 @@ fn main() {
     let mut builder = CxxQtBuilder::library(interface);
 
     let cpp_files = ["src/connection.cpp"];
-    let rust_bridges = ["src/connection.rs"];
+    let rust_bridges = ["src/connection.rs", "src/qobject.rs"];
 
     for bridge in &rust_bridges {
         builder = builder.file(bridge);

@@ -16,7 +16,7 @@ pub mod signals;
 pub mod threading;
 
 use crate::generator::{rust::fragment::GeneratedRustFragment, structuring};
-use crate::parser::{parameter::ParsedFunctionParameter, Parser};
+use crate::parser::{parameter::ParsedFunctionParameter, qobject::ParsedQObject, Parser};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{parse_quote, Item, ItemMod, Result};
@@ -60,6 +60,8 @@ impl GeneratedRustBlocks {
         let namespace = parser.cxx_qt_data.namespace.clone().unwrap_or_default();
         let passthrough_mod = &parser.passthrough_module;
 
+        fragments.extend(vec![add_qobject_import(&parser.cxx_qt_data.qobjects)]);
+
         let vis = &passthrough_mod.vis;
         let ident = &passthrough_mod.module_ident;
         let docs = &passthrough_mod.docs;
@@ -92,6 +94,29 @@ impl GeneratedRustBlocks {
             namespace,
             fragments,
         })
+    }
+}
+
+fn add_qobject_import(qobjects: &[ParsedQObject]) -> GeneratedRustFragment {
+    let includes = qobjects
+        .iter()
+        .any(|obj| obj.has_qobject_macro && obj.base_class.is_none());
+    if includes {
+        GeneratedRustFragment {
+            cxx_mod_contents: vec![parse_quote! {
+                extern "C++" {
+                    #[doc(hidden)]
+                    #[namespace=""]
+                    type QObject = cxx_qt::qobject::QObject;
+                }
+            }],
+            cxx_qt_mod_contents: vec![],
+        }
+    } else {
+        GeneratedRustFragment {
+            cxx_mod_contents: vec![],
+            cxx_qt_mod_contents: vec![],
+        }
     }
 }
 
@@ -143,7 +168,7 @@ mod tests {
         assert!(rust.cxx_mod.content.is_none());
         assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "");
-        assert_eq!(rust.fragments.len(), 1);
+        assert_eq!(rust.fragments.len(), 2);
     }
 
     #[test]
@@ -163,7 +188,7 @@ mod tests {
         assert!(rust.cxx_mod.content.is_none());
         assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "cxx_qt");
-        assert_eq!(rust.fragments.len(), 1);
+        assert_eq!(rust.fragments.len(), 2);
     }
 
     #[test]
@@ -183,6 +208,6 @@ mod tests {
         assert!(rust.cxx_mod.content.is_none());
         assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "");
-        assert_eq!(rust.fragments.len(), 1);
+        assert_eq!(rust.fragments.len(), 2);
     }
 }

@@ -3,6 +3,7 @@
 #include <QtCore/QObject>
 #include <QtQml/QQmlEngine>
 #include <cstdint>
+#include <cxx-qt/casting.h>
 #include <cxx-qt/type.h>
 
 namespace cxx_qt::my_object {

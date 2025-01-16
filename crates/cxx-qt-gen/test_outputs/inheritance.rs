@@ -61,6 +61,13 @@ mod inheritance {
         #[doc = " Inherited fetchMore from the base class"]
         unsafe fn fetch_more(self: Pin<&mut MyObject>, index: &QModelIndex);
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject)
+            -> *const QAbstractItemModel;
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt_MyObject"]
@@ -79,10 +86,11 @@ mod inheritance {
         fn cxx_qt_ffi_MyObject_unsafeRustMut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
 }
-impl cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {}
-#[allow(unused_imports)]
-#[allow(dead_code)]
-use inheritance::QAbstractItemModel as _;
+impl ::cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const inheritance::QAbstractItemModel {
+        inheritance::cxx_qt_ffi_MyObject_upcastPtr(this)
+    }
+}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
