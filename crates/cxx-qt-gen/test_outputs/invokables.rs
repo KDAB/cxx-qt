@@ -157,6 +157,12 @@ mod ffi {
         #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
         type MyObjectCxxQtThreadQueuedFn;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QObject;
+    }
     #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
     #[cxx_name = "CxxQtConstructorArguments0"]
     #[doc(hidden)]
@@ -258,6 +264,11 @@ mod ffi {
         #[namespace = "rust::cxxqt1"]
         fn cxx_qt_ffi_MyObject_unsafeRustMut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[namespace = ""]
+        type QObject = cxx_qt::qobject::QObject;
+    }
 }
 impl cxx_qt::Threading for ffi::MyObject {
     type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
@@ -310,6 +321,11 @@ impl cxx_qt::Threading for ffi::MyObject {
 #[doc(hidden)]
 pub struct MyObjectCxxQtThreadQueuedFn {
     inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut ffi::MyObject>) + Send>,
+}
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
+    }
 }
 #[doc(hidden)]
 pub fn route_arguments_MyObject_0<'a>(

@@ -174,6 +174,12 @@ impl GeneratedCppQObject {
             class_initializers.push(initializer);
         }
 
+        // Include casting header
+        let mut result = GeneratedCppQObjectBlocks::default();
+        result.includes.insert("#include <cxx-qt/casting.h>".into());
+
+        generated.blocks.append(&mut result);
+
         generated.blocks.append(&mut constructor::generate(
             &generated,
             &structured_qobject.constructors,

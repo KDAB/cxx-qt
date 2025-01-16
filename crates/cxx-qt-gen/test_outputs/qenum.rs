@@ -90,6 +90,12 @@ mod ffi {
         #[doc(hidden)]
         unsafe fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QObject;
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
@@ -124,6 +130,12 @@ mod ffi {
         #[namespace = "cxx_qt::my_object"]
         type InternalObject;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_CxxName_upcastPtr(thiz: *const MyRenamedObject) -> *const QObject;
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_MyRenamedObject"]
@@ -142,6 +154,16 @@ mod ffi {
         fn cxx_qt_ffi_CxxName_unsafeRustMut(
             outer: Pin<&mut MyRenamedObject>,
         ) -> Pin<&mut InternalObject>;
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[namespace = ""]
+        type QObject = cxx_qt::qobject::QObject;
+    }
+}
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
 }
 #[doc(hidden)]
@@ -162,6 +184,11 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         ffi::cxx_qt_ffi_MyObject_unsafeRustMut(self)
+    }
+}
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyRenamedObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_CxxName_upcastPtr(this)
     }
 }
 #[doc(hidden)]
