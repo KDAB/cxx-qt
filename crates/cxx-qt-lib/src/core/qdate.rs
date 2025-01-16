@@ -154,7 +154,7 @@ impl QDate {
         ffi::qdate_add_days(self, ndays)
     }
 
-    // Returns the current date, as reported by the system clock.
+    /// Returns the current date, as reported by the system clock.
     pub fn current_date() -> Self {
         ffi::qdate_current_date()
     }
