@@ -8,7 +8,10 @@ use syn::{parse_quote, Result};
 
 use super::fragment::GeneratedRustFragment;
 
-pub fn generate(qobject_names: &QObjectNames, type_names: &TypeNames) -> Result<GeneratedRustFragment> {
+pub fn generate(
+    qobject_names: &QObjectNames,
+    type_names: &TypeNames,
+) -> Result<GeneratedRustFragment> {
     let cpp_struct_ident = &qobject_names.name.rust_unqualified();
     let rust_struct_ident = &qobject_names.rust_struct.rust_unqualified();
     let (rust_fn_name, rust_fn_attrs, rust_fn_qualified) = qobject_names

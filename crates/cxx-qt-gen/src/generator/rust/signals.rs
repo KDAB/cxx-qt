@@ -227,22 +227,16 @@ pub fn generate_rust_signal(
 }
 
 pub fn generate_rust_signals(
-    signals: &Vec<&ParsedSignal>,
+    signals: &[&ParsedSignal],
     qobject_names: &QObjectNames,
     type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
-    let mut generated = GeneratedRustFragment::default();
+    let generated = signals
+        .iter()
+        .map(|signal| generate_rust_signal(signal, &qobject_names.name, type_names))
+        .collect::<Result<Vec<_>>>()?;
 
-    // Create the methods for the other signals
-    for signal in signals {
-        generated.append(&mut generate_rust_signal(
-            signal,
-            &qobject_names.name,
-            type_names,
-        )?);
-    }
-
-    Ok(generated)
+    Ok(GeneratedRustFragment::flatten(generated))
 }
 
 #[cfg(test)]

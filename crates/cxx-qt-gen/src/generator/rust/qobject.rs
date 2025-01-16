@@ -7,13 +7,9 @@ use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectNames},
         rust::{
-            constructor, cxxqttype,
-            fragment::GeneratedRustFragment,
-            inherit,
-            method::generate_rust_methods,
-            property::generate_rust_properties,
-            signals::generate_rust_signals,
-            threading,
+            constructor, cxxqttype, fragment::GeneratedRustFragment, inherit,
+            method::generate_rust_methods, property::generate_rust_properties,
+            signals::generate_rust_signals, threading,
         },
     },
     naming::TypeNames,
@@ -31,68 +27,51 @@ impl GeneratedRustFragment {
         // Create the base object
         let qobject_names = QObjectNames::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
-        let mut generated = Self::default();
 
-        generated.append(&mut generate_qobject_definitions(
-            &qobject_names,
-            qobject.base_class.clone(),
-            type_names,
-        )?);
-
-        // Generate methods for the properties, invokables, signals
-        generated.append(&mut generate_rust_properties(
-            &qobject.properties,
-            &qobject_names,
-            type_names,
-            structured_qobject,
-        )?);
-        generated.append(&mut generate_rust_methods(
-            &structured_qobject.methods,
-            &qobject_names,
-        )?);
-        generated.append(&mut inherit::generate(
-            &qobject_names,
-            &structured_qobject.inherited_methods,
-        )?);
-        generated.append(&mut generate_rust_signals(
-            &structured_qobject.signals,
-            &qobject_names,
-            type_names,
-        )?);
+        let mut generated = vec![
+            generate_qobject_definitions(&qobject_names, qobject.base_class.clone(), type_names)?,
+            generate_rust_properties(
+                &qobject.properties,
+                &qobject_names,
+                type_names,
+                structured_qobject,
+            )?,
+            generate_rust_methods(&structured_qobject.methods, &qobject_names)?,
+            inherit::generate(&qobject_names, &structured_qobject.inherited_methods)?,
+            generate_rust_signals(&structured_qobject.signals, &qobject_names, type_names)?,
+        ];
 
         // If this type is a singleton then we need to add an include
         if let Some(qml_metadata) = &qobject.qml_metadata {
             if qml_metadata.singleton {
-                generated.append(&mut GeneratedRustFragment {
-                    cxx_mod_contents: vec![parse_quote! {
-                        unsafe extern "C++" {
-                            include!(<QtQml/QQmlEngine>);
-                        }
-                    }],
-                    cxx_qt_mod_contents: vec![],
-                })
+                generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
+                    unsafe extern "C++" {
+                        include!(<QtQml/QQmlEngine>);
+                    }
+                }))
             }
         }
 
         // If this type has threading enabled then add generation
         if structured_qobject.threading {
-            generated.append(&mut threading::generate(
+            generated.push(threading::generate(
                 &qobject_names,
                 &namespace_idents,
                 type_names,
             )?);
         }
 
-        generated.append(&mut constructor::generate(
-            &structured_qobject.constructors,
-            &qobject_names,
-            &namespace_idents,
-            type_names,
-        )?);
+        generated.extend(vec![
+            constructor::generate(
+                &structured_qobject.constructors,
+                &qobject_names,
+                &namespace_idents,
+                type_names,
+            )?,
+            cxxqttype::generate(&qobject_names, type_names)?,
+        ]);
 
-        generated.append(&mut cxxqttype::generate(&qobject_names, type_names)?);
-
-        Ok(generated)
+        Ok(GeneratedRustFragment::flatten(generated))
     }
 }
 
@@ -164,7 +143,7 @@ fn generate_qobject_definitions(
                 }
             },
         ],
-        cxx_qt_mod_contents: base_upcast
+        cxx_qt_mod_contents: base_upcast,
     })
 }
 

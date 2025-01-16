@@ -14,9 +14,24 @@ pub struct GeneratedRustFragment {
 }
 
 impl GeneratedRustFragment {
-    pub fn append(&mut self, other: &mut Self) {
-        self.cxx_mod_contents.append(&mut other.cxx_mod_contents);
-        self.cxx_qt_mod_contents
-            .append(&mut other.cxx_qt_mod_contents);
+    pub fn append(&mut self, other: Self) {
+        self.cxx_mod_contents.extend(other.cxx_mod_contents);
+        self.cxx_qt_mod_contents.extend(other.cxx_qt_mod_contents);
+    }
+
+    // Create a singular GeneratedRustFragment from a Vector of multiple
+    pub fn flatten(others: Vec<Self>) -> Self {
+        let mut this = Self::default();
+        for other in others {
+            this.append(other);
+        }
+        this
+    }
+
+    pub fn from_cxx_item(contents: Item) -> Self {
+        Self {
+            cxx_mod_contents: vec![contents],
+            ..Default::default()
+        }
     }
 }
