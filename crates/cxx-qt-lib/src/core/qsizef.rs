@@ -100,8 +100,8 @@ mod ffi {
         #[rust_name = "qsizef_from_qsize"]
         fn construct(size: &QSize) -> QSizeF;
         #[doc(hidden)]
-        #[rust_name = "qsizef_to_qstring"]
-        fn toQString(value: &QSizeF) -> QString;
+        #[rust_name = "qsizef_to_debug_qstring"]
+        fn toDebugQString(value: &QSizeF) -> QString;
         #[doc(hidden)]
         #[rust_name = "qsizef_plus"]
         fn operatorPlus(a: &QSizeF, b: &QSizeF) -> QSizeF;
@@ -141,7 +141,7 @@ impl Default for QSizeF {
 
 impl fmt::Display for QSizeF {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qsizef_to_qstring(self))
+        write!(f, "{}", ffi::qsizef_to_debug_qstring(self))
     }
 }
 
