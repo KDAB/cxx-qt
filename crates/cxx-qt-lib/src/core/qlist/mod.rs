@@ -75,6 +75,15 @@ where
 
 impl<T> Eq for QList<T> where T: QListElement + Eq {}
 
+impl<T> std::fmt::Debug for QList<T>
+where
+    T: QListElement + std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_list().entries(self.iter()).finish()
+    }
+}
+
 impl<T> QList<T>
 where
     T: QListElement,

@@ -75,6 +75,15 @@ where
 
 impl<T> Eq for QVector<T> where T: QVectorElement + Eq {}
 
+impl<T> std::fmt::Debug for QVector<T>
+where
+    T: QVectorElement + std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_list().entries(self.iter()).finish()
+    }
+}
+
 impl<T> QVector<T>
 where
     T: QVectorElement,
