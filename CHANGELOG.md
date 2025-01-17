@@ -19,7 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Deref` and `DerefMut` implementations to `QList` for `QStringList`, `QPolygon`, and `QPolygonF`.
+- `QDate::to_format`, `QDateTime::to_format`,  and `QTime::to_format` to create a `QString` with a specific `DateFormat`.
 - `QDateTime::from_string` to parse `QDateTime` from a `QString`.
+- `QSet::reserve` to reserve capacity up-front.
 - Support for further types: `QUuid`
 - Serde support for further types: `QByteArray`, `QColor`, `QDate`, `QDateTime`, `QLine`, `QLineF`, `QList`, `QMargins`, `QMarginsF`, `QPoint`, `QPointF`, `QPolygon`, `QPolygonF`, `QRect`, `QRectF`, `QSet`, `QSize`, `QSizeF`,  `QStringList`, `QVector`, `QVector2D`, `QVector3D`, `QVector4D`, `QTime`, `QUrl`, `QUuid`
 
