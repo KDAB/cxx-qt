@@ -103,8 +103,8 @@ mod ffi {
         #[rust_name = "qtimezone_eq"]
         fn operatorEq(a: &QTimeZone, b: &QTimeZone) -> bool;
         #[doc(hidden)]
-        #[rust_name = "qtimezone_to_qstring"]
-        fn toQString(value: &QTimeZone) -> QString;
+        #[rust_name = "qtimezone_to_debug_qstring"]
+        fn toDebugQString(value: &QTimeZone) -> QString;
     }
 
     // QTimeZone only has a copy-constructor and not a move-constructor, which means that the following is true
@@ -169,7 +169,7 @@ impl std::cmp::Eq for QTimeZone {}
 
 impl fmt::Display for QTimeZone {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qtimezone_to_qstring(self))
+        write!(f, "{}", ffi::qtimezone_to_debug_qstring(self))
     }
 }
 

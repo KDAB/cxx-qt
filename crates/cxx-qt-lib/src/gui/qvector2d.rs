@@ -107,8 +107,8 @@ mod ffi {
         #[rust_name = "qvector2d_distance_to_point"]
         fn qvector2DDistanceToPoint(vector: &QVector2D, point: QVector2D) -> f32;
         #[doc(hidden)]
-        #[rust_name = "qvector2d_to_qstring"]
-        fn toQString(value: &QVector2D) -> QString;
+        #[rust_name = "qvector2d_to_debug_qstring"]
+        fn toDebugQString(value: &QVector2D) -> QString;
         #[doc(hidden)]
         #[rust_name = "qvector2d_plus"]
         fn operatorPlus(a: &QVector2D, b: &QVector2D) -> QVector2D;
@@ -160,7 +160,7 @@ impl Default for QVector2D {
 
 impl std::fmt::Display for QVector2D {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qvector2d_to_qstring(self))
+        write!(f, "{}", ffi::qvector2d_to_debug_qstring(self))
     }
 }
 
