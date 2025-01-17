@@ -31,3 +31,6 @@ cxx-qt-lib = { workspace = true, features = ["full"] }
 # Use `cxx-qt-build = "0.7"` here instead!
 # The link_qt_object_files feature is required for statically linking Qt 6.
 cxx-qt-build = { workspace = true, features = [ "link_qt_object_files" ] }
+
+[features]
+cmake = ["cxx-qt-build/cmake"]

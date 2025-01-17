@@ -17,6 +17,7 @@ rust-version.workspace = true
 cc.workspace = true
 versions = "6.3"
 thiserror.workspace = true
+cmake-package = { version = "0.1.5", optional = true }
 
 [features]
 # When Cargo links an executable, whether a bin crate or test executable,
@@ -30,6 +31,10 @@ thiserror.workspace = true
 #
 # When linking Qt dynamically, this makes no difference.
 link_qt_object_files = []
+
+# Prefer using CMake to find Qt modules, instead of using qmake.
+# This may be desirable in certain installations.
+cmake = ["dep:cmake-package"]
 
 [lints]
 workspace = true

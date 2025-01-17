@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `QDateTime::from_string` to parse `QDateTime` from a `QString`.
 - Support for further types: `QUuid`
+- Optional feature `cmake` to cxx-qt-build to prefer CMake instead of QMake for finding and linking to Qt.
 
 ### Fixed
 
