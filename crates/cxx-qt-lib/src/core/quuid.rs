@@ -76,7 +76,7 @@ mod ffi {
 
         /// Returns the string representation of this QUuid, with the formatting controlled by the
         /// `mode` parameter.
-        #[rust_name = "to_format"]
+        #[rust_name = "format"]
         fn toString(self: &QUuid, mode: QUuidStringFormat) -> QString;
 
         /// Returns the value in the variant field of the UUID. If the return value is
@@ -138,13 +138,13 @@ impl Default for QUuid {
 
 impl fmt::Display for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.to_format(QUuidStringFormat::WithoutBraces).fmt(f)
+        self.format(QUuidStringFormat::WithoutBraces).fmt(f)
     }
 }
 
 impl fmt::Debug for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.to_format(QUuidStringFormat::WithoutBraces).fmt(f)
+        self.format(QUuidStringFormat::WithoutBraces).fmt(f)
     }
 }
 
@@ -268,7 +268,7 @@ unsafe impl ExternType for QUuid {
 
 impl From<QUuid> for QString {
     fn from(value: QUuid) -> Self {
-        value.to_format(QUuidStringFormat::WithBraces)
+        value.format(QUuidStringFormat::WithBraces)
     }
 }
 
@@ -355,7 +355,7 @@ impl From<QUuid> for Uuid {
 impl serde::Serialize for QUuid {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
         if serializer.is_human_readable() {
-            self.to_format(QUuidStringFormat::WithoutBraces)
+            self.format(QUuidStringFormat::WithoutBraces)
                 .serialize(serializer)
         } else {
             self.to_bytes().serialize(serializer)

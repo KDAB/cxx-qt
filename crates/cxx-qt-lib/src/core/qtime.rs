@@ -170,7 +170,7 @@ impl QTime {
     }
 
     /// Returns the QDate as a string in the format given.
-    pub fn to_format(&self, format: ffi::DateFormat) -> ffi::QString {
+    pub fn format(&self, format: ffi::DateFormat) -> ffi::QString {
         ffi::qtime_to_format(self, format)
     }
 
