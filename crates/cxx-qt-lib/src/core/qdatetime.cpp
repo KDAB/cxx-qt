@@ -160,11 +160,5 @@ qdatetimeFromQString(const QString& string, const Qt::DateFormat format)
   return QDateTime::fromString(string, format);
 }
 
-QString
-qdatetimeToFormat(const QDateTime& datetime, Qt::DateFormat format)
-{
-  return datetime.toString(format);
-}
-
 }
 }

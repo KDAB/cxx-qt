@@ -30,8 +30,6 @@ bool
 qdateIsLeapYear(::std::int32_t year);
 QString
 qdateToFormat(const QDate& date, const QString& format);
-QString
-qdateToFormat(const QDate& date, Qt::DateFormat format);
 
 }
 }

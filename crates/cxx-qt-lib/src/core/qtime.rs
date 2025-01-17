@@ -88,10 +88,6 @@ mod ffi {
         fn qtimeFromString(string: &QString, format: DateFormat) -> QTime;
 
         #[doc(hidden)]
-        #[rust_name = "qtime_to_format"]
-        fn qtimeToFormat(time: &QTime, format: DateFormat) -> QString;
-
-        #[doc(hidden)]
         #[rust_name = "qtime_msecs_to"]
         fn qtimeMSecsTo(time: &QTime, t: QTime) -> i32;
 
@@ -167,11 +163,6 @@ impl QTime {
         } else {
             None
         }
-    }
-
-    /// Returns the QDate as a string in the format given.
-    pub fn format(&self, format: ffi::DateFormat) -> ffi::QString {
-        ffi::qtime_to_format(self, format)
     }
 
     /// Returns the number of milliseconds from this time to t.

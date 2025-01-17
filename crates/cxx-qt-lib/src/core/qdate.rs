@@ -102,10 +102,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdate_to_format"]
         fn qdateToFormat(date: &QDate, format: &QString) -> QString;
-
-        #[doc(hidden)]
-        #[rust_name = "qdate_to_format_enum"]
-        fn qdateToFormat(date: &QDate, format: DateFormat) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -146,7 +142,7 @@ impl fmt::Display for QDate {
 
 impl fmt::Debug for QDate {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qdate_to_qstring(self))
     }
 }
 
@@ -198,11 +194,6 @@ impl QDate {
         } else {
             None
         }
-    }
-
-    /// Returns the QDate as a string in the format given.
-    pub fn format(&self, format: ffi::DateFormat) -> ffi::QString {
-        ffi::qdate_to_format_enum(self, format)
     }
 
     /// Returns true if the specified year is a leap year in the Gregorian calendar; otherwise returns false.

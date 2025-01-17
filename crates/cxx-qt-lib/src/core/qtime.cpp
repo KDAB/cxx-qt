@@ -53,12 +53,6 @@ qtimeFromString(const QString& string, Qt::DateFormat format)
   return QTime::fromString(string, format);
 }
 
-QString
-qtimeToFormat(const QTime& time, Qt::DateFormat format)
-{
-  return time.toString(format);
-}
-
 ::std::int32_t
 qtimeSecsTo(const QTime& time, QTime t)
 {

@@ -18,7 +18,7 @@ macro_rules! datetime_impl {
     ($t:ty, $construct:expr, $f:expr, $expected:literal) => {
         impl Serialize for $t {
             fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-                self.format($f).serialize(serializer)
+                self.format_enum($f).serialize(serializer)
             }
         }
 

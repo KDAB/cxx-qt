@@ -40,6 +40,10 @@ mod ffi {
         /// Returns the date part of the datetime.
         fn date(self: &QDateTime) -> QDate;
 
+        /// Returns the datetime as a string. The format parameter determines the format of the string.
+        #[rust_name = "format_enum"]
+        fn toString(self: &QDateTime, format: DateFormat) -> QString;
+
         /// Returns if this datetime falls in Daylight-Saving Time.
         #[rust_name = "is_daylight_time"]
         fn isDaylightTime(self: &QDateTime) -> bool;
@@ -174,9 +178,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdatetime_from_string"]
         fn qdatetimeFromQString(string: &QString, format: DateFormat) -> QDateTime;
-        #[doc(hidden)]
-        #[rust_name = "qdatetime_to_format"]
-        fn qdatetimeToFormat(datetime: &QDateTime, format: DateFormat) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -314,11 +315,6 @@ impl QDateTime {
         } else {
             None
         }
-    }
-
-    /// Returns the datetime as a string in the format given.
-    pub fn format(&self, format: ffi::DateFormat) -> ffi::QString {
-        ffi::qdatetime_to_format(self, format)
     }
 
     /// Returns the number of milliseconds from this datetime to the other datetime.

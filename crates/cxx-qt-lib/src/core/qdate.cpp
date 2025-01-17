@@ -64,11 +64,5 @@ qdateToFormat(const QDate& date, const QString& format)
   return date.toString(format);
 }
 
-QString
-qdateToFormat(const QDate& date, Qt::DateFormat format)
-{
-  return date.toString(format);
-}
-
 }
 }
