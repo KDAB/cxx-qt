@@ -67,8 +67,8 @@ mod ffi {
         #[rust_name = "qmargins_new"]
         fn construct(left: i32, top: i32, right: i32, bottom: i32) -> QMargins;
         #[doc(hidden)]
-        #[rust_name = "qmargins_to_qstring"]
-        fn toQString(value: &QMargins) -> QString;
+        #[rust_name = "qmargins_to_debug_qstring"]
+        fn toDebugQString(value: &QMargins) -> QString;
         #[doc(hidden)]
         #[rust_name = "qmargins_plus"]
         fn operatorPlus(a: &QMargins, b: &QMargins) -> QMargins;
@@ -122,7 +122,7 @@ impl Default for QMargins {
 
 impl fmt::Display for QMargins {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qmargins_to_qstring(self))
+        write!(f, "{}", ffi::qmargins_to_debug_qstring(self))
     }
 }
 

@@ -355,8 +355,8 @@ mod ffi {
         fn operatorEq(a: &QFont, b: &QFont) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qfont_to_qstring"]
-        fn toQString(value: &QFont) -> QString;
+        #[rust_name = "qfont_to_debug_qstring"]
+        fn toDebugQString(value: &QFont) -> QString;
 
     }
 }
@@ -392,7 +392,7 @@ impl Clone for QFont {
 
 impl std::fmt::Display for QFont {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qfont_to_qstring(self))
+        write!(f, "{}", ffi::qfont_to_debug_qstring(self))
     }
 }
 

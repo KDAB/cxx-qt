@@ -122,8 +122,8 @@ mod ffi {
         fn operatorEq(a: &QPen, b: &QPen) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qpen_to_qstring"]
-        fn toQString(value: &QPen) -> QString;
+        #[rust_name = "qpen_to_debug_qstring"]
+        fn toDebugQString(value: &QPen) -> QString;
     }
 }
 
@@ -173,7 +173,7 @@ impl From<&ffi::PenStyle> for QPen {
 
 impl fmt::Display for QPen {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qpen_to_qstring(self))
+        write!(f, "{}", ffi::qpen_to_debug_qstring(self))
     }
 }
 

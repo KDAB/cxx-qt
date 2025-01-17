@@ -114,8 +114,8 @@ mod ffi {
         fn construct() -> QVector4D;
 
         #[doc(hidden)]
-        #[rust_name = "qvector4d_to_qstring"]
-        fn toQString(value: &QVector4D) -> QString;
+        #[rust_name = "qvector4d_to_debug_qstring"]
+        fn toDebugQString(value: &QVector4D) -> QString;
         #[doc(hidden)]
         #[rust_name = "qvector4d_plus"]
         fn operatorPlus(a: &QVector4D, b: &QVector4D) -> QVector4D;
@@ -155,7 +155,7 @@ impl Default for QVector4D {
 
 impl std::fmt::Display for QVector4D {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qvector4d_to_qstring(self))
+        write!(f, "{}", ffi::qvector4d_to_debug_qstring(self))
     }
 }
 

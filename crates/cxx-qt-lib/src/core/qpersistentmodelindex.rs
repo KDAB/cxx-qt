@@ -54,8 +54,8 @@ mod ffi {
         #[rust_name = "qpersistentmodelindex_eq"]
         fn operatorEq(a: &QPersistentModelIndex, b: &QPersistentModelIndex) -> bool;
         #[doc(hidden)]
-        #[rust_name = "qpersistentmodelindex_to_qstring"]
-        fn toQString(value: &QPersistentModelIndex) -> QString;
+        #[rust_name = "qpersistentmodelindex_to_debug_qstring"]
+        fn toDebugQString(value: &QPersistentModelIndex) -> QString;
     }
 }
 
@@ -96,7 +96,7 @@ impl std::cmp::Eq for QPersistentModelIndex {}
 
 impl fmt::Display for QPersistentModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qpersistentmodelindex_to_qstring(self))
+        write!(f, "{}", ffi::qpersistentmodelindex_to_debug_qstring(self))
     }
 }
 

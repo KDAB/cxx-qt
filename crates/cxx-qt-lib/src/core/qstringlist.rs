@@ -74,8 +74,8 @@ mod ffi {
         fn operatorEq(a: &QStringList, b: &QStringList) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qstringlist_to_qstring"]
-        fn toQString(value: &QStringList) -> QString;
+        #[rust_name = "qstringlist_to_debug_qstring"]
+        fn toDebugQString(value: &QStringList) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -142,7 +142,7 @@ impl std::cmp::Eq for QStringList {}
 
 impl std::fmt::Display for QStringList {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qstringlist_to_qstring(self))
+        write!(f, "{}", ffi::qstringlist_to_debug_qstring(self))
     }
 }
 

@@ -93,8 +93,8 @@ mod ffi {
         fn construct(pt1: QPoint, pt2: QPoint) -> QLine;
 
         #[doc(hidden)]
-        #[rust_name = "qline_to_qstring"]
-        fn toQString(value: &QLine) -> QString;
+        #[rust_name = "qline_to_debug_qstring"]
+        fn toDebugQString(value: &QLine) -> QString;
     }
 }
 
@@ -122,7 +122,7 @@ impl Default for QLine {
 
 impl fmt::Display for QLine {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qline_to_qstring(self))
+        write!(f, "{}", ffi::qline_to_debug_qstring(self))
     }
 }
 

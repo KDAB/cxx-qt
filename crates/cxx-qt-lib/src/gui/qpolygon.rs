@@ -98,8 +98,8 @@ mod ffi {
         fn operatorEq(a: &QPolygon, b: &QPolygon) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qpolygon_to_qstring"]
-        fn toQString(value: &QPolygon) -> QString;
+        #[rust_name = "qpolygon_to_debug_qstring"]
+        fn toDebugQString(value: &QPolygon) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -167,7 +167,7 @@ impl std::fmt::Debug for QPolygon {
 
 impl std::fmt::Display for QPolygon {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qpolygon_to_qstring(self))
+        write!(f, "{}", ffi::qpolygon_to_debug_qstring(self))
     }
 }
 

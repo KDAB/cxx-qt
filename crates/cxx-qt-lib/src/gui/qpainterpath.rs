@@ -200,8 +200,8 @@ mod ffi {
         fn operatorEq(a: &QPainterPath, b: &QPainterPath) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qpainterpath_to_qstring"]
-        fn toQString(value: &QPainterPath) -> QString;
+        #[rust_name = "qpainterpath_to_debug_qstring"]
+        fn toDebugQString(value: &QPainterPath) -> QString;
     }
 }
 
@@ -244,7 +244,7 @@ impl PartialEq for QPainterPath {
 
 impl fmt::Display for QPainterPath {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qpainterpath_to_qstring(self))
+        write!(f, "{}", ffi::qpainterpath_to_debug_qstring(self))
     }
 }
 

@@ -186,7 +186,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qurl_debug"]
-        fn toQString(url: &QUrl) -> QString;
+        fn toDebugQString(url: &QUrl) -> QString;
     }
 }
 
