@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::fmt;
+
 use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
@@ -181,8 +183,8 @@ impl Default for QVector3D {
     }
 }
 
-impl std::fmt::Display for QVector3D {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for QVector3D {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qvector3d_to_debug_qstring(self))
     }
 }

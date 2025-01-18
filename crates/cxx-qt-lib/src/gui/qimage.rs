@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -74,6 +75,8 @@ mod ffi {
         type QImage = super::QImage;
         include!("cxx-qt-lib/qsize.h");
         type QSize = crate::QSize;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
         include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
         include!("cxx-qt-lib/qcolor.h");
@@ -260,6 +263,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qimage_eq"]
         fn operatorEq(a: &QImage, b: &QImage) -> bool;
+
+        #[doc(hidden)]
+        #[rust_name = "qimage_to_debug_qstring"]
+        fn toDebugQString(image: &QImage) -> QString;
     }
 }
 
@@ -301,6 +308,12 @@ impl PartialEq for QImage {
 }
 
 impl Eq for QImage {}
+
+impl fmt::Debug for QImage {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qimage_to_debug_qstring(self))
+    }
+}
 
 // Safety:
 //

@@ -13,6 +13,7 @@ use crate::{
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 /// The QVector class is a template class that provides a dynamic array.
 ///
@@ -75,11 +76,11 @@ where
 
 impl<T> Eq for QVector<T> where T: QVectorElement + Eq {}
 
-impl<T> std::fmt::Debug for QVector<T>
+impl<T> fmt::Debug for QVector<T>
 where
-    T: QVectorElement + std::fmt::Debug,
+    T: QVectorElement + fmt::Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_list().entries(self.iter()).finish()
     }
 }
