@@ -23,11 +23,16 @@ mod ffi {
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QTimeZoneTimeType {
-        /// The standard time in a time zone, i.e. when Daylight-Saving is not in effect. For example when formatting a display name this will show something like "Pacific Standard Time".
+        /// The standard time in a time zone, i.e. when Daylight-Saving is not in effect. For
+        /// example when formatting a display name this will show something like "Pacific Standard
+        /// Time".
         StandardTime,
-        /// A time when Daylight-Saving is in effect. For example when formatting a display name this will show something like "Pacific daylight-saving time".
+        /// A time when Daylight-Saving is in effect. For example when formatting a display name
+        /// this will show something like "Pacific daylight-saving time".
         DaylightTime,
-        /// A time which is not specifically Standard or Daylight-Saving time, either an unknown time or a neutral form. For example when formatting a display name this will show something like "Pacific Time".
+        /// A time which is not specifically Standard or Daylight-Saving time, either an unknown
+        /// time or a neutral form. For example when formatting a display name this will show
+        /// something like "Pacific Time".
         GenericTime,
     }
 
