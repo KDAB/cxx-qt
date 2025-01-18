@@ -7,6 +7,7 @@ use core::ffi::c_void;
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
