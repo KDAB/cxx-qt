@@ -32,6 +32,13 @@ drop(T& value)
 
 template<typename T>
 QString
+toQString(const T& value)
+{
+  return value.toString();
+}
+
+template<typename T>
+QString
 toDebugQString(const T& value)
 {
   // We can't convert value directly into a string.

@@ -27,6 +27,14 @@ qtimezoneDefault()
   return ::std::make_unique<QTimeZone>();
 }
 
+QString
+qtimezoneDisplayName(const QTimeZone& timezone,
+                     QTimeZoneTimeType timeType,
+                     QTimeZoneNameType nameType)
+{
+  return timezone.displayName(timeType, nameType);
+}
+
 ::std::unique_ptr<QTimeZone>
 qtimezoneFromOffsetSeconds(::std::int32_t offsetSeconds)
 {
