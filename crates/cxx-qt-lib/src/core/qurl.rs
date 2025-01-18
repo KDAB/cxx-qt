@@ -153,9 +153,6 @@ mod ffi {
             exclude: &QByteArray,
             include: &QByteArray,
         ) -> QByteArray;
-        #[doc(hidden)]
-        #[rust_name = "qurl_to_qstring"]
-        fn qurlToQString(url: &QUrl) -> QString;
         #[rust_name = "qurl_user_info"]
         fn qurlUserInfo(url: &QUrl) -> QString;
         #[rust_name = "qurl_user_name"]
@@ -185,8 +182,11 @@ mod ffi {
         fn operatorEq(a: &QUrl, b: &QUrl) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qurl_debug"]
+        #[rust_name = "qurl_to_debug_qstring"]
         fn toDebugQString(url: &QUrl) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qurl_to_qstring"]
+        fn toQString(url: &QUrl) -> QString;
     }
 }
 
@@ -441,7 +441,7 @@ impl fmt::Display for QUrl {
 
 impl fmt::Debug for QUrl {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qurl_debug(self))
+        write!(f, "{}", ffi::qurl_to_debug_qstring(self))
     }
 }
 

@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 /// The QHash class is a template class that provides a hash-table-based dictionary.
 ///
@@ -139,6 +140,17 @@ where
     /// Inserts a new item with the key and a value of value.
     pub fn insert(&mut self, key: T::Key, value: T::Value) {
         T::insert(self, key, value)
+    }
+}
+
+impl<T> fmt::Debug for QHash<T>
+where
+    T: QHashPair,
+    T::Key: fmt::Debug,
+    T::Value: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_map().entries(self.iter()).finish()
     }
 }
 

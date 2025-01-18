@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -357,7 +358,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qfont_to_debug_qstring"]
         fn toDebugQString(value: &QFont) -> QString;
-
+        #[doc(hidden)]
+        #[rust_name = "qfont_to_qstring"]
+        fn toQString(value: &QFont) -> QString;
     }
 }
 
@@ -390,8 +393,14 @@ impl Clone for QFont {
     }
 }
 
-impl std::fmt::Display for QFont {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Display for QFont {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qfont_to_qstring(self))
+    }
+}
+
+impl fmt::Debug for QFont {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qfont_to_debug_qstring(self))
     }
 }

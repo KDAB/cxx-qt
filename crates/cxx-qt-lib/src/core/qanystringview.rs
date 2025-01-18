@@ -60,6 +60,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "QAnyStringView_len"]
         fn qanystringviewLen(string: &QAnyStringView) -> isize;
+
+        #[doc(hidden)]
+        #[rust_name = "QAnyStringView_to_qstring"]
+        fn toQString(string: &QAnyStringView) -> QString;
     }
 }
 
@@ -123,6 +127,18 @@ impl QAnyStringView<'_> {
     /// Returns the number of characters in this string.
     pub fn len(&self) -> isize {
         ffi::QAnyStringView_len(self)
+    }
+}
+
+impl fmt::Display for QAnyStringView<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::QAnyStringView_to_qstring(self))
+    }
+}
+
+impl fmt::Debug for QAnyStringView<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

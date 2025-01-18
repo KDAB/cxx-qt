@@ -13,6 +13,9 @@
 #include <QtCore/QList>
 #include <QtCore/QTimeZone>
 
+using QTimeZoneNameType = QTimeZone::NameType;
+using QTimeZoneTimeType = QTimeZone::TimeType;
+
 namespace rust {
 namespace cxxqtlib1 {
 
@@ -22,6 +25,8 @@ qtimezoneAvailableTimeZoneIds();
 qtimezoneClone(const QTimeZone& timezone);
 ::std::unique_ptr<QTimeZone>
 qtimezoneDefault();
+QString
+qtimezoneDisplayName(const QTimeZone &timezone, QTimeZoneTimeType timeType, QTimeZoneNameType nameType);
 ::std::unique_ptr<QTimeZone>
 qtimezoneFromOffsetSeconds(::std::int32_t offsetSeconds);
 ::std::unique_ptr<QTimeZone>

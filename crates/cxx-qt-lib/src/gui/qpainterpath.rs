@@ -244,6 +244,12 @@ impl PartialEq for QPainterPath {
 
 impl fmt::Display for QPainterPath {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self:?}")
+    }
+}
+
+impl fmt::Debug for QPainterPath {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", ffi::qpainterpath_to_debug_qstring(self))
     }
 }

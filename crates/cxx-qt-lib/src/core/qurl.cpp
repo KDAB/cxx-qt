@@ -200,12 +200,6 @@ qurlToPercentEncoding(const QString& input,
 }
 
 QString
-qurlToQString(const QUrl& url)
-{
-  return url.toString();
-}
-
-QString
 qurlUserInfo(const QUrl& url)
 {
   return url.userInfo();
