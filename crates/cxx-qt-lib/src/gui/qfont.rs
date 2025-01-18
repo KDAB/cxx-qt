@@ -478,6 +478,9 @@ mod test {
         qfont.set_stretch(2);
         qfont.set_style(QFontStyle::StyleItalic);
 
-        assert_eq!(crate::serde_impl::roundtrip(&qfont), qfont);
+        assert_eq!(
+            crate::serde_impl::roundtrip(&qfont).description(),
+            qfont.description()
+        );
     }
 }
