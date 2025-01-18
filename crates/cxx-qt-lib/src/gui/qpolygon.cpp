@@ -42,7 +42,7 @@ qpolygonAsQVectorQPointRef(const QPolygon& shape)
 }
 
 QVector<QPoint>&
-qpolygonAsQVectorQPointRefMut(QPolygon& shape)
+qpolygonAsQVectorQPointRef(QPolygon& shape)
 {
   return static_cast<QVector<QPoint>&>(shape);
 }
