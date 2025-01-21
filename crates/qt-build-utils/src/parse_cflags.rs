@@ -73,6 +73,17 @@ fn extract_lib_from_filename<'a>(target: &str, filename: &'a str) -> Option<&'a 
     }
 }
 
+/// Tests whether a file is an object file to be linked.
+fn is_object_file(path: &std::path::Path) -> bool {
+    let Some(ext_os) = path.extension() else {
+        return false;
+    };
+    let Some(ext) = ext_os.to_str() else {
+        return false;
+    };
+    ext == "o" || ext == "obj"
+}
+
 /// Split link_args produced by pkg-config --cflags and / or --libs into separate flags.
 ///
 /// Backslash in link_args is used to preserve literal meaning of following byte.  Different words are
@@ -172,7 +183,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                         (path.parent(), path.file_name(), &target)
                     {
                         let file_name = file_name.to_string_lossy();
-                        if file_name.ends_with(".o") {
+                        if is_object_file(path) {
                             #[cfg(feature = "link_qt_object_files")]
                             {
                                 let path_string = path.to_string_lossy().to_string();
