@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt;
 use std::mem::MaybeUninit;
@@ -194,6 +196,11 @@ mod ffi {
 /// The QString class provides a Unicode character string.
 ///
 /// Note that QString is a UTF-16 whereas Rust strings are a UTF-8
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize),
+    serde(from = "String", into = "String")
+)]
 #[repr(C)]
 pub struct QString {
     /// The layout has changed between Qt 5 and Qt 6
@@ -418,44 +425,6 @@ impl QString {
 unsafe impl ExternType for QString {
     type Id = type_id!("QString");
     type Kind = cxx::kind::Trivial;
-}
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for QString {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&String::from(self))
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for QString {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        use serde::de::{Error as DeError, Unexpected, Visitor};
-
-        struct StringVisitor;
-
-        impl<'de> Visitor<'de> for StringVisitor {
-            type Value = QString;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("a string")
-            }
-
-            fn visit_str<E: DeError>(self, v: &str) -> Result<Self::Value, E> {
-                Ok(Self::Value::from(v))
-            }
-
-            fn visit_bytes<E: DeError>(self, v: &[u8]) -> Result<Self::Value, E> {
-                match std::str::from_utf8(v) {
-                    Ok(s) => Ok(Self::Value::from(s)),
-                    Err(_) => Err(E::invalid_value(Unexpected::Bytes(v), &self)),
-                }
-            }
-        }
-
-        let visitor = StringVisitor;
-        deserializer.deserialize_string(visitor)
-    }
 }
 
 #[cfg(test)]

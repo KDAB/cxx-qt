@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{QByteArray, QString};
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::{fmt, mem};
 #[cfg(feature = "uuid")]
 use uuid::Uuid;
@@ -120,6 +122,11 @@ mod ffi {
 pub use ffi::{QUuidStringFormat, QUuidVariant, QUuidVersion};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "QString", into = "QString")
+)]
 #[repr(C)]
 pub struct QUuid {
     data1: u32,
@@ -268,7 +275,7 @@ unsafe impl ExternType for QUuid {
 
 impl From<QUuid> for QString {
     fn from(value: QUuid) -> Self {
-        value.format(QUuidStringFormat::WithBraces)
+        value.format(QUuidStringFormat::WithoutBraces)
     }
 }
 
@@ -292,6 +299,12 @@ impl From<&QString> for QUuid {
     /// If the conversion fails, a null UUID is returned.
     fn from(value: &QString) -> Self {
         ffi::quuid_from_string(value)
+    }
+}
+
+impl From<QString> for QUuid {
+    fn from(value: QString) -> Self {
+        Self::from(&value)
     }
 }
 
@@ -348,29 +361,6 @@ impl From<Uuid> for QUuid {
 impl From<QUuid> for Uuid {
     fn from(value: QUuid) -> Self {
         Self::from_fields(value.data1, value.data2, value.data3, &value.data4)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for QUuid {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        if serializer.is_human_readable() {
-            self.format(QUuidStringFormat::WithoutBraces)
-                .serialize(serializer)
-        } else {
-            self.to_bytes().serialize(serializer)
-        }
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for QUuid {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        if deserializer.is_human_readable() {
-            QString::deserialize(deserializer).map(|s| Self::from(&s))
-        } else {
-            <[u8; 16]>::deserialize(deserializer).map(Self::from_bytes)
-        }
     }
 }
 

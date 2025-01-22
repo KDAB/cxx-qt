@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -106,6 +108,11 @@ mod ffi {
 }
 
 /// The QByteArray class provides an array of bytes.
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "Vec<u8>", into = "Vec<u8>")
+)]
 #[repr(C)]
 pub struct QByteArray {
     /// The layout has changed between Qt 5 and Qt 6
@@ -200,6 +207,18 @@ impl From<&QByteArray> for Vec<u8> {
     /// Convert the QByteArray to a `Vec<u8>`. This makes a deep copy of the data.
     fn from(bytearray: &QByteArray) -> Self {
         ffi::qbytearray_to_vec_u8(bytearray)
+    }
+}
+
+impl From<QByteArray> for Vec<u8> {
+    fn from(value: QByteArray) -> Self {
+        Self::from(&value)
+    }
+}
+
+impl From<Vec<u8>> for QByteArray {
+    fn from(value: Vec<u8>) -> Self {
+        Self::from(value.as_slice())
     }
 }
 
@@ -317,54 +336,6 @@ impl QByteArray {
     /// Returns a copy of this byte array with spacing characters removed from the start and end.
     pub fn trimmed(&self) -> Self {
         ffi::qbytearray_trimmed(self)
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for QByteArray {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_bytes(self.as_slice())
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for QByteArray {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        use serde::de::{Error as DeError, SeqAccess, Visitor};
-
-        struct BytesVisitor;
-
-        impl<'de> Visitor<'de> for BytesVisitor {
-            type Value = QByteArray;
-
-            fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
-                formatter.write_str("an array of bytes")
-            }
-
-            fn visit_bytes<E: DeError>(self, v: &[u8]) -> Result<Self::Value, E> {
-                Ok(Self::Value::from(v))
-            }
-
-            fn visit_str<E: DeError>(self, v: &str) -> Result<Self::Value, E> {
-                Ok(Self::Value::from(v))
-            }
-
-            fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
-                let mut values = Self::Value::default();
-                if let Some(size_hint) = seq.size_hint() {
-                    if size_hint != 0 && size_hint <= isize::MAX as usize {
-                        values.reserve(size_hint as isize);
-                    }
-                }
-                while let Some(value) = seq.next_element()? {
-                    values.append(value);
-                }
-                Ok(values)
-            }
-        }
-
-        let visitor = BytesVisitor;
-        deserializer.deserialize_byte_buf(visitor)
     }
 }
 

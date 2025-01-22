@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[cxx::bridge]
@@ -122,6 +124,11 @@ mod ffi {
 
 /// The QDate class provides date functions.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QDate {
     jd: i64,
@@ -209,6 +216,39 @@ impl QDate {
     /// Converts the date to a Julian day.
     pub fn to_julian_day(&self) -> i64 {
         self.jd
+    }
+}
+
+impl TryFrom<&ffi::QString> for QDate {
+    type Error = &'static str;
+
+    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
+        let date = ffi::qdate_from_string_enum(value, ffi::DateFormat::ISODate);
+        if date.is_valid() {
+            Ok(date)
+        } else {
+            Err("invalid ISO-8601 date")
+        }
+    }
+}
+
+impl TryFrom<ffi::QString> for QDate {
+    type Error = &'static str;
+
+    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl From<&QDate> for ffi::QString {
+    fn from(value: &QDate) -> Self {
+        value.format_enum(ffi::DateFormat::ISODate)
+    }
+}
+
+impl From<QDate> for ffi::QString {
+    fn from(value: QDate) -> Self {
+        Self::from(&value)
     }
 }
 

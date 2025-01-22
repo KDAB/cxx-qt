@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::mem::MaybeUninit;
 use std::{cmp::Ordering, fmt};
 
@@ -219,6 +221,11 @@ mod ffi {
 }
 
 /// The QDateTime class provides date and time functions.
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QDateTime {
     _space: MaybeUninit<usize>,
@@ -419,6 +426,39 @@ impl Drop for QDateTime {
     /// Destroys the datetime.
     fn drop(&mut self) {
         ffi::qdatetime_drop(self);
+    }
+}
+
+impl TryFrom<&ffi::QString> for QDateTime {
+    type Error = &'static str;
+
+    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
+        let date = ffi::qdatetime_from_string(value, ffi::DateFormat::ISODateWithMs);
+        if date.is_valid() {
+            Ok(date)
+        } else {
+            Err("invalid ISO-8601 datetime")
+        }
+    }
+}
+
+impl TryFrom<ffi::QString> for QDateTime {
+    type Error = &'static str;
+
+    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl From<&QDateTime> for ffi::QString {
+    fn from(value: &QDateTime) -> Self {
+        value.format_enum(ffi::DateFormat::ISODateWithMs)
+    }
+}
+
+impl From<QDateTime> for ffi::QString {
+    fn from(value: QDateTime) -> Self {
+        Self::from(&value)
     }
 }
 

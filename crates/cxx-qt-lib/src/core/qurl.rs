@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::mem::MaybeUninit;
 
@@ -191,6 +193,11 @@ mod ffi {
 }
 
 /// The QUrl class provides a convenient interface for working with URLs.
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QUrl {
     _space: MaybeUninit<usize>,
@@ -459,6 +466,24 @@ impl From<&ffi::QString> for QUrl {
     }
 }
 
+impl From<ffi::QString> for QUrl {
+    fn from(value: ffi::QString) -> Self {
+        QUrl::from(&value)
+    }
+}
+
+impl From<&QUrl> for ffi::QString {
+    fn from(value: &QUrl) -> Self {
+        value.to_qstring()
+    }
+}
+
+impl From<QUrl> for ffi::QString {
+    fn from(value: QUrl) -> Self {
+        ffi::QString::from(&value)
+    }
+}
+
 impl From<&str> for QUrl {
     /// Constructs a QUrl from a Rust string
     ///
@@ -506,21 +531,6 @@ impl TryFrom<&QUrl> for url::Url {
 
     fn try_from(value: &QUrl) -> Result<Self, Self::Error> {
         url::Url::parse(value.to_string().as_str())
-    }
-}
-
-#[cfg(feature = "serde")]
-impl serde::Serialize for QUrl {
-    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        serializer.serialize_str(&ffi::qurl_to_rust_string(self))
-    }
-}
-
-#[cfg(feature = "serde")]
-impl<'de> serde::Deserialize<'de> for QUrl {
-    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let string = ffi::QString::deserialize(deserializer)?;
-        Ok(Self::from(&string))
     }
 }
 
