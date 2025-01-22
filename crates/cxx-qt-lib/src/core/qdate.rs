@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[cxx::bridge]
@@ -122,6 +124,11 @@ mod ffi {
 
 /// The QDate class provides date functions.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QDate {
     jd: i64,
@@ -142,7 +149,7 @@ impl fmt::Display for QDate {
 
 impl fmt::Debug for QDate {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qdate_to_qstring(self))
     }
 }
 
@@ -176,7 +183,7 @@ impl QDate {
         Self { jd }
     }
 
-    /// Returns the QTime represented by the string, using the format given, or None if the string cannot be parsed.
+    /// Returns the QDate represented by the string, using the format given, or None if the string cannot be parsed.
     pub fn from_string(string: &ffi::QString, format: &ffi::QString) -> Option<Self> {
         let date = ffi::qdate_from_string(string, format);
         if date.is_valid() {
@@ -186,7 +193,7 @@ impl QDate {
         }
     }
 
-    /// Returns the time represented in the string as a QTime using the format given, or None if this is not possible.
+    /// Returns the time represented in the string as a QDate using the format given, or None if this is not possible.
     pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
         let date = ffi::qdate_from_string_enum(string, format);
         if date.is_valid() {
@@ -209,6 +216,39 @@ impl QDate {
     /// Converts the date to a Julian day.
     pub fn to_julian_day(&self) -> i64 {
         self.jd
+    }
+}
+
+impl TryFrom<&ffi::QString> for QDate {
+    type Error = &'static str;
+
+    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
+        let date = ffi::qdate_from_string_enum(value, ffi::DateFormat::ISODate);
+        if date.is_valid() {
+            Ok(date)
+        } else {
+            Err("invalid ISO-8601 date")
+        }
+    }
+}
+
+impl TryFrom<ffi::QString> for QDate {
+    type Error = &'static str;
+
+    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl From<&QDate> for ffi::QString {
+    fn from(value: &QDate) -> Self {
+        value.format_enum(ffi::DateFormat::ISODate)
+    }
+}
+
+impl From<QDate> for ffi::QString {
+    fn from(value: QDate) -> Self {
+        Self::from(&value)
     }
 }
 
@@ -288,6 +328,13 @@ mod test {
         let naive = chrono::NaiveDate::from_ymd_opt(2023, 1, 1).unwrap();
         let qdate = QDate::new(2023, 1, 1);
         assert_eq!(QDate::from(naive), qdate);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qdate_serde() {
+        let qdate = QDate::new(2023, 1, 1);
+        assert_eq!(crate::serde_impl::roundtrip(&qdate), qdate);
     }
 
     #[cfg(feature = "chrono")]

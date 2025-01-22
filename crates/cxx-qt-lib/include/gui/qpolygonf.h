@@ -6,6 +6,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <QtCore/QPointF>
+#include <QtCore/QVector>
 #include <QtGui/QPolygonF>
 
 #include "rust/cxx.h"
@@ -19,3 +21,14 @@ struct IsRelocatable<QPolygonF> : ::std::true_type
 {};
 
 } // namespace rust
+
+namespace rust {
+namespace cxxqtlib1 {
+
+const QVector<QPointF>&
+qpolygonfAsQVectorQPointFRef(const QPolygonF& shape);
+QVector<QPointF>&
+qpolygonfAsQVectorQPointFRef(QPolygonF& shape);
+
+}
+}

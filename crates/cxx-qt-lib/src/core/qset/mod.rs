@@ -64,6 +64,15 @@ where
 
 impl<T> Eq for QSet<T> where T: QSetElement + PartialEq {}
 
+impl<T> std::fmt::Debug for QSet<T>
+where
+    T: QSetElement + std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_set().entries(self.iter()).finish()
+    }
+}
+
 impl<T> QSet<T>
 where
     T: QSetElement,
@@ -110,6 +119,12 @@ where
     /// Returns true if an item was actually removed; otherwise returns false.
     pub fn remove(&mut self, value: &T) -> bool {
         T::remove(self, value)
+    }
+
+    /// Reserve the specified capacity to prevent repeated allocations
+    /// when the maximum size is known.
+    pub fn reserve(&mut self, size: isize) {
+        T::reserve(self, size);
     }
 }
 
@@ -191,6 +206,7 @@ pub trait QSetElement: Sized {
     fn insert_clone(set: &mut QSet<Self>, value: &Self);
     fn len(set: &QSet<Self>) -> isize;
     fn remove(set: &mut QSet<Self>, value: &Self) -> bool;
+    fn reserve(set: &mut QSet<Self>, size: isize);
 }
 
 macro_rules! impl_qset_element {
@@ -239,6 +255,10 @@ macro_rules! impl_qset_element {
             fn remove(set: &mut QSet<Self>, value: &Self) -> bool {
                 set.cxx_remove(value)
             }
+
+            fn reserve(set: &mut QSet<Self>, size: isize) {
+                $module::reserve(set, size);
+            }
         }
     };
 }
@@ -267,3 +287,18 @@ impl_qset_element!(u8, qset_u8, "QSet_u8");
 impl_qset_element!(u16, qset_u16, "QSet_u16");
 impl_qset_element!(u32, qset_u32, "QSet_u32");
 impl_qset_element!(u64, qset_u64, "QSet_u64");
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qset_serde() {
+        let mut set = QSet::default();
+        set.insert(0);
+        set.insert(1);
+        set.insert(2);
+        assert_eq!(crate::serde_impl::roundtrip(&set), set)
+    }
+}

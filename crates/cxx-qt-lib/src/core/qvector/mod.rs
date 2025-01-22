@@ -75,6 +75,15 @@ where
 
 impl<T> Eq for QVector<T> where T: QVectorElement + Eq {}
 
+impl<T> std::fmt::Debug for QVector<T>
+where
+    T: QVectorElement + std::fmt::Debug,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.debug_list().entries(self.iter()).finish()
+    }
+}
+
 impl<T> QVector<T>
 where
     T: QVectorElement,
@@ -389,5 +398,12 @@ mod test {
         let array = [0, 1, 2];
         let qvec = QVector::<u8>::from(array);
         assert_eq!(Vec::from(&qvec), array);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qvec_serde() {
+        let qvec = QVector::<u8>::from([0, 1, 2]);
+        assert_eq!(crate::serde_impl::roundtrip(&qvec), qvec);
     }
 }

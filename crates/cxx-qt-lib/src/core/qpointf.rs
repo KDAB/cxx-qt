@@ -86,9 +86,12 @@ mod ffi {
         fn operatorDiv(a: f64, b: &QPointF) -> QPointF;
     }
 }
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 /// The QPointF struct defines a point in the plane using floating point precision.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct QPointF {
     x: f64,

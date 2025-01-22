@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -158,6 +160,10 @@ mod ffi {
         #[rust_name = "default_family"]
         fn defaultFamily(self: &QFont) -> QString;
 
+        /// Returns a description of the font. The description is a comma-separated list of the attributes.
+        #[rust_name = "description"]
+        fn toString(self: &QFont) -> QString;
+
         /// Returns true if a window system font exactly matching
         /// the settings of this font is available.
         #[rust_name = "exact_match"]
@@ -176,8 +182,8 @@ mod ffi {
         #[rust_name = "fixed_pitch"]
         fn fixedPitch(self: &QFont) -> bool;
 
-        /// Sets this font to match the description descrip. The description is a comma-separated
-        /// list of the font attributes, as returned by toString().
+        /// Sets this font to match the description *descrip*. The description is a comma-separated
+        /// list of the font attributes, as returned by [`QFont::description`].
         #[rust_name = "from_string"]
         fn fromString(self: &mut QFont, descrip: &QString) -> bool;
 
@@ -366,6 +372,11 @@ pub use ffi::{
     QFontStyleStrategy,
 };
 
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QFont {
     _cspec: MaybeUninit<usize>,
@@ -390,15 +401,53 @@ impl Clone for QFont {
     }
 }
 
-impl std::fmt::Display for QFont {
+impl std::fmt::Debug for QFont {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "{}", ffi::qfont_to_qstring(self))
+    }
+}
+
+impl std::fmt::Display for QFont {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.description())
     }
 }
 
 impl PartialEq for QFont {
     fn eq(&self, other: &Self) -> bool {
         ffi::qfont_eq(self, other)
+    }
+}
+
+impl From<&QFont> for ffi::QString {
+    fn from(value: &QFont) -> Self {
+        value.description()
+    }
+}
+
+impl From<QFont> for ffi::QString {
+    fn from(value: QFont) -> Self {
+        ffi::QString::from(&value)
+    }
+}
+
+impl TryFrom<&ffi::QString> for QFont {
+    type Error = &'static str;
+
+    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
+        let mut font = QFont::default();
+        if !font.from_string(value) {
+            return Err("invalid QFont description");
+        }
+        Ok(font)
+    }
+}
+
+impl TryFrom<ffi::QString> for QFont {
+    type Error = &'static str;
+
+    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
+        QFont::try_from(&value)
     }
 }
 
@@ -423,4 +472,30 @@ impl QFont {
 unsafe impl ExternType for QFont {
     type Id = type_id!("QFont");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qfont_serde() {
+        let mut qfont = QFont::default();
+        qfont.set_family(&ffi::QString::from("Arial"));
+        qfont.set_bold(true);
+        qfont.set_pixel_size(10);
+        qfont.set_style_hint(QFontStyleHint::Courier, QFontStyleStrategy::PreferAntialias);
+        qfont.set_strikeout(true);
+        qfont.set_capitalization(QFontCapitalization::AllLowercase);
+        qfont.set_letter_spacing(QFontSpacingType::AbsoluteSpacing, 10.0);
+        qfont.set_word_spacing(1.5);
+        qfont.set_stretch(2);
+        qfont.set_style(QFontStyle::StyleItalic);
+
+        assert_eq!(
+            crate::serde_impl::roundtrip(&qfont).description(),
+            qfont.description()
+        );
+    }
 }

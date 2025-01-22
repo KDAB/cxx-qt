@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -106,6 +108,11 @@ mod ffi {
 }
 
 /// The QByteArray class provides an array of bytes.
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "Vec<u8>", into = "Vec<u8>")
+)]
 #[repr(C)]
 pub struct QByteArray {
     /// The layout has changed between Qt 5 and Qt 6
@@ -200,6 +207,18 @@ impl From<&QByteArray> for Vec<u8> {
     /// Convert the QByteArray to a `Vec<u8>`. This makes a deep copy of the data.
     fn from(bytearray: &QByteArray) -> Self {
         ffi::qbytearray_to_vec_u8(bytearray)
+    }
+}
+
+impl From<QByteArray> for Vec<u8> {
+    fn from(value: QByteArray) -> Self {
+        Self::from(&value)
+    }
+}
+
+impl From<Vec<u8>> for QByteArray {
+    fn from(value: Vec<u8>) -> Self {
+        Self::from(value.as_slice())
     }
 }
 
@@ -332,6 +351,13 @@ unsafe impl ExternType for QByteArray {
 mod tests {
     #[cfg(feature = "bytes")]
     use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qbytearray_serde() {
+        let qbytearray = QByteArray::from("KDAB");
+        assert_eq!(crate::serde_impl::roundtrip(&qbytearray), qbytearray)
+    }
 
     #[cfg(feature = "bytes")]
     #[test]

@@ -40,6 +40,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_bool, _: &bool);
         #[rust_name = "len_bool"]
         fn qsetLen(_: &QSet_bool) -> isize;
+        #[rust_name = "reserve_bool"]
+        fn qsetReserve(_: &mut QSet_bool, size: isize);
     }
 }
 
@@ -65,4 +67,8 @@ pub(crate) fn insert(s: &mut ffi::QSet_bool, value: &bool) {
 
 pub(crate) fn len(s: &ffi::QSet_bool) -> isize {
     ffi::len_bool(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_bool, size: isize) {
+    ffi::reserve_bool(s, size);
 }

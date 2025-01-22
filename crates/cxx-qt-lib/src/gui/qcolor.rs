@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::mem::MaybeUninit;
 
@@ -272,6 +274,11 @@ pub use ffi::{QColorNameFormat, QColorSpec};
 
 /// The QColor class provides colors based on RGB, HSL, HSV or CMYK values.
 #[derive(Clone)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QColor {
     _cspec: MaybeUninit<i32>,
@@ -555,6 +562,30 @@ impl TryFrom<&ffi::QString> for QColor {
     }
 }
 
+impl TryFrom<ffi::QString> for QColor {
+    type Error = &'static str;
+
+    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl From<&QColor> for ffi::QString {
+    fn from(value: &QColor) -> Self {
+        if value.alpha() == 255 {
+            value.name(ffi::QColorNameFormat::HexRgb)
+        } else {
+            value.name(ffi::QColorNameFormat::HexArgb)
+        }
+    }
+}
+
+impl From<QColor> for ffi::QString {
+    fn from(value: QColor) -> Self {
+        ffi::QString::from(&value)
+    }
+}
+
 impl std::cmp::PartialEq for QColor {
     fn eq(&self, other: &Self) -> bool {
         ffi::qcolor_eq(self, other)
@@ -642,8 +673,14 @@ unsafe impl ExternType for QColor {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "rgb")]
     use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn serde_qcolor() {
+        let qcolor = QColor::from_rgba(10, 20, 30, 40);
+        assert_eq!(crate::serde_impl::roundtrip(&qcolor), qcolor);
+    }
 
     #[cfg(feature = "rgb")]
     #[test]

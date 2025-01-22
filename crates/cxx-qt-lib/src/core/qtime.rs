@@ -4,6 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[cxx::bridge]
@@ -118,6 +120,11 @@ mod ffi {
 
 /// The QTime class provides clock time functions.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QTime {
     mds: i32,
@@ -140,9 +147,29 @@ impl QTime {
         ffi::qtime_from_string(string, format)
     }
 
+    /// Returns the QTime represented by the string, using the format given, or None if the string cannot be parsed.
+    pub fn from_string_opt(string: &ffi::QString, format: &ffi::QString) -> Option<Self> {
+        let time = ffi::qtime_from_string(string, format);
+        if time.is_valid() {
+            Some(time)
+        } else {
+            None
+        }
+    }
+
     /// Returns the time represented in the string as a QTime using the format given, or an invalid time if this is not possible.
     pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Self {
         ffi::qtime_from_string_enum(string, format)
+    }
+
+    /// Returns the time represented in the string as a QTime using the format given, or None if this is not possible.
+    pub fn from_string_enum_opt(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
+        let time = ffi::qtime_from_string_enum(string, format);
+        if time.is_valid() {
+            Some(time)
+        } else {
+            None
+        }
     }
 
     /// Returns the number of milliseconds from this time to t.
@@ -185,6 +212,39 @@ impl fmt::Display for QTime {
 impl fmt::Debug for QTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{self}")
+    }
+}
+
+impl TryFrom<&ffi::QString> for QTime {
+    type Error = &'static str;
+
+    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
+        let time = ffi::qtime_from_string_enum(value, ffi::DateFormat::ISODateWithMs);
+        if time.is_valid() {
+            Ok(time)
+        } else {
+            Err("invalid ISO-8601 time")
+        }
+    }
+}
+
+impl TryFrom<ffi::QString> for QTime {
+    type Error = &'static str;
+
+    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl From<&QTime> for ffi::QString {
+    fn from(value: &QTime) -> Self {
+        value.format_enum(ffi::DateFormat::ISODateWithMs)
+    }
+}
+
+impl From<QTime> for ffi::QString {
+    fn from(value: QTime) -> Self {
+        Self::from(&value)
     }
 }
 
@@ -264,6 +324,18 @@ impl TryFrom<QTime> for time::Time {
 unsafe impl ExternType for QTime {
     type Id = type_id!("QTime");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qtime_serde() {
+        let qtime = QTime::new(1, 2, 3, 4);
+        assert_eq!(crate::serde_impl::roundtrip(&qtime), qtime);
+    }
 }
 
 #[cfg(test)]

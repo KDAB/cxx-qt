@@ -92,8 +92,12 @@ mod ffi {
     }
 }
 
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 /// The QMarginsF class defines the four margins of a rectangle.
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct QMarginsF {
     left: f64,

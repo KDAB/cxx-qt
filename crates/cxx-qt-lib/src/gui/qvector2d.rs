@@ -125,7 +125,11 @@ mod ffi {
 }
 
 /// The QVector2D class represents a vector or vertex in 2D space.
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
+
 #[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct QVector2D {
     v: [f32; 2],

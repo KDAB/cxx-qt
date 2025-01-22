@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::mem::MaybeUninit;
 use std::{cmp::Ordering, fmt};
 
@@ -39,6 +41,10 @@ mod ffi {
 
         /// Returns the date part of the datetime.
         fn date(self: &QDateTime) -> QDate;
+
+        /// Returns the datetime as a string. The format parameter determines the format of the string.
+        #[rust_name = "format_enum"]
+        fn toString(self: &QDateTime, format: DateFormat) -> QString;
 
         /// Returns if this datetime falls in Daylight-Saving Time.
         #[rust_name = "is_daylight_time"]
@@ -168,8 +174,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdatetime_to_secs_since_epoch"]
         fn qdatetimeToSecsSinceEpoch(datetime: &QDateTime) -> i64;
+        #[doc(hidden)]
         #[rust_name = "qdatetime_settimezone"]
         fn qdatetimeSetTimeZone(datetime: &mut QDateTime, time_zone: &QTimeZone);
+        #[doc(hidden)]
         #[rust_name = "qdatetime_from_string"]
         fn qdatetimeFromQString(string: &QString, format: DateFormat) -> QDateTime;
     }
@@ -213,6 +221,11 @@ mod ffi {
 }
 
 /// The QDateTime class provides date and time functions.
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QDateTime {
     _space: MaybeUninit<usize>,
@@ -416,6 +429,39 @@ impl Drop for QDateTime {
     }
 }
 
+impl TryFrom<&ffi::QString> for QDateTime {
+    type Error = &'static str;
+
+    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
+        let date = ffi::qdatetime_from_string(value, ffi::DateFormat::ISODateWithMs);
+        if date.is_valid() {
+            Ok(date)
+        } else {
+            Err("invalid ISO-8601 datetime")
+        }
+    }
+}
+
+impl TryFrom<ffi::QString> for QDateTime {
+    type Error = &'static str;
+
+    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
+        Self::try_from(&value)
+    }
+}
+
+impl From<&QDateTime> for ffi::QString {
+    fn from(value: &QDateTime) -> Self {
+        value.format_enum(ffi::DateFormat::ISODateWithMs)
+    }
+}
+
+impl From<QDateTime> for ffi::QString {
+    fn from(value: QDateTime) -> Self {
+        Self::from(&value)
+    }
+}
+
 #[cfg(feature = "chrono")]
 use chrono::Offset;
 
@@ -544,6 +590,17 @@ mod test {
         assert_eq!(qdatetime_a.cmp(&qdatetime_b), Ordering::Less);
         assert_eq!(qdatetime_b.cmp(&qdatetime_a), Ordering::Greater);
         assert_eq!(qdatetime_a.cmp(&qdatetime_a), Ordering::Equal);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qdatetime_serde() {
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 1, 1, 1),
+            &ffi::QTimeZone::utc(),
+        );
+        assert_eq!(crate::serde_impl::roundtrip(&qdatetime), qdatetime);
     }
 }
 

@@ -148,7 +148,7 @@ impl std::fmt::Display for QStringList {
 
 impl std::fmt::Debug for QStringList {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
+        QList::fmt(self, f)
     }
 }
 
@@ -214,5 +214,14 @@ mod test {
             list.get(0).map(|s| s.to_string()),
             Some("element".to_owned())
         );
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qstringlist_serde() {
+        let mut qstringlist = QStringList::default();
+        qstringlist.append(QString::from("element 1"));
+        qstringlist.append(QString::from("element 2"));
+        assert_eq!(crate::serde_impl::roundtrip(&qstringlist), qstringlist)
     }
 }

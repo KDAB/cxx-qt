@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::fmt;
 use std::mem::MaybeUninit;
 
@@ -191,6 +193,11 @@ mod ffi {
 }
 
 /// The QUrl class provides a convenient interface for working with URLs.
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "ffi::QString", into = "ffi::QString")
+)]
 #[repr(C)]
 pub struct QUrl {
     _space: MaybeUninit<usize>,
@@ -459,6 +466,24 @@ impl From<&ffi::QString> for QUrl {
     }
 }
 
+impl From<ffi::QString> for QUrl {
+    fn from(value: ffi::QString) -> Self {
+        QUrl::from(&value)
+    }
+}
+
+impl From<&QUrl> for ffi::QString {
+    fn from(value: &QUrl) -> Self {
+        value.to_qstring()
+    }
+}
+
+impl From<QUrl> for ffi::QString {
+    fn from(value: QUrl) -> Self {
+        ffi::QString::from(&value)
+    }
+}
+
 impl From<&str> for QUrl {
     /// Constructs a QUrl from a Rust string
     ///
@@ -519,8 +544,14 @@ unsafe impl ExternType for QUrl {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(any(feature = "http", feature = "url"))]
     use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qurl_serde() {
+        let qurl = QUrl::from("https://github.com/kdab/cxx-qt");
+        assert_eq!(crate::serde_impl::roundtrip(&qurl), qurl);
+    }
 
     #[cfg(feature = "http")]
     #[test]

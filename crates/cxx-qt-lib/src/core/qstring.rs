@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::cmp::Ordering;
 use std::fmt;
 use std::mem::MaybeUninit;
@@ -191,15 +193,15 @@ mod ffi {
     }
 }
 
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
-
 /// The QString class provides a Unicode character string.
 ///
 /// Note that QString is a UTF-16 whereas Rust strings are a UTF-8
+#[cfg_attr(
+    feature = "serde",
+    derive(Deserialize, Serialize),
+    serde(from = "String", into = "String")
+)]
 #[repr(C)]
-#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(from = "String", into = "String"))]
 pub struct QString {
     /// The layout has changed between Qt 5 and Qt 6
     ///
@@ -428,6 +430,13 @@ unsafe impl ExternType for QString {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qstring_serde() {
+        let qstring = QString::from("KDAB");
+        assert_eq!(crate::serde_impl::roundtrip(&qstring), qstring);
+    }
 
     #[test]
     fn test_ordering() {

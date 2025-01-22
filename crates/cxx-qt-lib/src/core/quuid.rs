@@ -4,12 +4,29 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{QByteArray, QString};
 use cxx::{type_id, ExternType};
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 use std::{fmt, mem};
 #[cfg(feature = "uuid")]
 use uuid::Uuid;
 
 #[cxx::bridge]
 mod ffi {
+    #[repr(i32)]
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    enum QUuidStringFormat {
+        /// Five hex fields, separated by dashes and surrounded by braces.
+        /// Example: {00000000-0000-0000-0000-000000000000}.
+        WithBraces = 0,
+        /// Only the five dash-separated fields, without the braces.
+        /// Example: 00000000-0000-0000-0000-000000000000.
+        WithoutBraces = 1,
+        /// Only the hex digits, without braces or dashes.
+        /// Example: 00000000000000000000000000000000.
+        /// Note that QUuid cannot parse this back again as input.
+        Id128 = 3,
+    }
+
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QUuidVariant {
@@ -55,8 +72,14 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/quuid.h");
         type QUuid = super::QUuid;
+        type QUuidStringFormat;
         type QUuidVariant;
         type QUuidVersion;
+
+        /// Returns the string representation of this QUuid, with the formatting controlled by the
+        /// `mode` parameter.
+        #[rust_name = "format"]
+        fn toString(self: &QUuid, mode: QUuidStringFormat) -> QString;
 
         /// Returns the value in the variant field of the UUID. If the return value is
         /// `QUuidVariant::DCE`, call `version()` to see which layout it uses. The null UUID is
@@ -85,9 +108,6 @@ mod ffi {
         #[rust_name = "quuid_create_uuid_v5"]
         fn quuidCreateUuidV5(ns: &QUuid, data: &[u8]) -> QUuid;
         #[doc(hidden)]
-        #[rust_name = "quuid_to_string"]
-        fn quuidToString(uuid: &QUuid) -> QString;
-        #[doc(hidden)]
         #[rust_name = "quuid_from_string"]
         fn quuidFromString(string: &QString) -> QUuid;
         #[doc(hidden)]
@@ -99,9 +119,14 @@ mod ffi {
     }
 }
 
-pub use ffi::{QUuidVariant, QUuidVersion};
+pub use ffi::{QUuidStringFormat, QUuidVariant, QUuidVersion};
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[cfg_attr(
+    feature = "serde",
+    derive(Serialize, Deserialize),
+    serde(try_from = "QString", into = "QString")
+)]
 #[repr(C)]
 pub struct QUuid {
     data1: u32,
@@ -120,13 +145,13 @@ impl Default for QUuid {
 
 impl fmt::Display for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        ffi::quuid_to_string(self).fmt(f)
+        self.format(QUuidStringFormat::WithoutBraces).fmt(f)
     }
 }
 
 impl fmt::Debug for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        ffi::quuid_to_string(self).fmt(f)
+        self.format(QUuidStringFormat::WithoutBraces).fmt(f)
     }
 }
 
@@ -250,7 +275,7 @@ unsafe impl ExternType for QUuid {
 
 impl From<QUuid> for QString {
     fn from(value: QUuid) -> Self {
-        ffi::quuid_to_string(&value)
+        value.format(QUuidStringFormat::WithoutBraces)
     }
 }
 
@@ -274,6 +299,12 @@ impl From<&QString> for QUuid {
     /// If the conversion fails, a null UUID is returned.
     fn from(value: &QString) -> Self {
         ffi::quuid_from_string(value)
+    }
+}
+
+impl From<QString> for QUuid {
+    fn from(value: QString) -> Self {
+        Self::from(&value)
     }
 }
 
@@ -411,7 +442,7 @@ mod test {
     fn quuid_to_string() {
         assert_eq!(
             QUuid::from_u128(0x7e95e361a22c51c18c297ac24cb61e83).to_string(),
-            "{7e95e361-a22c-51c1-8c29-7ac24cb61e83}"
+            "7e95e361-a22c-51c1-8c29-7ac24cb61e83"
         )
     }
 
@@ -456,5 +487,13 @@ mod test {
         let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_u128(uuid.to_u128());
         assert_eq!(uuid, roundtrip)
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn quuid_serde() {
+        let uuid = QUuid::create_uuid();
+        let roundtrip = crate::serde_impl::roundtrip(&uuid);
+        assert_eq!(roundtrip, uuid)
     }
 }

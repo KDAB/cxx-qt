@@ -9,6 +9,9 @@ compile_error!("cxxqt_qt_version_major must be either \"5\" or \"6\"");
 
 mod core;
 
+#[cfg(feature = "serde")]
+mod serde_impl;
+
 pub use crate::core::*;
 
 #[cfg(feature = "qt_gui")]
