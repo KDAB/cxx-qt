@@ -43,6 +43,31 @@ fn write_headers_in(subfolder: &str) {
     }
 }
 
+fn write_definitions_header() {
+    // We cannot ensure that downstream dependencies set the same compile-time definitions.
+    // So we generate a header file that adds those definitions, which will be passed along
+    // to downstream dependencies with all other headers.
+    //
+    // Thanks to David Faure for reminding us of this useful trick in his blog post:
+    // https://www.kdab.com/setting-defines-with-cmake/
+    let mut definitions = "#pragma once\n".to_owned();
+
+    if qt_gui_enabled() {
+        definitions.push_str("#define CXX_QT_GUI_FEATURE\n");
+    }
+
+    if qt_qml_enabled() {
+        definitions.push_str("#define CXX_QT_QML_FEATURE\n");
+    }
+
+    if qt_quickcontrols_enabled() {
+        definitions.push_str("#define CXX_QT_QUICKCONTROLS_FEATURE\n");
+    }
+
+    std::fs::write(header_dir().join("definitions.h"), definitions)
+        .expect("Failed to write cxx-qt-lib/definitions.h");
+}
+
 fn write_headers() {
     println!("cargo::rerun-if-changed=include/");
     std::fs::create_dir_all(header_dir()).expect("Failed to create include directory");
@@ -66,6 +91,8 @@ fn write_headers() {
     if qt_quickcontrols_enabled() {
         write_headers_in("quickcontrols");
     }
+
+    write_definitions_header();
 }
 
 fn main() {
@@ -323,17 +350,7 @@ fn main() {
         .reexport_dependency("cxx-qt");
 
     if qt_gui_enabled() {
-        interface = interface
-            .define("CXX_QT_GUI_FEATURE", None)
-            .initializer("src/gui/init.cpp");
-    }
-
-    if qt_qml_enabled() {
-        interface = interface.define("CXX_QT_QML_FEATURE", None);
-    }
-
-    if qt_quickcontrols_enabled() {
-        interface = interface.define("CXX_QT_QUICKCONTROLS_FEATURE", None);
+        interface = interface.initializer("src/gui/init.cpp");
     }
 
     let mut builder = CxxQtBuilder::library(interface).include_prefix("cxx-qt-lib-internals");

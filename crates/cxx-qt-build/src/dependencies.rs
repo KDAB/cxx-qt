@@ -7,13 +7,12 @@
 
 use serde::{Deserialize, Serialize};
 
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
 /// When generating a library with cxx-qt-build, the library may need to export certain flags or headers.
 /// These are all specified by this Interface struct, which should be passed to the [crate::CxxQtBuilder::library] function.
 pub struct Interface {
-    pub(crate) compile_definitions: HashMap<String, Option<String>>,
     pub(crate) initializers: Vec<PathBuf>,
     // The name of the links keys, whose CXX-Qt dependencies to reexport
     pub(crate) reexport_links: HashSet<String>,
@@ -29,7 +28,6 @@ pub struct Interface {
 impl Default for Interface {
     fn default() -> Self {
         Self {
-            compile_definitions: HashMap::new(),
             initializers: Vec::new(),
             reexport_links: HashSet::new(),
             exported_include_prefixes: vec![super::crate_name()],
@@ -39,32 +37,6 @@ impl Default for Interface {
 }
 
 impl Interface {
-    /// Add a compile-time-definition for the C++ code built by this crate and all downstream
-    /// dependencies
-    ///
-    /// This function will panic if the variable has already been defined with a different value.
-    ///
-    /// Also please note that any definitions added here will only be exported throughout the cargo
-    /// build. Due to technical limitations, they can not be imported into CMake with the
-    /// cxxqt_import_crate function.
-    pub fn define(mut self, variable: &str, value: Option<&str>) -> Self {
-        use std::collections::hash_map::Entry::*;
-
-        let entry = self.compile_definitions.entry(variable.to_owned());
-        match entry {
-            Vacant(entry) => entry.insert(value.map(String::from)),
-            Occupied(entry) => {
-                if entry.get().as_deref() == value {
-                    println!("Warning: Silently ignoring duplicate compiler definition for {variable} with {value:?}.");
-                }
-                panic!(
-                    "Cxx-Qt-build - Error: Interface::define - Duplicate compile-time definition for variable {variable} with value {value:?}!"
-                );
-            }
-        };
-        self
-    }
-
     /// Add a C++ file path that will be exported as an initializer to downstream dependencies.
     ///
     /// Initializer files will be built into object files, instead of linked into the static
@@ -152,7 +124,6 @@ pub(crate) struct Manifest {
     pub(crate) name: String,
     pub(crate) link_name: String,
     pub(crate) qt_modules: Vec<String>,
-    pub(crate) defines: Vec<(String, Option<String>)>,
     pub(crate) initializers: Vec<PathBuf>,
     pub(crate) exported_include_prefixes: Vec<String>,
 }
@@ -256,44 +227,4 @@ pub(crate) fn reexported_dependencies(
         }
     }
     exported_dependencies
-}
-
-pub(crate) fn all_compile_definitions(
-    interface: Option<&Interface>,
-    dependencies: &[Dependency],
-) -> Vec<(String, Option<String>)> {
-    // For each definition, store the name of the crate that defines it so we can generate a
-    // nicer error message
-    let mut definitions: HashMap<String, (Option<String>, String)> = interface
-        .iter()
-        .flat_map(|interface| &interface.compile_definitions)
-        .map(|(key, value)| (key.clone(), (value.clone(), crate::crate_name())))
-        .collect();
-
-    for dependency in dependencies {
-        for (variable, value) in &dependency.manifest.defines {
-            use std::collections::hash_map::Entry::*;
-            let entry = definitions.entry(variable.to_owned());
-
-            match entry {
-                Vacant(entry) => {
-                    entry.insert((value.to_owned(), dependency.manifest.name.clone()));
-                }
-                Occupied(entry) => {
-                    let existing_value = &entry.get().0;
-                    // Only allow duplicate definitions with the same value
-                    if existing_value != value {
-                        panic!("Conflicting compiler definitions requested!\nCrate {existing} exports {variable}={existing_value:?}, and crate {conflicting} exports {variable}={value:?}",
-                            existing=entry.get().1,
-                            conflicting = dependency.manifest.name);
-                    }
-                }
-            }
-        }
-    }
-
-    definitions
-        .into_iter()
-        .map(|(key, (value, _crate_name))| (key, value))
-        .collect()
 }

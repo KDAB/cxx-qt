@@ -657,11 +657,7 @@ impl CxxQtBuilder {
         }
     }
 
-    fn setup_cc_builder(
-        builder: &mut cc::Build,
-        include_paths: &[impl AsRef<Path>],
-        defines: &[(String, Option<String>)],
-    ) {
+    fn setup_cc_builder(builder: &mut cc::Build, include_paths: &[impl AsRef<Path>]) {
         // Note, ensure our settings stay in sync across cxx-qt and cxx-qt-lib
         builder.cpp(true);
         builder.std("c++17");
@@ -671,11 +667,6 @@ impl CxxQtBuilder {
         builder.flag_if_supported("/bigobj");
         // MinGW requires big-obj otherwise debug builds fail
         builder.flag_if_supported("-Wa,-mbig-obj");
-
-        // Enable any extra defines
-        for (variable, value) in defines {
-            builder.define(variable, value.as_deref());
-        }
 
         for include_path in include_paths {
             builder.include(include_path);
@@ -967,13 +958,11 @@ impl CxxQtBuilder {
             let initializers = initializers.into_iter().collect();
             let exported_include_prefixes =
                 dependencies::all_include_prefixes(interface, &dependencies);
-            let defines = dependencies::all_compile_definitions(Some(interface), &dependencies);
 
             let manifest = Manifest {
                 name: crate_name(),
                 link_name: link_name()
                     .expect("The links key must be set when creating a library with CXX-Qt-build!"),
-                defines,
                 initializers,
                 qt_modules: qt_modules.into_iter().collect(),
                 exported_include_prefixes,
@@ -1059,11 +1048,9 @@ impl CxxQtBuilder {
         // to the generated files without any namespacing.
         include_paths.push(header_root.join(&self.include_prefix));
 
-        let compile_definitions =
-            dependencies::all_compile_definitions(self.public_interface.as_ref(), &dependencies);
-        Self::setup_cc_builder(&mut self.cc_builder, &include_paths, &compile_definitions);
+        Self::setup_cc_builder(&mut self.cc_builder, &include_paths);
 
-        Self::setup_cc_builder(&mut init_builder, &include_paths, &compile_definitions);
+        Self::setup_cc_builder(&mut init_builder, &include_paths);
         // Note: From now on the init_builder is correctly configured.
         // When building object files with this builder, we always need to copy it first.
         // So remove `mut` to ensure that we can't accidentally change the configuration or add
