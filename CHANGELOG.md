@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `QDateTime::from_string` to parse `QDateTime` from a `QString`.
 - Support for further types: `QUuid`
+- Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 
 ### Fixed
 
