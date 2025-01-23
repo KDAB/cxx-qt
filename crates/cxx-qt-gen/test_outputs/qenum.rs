@@ -90,6 +90,12 @@ mod ffi {
         #[doc(hidden)]
         fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QObject;
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
@@ -124,6 +130,12 @@ mod ffi {
         #[namespace = "cxx_qt::my_object"]
         type InternalObject;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_CxxName_upcastPtr(thiz: *const MyRenamedObject) -> *const QObject;
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt::my_object::cxx_qt_MyRenamedObject"]
@@ -143,7 +155,21 @@ mod ffi {
             outer: Pin<&mut MyRenamedObject>,
         ) -> Pin<&mut InternalObject>;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[namespace = ""]
+        type QObject = cxx_qt::qobject::QObject;
+    }
 }
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
+}
+impl ::cxx_qt::Downcast for ffi::MyObject {}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
@@ -164,6 +190,15 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
         ffi::cxx_qt_ffi_MyObject_unsafeRustMut(self)
     }
 }
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyRenamedObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_CxxName_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const T) -> Option<*const Self> {
+        None
+    }
+}
+impl ::cxx_qt::Downcast for ffi::MyRenamedObject {}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_InternalObject() -> std::boxed::Box<InternalObject> {
