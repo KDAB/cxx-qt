@@ -3,24 +3,19 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{
-    generator::rust::{
-        fragment::{GeneratedRustFragment, RustFragmentPair},
-        signals::generate_rust_signal,
-    },
+    generator::rust::{fragment::GeneratedRustFragment, signals::generate_rust_signal},
     naming::TypeNames,
     parser::externcxxqt::ParsedExternCxxQt,
     syntax::path::path_compare_str,
 };
 use quote::quote;
-use syn::{Attribute, Result};
+use syn::{parse_quote, Attribute, Result};
 
 impl GeneratedRustFragment {
     pub fn from_extern_cxx_qt(
         extern_cxxqt_block: &ParsedExternCxxQt,
         type_names: &TypeNames,
     ) -> Result<Self> {
-        let mut generated = Self::default();
-
         let extern_block_namespace = if let Some(namespace) = &extern_cxxqt_block.namespace {
             quote! { #[namespace = #namespace ] }
         } else {
@@ -66,8 +61,8 @@ impl GeneratedRustFragment {
             })
             .collect::<Vec<_>>();
 
-        let fragment = RustFragmentPair {
-            cxx_bridge: vec![quote! {
+        let mut generated = vec![GeneratedRustFragment {
+            cxx_mod_contents: vec![parse_quote! {
                 #extern_block_namespace
                 #unsafety extern "C++" {
                     #(#items)*
@@ -75,19 +70,16 @@ impl GeneratedRustFragment {
                     #(#types)*
                 }
             }],
-            implementation: vec![],
-        };
-        generated
-            .cxx_mod_contents
-            .append(&mut fragment.cxx_bridge_as_items()?);
+            cxx_qt_mod_contents: vec![],
+        }];
 
         // Build the signals
         for signal in &extern_cxxqt_block.signals {
             let qobject_name = type_names.lookup(&signal.qobject_ident)?;
 
-            generated.append(&mut generate_rust_signal(signal, qobject_name, type_names)?);
+            generated.push(generate_rust_signal(signal, qobject_name, type_names)?);
         }
 
-        Ok(generated)
+        Ok(GeneratedRustFragment::flatten(generated))
     }
 }
