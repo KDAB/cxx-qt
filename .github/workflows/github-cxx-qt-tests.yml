@@ -71,11 +71,22 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      # Note we need to match the LLVM and Rust versions
+      #
+      # See versions from the table in this link
+      # https://github.com/taiki-e/cargo-llvm-cov?tab=readme-ov-file#get-coverage-of-cc-code-linked-to-rust-librarybinary
+      - name: Install llvm 17
+        run: |
+          sudo apt-get update && sudo apt-get install -y llvm-17
+          test -d /usr/lib/llvm-17/bin/
       - name: Setup toolchain
         run: |
+          # Note that the llvm version needs to match, see the link above
           rustup default 1.77.2
           cargo install grcov
-          rustup component add llvm-tools rustfmt
+          rustup component add rustfmt
+      # Ensure we do not have any existing coverage files
+      - run: rm -f coverage/*.profraw
       - name: build
         env:
           RUSTFLAGS: -Cinstrument-coverage
@@ -87,7 +98,7 @@ jobs:
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
         run: cargo test --lib --package cxx-qt-gen
       - name: generate-report
-        run: grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o ./target/debug/lcov.info --excl-start CODECOV_EXCLUDE_START --excl-stop CODECOV_EXCLUDE_STOP
+        run: grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing --llvm --llvm-path /usr/lib/llvm-17/bin/ -o ./target/debug/lcov.info --excl-start CODECOV_EXCLUDE_START --excl-stop CODECOV_EXCLUDE_STOP
       - name: upload-report
         uses: codecov/codecov-action@v5
         with:
