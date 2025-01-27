@@ -5,7 +5,7 @@
 
 use cxx_qt_build::CxxQtBuilder;
 use std::path::PathBuf;
-
+use std::time::Instant;
 fn qt_gui_enabled() -> bool {
     std::env::var("CARGO_FEATURE_QT_GUI").is_ok()
 }
@@ -31,15 +31,20 @@ fn write_headers_in(subfolder: &str) {
         std::fs::read_dir(format!("include/{subfolder}")).expect("Failed to read include directory")
     {
         let entry = entry.expect("Failed to read header file!");
-        let header_name = entry.file_name();
+        let file_name = entry.file_name();
+        let path = entry.path();
         println!(
             "cargo::rerun-if-changed=include/{subfolder}/{header_name}",
-            header_name = header_name.to_string_lossy()
+            header_name = file_name.to_string_lossy()
         );
 
         // TODO: Do we want to add the headers into a subdirectory?
-        std::fs::copy(entry.path(), header_dir().join(header_name))
-            .expect("Failed to copy header file!");
+        if path.is_dir() {
+            write_headers_in(&format!("{}/{}",subfolder , file_name.to_str().expect("")));
+        } else {
+            std::fs::copy(path, header_dir().join(file_name))
+                .expect("Failed to copy header file!");
+        }
     }
 }
 
@@ -379,6 +384,5 @@ fn main() {
         cc.file("src/qt_types.cpp");
         println!("cargo::rerun-if-changed=src/qt_types.cpp");
     });
-
     builder.build();
 }
