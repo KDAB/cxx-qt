@@ -37,6 +37,7 @@
 #include "qvector_QSize.h"
 #include "qvector_QString.h"
 #include "qvector_QTime.h"
+#include "qvector_QUuid.h"
 #include "qvector_QUrl.h"
 #include "qvector_QVariant.h"
 #include "qvector_u16.h"
