@@ -89,8 +89,6 @@ qurlToPercentEncoding(const QString& input,
                       const QByteArray& exclude,
                       const QByteArray& include);
 QString
-qurlToQString(const QUrl& url);
-QString
 qurlUserInfo(const QUrl& url);
 QString
 qurlUserName(const QUrl& url);

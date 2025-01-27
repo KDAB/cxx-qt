@@ -2,9 +2,11 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::QRect;
+use crate::{QPoint, QRect, QVector};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use std::fmt;
+use std::ops::{Deref, DerefMut};
 
 #[cxx::bridge]
 mod ffi {
@@ -15,6 +17,9 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        include!("cxx-qt-lib/qvector.h");
+        type QVector_QPoint = crate::QVector<QPoint>;
+
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qrect.h");
@@ -94,8 +99,17 @@ mod ffi {
         fn operatorEq(a: &QPolygon, b: &QPolygon) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qpolygon_to_qstring"]
-        fn toQString(value: &QPolygon) -> QString;
+        #[rust_name = "qpolygon_to_debug_qstring"]
+        fn toDebugQString(value: &QPolygon) -> QString;
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qpolygon_as_qvector_qpoint_ref"]
+        fn qpolygonAsQVectorQPointRef(shape: &QPolygon) -> &QVector_QPoint;
+        #[rust_name = "qpolygon_as_qvector_qpoint_ref_mut"]
+        fn qpolygonAsQVectorQPointRef(shape: &mut QPolygon) -> &mut QVector_QPoint;
     }
 }
 
@@ -146,13 +160,33 @@ impl PartialEq for QPolygon {
     }
 }
 
-impl std::fmt::Display for QPolygon {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qpolygon_to_qstring(self))
+impl fmt::Display for QPolygon {
+    fn fmt(&self, f: &mut fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", ffi::qpolygon_to_debug_qstring(self))
+    }
+}
+
+impl fmt::Debug for QPolygon {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", **self)
     }
 }
 
 impl Eq for QPolygon {}
+
+impl Deref for QPolygon {
+    type Target = QVector<QPoint>;
+
+    fn deref(&self) -> &Self::Target {
+        ffi::qpolygon_as_qvector_qpoint_ref(self)
+    }
+}
+
+impl DerefMut for QPolygon {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        ffi::qpolygon_as_qvector_qpoint_ref_mut(self)
+    }
+}
 
 // Safety:
 //

@@ -13,6 +13,7 @@ use crate::{
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 /// The QList class is a template class that provides a dynamic array.
 ///
@@ -74,6 +75,15 @@ where
 }
 
 impl<T> Eq for QList<T> where T: QListElement + Eq {}
+
+impl<T> fmt::Debug for QList<T>
+where
+    T: QListElement + fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_list().entries(self.iter()).finish()
+    }
+}
 
 impl<T> QList<T>
 where

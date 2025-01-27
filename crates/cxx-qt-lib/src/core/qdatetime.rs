@@ -207,6 +207,9 @@ mod ffi {
         #[rust_name = "qdatetime_cmp"]
         fn operatorCmp(a: &QDateTime, b: &QDateTime) -> i8;
         #[doc(hidden)]
+        #[rust_name = "qdatetime_to_debug_qstring"]
+        fn toDebugQString(value: &QDateTime) -> QString;
+        #[doc(hidden)]
         #[rust_name = "qdatetime_to_qstring"]
         fn toQString(value: &QDateTime) -> QString;
     }
@@ -405,7 +408,7 @@ impl fmt::Display for QDateTime {
 
 impl fmt::Debug for QDateTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qdatetime_to_debug_qstring(self))
     }
 }
 

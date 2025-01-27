@@ -115,6 +115,9 @@ mod ffi {
         #[rust_name = "qdate_init"]
         fn construct(y: i32, m: i32, d: i32) -> QDate;
         #[doc(hidden)]
+        #[rust_name = "qdate_to_debug_qstring"]
+        fn toDebugQString(value: &QDate) -> QString;
+        #[doc(hidden)]
         #[rust_name = "qdate_to_qstring"]
         fn toQString(value: &QDate) -> QString;
     }
@@ -142,7 +145,7 @@ impl fmt::Display for QDate {
 
 impl fmt::Debug for QDate {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qdate_to_debug_qstring(self))
     }
 }
 

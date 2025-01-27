@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::fmt;
+
 use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
@@ -123,8 +125,8 @@ mod ffi {
         #[rust_name = "qvector3d_distance_to_point"]
         fn qvector3DDistanceToPoint(vector: &QVector3D, point: QVector3D) -> f32;
         #[doc(hidden)]
-        #[rust_name = "qvector3d_to_qstring"]
-        fn toQString(value: &QVector3D) -> QString;
+        #[rust_name = "qvector3d_to_debug_qstring"]
+        fn toDebugQString(value: &QVector3D) -> QString;
         #[doc(hidden)]
         #[rust_name = "qvector3d_plus"]
         fn operatorPlus(a: &QVector3D, b: &QVector3D) -> QVector3D;
@@ -181,9 +183,9 @@ impl Default for QVector3D {
     }
 }
 
-impl std::fmt::Display for QVector3D {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qvector3d_to_qstring(self))
+impl fmt::Display for QVector3D {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qvector3d_to_debug_qstring(self))
     }
 }
 

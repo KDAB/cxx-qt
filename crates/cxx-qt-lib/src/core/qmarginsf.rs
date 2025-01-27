@@ -69,8 +69,8 @@ mod ffi {
         #[rust_name = "qmarginsf_new"]
         fn construct(left: f64, top: f64, right: f64, bottom: f64) -> QMarginsF;
         #[doc(hidden)]
-        #[rust_name = "qmarginsf_to_qstring"]
-        fn toQString(value: &QMarginsF) -> QString;
+        #[rust_name = "qmarginsf_to_debug_qstring"]
+        fn toDebugQString(value: &QMarginsF) -> QString;
         #[doc(hidden)]
         #[rust_name = "qmarginsf_plus"]
         fn operatorPlus(a: &QMarginsF, b: &QMarginsF) -> QMarginsF;
@@ -118,7 +118,7 @@ impl Default for QMarginsF {
 
 impl fmt::Display for QMarginsF {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qmarginsf_to_qstring(self))
+        write!(f, "{}", ffi::qmarginsf_to_debug_qstring(self))
     }
 }
 

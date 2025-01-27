@@ -111,6 +111,9 @@ mod ffi {
         #[rust_name = "qtime_init"]
         fn construct(h: i32, m: i32, s: i32, ms: i32) -> QTime;
         #[doc(hidden)]
+        #[rust_name = "qtime_to_debug_qstring"]
+        fn toDebugQString(value: &QTime) -> QString;
+        #[doc(hidden)]
         #[rust_name = "qtime_to_qstring"]
         fn toQString(value: &QTime) -> QString;
     }
@@ -184,7 +187,7 @@ impl fmt::Display for QTime {
 
 impl fmt::Debug for QTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qtime_to_debug_qstring(self))
     }
 }
 

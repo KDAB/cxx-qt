@@ -6,6 +6,36 @@ use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
+    #[repr(i32)]
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    enum QTimeZoneNameType {
+        /// The default form of the time zone name, one of LongName, ShortName or OffsetName
+        DefaultName,
+        /// The long form of the time zone name, e.g. "Central European Time"
+        LongName,
+        /// The short form of the time zone name, usually an abbreviation, e.g. "CET", in locales
+        /// that have one for the zone, otherwise a compact GMT-ofset form, e.g. "GMT+1"
+        ShortName,
+        /// The standard ISO offset form of the time zone name, e.g. "UTC+01:00"
+        OffsetName,
+    }
+
+    #[repr(i32)]
+    #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+    enum QTimeZoneTimeType {
+        /// The standard time in a time zone, i.e. when Daylight-Saving is not in effect. For
+        /// example when formatting a display name this will show something like "Pacific Standard
+        /// Time".
+        StandardTime,
+        /// A time when Daylight-Saving is in effect. For example when formatting a display name
+        /// this will show something like "Pacific daylight-saving time".
+        DaylightTime,
+        /// A time which is not specifically Standard or Daylight-Saving time, either an unknown
+        /// time or a neutral form. For example when formatting a display name this will show
+        /// something like "Pacific Time".
+        GenericTime,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
@@ -25,6 +55,8 @@ mod ffi {
         //
         // Therefore the internal QSharedDataPointer is incremented causing a memory leak, so use an opaque type.
         type QTimeZone;
+        type QTimeZoneNameType;
+        type QTimeZoneTimeType;
 
         /// Returns the time zone abbreviation at the given atDateTime. The abbreviation may change depending on DST or even historical events.
         fn abbreviation(self: &QTimeZone, atDateTime: &QDateTime) -> QString;
@@ -79,6 +111,13 @@ mod ffi {
         #[rust_name = "qtimezone_default"]
         fn qtimezoneDefault() -> UniquePtr<QTimeZone>;
         #[doc(hidden)]
+        #[rust_name = "qtimezone_display_name"]
+        fn qtimezoneDisplayName(
+            timezone: &QTimeZone,
+            time_type: QTimeZoneTimeType,
+            name_type: QTimeZoneNameType,
+        ) -> QString;
+        #[doc(hidden)]
         #[rust_name = "qtimezone_from_offset_seconds"]
         fn qtimezoneFromOffsetSeconds(offset_seconds: i32) -> UniquePtr<QTimeZone>;
         #[doc(hidden)]
@@ -103,8 +142,8 @@ mod ffi {
         #[rust_name = "qtimezone_eq"]
         fn operatorEq(a: &QTimeZone, b: &QTimeZone) -> bool;
         #[doc(hidden)]
-        #[rust_name = "qtimezone_to_qstring"]
-        fn toQString(value: &QTimeZone) -> QString;
+        #[rust_name = "qtimezone_to_debug_qstring"]
+        fn toDebugQString(value: &QTimeZone) -> QString;
     }
 
     // QTimeZone only has a copy-constructor and not a move-constructor, which means that the following is true
@@ -115,12 +154,36 @@ mod ffi {
     impl UniquePtr<QTimeZone> {}
 }
 
-pub use ffi::QTimeZone;
+pub use ffi::{QTimeZone, QTimeZoneNameType, QTimeZoneTimeType};
+
+impl Default for QTimeZoneNameType {
+    fn default() -> Self {
+        Self::DefaultName
+    }
+}
 
 impl QTimeZone {
     /// Returns a list of all available IANA time zone IDs on this system.
     pub fn available_time_zone_ids() -> ffi::QList_QByteArray {
         ffi::qtimezone_available_time_zone_ids()
+    }
+
+    /// Returns the localized time zone display name.
+    ///
+    /// Where the time zone display names have changed over time, the current names will be used.
+    /// If no suitably localized name of the given type is available, another name type may be
+    /// used, or an empty string may be returned.
+    ///
+    /// For custom timezones created by client code, the data supplied to the constructor are
+    /// used, as no localization data will be available for it. If this timezone is invalid, an
+    /// empty string is returned. This may also arise for the representation of local time if
+    /// determining the system time zone fails.
+    fn display_name(
+        &self,
+        time_type: QTimeZoneTimeType,
+        name_type: QTimeZoneNameType,
+    ) -> ffi::QString {
+        ffi::qtimezone_display_name(self, time_type, name_type)
     }
 
     /// Creates an instance of a time zone with the requested Offset from UTC of offsetSeconds.
@@ -169,12 +232,16 @@ impl std::cmp::Eq for QTimeZone {}
 
 impl fmt::Display for QTimeZone {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qtimezone_to_qstring(self))
+        let name = self.display_name(
+            QTimeZoneTimeType::GenericTime,
+            QTimeZoneNameType::DefaultName,
+        );
+        write!(f, "{name}")
     }
 }
 
 impl fmt::Debug for QTimeZone {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qtimezone_to_debug_qstring(self))
     }
 }
