@@ -107,6 +107,13 @@ jobs:
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
+      - name: Upload GitHub Actions artifacts of lcov
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov
+          path: ./target/debug/lcov.info
+          if-no-files-found: ignore
 
   build-wasm:
     name: Ubuntu 24.04 (wasm_32) Qt 6
