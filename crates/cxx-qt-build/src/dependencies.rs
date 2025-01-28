@@ -13,7 +13,6 @@ use std::path::{Path, PathBuf};
 /// When generating a library with cxx-qt-build, the library may need to export certain flags or headers.
 /// These are all specified by this Interface struct, which should be passed to the [crate::CxxQtBuilder::library] function.
 pub struct Interface {
-    pub(crate) initializers: Vec<PathBuf>,
     // The name of the links keys, whose CXX-Qt dependencies to reexport
     pub(crate) reexport_links: HashSet<String>,
     pub(crate) exported_include_prefixes: Vec<String>,
@@ -28,7 +27,6 @@ pub struct Interface {
 impl Default for Interface {
     fn default() -> Self {
         Self {
-            initializers: Vec::new(),
             reexport_links: HashSet::new(),
             exported_include_prefixes: vec![super::crate_name()],
             exported_include_directories: Vec::new(),
@@ -37,21 +35,6 @@ impl Default for Interface {
 }
 
 impl Interface {
-    /// Add a C++ file path that will be exported as an initializer to downstream dependencies.
-    ///
-    /// Initializer files will be built into object files, instead of linked into the static
-    /// library.
-    /// This way, the static variables and their constructors in this code will not be optimized
-    /// out by the linker.
-    pub fn initializer(mut self, path: impl AsRef<Path>) -> Self {
-        let path = PathBuf::from(path.as_ref());
-        let path = path
-            .canonicalize()
-            .expect("Failed to canonicalize path to initializer! Does the path exist?");
-        self.initializers.push(path);
-        self
-    }
-
     /// Export all headers with the given prefix to downstream dependencies
     ///
     /// Note: This will overwrite any previously specified header_prefixes, including the default
@@ -124,7 +107,7 @@ pub(crate) struct Manifest {
     pub(crate) name: String,
     pub(crate) link_name: String,
     pub(crate) qt_modules: Vec<String>,
-    pub(crate) initializers: Vec<PathBuf>,
+    pub(crate) initializers: Vec<qt_build_utils::Initializer>,
     pub(crate) exported_include_prefixes: Vec<String>,
 }
 
@@ -173,18 +156,10 @@ impl Dependency {
     }
 }
 
-pub(crate) fn initializer_paths(
-    interface: Option<&Interface>,
-    dependencies: &[Dependency],
-) -> HashSet<PathBuf> {
+pub(crate) fn initializers(dependencies: &[Dependency]) -> Vec<qt_build_utils::Initializer> {
     dependencies
         .iter()
         .flat_map(|dep| dep.manifest.initializers.iter().cloned())
-        .chain(
-            interface
-                .iter()
-                .flat_map(|interface| interface.initializers.iter().cloned()),
-        )
         .collect()
 }
 
