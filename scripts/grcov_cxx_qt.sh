@@ -32,5 +32,7 @@ export RUSTFLAGS="-Cinstrument-coverage"
 export LLVM_PROFILE_FILE="$SCRIPTPATH/coverage/coverage_data-%p-%m.profraw"
 cargo build --package cxx-qt-gen
 cargo test --package cxx-qt-gen
+# Note that --llvm-path is important here to ensure the matching llvm version to the Rust version (1.77.x)
+# Note that --keep-only is important here to ensure crates.io paths don't conflict
 grcov . -s . --binary-path ./target/debug/ -t html --branch --ignore-not-existing --llvm --llvm-path=/usr/lib/llvm-17/bin/ --keep-only "crates/*" -o ./target/debug/ --excl-start CODECOV_EXCLUDE_START --excl-stop CODECOV_EXCLUDE_STOP
 echo "Coverage html report generated in $(realpath "$SCRIPTPATH"/../target/debug/html)"

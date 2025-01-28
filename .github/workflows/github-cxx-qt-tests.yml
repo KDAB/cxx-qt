@@ -100,6 +100,8 @@ jobs:
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
         run: cargo test --lib --package cxx-qt-gen
       - name: generate-report
+        # Note that --llvm-path is important here to ensure the matching llvm version to the Rust version (1.77.x)
+        # Note that --keep-only is important here to ensure crates.io paths don't conflict
         run: grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing --llvm --llvm-path /usr/lib/llvm-17/bin/ --keep-only "crates/*" -o ./target/debug/lcov.info --excl-start CODECOV_EXCLUDE_START --excl-stop CODECOV_EXCLUDE_STOP
       - name: upload-report
         uses: codecov/codecov-action@v5
