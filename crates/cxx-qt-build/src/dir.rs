@@ -91,6 +91,12 @@ pub(crate) fn is_exporting() -> bool {
     export().is_some()
 }
 
+pub(crate) fn initializers(key: &str) -> PathBuf {
+    let path = out().join("cxx-qt-build").join("initializers").join(key);
+    std::fs::create_dir_all(&path).expect("Failed to create initializers path!");
+    path
+}
+
 #[cfg(unix)]
 pub(crate) fn symlink_or_copy_directory(
     source: impl AsRef<Path>,

@@ -348,20 +348,25 @@ fn main() {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
-    let mut interface = cxx_qt_build::Interface::default()
-        .initializer("src/core/init.cpp")
+    let interface = cxx_qt_build::Interface::default()
         .export_include_prefixes([])
         .export_include_directory(header_dir(), "cxx-qt-lib")
         .reexport_dependency("cxx-qt");
 
-    if qt_gui_enabled() {
-        interface = interface.initializer("src/gui/init.cpp");
-    }
+    let mut builder = CxxQtBuilder::library(interface)
+        .include_prefix("cxx-qt-lib-internals")
+        .initializer(qt_build_utils::Initializer {
+            file: Some("src/core/init.cpp".into()),
+            ..qt_build_utils::Initializer::default_signature("init_cxx_qt_lib_core")
+        });
 
-    let mut builder = CxxQtBuilder::library(interface).include_prefix("cxx-qt-lib-internals");
-
     if qt_gui_enabled() {
-        builder = builder.qt_module("Gui");
+        builder = builder
+            .qt_module("Gui")
+            .initializer(qt_build_utils::Initializer {
+                file: Some("src/gui/init.cpp".into()),
+                ..qt_build_utils::Initializer::default_signature("init_cxx_qt_lib_gui")
+            });
     }
 
     if qt_qml_enabled() {
