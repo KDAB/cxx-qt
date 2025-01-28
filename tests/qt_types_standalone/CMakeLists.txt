@@ -24,10 +24,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml Test)
+    find_package(Qt6 COMPONENTS Core Gui Widgets Qml Test)
 endif()
 if(NOT Qt6_FOUND)
-    find_package(Qt5 5.15 COMPONENTS Core Gui Qml Test QuickControls2 REQUIRED)
+    find_package(Qt5 5.15 COMPONENTS Core Gui Widgets Qml Test QuickControls2 REQUIRED)
 endif()
 
 find_package(CxxQt QUIET)
@@ -46,7 +46,7 @@ set(CRATE qt_types_standalone)
 cxx_qt_import_crate(
     MANIFEST_PATH rust/Cargo.toml
     CRATES ${CRATE}
-    QT_MODULES Qt::Core Qt::Gui Qt::Qml
+    QT_MODULES Qt::Core Qt::Gui Qt::Widgets Qt::Qml Qt::QuickControls2
 )
 
 if(BUILD_WASN)
@@ -67,6 +67,7 @@ add_executable(${APP_NAME}
     cpp/qhash.h
     cpp/qline.h
     cpp/qlinef.h
+    cpp/qlocale.h
     cpp/qlist.h
     cpp/qmap.h
     cpp/qmargins.h
