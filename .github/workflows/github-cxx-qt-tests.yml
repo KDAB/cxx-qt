@@ -89,11 +89,13 @@ jobs:
       - run: rm -f coverage/*.profraw
       - name: build
         env:
+          CARGO_INCREMENTAL: 0
           RUSTFLAGS: -Cinstrument-coverage
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
         run: cargo build --package cxx-qt-gen
       - name: test
         env:
+          CARGO_INCREMENTAL: 0
           RUSTFLAGS: -Cinstrument-coverage
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
         run: cargo test --lib --package cxx-qt-gen

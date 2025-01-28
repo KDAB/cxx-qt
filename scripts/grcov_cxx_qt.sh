@@ -27,6 +27,7 @@ if [ ! -d /usr/lib/llvm-17/bin/ ]; then
   echo "LLVM 17 not found"
 fi
 
+export CARGO_INCREMENTAL=0
 export RUSTFLAGS="-Cinstrument-coverage"
 export LLVM_PROFILE_FILE="$SCRIPTPATH/coverage/coverage_data-%p-%m.profraw"
 cargo build --package cxx-qt-gen
