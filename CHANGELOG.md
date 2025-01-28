@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`
 - Allow creating a `QImage` from an `image::RgbaImage`.
 - Support for `cfg` attributes through to C++ generation
+- CXX-Qt-build: Improved compile time and propagation of initializers between crates
 
 ### Fixed
 
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)
+- CXX-Qt-build: Interface no longer includes initializers
 
 ## [0.7.0](https://github.com/KDAB/cxx-qt/compare/v0.6.1...v0.7.0) - 2024-10-30
 

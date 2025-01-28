@@ -52,6 +52,10 @@ fn main() {
             println!("cargo::rerun-if-changed={cpp_file}");
         }
     });
+    builder = builder.initializer(qt_build_utils::Initializer {
+        file: Some("src/init.cpp".into()),
+        ..qt_build_utils::Initializer::default_signature("init_cxx_qt_core")
+    });
 
     builder.build();
 }
