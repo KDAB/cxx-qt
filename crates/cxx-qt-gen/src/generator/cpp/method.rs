@@ -87,7 +87,7 @@ mod tests {
     use super::*;
 
     use crate::generator::cpp::property::tests::require_header;
-    use crate::generator::TestCfgEvaluator;
+    use crate::tests::CfgEvaluatorTest;
     use pretty_assertions::assert_str_eq;
     use std::collections::HashSet;
     use syn::{parse_quote, ForeignItemFn};
@@ -102,9 +102,7 @@ mod tests {
         let invokables = vec![ParsedMethod::mock_qinvokable(&method)];
         let type_names = TypeNames::mock();
         let opt = GeneratedOpt {
-            cfg_evaluator: Box::new(TestCfgEvaluator {
-                result: Some(false),
-            }),
+            cfg_evaluator: Box::new(CfgEvaluatorTest::default()),
         };
         let generated =
             generate_cpp_methods(&invokables.iter().collect(), &type_names, &opt).unwrap();

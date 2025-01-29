@@ -31,18 +31,35 @@ mod tests {
 
     use crate::generator::cpp::property::tests::require_pair;
     use clang_format::{clang_format_with_style, ClangFormatStyle};
+    use cxx_gen::{CfgEvaluator, CfgResult};
     use generator::{cpp::GeneratedCppBlocks, rust::GeneratedRustBlocks};
     use parser::Parser;
     use pretty_assertions::assert_str_eq;
     use proc_macro2::TokenStream;
     use quote::{quote, ToTokens};
     use std::{
+        collections::HashMap,
         env,
         fs::OpenOptions,
         io::Write,
         path::{Path, PathBuf},
     };
     use writer::{cpp::write_cpp, rust::write_rust};
+
+    #[derive(Default)]
+    pub struct CfgEvaluatorTest<'a> {
+        pub cfgs: HashMap<&'a str, Option<&'a str>>,
+    }
+
+    impl<'a> CfgEvaluator for CfgEvaluatorTest<'a> {
+        fn eval(&self, name: &str, query_value: Option<&str>) -> CfgResult {
+            if self.cfgs.get(name) == Some(&query_value) {
+                CfgResult::True
+            } else {
+                CfgResult::False
+            }
+        }
+    }
 
     /// Helper to ensure that a given syn item is the same as the given TokenStream
     pub fn assert_tokens_eq<T: ToTokens>(item: &T, tokens: TokenStream) {
@@ -159,7 +176,13 @@ mod tests {
     ) {
         let parser = Parser::from(syn::parse_str(input).unwrap()).unwrap();
 
-        let opt = GeneratedOpt::default();
+        let mut cfg_evaluator = CfgEvaluatorTest::default();
+        cfg_evaluator.cfgs.insert("crate", Some("cxx-qt-gen"));
+        cfg_evaluator.cfgs.insert("enabled", None);
+
+        let opt = GeneratedOpt {
+            cfg_evaluator: Box::new(cfg_evaluator),
+        };
         let generated_cpp = GeneratedCppBlocks::from(&parser, &opt).unwrap();
         let (mut header, mut source) =
             require_pair(&write_cpp(&generated_cpp, "directory/file_ident")).unwrap();
@@ -192,6 +215,11 @@ mod tests {
                 include_str!(concat!("../test_outputs/", $file_stem, ".cpp")),
             );
         };
+    }
+
+    #[test]
+    fn generates_cfgs() {
+        test_code_generation!("cfgs");
     }
 
     #[test]

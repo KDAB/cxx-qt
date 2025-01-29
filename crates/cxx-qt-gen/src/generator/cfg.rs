@@ -95,24 +95,8 @@ fn try_eval(cfg_evaluator: &dyn CfgEvaluator, expr: &CfgExpr) -> Result<bool, Ve
 mod tests {
     use super::*;
 
-    use crate::generator::UnsupportedCfgEvaluator;
-    use std::collections::HashMap;
+    use crate::{generator::UnsupportedCfgEvaluator, tests::CfgEvaluatorTest};
     use syn::{parse_quote, ItemMod};
-
-    #[derive(Default)]
-    struct CfgEvaluatorTest<'a> {
-        cfgs: HashMap<&'a str, Option<&'a str>>,
-    }
-
-    impl<'a> CfgEvaluator for CfgEvaluatorTest<'a> {
-        fn eval(&self, name: &str, query_value: Option<&str>) -> CfgResult {
-            if self.cfgs.get(name) == Some(&query_value) {
-                CfgResult::True
-            } else {
-                CfgResult::False
-            }
-        }
-    }
 
     #[test]
     fn test_try_eval_attributes_eq() {
