@@ -6,7 +6,16 @@ mod ffi {
         A,
     }
 
-    unsafe extern "C++Qt" {}
+    unsafe extern "C++Qt" {
+        #[qobject]
+        #[cfg(not(enabled))]
+        type QTimer;
+
+        #[qsignal]
+        #[cfg(not(enabled))]
+        fn timeout(self: Pin<&mut QTimer>);
+    }
+
     unsafe extern "RustQt" {
         // TODO: should we allow for disabling qobjects?
         #[qobject]

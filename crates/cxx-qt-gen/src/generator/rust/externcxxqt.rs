@@ -51,6 +51,12 @@ impl GeneratedRustFragment {
                         #[cxx_name = #cxx_name]
                     }
                 };
+                let cfgs: Vec<&Attribute> = ty
+                    .declaration
+                    .attrs
+                    .iter()
+                    .filter(|attr| path_compare_str(attr.meta.path(), &["cfg"]))
+                    .collect();
                 let docs: Vec<&Attribute> = ty
                     .declaration
                     .attrs
@@ -60,6 +66,7 @@ impl GeneratedRustFragment {
                 quote! {
                     #namespace
                     #cxx_name
+                    #(#cfgs)*
                     #(#docs)*
                     #vis type #ident;
                 }
