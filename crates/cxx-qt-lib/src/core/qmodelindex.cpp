@@ -19,16 +19,3 @@ assert_alignment_and_size(QModelIndex, {
 });
 
 static_assert(::std::is_trivially_copyable<QModelIndex>::value);
-
-namespace rust {
-namespace cxxqtlib1 {
-
-::std::size_t
-qmodelindexInternalId(const QModelIndex& index)
-{
-  // TODO: need to add support for quintptr
-  return static_cast<::std::size_t>(index.internalId());
-}
-
-}
-}

@@ -15,11 +15,22 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        include!("cxx-qt-lib/qtypes.h");
+        type qint64 = crate::qint64;
+    }
+
+    unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
         include!("cxx-qt-lib/qdate.h");
         type QDate = super::QDate;
+
+        /// Returns a QDate object containing a date ndays later than the date of this object (or earlier if ndays is negative).
+        ///
+        /// Returns a null date if the current date is invalid or the new date is out of range.
+        #[rust_name = "add_days"]
+        fn addDays(self: &QDate, ndays: qint64) -> QDate;
 
         /// Returns a QDate object containing a date nmonths later than the date of this object (or earlier if nmonths is negative).
         #[rust_name = "add_months"]
@@ -77,16 +88,12 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "qdate_add_days"]
-        fn qdateAddDays(date: &QDate, ndays: i64) -> QDate;
-
-        #[doc(hidden)]
         #[rust_name = "qdate_current_date"]
         fn qdateCurrentDate() -> QDate;
 
         #[doc(hidden)]
         #[rust_name = "qdate_days_to"]
-        fn qdateDaysTo(date: &QDate, d: QDate) -> i64;
+        fn qdateDaysTo(date: &QDate, d: QDate) -> qint64;
 
         #[doc(hidden)]
         #[rust_name = "qdate_from_string"]
@@ -147,13 +154,6 @@ impl fmt::Debug for QDate {
 }
 
 impl QDate {
-    /// Returns a QDate object containing a date ndays later than the date of this object (or earlier if ndays is negative).
-    ///
-    /// Returns a null date if the current date is invalid or the new date is out of range.
-    pub fn add_days(&self, ndays: i64) -> Self {
-        ffi::qdate_add_days(self, ndays)
-    }
-
     /// Returns the current date, as reported by the system clock.
     pub fn current_date() -> Self {
         ffi::qdate_current_date()
@@ -162,7 +162,7 @@ impl QDate {
     /// Returns the number of days from this date to d (which is negative if d is earlier than this date).
     ///
     /// Returns 0 if either date is invalid.
-    pub fn days_to(&self, date: Self) -> i64 {
+    pub fn days_to(&self, date: Self) -> ffi::qint64 {
         ffi::qdate_days_to(self, date)
     }
 
@@ -271,15 +271,15 @@ mod test {
     #[test]
     fn qdate_current_date() {
         let date_a = QDate::current_date();
-        let date_b = date_a.add_days(100);
-        assert_eq!(date_a.days_to(date_b), 100);
+        let date_b = date_a.add_days(100.into());
+        assert_eq!(i64::from(date_a.days_to(date_b)), 100);
     }
 
     #[test]
     fn qdate_julian_day() {
         let date_a = QDate::from_julian_day(1000);
         let date_b = QDate::from_julian_day(1010);
-        assert_eq!(date_a.days_to(date_b), 10);
+        assert_eq!(i64::from(date_a.days_to(date_b)), 10);
     }
 
     #[cfg(feature = "chrono")]
