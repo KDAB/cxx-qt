@@ -489,6 +489,10 @@ impl QtBuild {
         };
 
         for qt_module in &self.qt_modules {
+            if qt_module.contains("Private") {
+                continue;
+            }
+
             let framework = if is_apple_target() {
                 Path::new(&format!("{lib_path}/Qt{qt_module}.framework")).exists()
             } else {
@@ -562,13 +566,19 @@ impl QtBuild {
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
         let mut paths = Vec::new();
         for qt_module in &self.qt_modules {
-            // Add the usual location for the Qt module
-            paths.push(format!("{root_path}/Qt{qt_module}"));
+            if qt_module.contains("Private") {
+                let version = &self.version;
+                let qt_module = qt_module.replace("Private", "");
+                paths.push(format!("{root_path}/Qt{qt_module}/{version}/Qt{qt_module}"));
+            } else {
+                // Add the usual location for the Qt module
+                paths.push(format!("{root_path}/Qt{qt_module}"));
 
-            // Ensure that we add any framework's headers path
-            let header_path = format!("{lib_path}/Qt{qt_module}.framework/Headers");
-            if is_apple_target() && Path::new(&header_path).exists() {
-                paths.push(header_path);
+                // Ensure that we add any framework's headers path
+                let header_path = format!("{lib_path}/Qt{qt_module}.framework/Headers");
+                if is_apple_target() && Path::new(&header_path).exists() {
+                    paths.push(header_path);
+                }
             }
         }
 
