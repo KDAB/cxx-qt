@@ -57,7 +57,7 @@ pub fn generate(
 
 #[cfg(test)]
 mod tests {
-    use crate::generator::TestCfgEvaluator;
+    use crate::tests::CfgEvaluatorTest;
     use pretty_assertions::assert_str_eq;
     use syn::{parse_quote, ForeignItemFn};
 
@@ -98,9 +98,7 @@ mod tests {
         let inherited_methods = vec![&method];
         let base_class = Some("TestBaseClass".to_owned());
         let opt = GeneratedOpt {
-            cfg_evaluator: Box::new(TestCfgEvaluator {
-                result: Some(false),
-            }),
+            cfg_evaluator: Box::new(CfgEvaluatorTest::default()),
         };
         let generated =
             generate(&inherited_methods, &base_class, &TypeNames::default(), &opt).unwrap();

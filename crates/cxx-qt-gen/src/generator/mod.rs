@@ -40,25 +40,6 @@ impl CfgEvaluator for UnsupportedCfgEvaluator {
 }
 
 #[cfg(test)]
-pub(super) struct TestCfgEvaluator {
-    // CfgResult cannot be cloned so emulate with Option<bool>
-    pub result: Option<bool>,
-}
-
-#[cfg(test)]
-impl CfgEvaluator for TestCfgEvaluator {
-    fn eval(&self, _name: &str, _value: Option<&str>) -> CfgResult {
-        match self.result {
-            Some(true) => CfgResult::True,
-            Some(false) => CfgResult::False,
-            None => CfgResult::Undetermined {
-                msg: "Undetermined".to_owned(),
-            },
-        }
-    }
-}
-
-#[cfg(test)]
 /// Mocks a module containing a singleton type
 pub fn mock_qml_singleton() -> ItemMod {
     parse_quote! {
@@ -78,6 +59,8 @@ pub fn mock_qml_singleton() -> ItemMod {
 mod tests {
     use super::*;
 
+    use crate::tests::CfgEvaluatorTest;
+
     #[test]
     fn test_cfg_unsupported() {
         let evaluator = UnsupportedCfgEvaluator {};
@@ -87,16 +70,12 @@ mod tests {
 
     #[test]
     fn test_cfg_test() {
-        let mut evaluator = TestCfgEvaluator { result: None };
-        let result_none = evaluator.eval("test", Some("test"));
-        assert!(matches!(result_none, CfgResult::Undetermined { .. }));
-
-        evaluator.result = Some(true);
-        let result_true = evaluator.eval("test", Some("test"));
-        assert!(matches!(result_true, CfgResult::True));
-
-        evaluator.result = Some(false);
+        let mut evaluator = CfgEvaluatorTest::default();
         let result_false = evaluator.eval("test", Some("test"));
         assert!(matches!(result_false, CfgResult::False));
+
+        evaluator.cfgs.insert("test", Some("test"));
+        let result_true = evaluator.eval("test", Some("test"));
+        assert!(matches!(result_true, CfgResult::True));
     }
 }

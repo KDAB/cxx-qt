@@ -109,7 +109,7 @@ mod tests {
     use std::assert_eq;
 
     use super::*;
-    use crate::generator::TestCfgEvaluator;
+    use crate::tests::CfgEvaluatorTest;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
@@ -130,9 +130,7 @@ mod tests {
         )
         .unwrap()];
         let opt = GeneratedOpt {
-            cfg_evaluator: Box::new(TestCfgEvaluator {
-                result: Some(false),
-            }),
+            cfg_evaluator: Box::new(CfgEvaluatorTest::default()),
         };
         let generated = generate_on_qobject(qenums.iter(), &opt).unwrap();
 
