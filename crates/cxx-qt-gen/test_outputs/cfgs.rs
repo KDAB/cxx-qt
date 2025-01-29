@@ -103,7 +103,43 @@ mod ffi {
         #[namespace = "rust::cxxqt1"]
         fn cxx_qt_ffi_MyObject_unsafeRustMut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
-    unsafe extern "C++" {}
+    unsafe extern "C++" {
+        #[cfg(not(enabled))]
+        type QTimer;
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "timeout"]
+        #[cfg(not(enabled))]
+        fn timeout(self: Pin<&mut QTimer>);
+    }
+    unsafe extern "C++" {
+        #[cfg(not(enabled))]
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1"]
+        type QTimerCxxQtSignalHandlertimeout =
+            cxx_qt::signalhandler::CxxQtSignalHandler<super::QTimerCxxQtSignalClosuretimeout>;
+        #[cfg(not(enabled))]
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1"]
+        #[cxx_name = "QTimer_timeoutConnect"]
+        fn QTimer_connect_timeout(
+            self_value: Pin<&mut QTimer>,
+            signal_handler: QTimerCxxQtSignalHandlertimeout,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "rust::cxxqtgen1"]
+    extern "Rust" {
+        #[cfg(not(enabled))]
+        #[doc(hidden)]
+        fn drop_QTimer_signal_handler_timeout(handler: QTimerCxxQtSignalHandlertimeout);
+        #[cfg(not(enabled))]
+        #[doc(hidden)]
+        fn call_QTimer_signal_handler_timeout(
+            handler: &mut QTimerCxxQtSignalHandlertimeout,
+            self_value: Pin<&mut QTimer>,
+        );
+    }
 }
 #[cfg(not(enabled))]
 impl ffi::MyObject {
@@ -201,3 +237,69 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
         ffi::cxx_qt_ffi_MyObject_unsafeRustMut(self)
     }
 }
+#[cfg(not(enabled))]
+impl ffi::QTimer {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "timeout"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    pub fn connect_timeout<F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'static + Send>(
+        self: core::pin::Pin<&mut ffi::QTimer>,
+        mut closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosuretimeout>::new(
+                Box::new(closure),
+            ),
+            conn_type,
+        ))
+    }
+}
+#[cfg(not(enabled))]
+impl ffi::QTimer {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "timeout"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    pub fn on_timeout<F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'static + Send>(
+        self: core::pin::Pin<&mut ffi::QTimer>,
+        mut closure: F,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosuretimeout>::new(
+                Box::new(closure),
+            ),
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
+    }
+}
+#[cfg(not(enabled))]
+#[doc(hidden)]
+pub struct QTimerCxxQtSignalClosuretimeout {}
+#[cfg(not(enabled))]
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QTimerCxxQtSignalClosuretimeout {
+    type Id = cxx::type_id!("::rust::cxxqtgen1::QTimerCxxQtSignalHandlertimeout");
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QTimer>) + Send;
+}
+#[cfg(not(enabled))]
+use core::mem::drop as drop_QTimer_signal_handler_timeout;
+#[cfg(not(enabled))]
+fn call_QTimer_signal_handler_timeout(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosuretimeout>,
+    self_value: core::pin::Pin<&mut ffi::QTimer>,
+) {
+    handler.closure()(self_value);
+}
+#[cfg(not(enabled))]
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosuretimeout>,
+    usize
+);
+#[cfg(not(enabled))]
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosuretimeout>,
+    [usize; 2]
+);
