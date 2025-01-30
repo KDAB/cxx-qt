@@ -98,86 +98,72 @@ mod tests {
     use crate::{generator::UnsupportedCfgEvaluator, tests::CfgEvaluatorTest};
     use syn::{parse_quote, ItemMod};
 
-    #[test]
-    fn test_try_eval_attributes_eq() {
-        let module: ItemMod = parse_quote! {
-            #[cfg(a = "1")]
-            #[cfg(b = "2")]
-            mod module;
-        };
+    fn assert_eval_insert(module: ItemMod, cfgs: &[&str], [before, after]: [bool; 2]) {
         let mut cfg_evaluator = Box::new(CfgEvaluatorTest::default());
         assert_eq!(
             try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
-            false
+            before
         );
 
-        // Insert cfg into map
-        cfg_evaluator.cfgs.insert("a", Some("1"));
-        cfg_evaluator.cfgs.insert("b", Some("2"));
+        for chunk in cfgs.chunks(2) {
+            if let [key, value] = chunk {
+                cfg_evaluator.cfgs.insert(key, Some(value));
+            }
+        }
+
         assert_eq!(
             try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
-            true
+            after
+        );
+    }
+
+    fn assert_eval_insert_false_true(module: ItemMod, cfgs: &[&str]) {
+        assert_eval_insert(module, cfgs, [false, true]);
+    }
+
+    #[test]
+    fn test_try_eval_attributes_eq() {
+        assert_eval_insert_false_true(
+            parse_quote! {
+                #[cfg(a = "1")]
+                #[cfg(b = "2")]
+                mod module;
+            },
+            &["a", "1", "b", "2"],
         );
     }
 
     #[test]
     fn test_try_eval_attributes_any() {
-        let module: ItemMod = parse_quote! {
-            #[cfg(any(a = "1", b = "2"))]
-            mod module;
-        };
-        let mut cfg_evaluator = Box::new(CfgEvaluatorTest::default());
-        assert_eq!(
-            try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
-            false
-        );
-
-        // Insert cfg into map
-        cfg_evaluator.cfgs.insert("a", Some("1"));
-        assert_eq!(
-            try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
-            true
+        assert_eval_insert_false_true(
+            parse_quote! {
+                #[cfg(any(a = "1", b = "2"))]
+                mod module;
+            },
+            &["a", "1"],
         );
     }
 
     #[test]
     fn test_try_eval_attributes_all() {
-        let module: ItemMod = parse_quote! {
-            #[cfg(all(a = "1", b = "2"))]
-            mod module;
-        };
-        let mut cfg_evaluator = Box::new(CfgEvaluatorTest::default());
-        assert_eq!(
-            try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
-            false
-        );
-
-        // Insert cfg into map
-        cfg_evaluator.cfgs.insert("a", Some("1"));
-        cfg_evaluator.cfgs.insert("b", Some("2"));
-        assert_eq!(
-            try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
-            true
+        assert_eval_insert_false_true(
+            parse_quote! {
+                #[cfg(all(a = "1", b = "2"))]
+                mod module;
+            },
+            &["a", "1", "b", "2"],
         );
     }
 
     #[test]
     fn test_try_eval_attributes_not() {
-        let module: ItemMod = parse_quote! {
-            #[cfg(not(a = "1"))]
-            mod module;
-        };
-        let mut cfg_evaluator = Box::new(CfgEvaluatorTest::default());
-        assert_eq!(
-            try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
-            true
-        );
-
-        // Insert cfg into map
-        cfg_evaluator.cfgs.insert("a", Some("1"));
-        assert_eq!(
-            try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
-            false
+        assert_eval_insert(
+            parse_quote! {
+                #[cfg(not(a = "1"))]
+                mod module;
+            },
+            &["a", "1"],
+            [true, false],
         );
     }
 
