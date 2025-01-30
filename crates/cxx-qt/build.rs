@@ -53,5 +53,24 @@ fn main() {
         }
     });
 
+    // TODO: This is not ideal as it requires CXX-Qt to depend on qt_build_utils directly and
+    // causes a duplicate search for the Qt installation.
+    let qtbuild = qt_build_utils::QtBuild::new(vec![]).expect("Could not find Qt installation");
+    if qtbuild.version().major == 5 {
+        // If we are using Qt 5 then write the std_types source
+        // This registers std numbers as a type for use in QML
+        //
+        // Note that we need this to be compiled into the initializers library
+        // as they are stored in statics in the source.
+        //
+        // See also:
+        // https://github.com/rust-lang/rust/issues/108081
+        // https://github.com/KDAB/cxx-qt/pull/598
+        builder = builder.initializer(qt_build_utils::Initializer {
+            file: Some("src/std_types_qt5.cpp".into()),
+            ..qt_build_utils::Initializer::default_signature("cxx_qt_init_std_types_qt5")
+        });
+    }
+
     builder.build();
 }

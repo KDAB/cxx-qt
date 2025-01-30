@@ -39,4 +39,12 @@ static const int register_u64 =
 
 }
 }
+
+extern "C" int
+cxx_qt_init_std_types_qt5()
+{
+  // drive-by initializes the statics
+  return 42;
+}
+
 #endif
