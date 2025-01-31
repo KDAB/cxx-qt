@@ -8,13 +8,14 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::Result;
+use syn::{Attribute, Result};
 
 use super::fragment::RustFragmentPair;
 
 pub fn generate(
     qobject_names: &QObjectNames,
     type_names: &TypeNames,
+    cfgs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
@@ -33,6 +34,7 @@ pub fn generate(
     let fragment = RustFragmentPair {
         cxx_bridge: vec![
             quote! {
+                #(#cfgs)*
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #(#rust_fn_attrs)*
@@ -40,6 +42,7 @@ pub fn generate(
                 }
             },
             quote! {
+                #(#cfgs)*
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #(#rust_mut_fn_attrs)*
@@ -49,6 +52,7 @@ pub fn generate(
         ],
         implementation: vec![
             quote! {
+                #(#cfgs)*
                 impl ::core::ops::Deref for #qualified_impl {
                     type Target = #rust_struct_ident;
 
@@ -58,6 +62,7 @@ pub fn generate(
                 }
             },
             quote! {
+                #(#cfgs)*
                 impl ::cxx_qt::CxxQtType for #qualified_impl {
                     type Rust = #rust_struct_ident;
 
@@ -96,7 +101,7 @@ mod tests {
         let qobject = create_parsed_qobject();
         let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
 
-        let generated = generate(&qobject_names, &TypeNames::mock()).unwrap();
+        let generated = generate(&qobject_names, &TypeNames::mock(), &vec![]).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

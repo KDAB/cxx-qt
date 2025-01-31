@@ -20,7 +20,7 @@ mod utils;
 
 use std::collections::BTreeSet;
 
-use crate::generator::cpp::fragment::CppNamedType;
+use crate::generator::{cfg::try_eval_attributes, cpp::fragment::CppNamedType};
 use crate::naming::cpp::syn_type_to_cpp_type;
 use crate::naming::TypeNames;
 use crate::{
@@ -70,7 +70,17 @@ impl GeneratedCppBlocks {
             qobjects: structures
                 .qobjects
                 .iter()
-                .map(|qobject| GeneratedCppQObject::from(qobject, &parser.type_names, opt))
+                .filter_map(|qobject| {
+                    // Skip if the cfg attributes are not resolved to true
+                    match try_eval_attributes(opt.cfg_evaluator.as_ref(), &qobject.declaration.cfgs)
+                    {
+                        Ok(true) => {
+                            Some(GeneratedCppQObject::from(qobject, &parser.type_names, opt))
+                        }
+                        Ok(false) => None,
+                        Err(err) => Some(Err(err)),
+                    }
+                })
                 .collect::<Result<Vec<GeneratedCppQObject>>>()?,
             extern_cxx_qt: externcxxqt::generate(
                 &parser.cxx_qt_data.extern_cxxqt_blocks,
@@ -116,6 +126,24 @@ mod tests {
 
     use crate::parser::Parser;
     use syn::{parse_quote, ItemMod};
+
+    #[test]
+    fn test_generated_qobject_cfg_error() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    #[cfg(unknown)]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        let parser = Parser::from(module).unwrap();
+        // Uses an UnsupportedCfgEvaluator which will cause an error
+        let opt = GeneratedOpt::default();
+        assert!(GeneratedCppBlocks::from(&parser, &opt).is_err());
+    }
 
     #[test]
     fn test_generated_cpp_blocks() {

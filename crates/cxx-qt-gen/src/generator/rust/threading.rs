@@ -14,7 +14,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::Result;
+use syn::{Attribute, Result};
 
 use super::fragment::RustFragmentPair;
 
@@ -22,6 +22,7 @@ pub fn generate(
     qobject_names: &QObjectNames,
     namespace_ident: &NamespaceName,
     type_names: &TypeNames,
+    cfgs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let mut blocks = GeneratedRustFragment::default();
 
@@ -65,11 +66,13 @@ pub fn generate(
                     // <https://github.com/dtolnay/cxx/issues/683>
                     #[doc(hidden)]
                     #[namespace = #cxx_qt_thread_namespace]
+                    #(#cfgs)*
                     type #cxx_qt_thread_ident = cxx_qt::CxxQtThread<#cpp_struct_ident>;
                     include!("cxx-qt/thread.h");
 
                     #[doc(hidden)]
                     #(#thread_fn_attrs)*
+                    #(#cfgs)*
                     fn #thread_fn_name(qobject: &#cpp_struct_ident) -> #cxx_qt_thread_ident;
 
                     // SAFETY:
@@ -77,6 +80,7 @@ pub fn generate(
                     // - FnOnce: QMetaObject::invokeMethod() should call the function at most once.
                     #[doc(hidden)]
                     #(#thread_queue_attrs)*
+                    #(#cfgs)*
                     fn #thread_queue_name(
                         cxx_qt_thread: &#cxx_qt_thread_ident,
                         func: fn(Pin<&mut #cpp_struct_ident>, Box<#cxx_qt_thread_queued_fn_ident>),
@@ -85,26 +89,31 @@ pub fn generate(
 
                     #[doc(hidden)]
                     #(#thread_clone_attrs)*
+                    #(#cfgs)*
                     fn #thread_clone_name(cxx_qt_thread: &#cxx_qt_thread_ident) -> #cxx_qt_thread_ident;
 
                     #[doc(hidden)]
                     #(#thread_drop_attrs)*
+                    #(#cfgs)*
                     fn #thread_drop_name(cxx_qt_thread: &mut #cxx_qt_thread_ident);
 
                     #[doc(hidden)]
                     #(#thread_is_destroyed_attrs)*
+                    #(#cfgs)*
                     fn #thread_is_destroyed_name(cxx_qt_thread: &#cxx_qt_thread_ident) -> bool;
                 }
             },
             quote! {
                 extern "Rust" {
                     #[namespace = #namespace_internals]
+                    #(#cfgs)*
                     type #cxx_qt_thread_queued_fn_ident;
                 }
             },
         ],
         implementation: vec![
             quote! {
+                #(#cfgs)*
                 impl cxx_qt::Threading for #qualified_impl {
                     type BoxedQueuedFn = #cxx_qt_thread_queued_fn_ident;
                     type ThreadingTypeId = cxx::type_id!(#cxx_qt_thread_ident_type_id_str);
@@ -159,6 +168,7 @@ pub fn generate(
             },
             quote! {
                 #[doc(hidden)]
+                #(#cfgs)*
                 pub struct #cxx_qt_thread_queued_fn_ident {
                     // An opaque Rust type is required to be Sized.
                     // https://github.com/dtolnay/cxx/issues/665
@@ -193,7 +203,13 @@ mod tests {
         let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
         let namespace_ident = NamespaceName::from(&qobject);
 
-        let generated = generate(&qobject_names, &namespace_ident, &TypeNames::mock()).unwrap();
+        let generated = generate(
+            &qobject_names,
+            &namespace_ident,
+            &TypeNames::mock(),
+            &vec![],
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
