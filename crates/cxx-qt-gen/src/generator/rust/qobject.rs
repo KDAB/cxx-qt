@@ -19,7 +19,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{Ident, Result};
+use syn::{Attribute, Ident, Result};
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
@@ -37,6 +37,7 @@ impl GeneratedRustFragment {
             &qobject_names,
             qobject.base_class.clone(),
             type_names,
+            &qobject.cfgs,
         )?);
 
         // Generate methods for the properties, invokables, signals
@@ -83,6 +84,7 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
+                &qobject.cfgs,
             )?);
         }
 
@@ -91,9 +93,14 @@ impl GeneratedRustFragment {
             &qobject_names,
             &namespace_idents,
             type_names,
+            &qobject.cfgs,
         )?);
 
-        generated.append(&mut cxxqttype::generate(&qobject_names, type_names)?);
+        generated.append(&mut cxxqttype::generate(
+            &qobject_names,
+            type_names,
+            &qobject.cfgs,
+        )?);
 
         Ok(generated)
     }
@@ -104,6 +111,7 @@ fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
     base: Option<Ident>,
     type_names: &TypeNames,
+    cfgs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
@@ -128,13 +136,17 @@ fn generate_qobject_definitions(
     let base_upcast = if let Some(base) = base {
         let base_name = type_names.lookup(&base)?.rust_qualified();
         vec![
-            quote! { impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {} },
+            quote! {
+                #(#cfgs)*
+                impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {}
+            },
             // Until we can actually implement the Upcast trait properly, we just need to silence
             // the warning that the base class is otherwise unused.
             // This can be done with an unnamed import and the right attributes
             quote! {
                 #[allow(unused_imports)]
                 #[allow(dead_code)]
+                #(#cfgs)*
                 use #base_name as _;
             },
         ]
@@ -154,6 +166,7 @@ fn generate_qobject_definitions(
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     #namespace
                     #cxx_name
+                    #(#cfgs)*
                     type #cpp_class_name_rust;
                 }
             },
@@ -164,6 +177,7 @@ fn generate_qobject_definitions(
                     // A Namespace from cxx_qt::bridge would be automatically applied to all children
                     // but to apply it to only certain types, it is needed here too
                     #namespace
+                    #(#cfgs)*
                     type #rust_struct_name_rust;
                 }
             },
