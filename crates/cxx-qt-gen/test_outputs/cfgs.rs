@@ -55,14 +55,13 @@ mod ffi {
         #[cfg(not(enabled))]
         fn signal_disabled(self: Pin<&mut MyObject>);
     }
+    #[cfg(not(enabled))]
     unsafe extern "C++" {
-        #[cfg(not(enabled))]
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
         type MyObjectCxxQtSignalHandlersignal_disabled = cxx_qt::signalhandler::CxxQtSignalHandler<
             super::MyObjectCxxQtSignalClosuresignal_disabled,
         >;
-        #[cfg(not(enabled))]
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
         #[cxx_name = "MyObject_signal_disabledConnect"]
@@ -72,14 +71,13 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
+    #[cfg(not(enabled))]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
-        #[cfg(not(enabled))]
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_signal_disabled(
             handler: MyObjectCxxQtSignalHandlersignal_disabled,
         );
-        #[cfg(not(enabled))]
         #[doc(hidden)]
         fn call_MyObject_signal_handler_signal_disabled(
             handler: &mut MyObjectCxxQtSignalHandlersignal_disabled,
@@ -112,13 +110,12 @@ mod ffi {
         #[cfg(not(enabled))]
         fn timeout(self: Pin<&mut QTimer>);
     }
+    #[cfg(not(enabled))]
     unsafe extern "C++" {
-        #[cfg(not(enabled))]
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
         type QTimerCxxQtSignalHandlertimeout =
             cxx_qt::signalhandler::CxxQtSignalHandler<super::QTimerCxxQtSignalClosuretimeout>;
-        #[cfg(not(enabled))]
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
         #[cxx_name = "QTimer_timeoutConnect"]
@@ -128,12 +125,11 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
+    #[cfg(not(enabled))]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
-        #[cfg(not(enabled))]
         #[doc(hidden)]
         fn drop_QTimer_signal_handler_timeout(handler: QTimerCxxQtSignalHandlertimeout);
-        #[cfg(not(enabled))]
         #[doc(hidden)]
         fn call_QTimer_signal_handler_timeout(
             handler: &mut QTimerCxxQtSignalHandlertimeout,

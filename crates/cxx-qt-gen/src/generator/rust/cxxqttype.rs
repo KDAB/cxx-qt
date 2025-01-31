@@ -3,14 +3,16 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{generator::naming::qobject::QObjectNames, naming::TypeNames};
-use syn::{parse_quote, Result};
-
-use super::fragment::GeneratedRustFragment;
+use crate::{
+    generator::{naming::qobject::QObjectNames, rust::fragment::GeneratedRustFragment},
+    naming::TypeNames,
+};
+use syn::{parse_quote, Attribute, Result};
 
 pub fn generate(
     qobject_names: &QObjectNames,
     type_names: &TypeNames,
+    cfgs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let cpp_struct_ident = &qobject_names.name.rust_unqualified();
     let rust_struct_ident = &qobject_names.rust_struct.rust_unqualified();
@@ -27,6 +29,7 @@ pub fn generate(
     Ok(GeneratedRustFragment {
         cxx_mod_contents: vec![
             parse_quote! {
+                #(#cfgs)*
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #(#rust_fn_attrs)*
@@ -34,6 +37,7 @@ pub fn generate(
                 }
             },
             parse_quote! {
+                #(#cfgs)*
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #(#rust_mut_fn_attrs)*
@@ -43,6 +47,7 @@ pub fn generate(
         ],
         cxx_qt_mod_contents: vec![
             parse_quote! {
+                #(#cfgs)*
                 impl ::core::ops::Deref for #qualified_impl {
                     type Target = #rust_struct_ident;
 
@@ -52,6 +57,7 @@ pub fn generate(
                 }
             },
             parse_quote! {
+                #(#cfgs)*
                 impl ::cxx_qt::CxxQtType for #qualified_impl {
                     type Rust = #rust_struct_ident;
 
@@ -81,7 +87,7 @@ mod tests {
         let qobject = create_parsed_qobject();
         let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
 
-        let generated = generate(&qobject_names, &TypeNames::mock()).unwrap();
+        let generated = generate(&qobject_names, &TypeNames::mock(), &vec![]).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

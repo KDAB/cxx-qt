@@ -15,7 +15,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{parse_quote, Ident, Result};
+use syn::{parse_quote, Attribute, Ident, Result};
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
@@ -29,7 +29,12 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
 
         let mut generated = vec![
-            generate_qobject_definitions(&qobject_names, qobject.base_class.clone(), type_names)?,
+            generate_qobject_definitions(
+                &qobject_names,
+                qobject.base_class.clone(),
+                type_names,
+                &qobject.cfgs,
+            )?,
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
@@ -58,6 +63,7 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
+                &qobject.cfgs,
             )?);
         }
 
@@ -67,8 +73,9 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
+                &qobject.cfgs,
             )?,
-            cxxqttype::generate(&qobject_names, type_names)?,
+            cxxqttype::generate(&qobject_names, type_names, &qobject.cfgs)?,
         ]);
 
         Ok(GeneratedRustFragment::flatten(generated))
@@ -80,6 +87,7 @@ fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
     base: Option<Ident>,
     type_names: &TypeNames,
+    cfgs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
@@ -103,13 +111,17 @@ fn generate_qobject_definitions(
     let base_upcast = if let Some(base) = base {
         let base_name = type_names.lookup(&base)?.rust_qualified();
         vec![
-            parse_quote! { impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {} },
+            parse_quote! {
+                #(#cfgs)*
+                impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {}
+            },
             // Until we can actually implement the Upcast trait properly, we just need to silence
             // the warning that the base class is otherwise unused.
             // This can be done with an unnamed import and the right attributes
             parse_quote! {
                 #[allow(unused_imports)]
                 #[allow(dead_code)]
+                #(#cfgs)*
                 use #base_name as _;
             },
         ]
@@ -129,6 +141,7 @@ fn generate_qobject_definitions(
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
                     #namespace
                     #cxx_name
+                    #(#cfgs)*
                     type #cpp_class_name_rust;
                 }
             },
@@ -139,6 +152,7 @@ fn generate_qobject_definitions(
                     // A Namespace from cxx_qt::bridge would be automatically applied to all children
                     // but to apply it to only certain types, it is needed here too
                     #namespace
+                    #(#cfgs)*
                     type #rust_struct_name_rust;
                 }
             },

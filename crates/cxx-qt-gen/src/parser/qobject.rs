@@ -5,7 +5,7 @@
 
 use crate::{
     naming::Name,
-    parser::{property::ParsedQProperty, require_attributes},
+    parser::{extract_cfgs, property::ParsedQProperty, require_attributes},
     syntax::{expr::expr_to_string, foreignmod::ForeignTypeIdentAlias, path::path_compare_str},
 };
 #[cfg(test)]
@@ -42,13 +42,16 @@ pub struct ParsedQObject {
     pub has_qobject_macro: bool,
     /// The original declaration entered by the user, i.e. a type alias with a list of attributes
     pub declaration: ForeignTypeIdentAlias,
+    /// Cfgs for the object
+    pub cfgs: Vec<Attribute>,
 }
 
 impl ParsedQObject {
-    const ALLOWED_ATTRS: [&'static str; 10] = [
+    const ALLOWED_ATTRS: [&'static str; 11] = [
         "cxx_name",
         "rust_name",
         "namespace",
+        "cfg",
         "doc",
         "qobject",
         "base",
@@ -71,6 +74,7 @@ impl ParsedQObject {
                 ident_left: format_ident!("MyObject"),
                 ident_right: format_ident!("MyObjectRust"),
             },
+            cfgs: vec![],
         }
     }
 
@@ -83,8 +87,8 @@ impl ParsedQObject {
     ) -> Result<Self> {
         let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
         // TODO: handle docs through to generation
-        //
-        // TODO: handle cfgs on qobject
+        let cfgs = extract_cfgs(&declaration.attrs);
+
         let has_qobject_macro = attributes.contains_key("qobject");
 
         let base_class = attributes
@@ -134,6 +138,7 @@ impl ParsedQObject {
             properties,
             qml_metadata,
             has_qobject_macro,
+            cfgs,
         })
     }
 
