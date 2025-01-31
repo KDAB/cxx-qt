@@ -9,7 +9,7 @@
 use proc_macro2::Ident;
 use std::mem;
 use syn::parse::{Error, ParseStream, Result};
-use syn::{parenthesized, token, Attribute, LitStr, Token};
+use syn::{parenthesized, spanned::Spanned, token, Attribute, LitStr, Token};
 
 #[derive(Clone)]
 pub(crate) enum CfgExpr {
@@ -34,6 +34,11 @@ impl CfgExpr {
 }
 
 pub(crate) fn parse_attribute(attr: &Attribute) -> Result<CfgExpr> {
+    // Ensure that the attribute is a cfg attribute
+    if attr.path().require_ident()? != "cfg" {
+        return Err(Error::new(attr.span(), "Expected #[cfg(...)] attribute"));
+    }
+
     attr.parse_args_with(|input: ParseStream| {
         let cfg_expr = input.call(parse_single)?;
         input.parse::<Option<Token![,]>>()?;
@@ -125,6 +130,7 @@ mod tests {
         let module: ItemMod = parse_quote! {
             #[cfg(a = "b")]
             #[cfg(a)]
+            #[unknown]
             mod test;
         };
         let cfg_eq = parse_attribute(&module.attrs[0]).unwrap();
@@ -132,6 +138,9 @@ mod tests {
 
         let cfg_single = parse_attribute(&module.attrs[1]).unwrap();
         assert!(matches!(cfg_single, CfgExpr::Eq(.., None)));
+
+        let cfg_unknown = parse_attribute(&module.attrs[2]);
+        assert!(cfg_unknown.is_err());
     }
 
     #[test]
