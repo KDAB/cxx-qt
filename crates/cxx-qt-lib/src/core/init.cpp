@@ -66,6 +66,8 @@ static const int register_QList_QTime =
   qRegisterMetaType<::QList_QTime>("QList_QTime");
 static const int register_QList_QUrl =
   qRegisterMetaType<::QList_QUrl>("QList_QUrl");
+static const int register_QList_QUuid =
+  qRegisterMetaType<::QList_QUuid>("QList_QUuid");
 // Ensure that QList<QVariant> (aka QVariantList) is registered
 // otherwise it cannot be used in QML
 static const int register_QList_QVariant =
@@ -105,6 +107,8 @@ static const int register_QSet_QTime =
   qRegisterMetaType<::QSet_QTime>("QSet_QTime");
 static const int register_QSet_QUrl =
   qRegisterMetaType<::QSet_QUrl>("QSet_QUrl");
+static const int register_QSet_QUuid =
+  qRegisterMetaType<::QSet_QUuid>("QSet_QUuid");
 static const int register_QSet_u8 = qRegisterMetaType<::QSet_u8>("QSet_u8");
 static const int register_QSet_u16 = qRegisterMetaType<::QSet_u16>("QSet_u16");
 static const int register_QSet_u32 = qRegisterMetaType<::QSet_u32>("QSet_u32");
@@ -159,6 +163,8 @@ static const int register_QVector_QTime =
   qRegisterMetaType<::QVector_QTime>("QVector_QTime");
 static const int register_QVector_QUrl =
   qRegisterMetaType<::QVector_QUrl>("QVector_QUrl");
+static const int register_QVector_QUuid =
+  qRegisterMetaType<::QVector_QUuid>("QVector_QUuid");
 // Ensure that QVector<QVariant> (aka QVariantList) is registered
 // otherwise it cannot be used in QML
 static const int register_QVector_QVariant =
