@@ -8,6 +8,6 @@
 //! This is an auto-generated file. Do not edit.
 //! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
-#include <QtCore/QMarginsF>
 #include "qvector_private.h"
+#include <QtCore/QMarginsF>
 using QVector_QMarginsF = QVector<::QMarginsF>;

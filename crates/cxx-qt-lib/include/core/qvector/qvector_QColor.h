@@ -8,6 +8,6 @@
 //! This is an auto-generated file. Do not edit.
 //! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
-#include <QtGui/QColor>
 #include "qvector_private.h"
+#include <QtGui/QColor>
 using QVector_QColor = QVector<::QColor>;

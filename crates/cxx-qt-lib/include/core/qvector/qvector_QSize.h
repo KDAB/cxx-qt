@@ -8,6 +8,6 @@
 //! This is an auto-generated file. Do not edit.
 //! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
-#include <QtCore/QSize>
 #include "qvector_private.h"
+#include <QtCore/QSize>
 using QVector_QSize = QVector<::QSize>;
