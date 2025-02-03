@@ -31,17 +31,19 @@ pub fn generate(
                 })
                 .collect::<Vec<TokenStream>>();
 
+            let span = method.method.span();
+
             let ident = &method.method_fields.name.rust_unqualified();
             let cxx_name_string = &method.wrapper_ident().to_string();
             let self_param = if method.mutable {
-                quote! { self: Pin<&mut #qobject_name> }
+                quote_spanned! { span => self: Pin<&mut #qobject_name> }
             } else {
-                quote! { self: &#qobject_name }
+                quote_spanned! { span => self: &#qobject_name }
             };
             let return_type = &method.method.sig.output;
 
             let mut unsafe_block = None;
-            let mut unsafe_call = Some(quote! { unsafe });
+            let mut unsafe_call = Some(quote_spanned! { span => unsafe });
             if method.safe {
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }
@@ -50,7 +52,7 @@ pub fn generate(
             let namespace = qobject_names.namespace_tokens();
 
             syn::parse2(quote_spanned! {
-                method.method.span() =>
+                span =>
                 #unsafe_block extern "C++" {
                     #[cxx_name = #cxx_name_string]
                     #namespace
