@@ -5,7 +5,6 @@
 
 use cxx_qt_build::CxxQtBuilder;
 use std::path::PathBuf;
-use std::time::Instant;
 fn qt_gui_enabled() -> bool {
     std::env::var("CARGO_FEATURE_QT_GUI").is_ok()
 }
@@ -40,10 +39,9 @@ fn write_headers_in(subfolder: &str) {
 
         // TODO: Do we want to add the headers into a subdirectory?
         if path.is_dir() {
-            write_headers_in(&format!("{}/{}",subfolder , file_name.to_str().expect("")));
+            write_headers_in(&format!("{}/{}", subfolder, file_name.to_str().expect("")));
         } else {
-            std::fs::copy(path, header_dir().join(file_name))
-                .expect("Failed to copy header file!");
+            std::fs::copy(path, header_dir().join(file_name)).expect("Failed to copy header file!");
         }
     }
 }

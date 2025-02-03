@@ -5,7 +5,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//!This is an auto-generated file. Do not edit. Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
+//! This is an auto-generated file. Do not edit.
+//! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
 #include <QtCore/QByteArray>
 #include "qvector_private.h"
