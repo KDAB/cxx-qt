@@ -5,8 +5,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//!This is an auto-generated file. Do not edit. Edit instead: generate.sh, in: cxx-qt-lib/src/core/qvector
-
 #pragma once
 
 #include <cstdint>
