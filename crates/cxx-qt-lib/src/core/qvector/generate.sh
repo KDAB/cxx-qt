@@ -36,7 +36,8 @@ function generate_bridge_primitive() {
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 //
-//!This is an auto-generated file. Do not edit. Edit instead: generate.sh
+//! This is an auto-generated file. Do not edit.
+//! Edit instead: generate.sh
 
 #[cxx::bridge]
 pub mod ffi {
