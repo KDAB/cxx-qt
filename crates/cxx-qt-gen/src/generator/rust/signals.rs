@@ -15,14 +15,16 @@ use crate::{
     naming::{rust::syn_type_cxx_bridge_to_qualified, Name, TypeNames},
     parser::signals::ParsedSignal,
 };
-use quote::quote;
-use syn::{parse_quote, FnArg, Ident, Result, Type};
+use quote::{quote, quote_spanned};
+use syn::spanned::Spanned;
+use syn::{parse_quote, parse_quote_spanned, FnArg, Ident, Result, Type};
 
 pub fn generate_rust_signal(
     signal: &ParsedSignal,
     qobject_name: &Name,
     type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
+    let span = signal.method.span();
     let idents = QSignalNames::from(signal);
     let idents_helper = QSignalHelperNames::new(&idents, qobject_name)?;
 
@@ -79,7 +81,7 @@ pub fn generate_rust_signal(
         .collect::<Result<_>>()?;
 
     let self_type_cxx = if signal.mutable {
-        parse_quote! { Pin<&mut #qobject_name_rust> }
+        parse_quote_spanned! {span => Pin<&mut #qobject_name_rust> }
     } else {
         // CODECOV_EXCLUDE_START
         unreachable!("Signals cannot be immutable right now so this cannot be reached")
@@ -101,7 +103,7 @@ pub fn generate_rust_signal(
     let doc_comments = &signal.docs;
     let cfgs = &signal.cfgs;
     let namespace = if let Some(namespace) = qobject_name.namespace() {
-        quote! { #[namespace = #namespace ] }
+        quote_spanned! { span=> #[namespace = #namespace ] }
     } else {
         quote! {}
     };
@@ -123,7 +125,8 @@ pub fn generate_rust_signal(
 
     // TODO: what happens with RustQt signals, can they be private yet?
     if !signal.private {
-        cxx_mod_contents.push(parse_quote! {
+        cxx_mod_contents.push(parse_quote_spanned! {
+            span=>
             #unsafe_block extern "C++" {
                 #[cxx_name = #cpp_ident]
                 #(#cfgs)*
@@ -135,7 +138,8 @@ pub fn generate_rust_signal(
     }
 
     cxx_mod_contents.extend(vec![
-        parse_quote! {
+        parse_quote_spanned! {
+            span=>
             #(#cfgs)*
             unsafe extern "C++" {
                 #[doc(hidden)]
@@ -148,8 +152,8 @@ pub fn generate_rust_signal(
                 fn #free_connect_ident_rust(self_value: #self_type_cxx, signal_handler: #signal_handler_alias, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
             }
         },
-        parse_quote! {
-            #(#cfgs)*
+        parse_quote_spanned! {
+            span=>
             #[namespace = #namespace_str]
             extern "Rust" {
                 #[doc(hidden)]
@@ -158,13 +162,13 @@ pub fn generate_rust_signal(
                 #[doc(hidden)]
                 #unsafe_call fn #signal_handler_call(handler: &mut #signal_handler_alias, self_value: #self_type_cxx, #(#parameters_cxx),*);
             }
-        },
-    ]);
+        }]);
 
     Ok(GeneratedRustFragment {
         cxx_mod_contents,
         cxx_qt_mod_contents: vec![
-            parse_quote! {
+            parse_quote_spanned! {
+                span=>
                 #(#cfgs)*
                 impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
@@ -180,7 +184,8 @@ pub fn generate_rust_signal(
                     }
                 }
             },
-            parse_quote! {
+            parse_quote_spanned! {
+                span=>
                 #(#cfgs)*
                 impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
@@ -198,23 +203,27 @@ pub fn generate_rust_signal(
                     }
                 }
             },
-            parse_quote! {
+            parse_quote_spanned! {
+                span =>
                 #(#cfgs)*
                 #[doc(hidden)]
                 pub struct #closure_struct {}
             },
-            parse_quote! {
+            parse_quote_spanned! {
+                span =>
                 #(#cfgs)*
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for #closure_struct {
                     type Id = cxx::type_id!(#signal_handler_alias_namespaced_str);
                     type FnType = dyn FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + Send;
                 }
             },
-            parse_quote! {
+            parse_quote_spanned! {
+                span =>
                 #(#cfgs)*
                 use core::mem::drop as #signal_handler_drop;
             },
-            parse_quote! {
+            parse_quote_spanned! {
+                span =>
                 #(#cfgs)*
                 fn #signal_handler_call(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>,
@@ -224,11 +233,13 @@ pub fn generate_rust_signal(
                     handler.closure()(self_value, #(#parameters_name),*);
                 }
             },
-            parse_quote! {
+            parse_quote_spanned! {
+                span =>
                 #(#cfgs)*
                 cxx_qt::static_assertions::assert_eq_align!(cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>, usize);
             },
-            parse_quote! {
+            parse_quote_spanned! {
+                span =>
                 #(#cfgs)*
                 cxx_qt::static_assertions::assert_eq_size!(cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>, [usize; 2]);
             },
