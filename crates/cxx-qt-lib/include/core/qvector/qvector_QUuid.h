@@ -8,6 +8,6 @@
 //! This is an auto-generated file. Do not edit.
 //! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
-
+#include <QtCore/QUuid>
 #include "qvector_private.h"
-using QVector_f32 = QVector<float>;
+using QVector_QUuid = QVector<::QUuid>;
