@@ -471,7 +471,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_property_name_changed(
@@ -493,7 +493,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_property_name_changed(
             self,
@@ -537,7 +537,7 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
@@ -557,7 +557,7 @@ impl ffi::MyObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
             self,
@@ -637,7 +637,7 @@ impl ffi::SecondObject {
         F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::SecondObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::SecondObject_connect_property_name_changed(
@@ -659,7 +659,7 @@ impl ffi::SecondObject {
         F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::SecondObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::SecondObject_connect_property_name_changed(
             self,
@@ -703,7 +703,7 @@ impl ffi::SecondObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::SecondObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::SecondObject_connect_ready(
@@ -723,7 +723,7 @@ impl ffi::SecondObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::SecondObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::SecondObject_connect_ready(
             self,
@@ -804,7 +804,7 @@ impl ffi::QPushButton {
         F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QPushButton>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QPushButton_connect_clicked(
@@ -824,7 +824,7 @@ impl ffi::QPushButton {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_clicked<F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::QPushButton>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QPushButton_connect_clicked(
             self,
@@ -865,7 +865,7 @@ impl ffi::ExternObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: ExternObject_connect_data_ready (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < ExternObjectCxxQtSignalClosuredataReady > :: new (Box :: new (closure)) , conn_type ,))
@@ -879,7 +879,7 @@ impl ffi::ExternObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: ExternObject_connect_data_ready (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < ExternObjectCxxQtSignalClosuredataReady > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
@@ -916,7 +916,7 @@ impl ffi::ExternObject {
         F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::ExternObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
@@ -938,7 +938,7 @@ impl ffi::ExternObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_error_occurred<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::ExternObject_connect_error_occurred(

@@ -43,7 +43,8 @@ pub fn generate(
             let return_type = &method.method.sig.output;
 
             let mut unsafe_block = None;
-            let mut unsafe_call = Some(quote_spanned! { span => unsafe });
+            // Needs to be unspanned or clippy breaks surrounding the safety comment
+            let mut unsafe_call = Some(quote! { unsafe });
             if method.safe {
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }

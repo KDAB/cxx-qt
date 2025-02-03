@@ -597,7 +597,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
@@ -619,7 +619,7 @@ impl ffi::MyObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_primitive_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::MyObject_connect_primitive_changed(
@@ -667,7 +667,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_trivial_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuretrivialChanged > :: new (Box :: new (closure)) , conn_type ,))
@@ -681,7 +681,7 @@ impl ffi::MyObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_trivial_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_trivial_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuretrivialChanged > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
@@ -719,7 +719,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_prop_auto_cxx_name_changed(
@@ -741,7 +741,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_prop_auto_cxx_name_changed(
             self,
@@ -787,7 +787,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
@@ -811,7 +811,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::MyObject_connect_custom_function_prop_changed(
@@ -859,7 +859,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_changed(
@@ -881,7 +881,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_changed(
             self,
@@ -927,7 +927,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_2_changed(
@@ -949,7 +949,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_2_changed(
             self,
@@ -993,7 +993,7 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_my_on_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_my_on_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuremy_on_changed > :: new (Box :: new (closure)) , conn_type ,))
@@ -1007,7 +1007,7 @@ impl ffi::MyObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_my_on_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_my_on_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuremy_on_changed > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
