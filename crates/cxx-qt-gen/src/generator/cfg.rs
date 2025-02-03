@@ -106,6 +106,11 @@ mod tests {
         );
 
         for chunk in cfgs.chunks(2) {
+            assert_eq!(
+                try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
+                before
+            );
+
             if let [key, value] = chunk {
                 cfg_evaluator.cfgs.insert(key, Some(value));
             }
@@ -129,7 +134,7 @@ mod tests {
                 #[cfg(b = "2")]
                 mod module;
             },
-            &["a", "1", "b", "2"],
+            &["c", "3", "a", "1", "b", "2"],
         );
     }
 
@@ -140,7 +145,7 @@ mod tests {
                 #[cfg(any(a = "1", b = "2"))]
                 mod module;
             },
-            &["a", "1"],
+            &["c", "3", "a", "1"],
         );
     }
 
@@ -151,7 +156,7 @@ mod tests {
                 #[cfg(all(a = "1", b = "2"))]
                 mod module;
             },
-            &["a", "1", "b", "2"],
+            &["c", "3", "a", "1", "b", "2"],
         );
     }
 
@@ -162,7 +167,7 @@ mod tests {
                 #[cfg(not(a = "1"))]
                 mod module;
             },
-            &["a", "1"],
+            &["c", "3", "a", "1"],
             [true, false],
         );
     }
