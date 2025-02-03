@@ -119,4 +119,3 @@ qvectorReserve(QVector<T>& v, ::rust::isize size) noexcept
 }
 }
 }
-
