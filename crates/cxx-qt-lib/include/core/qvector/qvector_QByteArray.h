@@ -8,6 +8,6 @@
 //! This is an auto-generated file. Do not edit.
 //! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
-#include <QtCore/QByteArray>
 #include "qvector_private.h"
+#include <QtCore/QByteArray>
 using QVector_QByteArray = QVector<::QByteArray>;

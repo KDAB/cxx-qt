@@ -23,8 +23,8 @@ tee "$SCRIPTPATH/../../../include/core/qvector/qvector_$1.h" <<EOF
 //! This is an auto-generated file. Do not edit.
 //! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
-$3
 #include "qvector_private.h"
+$3
 using QVector_$1 = QVector<$2>;
 EOF
 }

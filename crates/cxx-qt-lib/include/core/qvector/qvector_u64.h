@@ -8,6 +8,6 @@
 //! This is an auto-generated file. Do not edit.
 //! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
-
 #include "qvector_private.h"
+
 using QVector_u64 = QVector<::std::uint64_t>;

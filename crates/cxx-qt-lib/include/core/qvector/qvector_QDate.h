@@ -8,6 +8,6 @@
 //! This is an auto-generated file. Do not edit.
 //! Edit instead: cxx-qt-lib/src/core/qvector/generate.sh
 #pragma once
-#include <QtCore/QDate>
 #include "qvector_private.h"
+#include <QtCore/QDate>
 using QVector_QDate = QVector<::QDate>;
