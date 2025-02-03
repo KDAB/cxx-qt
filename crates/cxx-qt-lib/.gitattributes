@@ -8,4 +8,4 @@ src/core/qset/qset_*.rs linguist-generated=true
 src/core/qvariant/qvariant_*.rs linguist-generated=true
 src/core/qvector/qvector_*.rs linguist-generated=true
 include/core/qvector/qvector_*.h linguist-generated=true
-include/core/qvector/qvector_priavte.h linguist-generated=false
+include/core/qvector/qvector_private.h linguist-generated=false
