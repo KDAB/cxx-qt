@@ -2,6 +2,8 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+//
+//!This is an auto-generated file. Do not edit. Edit instead: generate.sh
 
 #[cxx::bridge]
 pub mod ffi {
@@ -9,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qmargins.h");
         type QMargins = crate::QMargins;
 
-        include!("cxx-qt-lib/qvector.h");
+        include!("cxx-qt-lib/qvector_QMargins.h");
         type QVector_QMargins = crate::QVector<QMargins>;
     }
 

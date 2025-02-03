@@ -2,11 +2,13 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+//
+//!This is an auto-generated file. Do not edit. Edit instead: generate.sh
 
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qvector.h");
+        include!("cxx-qt-lib/qvector_i32.h");
         type QVector_i32 = crate::QVector<i32>;
     }
 
