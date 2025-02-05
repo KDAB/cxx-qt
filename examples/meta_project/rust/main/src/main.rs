@@ -4,25 +4,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 extern crate qml_meta_project;
-// mod main_object;
-// extern crate sub1;
-// extern crate sub2;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
 fn main() {
-    // extern "C" {
-    //     fn cxx_qt_init_crate_qml_meta_project() -> bool;
-    // }
-
-    // extern "C" {
-    //     fn cxx_qt_init_qml_module_com_kdab_cxx_qt_demo() -> bool;
-    // }
-
-    // unsafe {
-    //     cxx_qt_init_crate_qml_meta_project();
-    //     cxx_qt_init_qml_module_com_kdab_cxx_qt_demo();
-    // }
+    cxx_qt::init_crate!(qml_meta_project);
+    cxx_qt::init_qml_module!("com.kdab.cxx_qt.demo");
 
     // Create the application and engine
     let mut app = QGuiApplication::new();
@@ -46,5 +33,16 @@ fn main() {
     // Start the app
     if let Some(app) = app.as_mut() {
         app.exec();
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    // In the test cfg there needs to be at least one test that calls the crate initialization.
+    // Otherwise linking will fail!
+    #[test]
+    fn init_dependencies() {
+        cxx_qt::init_crate!(qml_meta_project);
+        cxx_qt::init_qml_module!("com.kdab.cxx_qt.demo");
     }
 }
