@@ -136,26 +136,28 @@ pub fn generate_rust_signal(
 
     cxx_mod_contents.extend(vec![
         parse_quote! {
-                unsafe extern "C++" {
-                    #[doc(hidden)]
-                    #[namespace = #namespace_str]
-                    type #signal_handler_alias = cxx_qt::signalhandler::CxxQtSignalHandler<super::#closure_struct>;
+            #(#cfgs)*
+            unsafe extern "C++" {
+                #[doc(hidden)]
+                #[namespace = #namespace_str]
+                type #signal_handler_alias = cxx_qt::signalhandler::CxxQtSignalHandler<super::#closure_struct>;
 
-                    #[doc(hidden)]
-                    #[namespace = #namespace_str]
-                    #[cxx_name = #free_connect_ident_cpp]
-                    fn #free_connect_ident_rust(self_value: #self_type_cxx, signal_handler: #signal_handler_alias, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
-                }
+                #[doc(hidden)]
+                #[namespace = #namespace_str]
+                #[cxx_name = #free_connect_ident_cpp]
+                fn #free_connect_ident_rust(self_value: #self_type_cxx, signal_handler: #signal_handler_alias, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
+            }
         },
         parse_quote! {
-                #[namespace = #namespace_str]
-                extern "Rust" {
-                    #[doc(hidden)]
-                    fn #signal_handler_drop(handler: #signal_handler_alias);
+            #(#cfgs)*
+            #[namespace = #namespace_str]
+            extern "Rust" {
+                #[doc(hidden)]
+                fn #signal_handler_drop(handler: #signal_handler_alias);
 
-                    #[doc(hidden)]
-                    #unsafe_call fn #signal_handler_call(handler: &mut #signal_handler_alias, self_value: #self_type_cxx, #(#parameters_cxx),*);
-                }
+                #[doc(hidden)]
+                #unsafe_call fn #signal_handler_call(handler: &mut #signal_handler_alias, self_value: #self_type_cxx, #(#parameters_cxx),*);
+            }
         },
     ]);
 
@@ -163,6 +165,7 @@ pub fn generate_rust_signal(
         cxx_mod_contents,
         cxx_qt_mod_contents: vec![
             parse_quote! {
+                #(#cfgs)*
                 impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = #signal_name_cpp]
@@ -178,6 +181,7 @@ pub fn generate_rust_signal(
                 }
             },
             parse_quote! {
+                #(#cfgs)*
                 impl #qualified_impl {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = #signal_name_cpp]
@@ -195,19 +199,23 @@ pub fn generate_rust_signal(
                 }
             },
             parse_quote! {
+                #(#cfgs)*
                 #[doc(hidden)]
                 pub struct #closure_struct {}
             },
             parse_quote! {
+                #(#cfgs)*
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for #closure_struct {
                     type Id = cxx::type_id!(#signal_handler_alias_namespaced_str);
                     type FnType = dyn FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + Send;
                 }
             },
             parse_quote! {
+                #(#cfgs)*
                 use core::mem::drop as #signal_handler_drop;
             },
             parse_quote! {
+                #(#cfgs)*
                 fn #signal_handler_call(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>,
                     self_value: #self_type_qualified,
@@ -217,9 +225,11 @@ pub fn generate_rust_signal(
                 }
             },
             parse_quote! {
+                #(#cfgs)*
                 cxx_qt::static_assertions::assert_eq_align!(cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>, usize);
             },
             parse_quote! {
+                #(#cfgs)*
                 cxx_qt::static_assertions::assert_eq_size!(cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>, [usize; 2]);
             },
         ],

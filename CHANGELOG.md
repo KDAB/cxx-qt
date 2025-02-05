@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for further types: `QUuid`
 - New example: Basic greeter app
 - Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`
+- Support for `cfg` attributes through to C++ generation
 
 ### Fixed
 

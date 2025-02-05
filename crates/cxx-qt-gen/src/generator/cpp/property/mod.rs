@@ -7,6 +7,7 @@ use crate::generator::structuring::StructuredQObject;
 use crate::generator::{
     cpp::{qobject::GeneratedCppQObjectBlocks, signal::generate_cpp_signals},
     naming::{property::QPropertyNames, qobject::QObjectNames},
+    GeneratedOpt,
 };
 use crate::{
     naming::cpp::syn_type_to_cpp_type, naming::TypeNames, parser::property::ParsedQProperty,
@@ -23,6 +24,7 @@ pub fn generate_cpp_properties(
     qobject_idents: &QObjectNames,
     type_names: &TypeNames,
     structured_qobject: &StructuredQObject,
+    opt: &GeneratedOpt,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     let mut signals = vec![];
@@ -53,6 +55,7 @@ pub fn generate_cpp_properties(
         &signals.iter().collect(),
         qobject_idents,
         type_names,
+        opt,
     )?);
 
     Ok(generated)
@@ -111,6 +114,7 @@ pub mod tests {
             &qobject_idents,
             &type_names,
             &structured_qobject,
+            &GeneratedOpt::default(),
         )
     }
 
@@ -175,6 +179,7 @@ pub mod tests {
             &qobject_idents,
             &type_names,
             structured_qobject,
+            &GeneratedOpt::default(),
         )
         .unwrap();
 
@@ -213,6 +218,7 @@ pub mod tests {
             &qobject_idents,
             &type_names,
             structured_qobject,
+            &GeneratedOpt::default(),
         )
         .unwrap();
 
@@ -255,6 +261,7 @@ pub mod tests {
             &qobject_idents,
             &type_names,
             structured_qobject,
+            &GeneratedOpt::default(),
         )
         .unwrap();
 
@@ -305,6 +312,7 @@ pub mod tests {
             &qobject_idents,
             &type_names,
             &structured_qobject,
+            &GeneratedOpt::default(),
         )
         .unwrap();
 
@@ -487,6 +495,7 @@ pub mod tests {
             &qobject_idents,
             &type_names,
             &structured_qobject,
+            &GeneratedOpt::default(),
         )
         .unwrap();
 

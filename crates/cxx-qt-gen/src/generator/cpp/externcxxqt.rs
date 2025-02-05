@@ -4,8 +4,10 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::{
-    generator::cpp::signal::generate_cpp_signal, naming::TypeNames,
-    parser::externcxxqt::ParsedExternCxxQt, CppFragment,
+    generator::{cpp::signal::generate_cpp_signal, GeneratedOpt},
+    naming::TypeNames,
+    parser::externcxxqt::ParsedExternCxxQt,
+    CppFragment,
 };
 use std::collections::BTreeSet;
 use syn::Result;
@@ -23,18 +25,20 @@ pub struct GeneratedCppExternCxxQtBlocks {
 pub fn generate(
     blocks: &[ParsedExternCxxQt],
     type_names: &TypeNames,
+    opt: &GeneratedOpt,
 ) -> Result<Vec<GeneratedCppExternCxxQtBlocks>> {
     let mut out = vec![];
 
     for block in blocks {
         for signal in &block.signals {
-            let mut block = GeneratedCppExternCxxQtBlocks::default();
             let qobject_name = type_names.lookup(&signal.qobject_ident)?;
-            let data = generate_cpp_signal(signal, qobject_name, type_names)?;
-            block.includes = data.includes;
-            block.forward_declares = data.forward_declares;
-            block.fragments = data.fragments;
+            let data = generate_cpp_signal(signal, qobject_name, type_names, opt)?;
             debug_assert!(data.methods.is_empty());
+            let block = GeneratedCppExternCxxQtBlocks {
+                includes: data.includes,
+                forward_declares: data.forward_declares,
+                fragments: data.fragments,
+            };
             out.push(block);
         }
     }
@@ -70,9 +74,10 @@ mod tests {
         .unwrap()];
 
         // Unknown types
-        assert!(generate(&blocks, &TypeNames::default()).is_err());
+        let opt = GeneratedOpt::default();
+        assert!(generate(&blocks, &TypeNames::default(), &opt).is_err());
 
-        let generated = generate(&blocks, &TypeNames::mock()).unwrap();
+        let generated = generate(&blocks, &TypeNames::mock(), &opt).unwrap();
         assert_eq!(generated.len(), 2);
     }
 
@@ -97,7 +102,7 @@ mod tests {
         let mut type_names = TypeNames::default();
         type_names.mock_insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
-        let generated = generate(&blocks, &type_names).unwrap();
+        let generated = generate(&blocks, &type_names, &GeneratedOpt::default()).unwrap();
         assert_eq!(generated.len(), 1);
     }
 }
