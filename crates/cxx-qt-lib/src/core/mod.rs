@@ -133,7 +133,9 @@ mod ffi {
 /// #
 /// # }
 /// #
-/// # fn main() {}
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt_lib);
+/// # }
 /// ```
 ///
 /// See: <https://github.com/dtolnay/cxx/issues/1049>

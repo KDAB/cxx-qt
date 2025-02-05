@@ -962,6 +962,7 @@ extern "C" bool {init_fun}() {{
         key: &str,
     ) {
         let mut init_lib = init_builder.clone();
+        let mut init_call_lib = init_builder.clone();
 
         // Build static initializers into their own library which will be linked with whole-archive.
         init_lib
@@ -995,7 +996,10 @@ extern "C" bool {init_fun}() {{
         if dir::is_exporting() {
             Self::export_object_file(init_builder, init_file, export_path);
         } else {
-            init_lib.file(init_file);
+            init_call_lib
+                .file(init_file)
+                .link_lib_modifier("+whole-archive")
+                .compile(&format!("cxx-qt-call-init-{key}"));
         }
 
         // Link the init_lib with +whole-archive to ensure that the static initializers are not discarded.
@@ -1008,7 +1012,8 @@ extern "C" bool {init_fun}() {{
         // duplicate symbols.
         // Note that for CMake builds we still need to export an object file to link to.
         init_lib
-            .link_lib_modifier("+whole-archive")
+            // .link_lib_modifier("+whole-archive,+bundle")
+            // .link_lib_modifier("+bundle")
             .compile(&format!("cxx-qt-init-lib-{}", key));
     }
 
