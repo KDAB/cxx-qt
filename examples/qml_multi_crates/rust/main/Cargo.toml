@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+[package]
+name = "qml_multi_crates"
+version = "0.1.0"
+authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>"]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[lib]
+crate-type = ["staticlib", "lib"]
+
+[dependencies]
+sub1 = { path = "../sub1" }
+sub2 = { path = "../sub2" }
+
+cxx.workspace = true
+cxx-qt.workspace = true
+cxx-qt-lib = { workspace = true, features = [ "qt_full" ] }
+
+[build-dependencies]
+cxx-qt-build.workspace = true

@@ -18,6 +18,8 @@ pub mod signalhandler;
 mod threading;
 
 pub use cxx_qt_macro::bridge;
+pub use cxx_qt_macro::init_crate;
+pub use cxx_qt_macro::init_qml_module;
 pub use cxx_qt_macro::qobject;
 
 pub use connection::{ConnectionType, QMetaObjectConnection};
@@ -182,7 +184,9 @@ pub trait Upcast<T> {}
 /// }
 ///
 /// # // Note that we need a fake main function for doc tests to build.
-/// # fn main() {}
+/// # fn main() {
+/// #    cxx_qt::init_crate!(cxx_qt);
+/// # }
 /// ```
 ///
 /// # Pseudo Code for generated C++ Constructor

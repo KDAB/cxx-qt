@@ -39,7 +39,9 @@ use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 /// }
 ///
 /// # // Note that we need a fake main for doc tests to build
-/// # fn main() {}
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
 /// ```
 #[proc_macro_attribute]
 pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
@@ -83,7 +85,9 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// pub struct MyObjectRust;
 ///
 /// # // Note that we need a fake main for doc tests to build
-/// # fn main() {}
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
 /// ```
 ///
 /// You can also specify a custom base class by using `#[base = QStringListModel]`, you must then use CXX to add any includes needed.
@@ -110,11 +114,43 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
 /// pub struct MyModelRust;
 ///
 /// # // Note that we need a fake main for doc tests to build
-/// # fn main() {}
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
 /// ```
 #[proc_macro_attribute]
 pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
     unreachable!("qobject should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
+}
+
+/// Force a crate to be initialized
+#[proc_macro]
+pub fn init_crate(args: TokenStream) -> TokenStream {
+    let crate_name = syn::parse_macro_input!(args as syn::Ident);
+    let function_name = quote::format_ident!("cxx_qt_init_crate_{crate_name}");
+    quote::quote! {
+        extern "C" {
+            fn #function_name() -> bool;
+        }
+        unsafe { #function_name(); }
+    }
+    .into()
+}
+
+/// Force a QML module with the given URI to be initialized
+#[proc_macro]
+pub fn init_qml_module(args: TokenStream) -> TokenStream {
+    let module_uri = syn::parse_macro_input!(args as syn::LitStr);
+    let module_name = syn::Ident::new(&module_uri.value().replace('.', "_"), module_uri.span());
+
+    let function_name = quote::format_ident!("cxx_qt_init_qml_module_{module_name}");
+    quote::quote! {
+        extern "C" {
+            fn #function_name() -> bool;
+        }
+        unsafe { #function_name(); }
+    }
+    .into()
 }
 
 // Take the module and C++ namespace and generate the rust code
