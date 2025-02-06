@@ -40,17 +40,38 @@ pub(crate) fn crate_target() -> PathBuf {
     target().join("crates").join(crate_name())
 }
 
-/// The target directory, namespaced by plugin
+/// The target directory, namespaced by QML module
 pub(crate) fn module_target(module_uri: &str) -> PathBuf {
-    target()
-        .join("qml_modules")
-        .join(module_name_from_uri(module_uri))
+    module_export(module_uri).unwrap_or_else(|| {
+        out()
+            .join("qml_modules")
+            .join(module_name_from_uri(module_uri))
+    })
+}
+
+/// The export directory, namespaced by QML module
+///
+/// In conctrast to the crate_export directory, this is `Some` for downstream dependencies as well.
+/// This allows CMake to import QML modules from dependencies.
+///
+/// TODO: This may conflict if two dependencies are building QML modules with the same name!
+/// We should probably include a lockfile here to avoid this.
+pub(crate) fn module_export(module_uri: &str) -> Option<PathBuf> {
+    // In contrast to crate_export, we don't need to check for the specific crate here.
+    // QML modules should always be exported.
+    env::var("CXX_QT_EXPORT_DIR")
+        .ok()
+        .map(PathBuf::from)
+        .map(|dir| {
+            dir.join("qml_modules")
+                .join(module_name_from_uri(module_uri))
+        })
 }
 
 /// The target directory or another directory where we can write files that will be shared
 /// between crates.
 pub(crate) fn target() -> PathBuf {
-    if let Some(export) = export() {
+    if let Some(export) = crate_export() {
         return export;
     }
 
@@ -59,7 +80,7 @@ pub(crate) fn target() -> PathBuf {
 
 /// The export directory, if one was specified through the environment.
 /// Note that this is not namspaced by crate.
-pub(crate) fn export() -> Option<PathBuf> {
+pub(crate) fn crate_export() -> Option<PathBuf> {
     // Make sure to synchronize the naming of these variables with CMake!
     let export_flag = format!("CXX_QT_EXPORT_CRATE_{}", crate_name());
     // We only want to export this crate if it is the specific crate that CMake is looking for and
@@ -87,8 +108,8 @@ pub(crate) fn out() -> PathBuf {
     env::var("OUT_DIR").unwrap().into()
 }
 
-pub(crate) fn is_exporting() -> bool {
-    export().is_some()
+pub(crate) fn is_exporting_crate() -> bool {
+    crate_export().is_some()
 }
 
 pub(crate) fn initializers(key: &str) -> PathBuf {

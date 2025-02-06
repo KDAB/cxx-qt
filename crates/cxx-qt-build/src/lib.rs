@@ -723,8 +723,11 @@ impl CxxQtBuilder {
         }
     }
 
-    fn export_object_file(builder: &cc::Build, file_path: impl AsRef<Path>, export_path: PathBuf) {
-        let mut obj_builder = builder.clone();
+    fn export_object_file(
+        mut obj_builder: cc::Build,
+        file_path: impl AsRef<Path>,
+        export_path: PathBuf,
+    ) {
         obj_builder.file(file_path.as_ref());
 
         // We only expect a single file, so destructure the vec.
@@ -756,13 +759,15 @@ impl CxxQtBuilder {
 
     fn build_qml_modules(
         &mut self,
-        init_builder: &cc::Build,
         qtbuild: &mut qt_build_utils::QtBuild,
         generated_header_dir: impl AsRef<Path>,
         header_prefix: &str,
     ) -> Vec<qt_build_utils::Initializer> {
         let mut initializer_functions = Vec::new();
-        for qml_module in &self.qml_modules {
+        // Extract qml_modules out of self so we don't have to hold onto `self` for the duration of
+        // the loop.
+        let qml_modules: Vec<_> = self.qml_modules.drain(..).collect();
+        for qml_module in qml_modules {
             dir::clean(dir::module_target(&qml_module.uri))
                 .expect("Failed to clean qml module export directory!");
 
@@ -885,11 +890,10 @@ impl CxxQtBuilder {
             let private_initializers = [qml_module_registration_files.plugin_init];
             let public_initializer =
                 Self::generate_public_initializer(&private_initializers, &module_init_key);
-            Self::build_initializers(
-                init_builder,
+            self.build_initializers(
                 &private_initializers,
                 &public_initializer,
-                dir::module_target(&qml_module.uri).join("plugin_init.o"),
+                dir::module_export(&qml_module.uri).map(|dir| dir.join("plugin_init.o")),
                 &module_init_key,
             );
 
@@ -955,17 +959,14 @@ extern "C" bool {init_fun}() {{
     }
 
     fn build_initializers<'a>(
-        init_builder: &cc::Build,
+        &mut self,
         private_initializers: impl IntoIterator<Item = &'a qt_build_utils::Initializer>,
         public_initializer: &qt_build_utils::Initializer,
-        export_path: PathBuf,
+        export_path: Option<PathBuf>,
         key: &str,
     ) {
-        let mut init_lib = init_builder.clone();
-        let mut init_call_lib = init_builder.clone();
-
-        // Build static initializers into their own library which will be linked with whole-archive.
-        init_lib
+        // Build the initializers themselves into the main library.
+        self.cc_builder
             .file(
                 public_initializer
                     .file
@@ -977,6 +978,13 @@ extern "C" bool {init_fun}() {{
                     .into_iter()
                     .filter_map(|initializer| initializer.file.as_ref()),
             );
+
+        // Build the initializer call into a separate library to be linked with whole-archive.
+        // We can just use a plain cc::Build for this, as this doesn't use any non-standard
+        // features.
+        let mut init_call_builder = cc::Build::new();
+        let includes: &[&str] = &[]; // <-- Needed for type annotations
+        Self::setup_cc_builder(&mut init_call_builder, includes);
 
         let init_call = format!(
             "{declaration}\nstatic const bool do_init_{key} = {init_call}",
@@ -993,28 +1001,23 @@ extern "C" bool {init_fun}() {{
         let init_file = dir::initializers(key).join("call-initializers.cpp");
         std::fs::write(&init_file, init_call).expect("Could not write initializers call file!");
 
-        if dir::is_exporting() {
-            Self::export_object_file(init_builder, init_file, export_path);
+        if let Some(export_path) = export_path {
+            Self::export_object_file(init_call_builder, init_file, export_path);
         } else {
-            init_call_lib
+            // Link the call-init-lib with +whole-archive to ensure that the static initializers are not discarded.
+            // We previously used object files that we linked directly into the final binary, but this caused
+            // issues, as the static initializers could sometimes not link to the initializer functions.
+            // This is simpler and ends up linking correctly.
+            //
+            // The trick is that we only link the initializer call with +whole-archive, and not the entire
+            // Rust static library, as the initializer is rather simple and shouldn't lead to issues with
+            // duplicate symbols.
+            // Note that for CMake builds we still need to export an object file to link to.
+            init_call_builder
                 .file(init_file)
                 .link_lib_modifier("+whole-archive")
                 .compile(&format!("cxx-qt-call-init-{key}"));
         }
-
-        // Link the init_lib with +whole-archive to ensure that the static initializers are not discarded.
-        // We previously used object files that we linked directly into the final binary, but this caused
-        // issues, as the static initializers could sometimes not link to the initializer functions.
-        // This is simpler and ends up linking correctly.
-        //
-        // The trick is that we only link the initializers with +whole-archive, and not the entire
-        // Rust static library, as the initializers are rather simple and shouldn't lead to issues with
-        // duplicate symbols.
-        // Note that for CMake builds we still need to export an object file to link to.
-        init_lib
-            // .link_lib_modifier("+whole-archive,+bundle")
-            // .link_lib_modifier("+bundle")
-            .compile(&format!("cxx-qt-init-lib-{}", key));
     }
 
     fn generate_cpp_from_qrc_files(
@@ -1122,15 +1125,7 @@ extern "C" bool {init_fun}() {{
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
         Self::define_qt_version_cfg_variables(qtbuild.version());
 
-        // Setup compilers
-        // Static QML plugin and Qt resource initializers need to be linked as their own separate
-        // object files because they use static variables which need to be initialized before main
-        // (regardless of whether main is in Rust or C++). Normally linkers only copy symbols referenced
-        // from within main when static linking, which would result in discarding those static variables.
-        // Use a separate cc::Build for the little amount of code that needs to be built & linked this way.
-        let mut init_builder = cc::Build::new();
         // Ensure that Qt modules and apple framework are linked and searched correctly
-        qtbuild.cargo_link_libraries(&mut init_builder);
         let mut include_paths = qtbuild.include_paths();
         include_paths.push(header_root.clone());
         // TODO: Some of the code generated by qmltyperegistrar doesn't add the include_prefix to
@@ -1142,13 +1137,6 @@ extern "C" bool {init_fun}() {{
 
         Self::setup_cc_builder(&mut self.cc_builder, &include_paths);
 
-        Self::setup_cc_builder(&mut init_builder, &include_paths);
-        // Note: From now on the init_builder is correctly configured.
-        // When building object files with this builder, we always need to copy it first.
-        // So remove `mut` to ensure that we can't accidentally change the configuration or add
-        // files.
-        let init_builder = init_builder;
-
         // Generate files
         self.generate_cpp_files_from_cxxqt_bridges(&header_root, &self.include_prefix.clone());
 
@@ -1156,12 +1144,8 @@ extern "C" bool {init_fun}() {{
 
         // Bridges for QML modules are handled separately because
         // the metatypes_json generated by moc needs to be passed to qmltyperegistrar
-        let module_initializers = self.build_qml_modules(
-            &init_builder,
-            &mut qtbuild,
-            &header_root,
-            &self.include_prefix.clone(),
-        );
+        let module_initializers =
+            self.build_qml_modules(&mut qtbuild, &header_root, &self.include_prefix.clone());
 
         let qrc_files = self.generate_cpp_from_qrc_files(&mut qtbuild);
 
@@ -1174,11 +1158,15 @@ extern "C" bool {init_fun}() {{
 
         let public_initializer =
             Self::generate_public_initializer(&private_initializers, &crate_init_key());
-        Self::build_initializers(
-            &init_builder,
+        let export_path = if dir::is_exporting_crate() {
+            Some(dir::crate_target().join("initializers.o"))
+        } else {
+            None
+        };
+        self.build_initializers(
             &private_initializers,
             &public_initializer,
-            dir::crate_target().join("initializers.o"),
+            export_path,
             &crate_init_key(),
         );
 
