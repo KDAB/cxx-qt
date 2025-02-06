@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-extern crate qml_meta_project;
+extern crate qml_multi_crates;
 
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
 fn main() {
-    cxx_qt::init_crate!(qml_meta_project);
+    cxx_qt::init_crate!(qml_multi_crates);
     cxx_qt::init_qml_module!("com.kdab.cxx_qt.demo");
 
     // Create the application and engine
@@ -42,7 +42,7 @@ mod tests {
     // Otherwise linking will fail!
     #[test]
     fn init_dependencies() {
-        cxx_qt::init_crate!(qml_meta_project);
+        cxx_qt::init_crate!(qml_multi_crates);
         cxx_qt::init_qml_module!("com.kdab.cxx_qt.demo");
     }
 }

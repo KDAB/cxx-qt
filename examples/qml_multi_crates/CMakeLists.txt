@@ -5,7 +5,7 @@
 
 cmake_minimum_required(VERSION 3.24)
 
-project(example_meta_project)
+project(example_qml_multi_crates)
 
 # Rust always links against non-debug Windows runtime on *-msvc targets
 # Note it is best to set this on the command line to ensure all targets are consistent
@@ -51,20 +51,22 @@ if(NOT CxxQt_FOUND)
     FetchContent_MakeAvailable(CxxQt)
 endif()
 
-cxx_qt_import_crate(MANIFEST_PATH rust/main/Cargo.toml CRATES qml_meta_project)
-target_link_libraries(qml_meta_project INTERFACE Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
+cxx_qt_import_crate(MANIFEST_PATH rust/main/Cargo.toml
+    CRATES qml_multi_crates
+    CRATE_TYPES staticlib
+    QT_MODULES Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2 Qt::Network)
 
-cxx_qt_import_qml_module(qml_meta_project_main
+cxx_qt_import_qml_module(qml_multi_crates_main
     URI "com.kdab.cxx_qt.demo"
-    SOURCE_CRATE qml_meta_project)
+    SOURCE_CRATE qml_multi_crates)
 
-cxx_qt_import_qml_module(qml_meta_project_sub1
+cxx_qt_import_qml_module(qml_multi_crates_sub1
     URI "com.kdab.cxx_qt.demo.sub1"
-    SOURCE_CRATE qml_meta_project)
+    SOURCE_CRATE qml_multi_crates)
 
-cxx_qt_import_qml_module(qml_meta_project_sub2
+cxx_qt_import_qml_module(qml_multi_crates_sub2
     URI "com.kdab.cxx_qt.demo.sub2"
-    SOURCE_CRATE qml_meta_project)
+    SOURCE_CRATE qml_multi_crates)
 
 # Define the executable with the C++ source
 if(BUILD_WASM)
@@ -74,13 +76,13 @@ if(BUILD_WASM)
     #
     # TODO: Figure out how to configure such that
     #       we can use add_executable for WASM
-    qt_add_executable(example_meta_project cpp/main.cpp)
+    qt_add_executable(example_qml_multi_crates cpp/main.cpp)
 else()
-    add_executable(example_meta_project cpp/main.cpp)
+    add_executable(example_qml_multi_crates cpp/main.cpp)
 endif()
 
-# Link to the qml module, which in turn links to the Rust qml_meta_project library
-target_link_libraries(example_meta_project PRIVATE Qt::Core Qt::Gui Qt::Qml qml_meta_project_main qml_meta_project_sub1 qml_meta_project_sub2)
+# Link to the qml module, which in turn links to the Rust qml_multi_crates library
+target_link_libraries(example_qml_multi_crates PRIVATE Qt::Core Qt::Gui Qt::Qml qml_multi_crates_main qml_multi_crates_sub1 qml_multi_crates_sub2)
 
 # If we are using a statically linked Qt then we need to import any qml plugins
-qt_import_qml_plugins(example_meta_project)
+qt_import_qml_plugins(example_qml_multi_crates)
