@@ -9,7 +9,7 @@
 # When using `cargo test`
 add_subdirectory(qml_features)
 add_subdirectory(qml_minimal)
-# add_subdirectory(meta_project)
+add_subdirectory(qml_multi_crates)
 
 # TODO: get demo_threading working for wasm builds
 if(NOT BUILD_WASM)
