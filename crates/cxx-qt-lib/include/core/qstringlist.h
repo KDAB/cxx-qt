@@ -24,11 +24,6 @@ struct IsRelocatable<QStringList> : ::std::true_type
 
 namespace rust {
 namespace cxxqtlib1 {
-
-const QList<QString>&
-qstringlistAsQListQStringRef(const QStringList& list);
-QList<QString>&
-qstringlistAsQListQStringRef(QStringList& list);
 QStringList
 qstringlistFromQListQString(const QList<QString>& list);
 QList<QString>

@@ -6,6 +6,7 @@
 
 use crate::{QByteArray, QFont, QString, QStringList, QVector};
 use core::pin::Pin;
+use cxx_qt::Upcast;
 
 #[cxx::bridge]
 mod ffi {
@@ -23,6 +24,23 @@ mod ffi {
 
         include!("cxx-qt-lib/qguiapplication.h");
         type QGuiApplication;
+
+        include!("cxx-qt-lib/qcoreapplication.h");
+        type QCoreApplication;
+
+        include!("cxx-qt/casting.h");
+
+        #[doc(hidden)]
+        #[rust_name = "upcast_qguiapplication"]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn upcast(thiz: *const QGuiApplication) -> *const QCoreApplication;
+
+        #[doc(hidden)]
+        #[rust_name = "downcast_qcoreapplication"]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn downcast(base: *const QCoreApplication) -> *const QGuiApplication;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -98,7 +116,19 @@ mod ffi {
     impl UniquePtr<QGuiApplication> {}
 }
 
-pub use ffi::QGuiApplication;
+pub use ffi::{
+    downcast_qcoreapplication, upcast_qguiapplication, QCoreApplication, QGuiApplication,
+};
+
+impl Upcast<QCoreApplication> for QGuiApplication {
+    unsafe fn upcast_ptr(this: *const Self) -> *const QCoreApplication {
+        upcast_qguiapplication(this)
+    }
+
+    unsafe fn from_base_ptr(base: *const QCoreApplication) -> *const Self {
+        downcast_qcoreapplication(base)
+    }
+}
 
 impl QGuiApplication {
     /// Prepends path to the beginning of the library path list,
