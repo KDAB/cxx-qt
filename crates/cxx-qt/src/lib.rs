@@ -179,6 +179,31 @@ pub trait Downcast: Sized {
             }
         }
     }
+
+    /// try Downcast mutably to a subclass of this, given that the subclass upcasts to this type
+    fn downcast_mut<Sub: Upcast<Self>>(&mut self) -> Option<&mut Sub> {
+        unsafe {
+            let ptr = Sub::from_base_ptr(self as *const Self) as *mut Sub;
+            if ptr.is_null() {
+                None
+            } else {
+                Some(&mut *ptr)
+            }
+        }
+    }
+
+    /// try Downcast a pin to a pinned subclass of this, given that the subclass upcasts to this type
+    fn downcast_pin<Sub: Upcast<Self>>(self: Pin<&mut Self>) -> Option<Pin<&mut Sub>> {
+        let this = self.deref() as *const Self;
+        unsafe {
+            let ptr = Sub::from_base_ptr(this) as *mut Sub;
+            if ptr.is_null() {
+                None
+            } else {
+                Some(Pin::new_unchecked(&mut *ptr))
+            }
+        }
+    }
 }
 
 impl<T: Sized> Downcast for T {}
