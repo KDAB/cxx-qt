@@ -112,7 +112,6 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[cfg(not(enabled))]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
@@ -147,7 +146,6 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[cfg(enabled)]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
@@ -240,7 +238,6 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[cfg(not(enabled))]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
@@ -275,7 +272,6 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[cfg(enabled)]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
@@ -336,7 +332,6 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[cfg(not(enabled))]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
@@ -371,7 +366,6 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[cfg(enabled)]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
@@ -410,7 +404,6 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[cfg(not(enabled))]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
@@ -445,7 +438,6 @@ mod ffi {
             conn_type: CxxQtConnectionType,
         ) -> CxxQtQMetaObjectConnection;
     }
-    #[cfg(enabled)]
     #[namespace = "rust::cxxqtgen1"]
     extern "Rust" {
         #[doc(hidden)]
@@ -468,7 +460,7 @@ impl ffi::QObjectEnabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
@@ -491,7 +483,7 @@ impl ffi::QObjectEnabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
             self,
@@ -542,7 +534,7 @@ impl ffi::QObjectEnabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
@@ -565,7 +557,7 @@ impl ffi::QObjectEnabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
             self,
@@ -639,7 +631,7 @@ impl ffi::QObjectDisabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_disabled(
@@ -662,7 +654,7 @@ impl ffi::QObjectDisabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_disabled(
             self,
@@ -713,7 +705,7 @@ impl ffi::QObjectDisabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
@@ -736,7 +728,7 @@ impl ffi::QObjectDisabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
             self,
@@ -810,7 +802,7 @@ impl ffi::QObjectExternEnabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
@@ -835,7 +827,7 @@ impl ffi::QObjectExternEnabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternEnabled_connect_signal_disabled1(
@@ -893,7 +885,7 @@ impl ffi::QObjectExternEnabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectExternEnabled_connect_signal_enabled1(
@@ -916,7 +908,7 @@ impl ffi::QObjectExternEnabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectExternEnabled_connect_signal_enabled1(
             self,
@@ -972,7 +964,7 @@ impl ffi::QObjectExternDisabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
@@ -997,7 +989,7 @@ impl ffi::QObjectExternDisabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_disabled2(
@@ -1055,7 +1047,7 @@ impl ffi::QObjectExternDisabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
@@ -1080,7 +1072,7 @@ impl ffi::QObjectExternDisabled {
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_enabled2(

@@ -183,10 +183,7 @@ impl TypeNames {
                 self.insert(qobject.name.clone())?;
             }
 
-            // Find and register the names of any signals in extern "C++Qt"
-            for signal in extern_cxxqt.signals.iter() {
-                self.insert(signal.name.clone())?;
-            }
+            // TODO! Do we still need to find and register the names of any signals in extern "C++Qt"
         }
 
         Ok(())

@@ -125,7 +125,10 @@ pub mod qobject {
     // ANCHOR: book_inherit_qalm_impl_unsafe
     // Create Rust bindings for C++ functions of the base class (QAbstractItemModel)
     extern "RustQt" {
-        /// Inherited beginInsertRows from the base class
+        /// # Safety
+        ///
+        /// Inherited beginInsertRows from the base class.
+        /// If you call begin_insert_rows, it is your responsibility to ensure end_insert_rows is called
         #[inherit]
         #[cxx_name = "beginInsertRows"]
         unsafe fn begin_insert_rows(
@@ -134,12 +137,18 @@ pub mod qobject {
             first: i32,
             last: i32,
         );
-        /// Inherited endInsertRows from the base class
+        /// # Safety
+        ///
+        /// Inherited endInsertRows from the base class.
+        /// If you call `begin_insert_rows`, it is your responsibility to ensure `end_insert_rows` is called
         #[inherit]
         #[cxx_name = "endInsertRows"]
         unsafe fn end_insert_rows(self: Pin<&mut CustomBaseClass>);
 
-        /// Inherited beginRemoveRows from the base class
+        /// # Safety
+        ///
+        /// Inherited beginRemoveRows from the base class.
+        /// If you call `begin_remove_rows`, it is your responsibility to ensure `end_remove_rows` is called
         #[inherit]
         #[cxx_name = "beginRemoveRows"]
         unsafe fn begin_remove_rows(
@@ -148,16 +157,25 @@ pub mod qobject {
             first: i32,
             last: i32,
         );
-        /// Inherited endRemoveRows from the base class
+        /// # Safety
+        ///
+        /// Inherited endRemoveRows from the base class.
+        /// If you call `begin_remove_rows`, it is your responsibility to ensure `end_remove_rows` is called
         #[inherit]
         #[cxx_name = "endRemoveRows"]
         unsafe fn end_remove_rows(self: Pin<&mut CustomBaseClass>);
 
-        /// Inherited beginResetModel from the base class
+        /// # Safety
+        ///
+        /// Inherited beginResetModel from the base class.
+        /// If you call `begin_reset_model`, it is your responsibility to ensure `end_reset_model` is called
         #[inherit]
         #[cxx_name = "beginResetModel"]
         unsafe fn begin_reset_model(self: Pin<&mut CustomBaseClass>);
-        /// Inherited endResetModel from the base class
+        /// # Safety
+        ///
+        /// Inherited endResetModel from the base class.
+        /// If you call `begin_reset_model`, it is your responsibility to ensure `end_reset_model` is called
         #[inherit]
         #[cxx_name = "endResetModel"]
         unsafe fn end_reset_model(self: Pin<&mut CustomBaseClass>);
