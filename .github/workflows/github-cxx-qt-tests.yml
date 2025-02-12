@@ -484,6 +484,14 @@ jobs:
       if: runner.os == 'Windows'
       uses: seanmiddleditch/gha-setup-vsdevenv@v4
 
+    - name: "debug env vars"
+      if: runner.os == 'Linux'
+      run: env
+
+    - name: Setup tmate session
+      if: runner.os == 'Linux' && matrix.qt_version == 6
+      uses: mxschmitt/action-tmate@v3
+
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
     - name: "Configure"
       run: >-
@@ -496,10 +504,20 @@ jobs:
         RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
+        SCCACHE_ERROR_LOG: /tmp/sccache_log.txt
+        SCCACHE_LOG: debug
     - name: "Build"
       run: cmake --build build --config Release --parallel ${{ matrix.cores }}
       env:
         RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
+        SCCACHE_ERROR_LOG: /tmp/sccache_log.txt
+        SCCACHE_LOG: debug
+    - name: "Debug out dirs"
+      if: runner.os == 'Linux'
+      run: |
+        ls -l build/cargo/build/release/build
+        cat /tmp/sccache_log.txt
+
     - name: "Test"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
       working-directory: ./build
