@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow creating a `QImage` from an `image::RgbaImage`.
 - Support for `cfg` attributes through to C++ generation
 - CXX-Qt-build: Improved compile time and propagation of initializers between crates
+- CXX-Qt-build: Multi-crate projects are now possible with Cargo and CMake (see `examples/qml_multi_crates`)
+- CXX-Qt-build: Allow forcing initialization of crates/QML modules (`cxx_qt::init_crate!`/`cxx_qt::init_qml_module!`)
 
 ### Fixed
 
