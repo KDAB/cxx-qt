@@ -309,8 +309,6 @@ jobs:
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
-            # sccache is disabled due on macOS to https://github.com/mozilla/sccache/issues/2092
-            cmake_args: -DSCCACHE=OFF
           - name: macOS 14 (clang) Qt6
             os: macos-14
             qt_version: 6
@@ -331,8 +329,6 @@ jobs:
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
-            # sccache is disabled on macOS due to https://github.com/mozilla/sccache/issues/2092
-            cmake_args: -DSCCACHE=OFF
 
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
