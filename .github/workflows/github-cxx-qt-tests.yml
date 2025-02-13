@@ -232,7 +232,7 @@ jobs:
         continue-on-error: true
         run: |
           gh extension install actions/gh-actions-cache
-          gh actions-cache delete "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache" --confirm
+          gh actions-cache delete "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache" --confirm
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Save Compiler Cache"
