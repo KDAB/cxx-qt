@@ -147,7 +147,7 @@ jobs:
         if: steps.rust-tools-cache.outputs.cache-hit != 'true'
         # Do not build with storage backends enabled, we only need local
         run: |
-          cargo install --no-default-features --version 0.8.2 sccache
+          cargo install --locked --no-default-features --version 0.8.2 sccache
           cargo install --version 0.4.36 mdbook 
           cargo install --version 0.7.7 mdbook-linkcheck
       # We want our compiler cache to always update to the newest state.
@@ -415,7 +415,7 @@ jobs:
       if: steps.rust-tools-cache.outputs.cache-hit != 'true'
       # Do not build with storage backends enabled, we only need local
       run: |
-        cargo install --no-default-features --version 0.8.2 sccache
+        cargo install --locked --no-default-features --version 0.8.2 sccache
         cargo install --version 0.4.36 mdbook 
         cargo install --version 0.7.7 mdbook-linkcheck
 
