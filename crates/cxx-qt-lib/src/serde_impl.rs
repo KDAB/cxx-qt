@@ -2,13 +2,56 @@
 // SPDX-FileContributor: Joshua Booth <joshua.n.booth@gmail.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::{QList, QListElement, QSet, QSetElement, QStringList, QVector, QVectorElement};
+use crate::{
+    DateFormat, QDate, QList, QListElement, QSet, QSetElement, QString, QStringList, QTime,
+    QVector, QVectorElement,
+};
 use cxx::ExternType;
-use serde::de::{SeqAccess, Visitor};
+use serde::de::{Error as _, SeqAccess, Unexpected, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{self, Formatter};
 use std::marker::PhantomData;
 use std::num::NonZeroIsize;
+
+/// Serializes and deserializes a time-like value using an ISO-8601 string as the intermediary.
+macro_rules! datetime_impl {
+    ($t:ty, $construct:expr, $f:expr, $expected:literal) => {
+        impl Serialize for $t {
+            fn serialize<S: Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+                self.format_enum($f).serialize(serializer)
+            }
+        }
+
+        impl<'de> Deserialize<'de> for $t {
+            fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+                let string = QString::deserialize(deserializer)?;
+                $construct(&string, $f).ok_or_else(|| {
+                    D::Error::invalid_value(Unexpected::Str(&String::from(&string)), &$expected)
+                })
+            }
+        }
+    };
+}
+
+datetime_impl!(
+    QDate,
+    QDate::from_string_enum,
+    DateFormat::ISODate,
+    "ISO-8601 date"
+);
+datetime_impl!(
+    QTime,
+    QTime::from_string_enum_opt,
+    DateFormat::ISODateWithMs,
+    "ISO-8601 time"
+);
+#[cfg(not(target_os = "emscripten"))]
+datetime_impl!(
+    crate::QDateTime,
+    crate::QDateTime::from_string,
+    DateFormat::ISODateWithMs,
+    "ISO-8601 datetime"
+);
 
 /// Serde deserializers provide an `Option<usize>` size hint, but Qt containers use signed types
 /// for size. This helper function converts between the two.

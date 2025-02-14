@@ -4,8 +4,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::{type_id, ExternType};
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 use std::fmt;
 
 #[cxx::bridge]
@@ -120,11 +118,6 @@ mod ffi {
 
 /// The QTime class provides clock time functions.
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(try_from = "ffi::QString", into = "ffi::QString")
-)]
 #[repr(C)]
 pub struct QTime {
     mds: i32,
@@ -212,39 +205,6 @@ impl fmt::Display for QTime {
 impl fmt::Debug for QTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{self}")
-    }
-}
-
-impl TryFrom<&ffi::QString> for QTime {
-    type Error = &'static str;
-
-    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
-        let time = ffi::qtime_from_string_enum(value, ffi::DateFormat::ISODateWithMs);
-        if time.is_valid() {
-            Ok(time)
-        } else {
-            Err("invalid ISO-8601 time")
-        }
-    }
-}
-
-impl TryFrom<ffi::QString> for QTime {
-    type Error = &'static str;
-
-    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
-        Self::try_from(&value)
-    }
-}
-
-impl From<&QTime> for ffi::QString {
-    fn from(value: &QTime) -> Self {
-        value.format_enum(ffi::DateFormat::ISODateWithMs)
-    }
-}
-
-impl From<QTime> for ffi::QString {
-    fn from(value: QTime) -> Self {
-        Self::from(&value)
     }
 }
 

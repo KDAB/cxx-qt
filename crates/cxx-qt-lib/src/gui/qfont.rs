@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
-#[cfg(feature = "serde")]
-use serde::{Deserialize, Serialize};
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -372,11 +370,6 @@ pub use ffi::{
     QFontStyleStrategy,
 };
 
-#[cfg_attr(
-    feature = "serde",
-    derive(Serialize, Deserialize),
-    serde(try_from = "ffi::QString", into = "ffi::QString")
-)]
 #[repr(C)]
 pub struct QFont {
     _cspec: MaybeUninit<usize>,
@@ -419,38 +412,6 @@ impl PartialEq for QFont {
     }
 }
 
-impl From<&QFont> for ffi::QString {
-    fn from(value: &QFont) -> Self {
-        value.description()
-    }
-}
-
-impl From<QFont> for ffi::QString {
-    fn from(value: QFont) -> Self {
-        ffi::QString::from(&value)
-    }
-}
-
-impl TryFrom<&ffi::QString> for QFont {
-    type Error = &'static str;
-
-    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
-        let mut font = QFont::default();
-        if !font.from_string(value) {
-            return Err("invalid QFont description");
-        }
-        Ok(font)
-    }
-}
-
-impl TryFrom<ffi::QString> for QFont {
-    type Error = &'static str;
-
-    fn try_from(value: ffi::QString) -> Result<Self, Self::Error> {
-        QFont::try_from(&value)
-    }
-}
-
 impl Eq for QFont {}
 
 impl QFont {
@@ -463,6 +424,30 @@ impl QFont {
         } else {
             Some(result)
         }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::Serialize for QFont {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.description().serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QFont {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{Error as _, Unexpected};
+
+        let qstring = ffi::QString::deserialize(deserializer)?;
+        let mut font = QFont::default();
+        if !font.from_string(&qstring) {
+            return Err(D::Error::invalid_value(
+                Unexpected::Str(&String::from(&qstring)),
+                &"QFont description",
+            ));
+        }
+        Ok(font)
     }
 }
 
