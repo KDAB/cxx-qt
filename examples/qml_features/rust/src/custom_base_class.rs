@@ -272,7 +272,7 @@ pub mod qobject {
     }
 }
 
-use crate::custom_base_class::qobject::{AbstractBaseClass, CustomBaseClass};
+use crate::custom_base_class::qobject::CustomBaseClass;
 use core::pin::Pin;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::{QByteArray, QHash, QHashPair_i32_QByteArray, QModelIndex, QVariant, QVector};
@@ -286,11 +286,6 @@ impl Default for qobject::State {
 /// A struct which inherits from QAbstractListModel
 #[derive(Default)]
 pub struct AbstractBaseClassRust {}
-
-impl qobject::AbstractBaseClass {
-    /// Virtual method for logging
-    pub fn log(self: &AbstractBaseClass) {}
-}
 
 /// A struct which inherits from our custom abstract parent
 #[derive(Default)]

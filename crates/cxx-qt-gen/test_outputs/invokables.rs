@@ -98,7 +98,7 @@ mod ffi {
         #[doc(hidden)]
         fn invokable_virtual(self: &MyObject);
     }
-    extern "Rust" {
+    unsafe extern "C++" {
         #[cxx_name = "invokable_pure_virtual"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
