@@ -18,6 +18,7 @@ pub enum ParsedQInvokableSpecifiers {
     Final,
     Override,
     Virtual,
+    Pure,
 }
 
 impl ParsedQInvokableSpecifiers {
@@ -26,6 +27,7 @@ impl ParsedQInvokableSpecifiers {
             ParsedQInvokableSpecifiers::Final => "cxx_final",
             ParsedQInvokableSpecifiers::Override => "cxx_override",
             ParsedQInvokableSpecifiers::Virtual => "cxx_virtual",
+            ParsedQInvokableSpecifiers::Pure => "cxx_pure",
         }
     }
 
@@ -35,6 +37,7 @@ impl ParsedQInvokableSpecifiers {
             ParsedQInvokableSpecifiers::Final,
             ParsedQInvokableSpecifiers::Override,
             ParsedQInvokableSpecifiers::Virtual,
+            ParsedQInvokableSpecifiers::Pure,
         ] {
             if attrs.contains_key(specifier.as_str()) {
                 output.insert(specifier);
@@ -52,6 +55,8 @@ pub struct ParsedMethod {
     pub specifiers: HashSet<ParsedQInvokableSpecifiers>,
     /// Whether the method is qinvokable
     pub is_qinvokable: bool,
+    /// Whether the method is a pure virtual method
+    pub is_pure: bool,
     // No docs field since the docs should be on the method implementation outside the bridge
     // This means any docs on the bridge declaration would be ignored
     /// Cfgs for the method
@@ -59,13 +64,14 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
-    const ALLOWED_ATTRS: [&'static str; 8] = [
+    const ALLOWED_ATTRS: [&'static str; 9] = [
         "cxx_name",
         "rust_name",
         "qinvokable",
         "cxx_final",
         "cxx_override",
         "cxx_virtual",
+        "cxx_pure",
         "doc",
         "cfg",
     ];
@@ -113,12 +119,14 @@ impl ParsedMethod {
 
         // Determine if the method is invokable
         let is_qinvokable = attrs.contains_key("qinvokable");
+        let is_pure = attrs.contains_key("cxx_pure");
         let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs);
 
         Ok(Self {
             method_fields: fields,
             specifiers,
             is_qinvokable,
+            is_pure,
             cfgs,
         })
     }
