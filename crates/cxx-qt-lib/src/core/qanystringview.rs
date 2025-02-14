@@ -61,10 +61,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "QAnyStringView_len"]
         fn qanystringviewLen(string: &QAnyStringView) -> isize;
-
-        #[doc(hidden)]
-        #[rust_name = "QAnyStringView_to_qstring"]
-        fn toQString(string: &QAnyStringView) -> QString;
     }
 }
 
@@ -133,7 +129,7 @@ impl QAnyStringView<'_> {
 
 impl fmt::Display for QAnyStringView<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::QAnyStringView_to_qstring(self))
+        write!(f, "{}", self.to_qstring())
     }
 }
 

@@ -321,6 +321,10 @@ mod ffi {
         #[rust_name = "style_strategy"]
         fn styleStrategy(self: &QFont) -> QFontStyleStrategy;
 
+        /// Returns the font as a string.
+        #[rust_name = "to_qstring"]
+        fn toString(self: &QFont) -> QString;
+
         /// Returns true if underline has been set; otherwise returns false.
         fn underline(self: &QFont) -> bool;
 
@@ -358,9 +362,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qfont_to_debug_qstring"]
         fn toDebugQString(value: &QFont) -> QString;
-        #[doc(hidden)]
-        #[rust_name = "qfont_to_qstring"]
-        fn toQString(value: &QFont) -> QString;
     }
 }
 
@@ -395,13 +396,13 @@ impl Clone for QFont {
 
 impl fmt::Display for QFont {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qfont_to_qstring(self))
+        write!(f, "{}", self.to_qstring())
     }
 }
 
 impl fmt::Debug for QFont {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qfont_to_debug_qstring(self))
+        write!(f, "{}", self.to_qstring())
     }
 }
 
