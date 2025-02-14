@@ -49,6 +49,11 @@ mod ffi {
         fn invokable_virtual(self: &MyObject);
 
         #[qinvokable]
+        #[cxx_virtual]
+        #[cxx_pure]
+        fn invokable_pure_virtual(self: &MyObject);
+
+        #[qinvokable]
         fn invokable_result_tuple(self: &MyObject) -> Result<()>;
 
         #[qinvokable]
