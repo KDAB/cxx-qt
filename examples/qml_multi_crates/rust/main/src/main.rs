@@ -9,7 +9,6 @@ use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
 fn main() {
     cxx_qt::init_crate!(qml_multi_crates);
-    cxx_qt::init_qml_module!("com.kdab.cxx_qt.demo");
 
     // Create the application and engine
     let mut app = QGuiApplication::new();

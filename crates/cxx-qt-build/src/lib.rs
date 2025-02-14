@@ -34,7 +34,6 @@ pub use qml_modules::QmlModule;
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::SemVer;
 use quote::ToTokens;
-use std::iter;
 use std::{
     collections::HashSet,
     env,
@@ -897,7 +896,7 @@ impl CxxQtBuilder {
                 &module_init_key,
             );
 
-            initializer_functions.push(public_initializer);
+            initializer_functions.push(public_initializer.strip_file());
         }
         initializer_functions
     }
@@ -1153,6 +1152,7 @@ extern "C" bool {init_fun}() {{
         let private_initializers = dependency_initializers
             .into_iter()
             .chain(qrc_files)
+            .chain(module_initializers)
             .chain(self.init_files.iter().cloned())
             .collect::<Vec<_>>();
 
@@ -1179,17 +1179,7 @@ extern "C" bool {init_fun}() {{
         self.write_manifest(
             &dependencies,
             qt_modules,
-            module_initializers
-                .into_iter()
-                .chain(iter::once(public_initializer))
-                // Strip the init files from the public initializers
-                // For downstream dependencies, it's enough to just declare the init function an
-                // call it.
-                .map(|initializer| qt_build_utils::Initializer {
-                    file: None,
-                    ..initializer
-                })
-                .collect(),
+            vec![public_initializer.strip_file()],
         );
     }
 }
