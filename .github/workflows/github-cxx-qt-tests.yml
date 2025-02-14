@@ -309,6 +309,7 @@ jobs:
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
+            rustc_wrapper: sccache
           - name: macOS 14 (clang) Qt6
             os: macos-14
             qt_version: 6
@@ -329,6 +330,7 @@ jobs:
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
+            rustc_wrapper: sccache
 
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
