@@ -60,6 +60,10 @@ pub mod qobject {
     extern "RustQt" {
         #[qobject]
         #[base = QAbstractListModel]
+        type AbstractBaseClass = super::AbstractBaseClassRust;
+
+        #[qobject]
+        #[base = AbstractBaseClass]
         #[qml_element]
         #[qproperty(State, state)]
         type CustomBaseClass = super::CustomBaseClassRust;
@@ -86,6 +90,17 @@ pub mod qobject {
     // ANCHOR_END: book_qsignals_inherit
 
     unsafe extern "RustQt" {
+        /// Log the state of the abstract class
+        #[qinvokable]
+        #[cxx_virtual]
+        #[cxx_pure]
+        fn log(self: &AbstractBaseClass);
+
+        /// Override to Log the state of the custom base class
+        #[qinvokable]
+        #[cxx_override]
+        fn log(self: &CustomBaseClass);
+
         /// Add a new row to the QAbstractListModel on the current thread
         #[qinvokable]
         fn add(self: Pin<&mut CustomBaseClass>);
@@ -257,6 +272,7 @@ pub mod qobject {
     }
 }
 
+use crate::custom_base_class::qobject::{AbstractBaseClass, CustomBaseClass};
 use core::pin::Pin;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::{QByteArray, QHash, QHashPair_i32_QByteArray, QModelIndex, QVariant, QVector};
@@ -269,6 +285,15 @@ impl Default for qobject::State {
 
 /// A struct which inherits from QAbstractListModel
 #[derive(Default)]
+pub struct AbstractBaseClassRust {}
+
+impl qobject::AbstractBaseClass {
+    /// Virtual method for logging
+    pub fn log(self: &AbstractBaseClass) {}
+}
+
+/// A struct which inherits from our custom abstract parent
+#[derive(Default)]
 pub struct CustomBaseClassRust {
     state: qobject::State,
     pending_adds: i32,
@@ -278,6 +303,14 @@ pub struct CustomBaseClassRust {
 }
 
 impl qobject::CustomBaseClass {
+    /// Virtual method for logging type
+    pub fn log(self: &CustomBaseClass) {
+        println!(
+            "state: {}\npending adds: {}\nid: {}\nvector: {:?}\n",
+            self.state.repr, self.pending_adds, self.id, self.vector
+        );
+    }
+
     /// Add a new row to the QAbstractListModel on the current thread
     pub fn add(self: Pin<&mut Self>) {
         self.add_cpp_context();

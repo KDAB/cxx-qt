@@ -18,6 +18,12 @@ Page {
             anchors.fill: parent
 
             ToolButton {
+                text: qsTr("Log")
+
+                onClicked: root.activeModel.log()
+            }
+
+            ToolButton {
                 text: qsTr("Add Row")
 
                 onClicked: root.activeModel.add()
