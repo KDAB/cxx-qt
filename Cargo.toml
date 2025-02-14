@@ -18,6 +18,9 @@ members = [
     "examples/qml_features/rust",
     "examples/qml_minimal/rust",
     "examples/qml_basics",
+    "examples/qml_multi_crates/rust/main",
+    "examples/qml_multi_crates/rust/sub1",
+    "examples/qml_multi_crates/rust/sub2",
 
     "tests/basic_cxx_only/rust",
     "tests/basic_cxx_qt/rust",
