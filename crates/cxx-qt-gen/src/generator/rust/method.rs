@@ -41,10 +41,16 @@ pub fn generate_rust_methods(
             let cfgs = &invokable.cfgs;
             let cxx_namespace = qobject_names.namespace_tokens();
 
+            let (block_type, block_safety) = if invokable.is_pure {
+                ("C++", Some(quote! { unsafe }))
+            } else {
+                ("Rust", None)
+            };
+
             GeneratedRustFragment::from_cxx_item(parse_quote_spanned! {
                 invokable.method.span() =>
                 // Note: extern "Rust" block does not need to be unsafe
-                extern "Rust" {
+                #block_safety extern #block_type {
                     // Note that we are exposing a Rust method on the C++ type to C++
                     //
                     // CXX ends up generating the source, then we generate the matching header.
