@@ -263,6 +263,7 @@ jobs:
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
+            sccache_log_path: /home/runner/.cache/sccache_log.txt
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
@@ -278,6 +279,7 @@ jobs:
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
+            sccache_log_path: /home/runner/.cache/sccache_log.txt
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
@@ -301,6 +303,7 @@ jobs:
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
+            sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
             clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
@@ -322,6 +325,7 @@ jobs:
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
+            sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
             clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
@@ -340,6 +344,7 @@ jobs:
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
             clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
@@ -356,6 +361,7 @@ jobs:
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
             clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
@@ -372,6 +378,7 @@ jobs:
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
             clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
@@ -388,6 +395,8 @@ jobs:
         # Allow a larger cache size so that code in branches can be cached
         # but still leave room for the tools cache
         SCCACHE_CACHE_SIZE: 600M
+        SCCACHE_LOG: debug
+        SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
 
     steps:
     - name: "Clone Git repository"
@@ -500,6 +509,10 @@ jobs:
       run: cmake --build build --config Release --parallel ${{ matrix.cores }}
       env:
         RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
+
+    - name: "Print compiler cache statistics"
+      run: sccache --show-stats
+
     - name: "Test"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
       working-directory: ./build
@@ -513,7 +526,6 @@ jobs:
 
     - name: "Print compiler cache statistics"
       run: sccache --show-stats
-
 
     # This is a workaround for the fact that GH doesn't support updating existing caches.
     # See: https://github.com/azu/github-actions-overwrite-cache-example
@@ -535,3 +547,11 @@ jobs:
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
+
+    - name: Upload GitHub Actions artifacts of sccache debug log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: sccache_log_${{ matrix.name }}
+        path: ${{ matrix.sccache_log_path }}
+        if-no-files-found: ignore
