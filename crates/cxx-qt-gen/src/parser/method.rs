@@ -18,6 +18,7 @@ pub enum ParsedQInvokableSpecifiers {
     Final,
     Override,
     Virtual,
+    Pure,
 }
 
 impl ParsedQInvokableSpecifiers {
@@ -26,6 +27,7 @@ impl ParsedQInvokableSpecifiers {
             ParsedQInvokableSpecifiers::Final => "cxx_final",
             ParsedQInvokableSpecifiers::Override => "cxx_override",
             ParsedQInvokableSpecifiers::Virtual => "cxx_virtual",
+            ParsedQInvokableSpecifiers::Pure => "cxx_pure",
         }
     }
 
@@ -35,6 +37,7 @@ impl ParsedQInvokableSpecifiers {
             ParsedQInvokableSpecifiers::Final,
             ParsedQInvokableSpecifiers::Override,
             ParsedQInvokableSpecifiers::Virtual,
+            ParsedQInvokableSpecifiers::Pure,
         ] {
             if attrs.contains_key(specifier.as_str()) {
                 output.insert(specifier);
@@ -59,13 +62,14 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
-    const ALLOWED_ATTRS: [&'static str; 8] = [
+    const ALLOWED_ATTRS: [&'static str; 9] = [
         "cxx_name",
         "rust_name",
         "qinvokable",
         "cxx_final",
         "cxx_override",
         "cxx_virtual",
+        "cxx_pure",
         "doc",
         "cfg",
     ];

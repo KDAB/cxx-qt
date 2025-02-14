@@ -45,6 +45,7 @@ pub fn generate_cpp_methods(
         let mut is_final = "";
         let mut is_override = "";
         let mut is_virtual = "";
+        let mut is_pure = "";
 
         // Set specifiers into string values
         invokable
@@ -54,6 +55,7 @@ pub fn generate_cpp_methods(
                 ParsedQInvokableSpecifiers::Final => is_final = " final",
                 ParsedQInvokableSpecifiers::Override => is_override = " override",
                 ParsedQInvokableSpecifiers::Virtual => is_virtual = "virtual ",
+                ParsedQInvokableSpecifiers::Pure => is_pure = " = 0",
             });
 
         let is_qinvokable = invokable
@@ -74,7 +76,7 @@ pub fn generate_cpp_methods(
         // CXX generates the source and we just need the matching header.
         let has_noexcept = syn_return_type_to_cpp_except(&invokable.method.sig.output);
         generated.methods.push(CppFragment::Header(format!(
-            "{is_qinvokable}{is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const} {has_noexcept}{is_final}{is_override};",
+            "{is_qinvokable}{is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const} {has_noexcept}{is_final}{is_override}{is_pure};",
             ident = invokable.name.cxx_unqualified(),
         )));
     }
