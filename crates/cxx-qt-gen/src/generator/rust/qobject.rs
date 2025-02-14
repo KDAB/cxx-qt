@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::generator::structuring::StructuredQObject;
+use crate::naming::Name;
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectNames},
@@ -14,8 +15,8 @@ use crate::{
     },
     naming::TypeNames,
 };
-use quote::quote;
-use syn::{parse_quote, Attribute, Ident, Result};
+use quote::{format_ident, quote};
+use syn::{parse_quote, Attribute, Result};
 
 impl GeneratedRustFragment {
     // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
@@ -29,12 +30,7 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
 
         let mut generated = vec![
-            generate_qobject_definitions(
-                &qobject_names,
-                qobject.base_class.clone(),
-                type_names,
-                &qobject.cfgs,
-            )?,
+            generate_qobject_definitions(&qobject_names, &qobject.cfgs)?,
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
@@ -67,6 +63,55 @@ impl GeneratedRustFragment {
             )?);
         }
 
+        // Generate casting impl
+        let base = structured_qobject
+            .declaration
+            .base_class
+            .as_ref()
+            .map(|name| type_names.lookup(name))
+            .transpose()?
+            .cloned()
+            .unwrap_or(
+                Name::new(format_ident!("QObject")).with_module(parse_quote! {::cxx_qt::qobject}),
+            );
+
+        let base_unqualified = base.rust_unqualified();
+        let base_qualified = base.rust_qualified();
+
+        let struct_name = structured_qobject.declaration.name.rust_qualified();
+        let struct_name_unqualified = structured_qobject.declaration.name.rust_unqualified();
+        let (upcast_fn, upcast_fn_attrs, upcast_fn_qualified) = qobject_names
+            .cxx_qt_ffi_method("upcastPtr")
+            .into_cxx_parts();
+        let (downcast_fn, downcast_fn_attrs, downcast_fn_qualified) = qobject_names
+            .cxx_qt_ffi_method("downcastPtr")
+            .into_cxx_parts();
+
+        generated.push(GeneratedRustFragment {
+            cxx_mod_contents: vec![parse_quote! {
+                extern "C++" {
+                    #[doc(hidden)]
+                    #(#upcast_fn_attrs)*
+                    unsafe fn #upcast_fn(thiz: *const #struct_name_unqualified) -> *const #base_unqualified;
+
+                    #[doc(hidden)]
+                    #(#downcast_fn_attrs)*
+                    unsafe fn #downcast_fn(base: *const #base_unqualified) -> *const #struct_name_unqualified;
+                }
+            }],
+            cxx_qt_mod_contents: vec![parse_quote! {
+                impl ::cxx_qt::Upcast<#base_qualified> for #struct_name{
+                    unsafe fn upcast_ptr(this: *const Self) -> *const #base_qualified {
+                        #upcast_fn_qualified(this)
+                    }
+
+                    unsafe fn from_base_ptr(base: *const #base_qualified) -> *const Self {
+                        #downcast_fn_qualified(base)
+                    }
+                }
+            }],
+        });
+
         generated.extend(vec![
             constructor::generate(
                 &structured_qobject.constructors,
@@ -85,8 +130,6 @@ impl GeneratedRustFragment {
 /// Generate the C++ and Rust CXX definitions for the QObject
 fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
-    base: Option<Ident>,
-    type_names: &TypeNames,
     cfgs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
@@ -104,29 +147,6 @@ fn generate_qobject_definitions(
             #[doc = #cpp_class_name_cpp]
             #[cxx_name = #cpp_class_name_cpp]
         }
-    };
-
-    let cpp_struct_qualified = &qobject_idents.name.rust_qualified();
-
-    let base_upcast = if let Some(base) = base {
-        let base_name = type_names.lookup(&base)?.rust_qualified();
-        vec![
-            parse_quote! {
-                #(#cfgs)*
-                impl cxx_qt::Upcast<#base_name> for #cpp_struct_qualified {}
-            },
-            // Until we can actually implement the Upcast trait properly, we just need to silence
-            // the warning that the base class is otherwise unused.
-            // This can be done with an unnamed import and the right attributes
-            parse_quote! {
-                #[allow(unused_imports)]
-                #[allow(dead_code)]
-                #(#cfgs)*
-                use #base_name as _;
-            },
-        ]
-    } else {
-        vec![]
     };
 
     Ok(GeneratedRustFragment {
@@ -157,7 +177,7 @@ fn generate_qobject_definitions(
                 }
             },
         ],
-        cxx_qt_mod_contents: base_upcast,
+        cxx_qt_mod_contents: vec![],
     })
 }
 
@@ -204,7 +224,7 @@ mod tests {
             &parser.type_names,
         )
         .unwrap();
-        assert_eq!(rust.cxx_mod_contents.len(), 6);
+        assert_eq!(rust.cxx_mod_contents.len(), 7);
         assert_tokens_eq(
             &rust.cxx_mod_contents[0],
             quote! {
@@ -240,6 +260,22 @@ mod tests {
         assert_tokens_eq(
             &rust.cxx_mod_contents[3],
             quote! {
+                extern "C++" {
+                    #[doc(hidden)]
+                    #[cxx_name = "upcastPtr"]
+                    #[namespace = "rust::cxxqt1"]
+                    unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QObject;
+
+                    #[doc(hidden)]
+                    #[cxx_name = "downcastPtr"]
+                    #[namespace = "rust::cxxqt1"]
+                    unsafe fn cxx_qt_ffi_MyObject_downcastPtr(base: *const QObject) -> *const MyObject;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &rust.cxx_mod_contents[4],
+            quote! {
                 extern "Rust" {
                     #[cxx_name = "createRs"]
                     #[namespace = "cxx_qt::cxx_qt_MyObject"]
@@ -248,7 +284,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &rust.cxx_mod_contents[4],
+            &rust.cxx_mod_contents[5],
             quote! {
                 unsafe extern "C++" {
                     #[doc(hidden)]
@@ -259,7 +295,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &rust.cxx_mod_contents[5],
+            &rust.cxx_mod_contents[6],
             quote! {
                 unsafe extern "C++" {
                     #[doc(hidden)]
