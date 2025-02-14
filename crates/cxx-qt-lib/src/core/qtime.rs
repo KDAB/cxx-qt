@@ -113,9 +113,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qtime_to_debug_qstring"]
         fn toDebugQString(value: &QTime) -> QString;
-        #[doc(hidden)]
-        #[rust_name = "qtime_to_qstring"]
-        fn toQString(value: &QTime) -> QString;
     }
 }
 
@@ -181,7 +178,7 @@ impl Default for QTime {
 
 impl fmt::Display for QTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qtime_to_qstring(self))
+        write!(f, "{}", self.format_enum(ffi::DateFormat::TextDate))
     }
 }
 

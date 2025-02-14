@@ -65,8 +65,6 @@ qcolorInitFromRgb(::std::int32_t red,
                   ::std::int32_t alpha);
 QColor
 qcolorInitFromRgbF(float red, float green, float blue, float alpha);
-QColor
-qcolorInitFromRustString(::rust::Str string);
 
 // Qt 5 uses qreal and Qt 6 uses float, so cast all to floats
 float

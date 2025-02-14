@@ -90,13 +90,6 @@ mod ffi {
     // Bitwise enums don't work well with Rust and CXX, so lets just use the defaults for now
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "qurl_init_from_string"]
-        fn qurlInitFromString(string: &str) -> QUrl;
-        #[doc(hidden)]
-        #[rust_name = "qurl_to_rust_string"]
-        fn qurlToRustString(url: &QUrl) -> String;
-
         #[rust_name = "qurl_authority"]
         fn qurlAuthority(url: &QUrl) -> QString;
         #[rust_name = "qurl_file_name"]
@@ -147,6 +140,8 @@ mod ffi {
         fn qurlToDisplayString(url: &QUrl) -> QString;
         #[rust_name = "qurl_to_encoded"]
         fn qurlToEncoded(url: &QUrl) -> QByteArray;
+        #[rust_name = "qurl_to_qstring"]
+        fn qurlToQString(url: &QUrl) -> QString;
         #[rust_name = "qurl_to_percent_encoding"]
         fn qurlToPercentEncoding(
             input: &QString,
@@ -184,9 +179,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qurl_to_debug_qstring"]
         fn toDebugQString(url: &QUrl) -> QString;
-        #[doc(hidden)]
-        #[rust_name = "qurl_to_qstring"]
-        fn toQString(url: &QUrl) -> QString;
     }
 }
 
@@ -435,7 +427,7 @@ impl fmt::Display for QUrl {
     ///
     /// Note that this converts from UTF-16 to UTF-8
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qurl_to_rust_string(self))
+        write!(f, "{}", ffi::qurl_to_display_string(self))
     }
 }
 
@@ -464,7 +456,7 @@ impl From<&str> for QUrl {
     ///
     /// Note that this converts from UTF-8 to UTF-16
     fn from(str: &str) -> Self {
-        ffi::qurl_init_from_string(str)
+        Self::from(&ffi::QString::from(str))
     }
 }
 
@@ -473,7 +465,7 @@ impl From<&String> for QUrl {
     ///
     /// Note that this converts from UTF-8 to UTF-16
     fn from(str: &String) -> Self {
-        ffi::qurl_init_from_string(str)
+        Self::from(str.as_str())
     }
 }
 
