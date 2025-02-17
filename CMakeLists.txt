@@ -134,18 +134,9 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows" AND BUILD_TESTING)
     list(APPEND CARGO_ENV ${RUNTIME_ENV})
 endif()
 
-# Same logic as in Corrosion.cmake
-if(CMAKE_VS_PLATFORM_NAME)
-    set(BUILD_DIR "${CMAKE_VS_PLATFORM_NAME}/$<CONFIG>")
-elseif(CMAKE_CONFIGURATION_TYPES)
-    set(BUILD_DIR "$<CONFIG>")
-else()
-    set(BUILD_DIR .)
-endif()
-
 # Set the target dir to the same that Corrosion uses to reuse build artifacts
 # from the main build.
-set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
+set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/cargo/build")
 
 if(BUILD_TESTING)
     # Add CMake tests for `cargo test/clippy/fmt/doc`.
