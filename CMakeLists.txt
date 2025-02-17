@@ -157,8 +157,10 @@ if(BUILD_TESTING)
     set_tests_properties(cargo_tests cargo_clippy PROPERTIES
         ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
     )
+    # Cargo doc cannot have a target set otherwise it fails
+    # https://github.com/rust-lang/cargo/issues/10368
     set_tests_properties(cargo_doc PROPERTIES
-        ENVIRONMENT_MODIFICATION "${CARGO_ENV};RUSTDOCFLAGS=set:--deny=warnings"
+        ENVIRONMENT_MODIFICATION "${CARGO_ENV};RUSTDOCFLAGS=set:--deny=warnings;CARGO_BUILD_TARGET=unset:;"
     )
     
     # Ensure test inputs and outputs are formatted
