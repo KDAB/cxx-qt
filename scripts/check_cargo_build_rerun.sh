@@ -16,7 +16,7 @@ cd "$SOURCE_FOLDER"
 # Ensure that we do see a "Compiling" in the output
 # as if we do it means we have a cargo::rerun-if-changed incorrectly
 function check_build_contains_compiling() {
-    BUILD=$(cargo build --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake 2>&1)
+    BUILD=$(cargo build --release --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake 2>&1)
 
     if ! echo "$BUILD" | grep -q Compiling; then
         echo "cargo build is missing text 'Compiling', likely an incorrect cargo::rerun-if-changed in a build script."
@@ -27,7 +27,7 @@ function check_build_contains_compiling() {
 # Ensure that we don't see any "Compiling" in the output
 # as if we do it means we have a cargo::rerun-if-changed incorrectly
 function check_build_no_compiling() {
-    BUILD=$(cargo build --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake 2>&1)
+    BUILD=$(cargo build --release --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake 2>&1)
 
     if echo "$BUILD" | grep -q Compiling; then
         echo "cargo build contained text 'Compiling', likely an incorrect cargo::rerun-if-changed in a build script."
@@ -36,7 +36,7 @@ function check_build_no_compiling() {
 }
 
 # Build once
-cargo build --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake
+cargo build --release --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake
 
 # Build a second time
 check_build_no_compiling
