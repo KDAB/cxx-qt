@@ -143,12 +143,13 @@ jobs:
             ~/.cargo/bin/sccache
             ~/.cargo/bin/mdbook
             ~/.cargo/bin/mdbook-linkcheck
-          key: ubuntu-24.04_sccache-0.9.1_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+          key: ubuntu-24.04_sccache-0.9.1-patched_mdbook-0.4.36_mdbook-linkcheck-0.7.7
       - name: "Build Rust tools"
         if: steps.rust-tools-cache.outputs.cache-hit != 'true'
         # Do not build with storage backends enabled, we only need local
+        # cargo install --locked --no-default-features --version 0.9.1 sccache
         run: |
-          cargo install --locked --no-default-features --version 0.9.1 sccache
+          cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
           cargo install --version 0.4.36 mdbook 
           cargo install --version 0.7.7 mdbook-linkcheck
       # We want our compiler cache to always update to the newest state.
@@ -418,12 +419,13 @@ jobs:
           ${{ matrix.cargo_dir }}/bin/sccache${{ matrix.exe_suffix }}
           ${{ matrix.cargo_dir }}/bin/mdbook${{ matrix.exe_suffix }}
           ${{ matrix.cargo_dir }}/bin/mdbook-linkcheck${{ matrix.exe_suffix }}
-        key: ${{ matrix.os }}_sccache-0.9.1_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+        key: ${{ matrix.os }}_sccache-0.9.1-patched_mdbook-0.4.36_mdbook-linkcheck-0.7.7
     - name: "Build Rust tools"
       if: steps.rust-tools-cache.outputs.cache-hit != 'true'
       # Do not build with storage backends enabled, we only need local
+      # cargo install --locked --no-default-features --version 0.9.1 sccache
       run: |
-        cargo install --locked --no-default-features --version 0.9.1 sccache
+        cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
         cargo install --version 0.4.36 mdbook 
         cargo install --version 0.7.7 mdbook-linkcheck
 
