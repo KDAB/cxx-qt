@@ -6,7 +6,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qurl.h"
-#include "cxx-qt-lib/qstring.h"
 
 #include <cxx-qt-lib/assertion_utils.h>
 
@@ -25,21 +24,6 @@ static_assert(QTypeInfo<QUrl>::isRelocatable);
 
 namespace rust {
 namespace cxxqtlib1 {
-
-QUrl
-qurlInitFromString(::rust::Str string)
-{
-  // Note that rust::Str here is borrowed
-  // and we convert back from UTF-8 to UTF-16
-  return QUrl(qstringInitFromRustString(string));
-}
-
-::rust::String
-qurlToRustString(const QUrl& url)
-{
-  // Note that this changes UTF-16 to UTF-8
-  return qstringToRustString(url.toString());
-}
 
 QString
 qurlAuthority(const QUrl& url)
@@ -191,18 +175,18 @@ qurlToEncoded(const QUrl& url)
   return url.toEncoded();
 }
 
+QString
+qurlToQString(const QUrl& url)
+{
+  return url.toString();
+}
+
 QByteArray
 qurlToPercentEncoding(const QString& input,
                       const QByteArray& exclude,
                       const QByteArray& include)
 {
   return QUrl::toPercentEncoding(input, exclude, include);
-}
-
-QString
-qurlToQString(const QUrl& url)
-{
-  return url.toString();
 }
 
 QString

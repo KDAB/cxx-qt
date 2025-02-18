@@ -174,9 +174,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qcolor_init_from_rgb_f"]
         fn qcolorInitFromRgbF(red: f32, green: f32, blue: f32, alpha: f32) -> QColor;
-        #[doc(hidden)]
-        #[rust_name = "qcolor_init_from_rust_string"]
-        fn qcolorInitFromRustString(string: &str) -> QColor;
 
         #[doc(hidden)]
         #[rust_name = "qcolor_alpha_f"]
@@ -520,12 +517,7 @@ impl TryFrom<&str> for QColor {
     type Error = &'static str;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        let color = ffi::qcolor_init_from_rust_string(value);
-        if color.is_valid() {
-            Ok(color)
-        } else {
-            Err("Invalid color")
-        }
+        Self::try_from(&ffi::QString::from(value))
     }
 }
 
@@ -533,12 +525,7 @@ impl TryFrom<&String> for QColor {
     type Error = &'static str;
 
     fn try_from(value: &String) -> Result<Self, Self::Error> {
-        let color = ffi::qcolor_init_from_rust_string(value);
-        if color.is_valid() {
-            Ok(color)
-        } else {
-            Err("Invalid color")
-        }
+        Self::try_from(value.as_str())
     }
 }
 

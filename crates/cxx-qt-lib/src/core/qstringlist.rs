@@ -5,6 +5,7 @@
 use crate::{QList, QString};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::ops::{Deref, DerefMut};
 
 #[cxx::bridge]
@@ -74,8 +75,8 @@ mod ffi {
         fn operatorEq(a: &QStringList, b: &QStringList) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qstringlist_to_qstring"]
-        fn toQString(value: &QStringList) -> QString;
+        #[rust_name = "qstringlist_to_debug_qstring"]
+        fn toDebugQString(value: &QStringList) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -140,15 +141,15 @@ impl std::cmp::PartialEq for QStringList {
 
 impl std::cmp::Eq for QStringList {}
 
-impl std::fmt::Display for QStringList {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qstringlist_to_qstring(self))
+impl fmt::Display for QStringList {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qstringlist_to_debug_qstring(self))
     }
 }
 
-impl std::fmt::Debug for QStringList {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{self}")
+impl fmt::Debug for QStringList {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", **self)
     }
 }
 

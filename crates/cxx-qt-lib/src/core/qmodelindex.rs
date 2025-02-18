@@ -56,8 +56,8 @@ mod ffi {
         #[rust_name = "qmodelindex_eq"]
         fn operatorEq(a: &QModelIndex, b: &QModelIndex) -> bool;
         #[doc(hidden)]
-        #[rust_name = "qmodelindex_to_qstring"]
-        fn toQString(value: &QModelIndex) -> QString;
+        #[rust_name = "qmodelindex_to_debug_qstring"]
+        fn toDebugQString(value: &QModelIndex) -> QString;
     }
 }
 
@@ -88,13 +88,13 @@ impl std::cmp::Eq for QModelIndex {}
 
 impl fmt::Display for QModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qmodelindex_to_qstring(self))
+        write!(f, "{self:?}")
     }
 }
 
 impl fmt::Debug for QModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qmodelindex_to_debug_qstring(self))
     }
 }
 

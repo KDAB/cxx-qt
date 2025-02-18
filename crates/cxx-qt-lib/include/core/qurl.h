@@ -27,11 +27,6 @@ struct IsRelocatable<QUrl> : ::std::true_type
 namespace rust {
 namespace cxxqtlib1 {
 
-QUrl
-qurlInitFromString(::rust::Str string);
-::rust::String
-qurlToRustString(const QUrl& url);
-
 // Bitwise enums don't work well with Rust and CXX, so lets just use the
 // defaults for now
 QString
@@ -84,12 +79,12 @@ QString
 qurlToDisplayString(const QUrl& url);
 QByteArray
 qurlToEncoded(const QUrl& url);
+QString
+qurlToQString(const QUrl& url);
 QByteArray
 qurlToPercentEncoding(const QString& input,
                       const QByteArray& exclude,
                       const QByteArray& include);
-QString
-qurlToQString(const QUrl& url);
 QString
 qurlUserInfo(const QUrl& url);
 QString
