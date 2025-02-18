@@ -43,7 +43,7 @@ if(NOT CxxQt_FOUND)
 endif()
 
 set(CRATE basic_cxx_only)
-cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE} QT_MODULES Qt::Core)
+cxx_qt_import_crate(MANIFEST_PATH rust/Cargo.toml CRATES ${CRATE} LOCKED QT_MODULES Qt::Core)
 
 if(BUILD_WASN)
     # Add -DRUST_CXX_NO_EXCEPTIONS to CXXFLAGS, as WASM does not support exceptions

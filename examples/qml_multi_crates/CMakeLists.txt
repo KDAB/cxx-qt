@@ -54,7 +54,9 @@ endif()
 cxx_qt_import_crate(MANIFEST_PATH rust/main/Cargo.toml
     CRATES qml_multi_crates
     CRATE_TYPES staticlib
-    QT_MODULES Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2 Qt::Network)
+    LOCKED
+    QT_MODULES Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2 Qt::Network
+)
 
 cxx_qt_import_qml_module(qml_multi_crates_main
     URI "com.kdab.cxx_qt.demo"
