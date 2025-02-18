@@ -98,6 +98,12 @@ mod ffi {
         #[doc(hidden)]
         fn invokable_virtual(self: &MyObject);
     }
+    unsafe extern "C++" {
+        #[cxx_name = "invokable_pure_virtual"]
+        #[namespace = "cxx_qt::my_object"]
+        #[doc(hidden)]
+        fn invokable_pure_virtual(self: &MyObject);
+    }
     extern "Rust" {
         #[cxx_name = "invokable_result_tuple"]
         #[namespace = "cxx_qt::my_object"]
