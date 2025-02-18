@@ -68,7 +68,9 @@ endif()
 cxx_qt_import_crate(
     MANIFEST_PATH rust/Cargo.toml 
     CRATES qml_minimal 
-    QT_MODULES Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
+    LOCKED
+    QT_MODULES Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2
+)
 
 cxx_qt_import_qml_module(qml_minimal_qml_module
     URI "com.kdab.cxx_qt.demo"
