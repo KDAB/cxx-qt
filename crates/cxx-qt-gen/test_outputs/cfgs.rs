@@ -158,6 +158,20 @@ mod ffi {
             self_value: Pin<&mut QObjectEnabled>,
         );
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectEnabled_upcastPtr(
+            thiz: *const QObjectEnabled,
+        ) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectEnabled_downcastPtr(
+            base: *const QObject,
+        ) -> *const QObjectEnabled;
+    }
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "cxx_qt_QObjectEnabled"]
@@ -283,6 +297,20 @@ mod ffi {
             handler: &mut QObjectDisabledCxxQtSignalHandlersignal_enabled,
             self_value: Pin<&mut QObjectDisabled>,
         );
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectDisabled_upcastPtr(
+            thiz: *const QObjectDisabled,
+        ) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectDisabled_downcastPtr(
+            base: *const QObject,
+        ) -> *const QObjectDisabled;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -450,6 +478,11 @@ mod ffi {
             self_value: Pin<&mut QObjectExternDisabled>,
         );
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[namespace = ""]
+        type QObject = cxx_qt::qobject::QObject;
+    }
 }
 #[cfg(not(enabled))]
 impl ffi::QObjectEnabled {
@@ -599,6 +632,14 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QObjectEnabledCxxQtSignalClosuresignal_enabled>,
     [usize; 2]
 );
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::QObjectEnabled {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_QObjectEnabled_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::qobject::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_QObjectEnabled_downcastPtr(base)
+    }
+}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 #[cfg(enabled)]
@@ -770,6 +811,14 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QObjectDisabledCxxQtSignalClosuresignal_enabled>,
     [usize; 2]
 );
+impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::QObjectDisabled {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+        ffi::cxx_qt_ffi_QObjectDisabled_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::qobject::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_QObjectDisabled_downcastPtr(base)
+    }
+}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 #[cfg(not(enabled))]
