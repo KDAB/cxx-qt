@@ -15,6 +15,14 @@ on:
     # Run daily at 01:01
     # This ensures CI still works and ensures the cache remains active
     - cron: "1 1 * * *"
+  workflow_dispatch:
+    inputs:
+      tmate_debugging:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+
 # Cancel any previous runs for the same pull request
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
@@ -493,6 +501,11 @@ jobs:
     - name: "[Windows] Set up MSVC Developer Command Prompt"
       if: runner.os == 'Windows'
       uses: seanmiddleditch/gha-setup-vsdevenv@v4
+
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.tmate_debugging }}
+      uses: mxschmitt/action-tmate@v3
 
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
     - name: "Configure"
