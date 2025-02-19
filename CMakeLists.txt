@@ -147,6 +147,10 @@ endif()
 # from the main build.
 set(CARGO_TARGET_DIR "${CMAKE_BINARY_DIR}/${BUILD_DIR}/cargo/build")
 
+if(CMAKE_RUSTC_WRAPPER)
+    list(APPEND CARGO_ENV "RUSTC_WRAPPER=set:${CMAKE_RUSTC_WRAPPER}")
+endif()
+
 if(BUILD_TESTING)
     # Add CMake tests for `cargo test/clippy/fmt/doc`.
     add_test(NAME cargo_tests COMMAND cargo test --locked --release --all-features --target-dir ${CARGO_TARGET_DIR})
@@ -172,10 +176,6 @@ if(BUILD_TESTING)
     
     # Ensure that cargo_build_rerun doesn't run while we are already building
     set_tests_properties(cargo_build_rerun PROPERTIES RUN_SERIAL TRUE)
-endif()
-
-if(CMAKE_RUSTC_WRAPPER)
-    list(APPEND CARGO_ENV "RUSTC_WRAPPER=set:${CMAKE_RUSTC_WRAPPER}")
 endif()
 
 add_subdirectory(book)
