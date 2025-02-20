@@ -358,10 +358,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qfont_eq"]
         fn operatorEq(a: &QFont, b: &QFont) -> bool;
-
-        #[doc(hidden)]
-        #[rust_name = "qfont_to_debug_qstring"]
-        fn toDebugQString(value: &QFont) -> QString;
     }
 }
 
