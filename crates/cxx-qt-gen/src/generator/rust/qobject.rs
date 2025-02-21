@@ -71,9 +71,7 @@ impl GeneratedRustFragment {
             .map(|name| type_names.lookup(name))
             .transpose()?
             .cloned()
-            .unwrap_or(
-                Name::new(format_ident!("QObject")).with_module(parse_quote! {::cxx_qt::qobject}),
-            );
+            .unwrap_or(Name::new(format_ident!("QObject")).with_module(parse_quote! {::cxx_qt}));
 
         let base_unqualified = base.rust_unqualified();
         let base_qualified = base.rust_qualified();
