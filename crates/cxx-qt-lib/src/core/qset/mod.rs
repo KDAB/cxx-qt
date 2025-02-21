@@ -94,7 +94,7 @@ where
 
     /// An iterator visiting all elements in arbitrary order.
     /// The iterator element type is &'a T.
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             set: self,
             index: 0,
@@ -162,7 +162,7 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for Iter<'a, T>
+impl<T> ExactSizeIterator for Iter<'_, T>
 where
     T: QSetElement,
 {
