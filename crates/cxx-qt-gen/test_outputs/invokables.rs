@@ -271,7 +271,7 @@ mod ffi {
     extern "C++" {
         #[doc(hidden)]
         #[namespace = ""]
-        type QObject = cxx_qt::qobject::QObject;
+        type QObject = cxx_qt::QObject;
     }
 }
 impl cxx_qt::Threading for ffi::MyObject {
@@ -326,11 +326,11 @@ impl cxx_qt::Threading for ffi::MyObject {
 pub struct MyObjectCxxQtThreadQueuedFn {
     inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut ffi::MyObject>) + Send>,
 }
-impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::MyObject {
-    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
-    unsafe fn from_base_ptr(base: *const ::cxx_qt::qobject::QObject) -> *const Self {
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
         ffi::cxx_qt_ffi_MyObject_downcastPtr(base)
     }
 }
