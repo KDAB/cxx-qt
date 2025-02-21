@@ -22,9 +22,6 @@ namespace cxxqtlib1 {
 ::std::unique_ptr<QQmlApplicationEngine>
 qqmlapplicationengineNew();
 
-QQmlEngine&
-qqmlapplicationengineAsQQmlEngine(QQmlApplicationEngine&);
-
 }
 }
 

@@ -14,6 +14,7 @@
 // ANCHOR: book_cargo_imports
 pub mod cxxqt_object;
 
+use cxx_qt::Upcast;
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 // ANCHOR_END: book_cargo_imports
 
@@ -31,7 +32,7 @@ fn main() {
     if let Some(engine) = engine.as_mut() {
         // Listen to a signal from the QML Engine
         engine
-            .as_qqmlengine()
+            .upcast_pin()
             .on_quit(|_| {
                 println!("QML Quit!");
             })

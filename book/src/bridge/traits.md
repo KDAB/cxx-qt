@@ -26,3 +26,7 @@ For further documentation, refer to the documentation of the individual traits:
 - [Constructor](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) - custom constructor
 - [Initialize](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Initialize.html) - execute Rust code when the object is constructed
 - [Threading](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Threading.html) - marker trait whether CXX-Qt threading should be enabled
+- `Upcast` - Allows a type to access its parent class if there is one
+  - ⚠️ Should not be implemented manually by the user
+- `Downcast` - Allows a type to access its child class if there is one
+  - ⚠️ Should not be implemented manually by the user
