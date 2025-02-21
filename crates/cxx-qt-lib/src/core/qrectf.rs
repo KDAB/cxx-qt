@@ -259,8 +259,8 @@ mod ffi {
         #[rust_name = "qrectf_from_qrect"]
         fn construct(rectangle: &QRect) -> QRectF;
         #[doc(hidden)]
-        #[rust_name = "qrectf_to_qstring"]
-        fn toQString(value: &QRectF) -> QString;
+        #[rust_name = "qrectf_to_debug_qstring"]
+        fn toDebugQString(value: &QRectF) -> QString;
         #[doc(hidden)]
         #[rust_name = "qrectf_plus"]
         fn operatorPlus(a: &QRectF, b: &QMarginsF) -> QRectF;
@@ -296,7 +296,7 @@ impl Default for QRectF {
 
 impl fmt::Display for QRectF {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qrectf_to_qstring(self))
+        write!(f, "{}", ffi::qrectf_to_debug_qstring(self))
     }
 }
 

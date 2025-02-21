@@ -7,6 +7,7 @@ use core::ffi::c_void;
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
@@ -123,6 +124,18 @@ impl QAnyStringView<'_> {
     /// Returns the number of characters in this string.
     pub fn len(&self) -> isize {
         ffi::QAnyStringView_len(self)
+    }
+}
+
+impl fmt::Display for QAnyStringView<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_qstring())
+    }
+}
+
+impl fmt::Debug for QAnyStringView<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{self}")
     }
 }
 

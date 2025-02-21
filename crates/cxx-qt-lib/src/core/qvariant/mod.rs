@@ -4,11 +4,15 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = super::QVariant;
 
@@ -38,6 +42,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qvariant_eq"]
         fn operatorEq(a: &QVariant, b: &QVariant) -> bool;
+        #[doc(hidden)]
+        #[rust_name = "qvariant_to_debug_qstring"]
+        fn toDebugQString(variant: &QVariant) -> QString;
     }
 }
 
@@ -127,6 +134,12 @@ impl QVariant {
 impl std::cmp::PartialEq for QVariant {
     fn eq(&self, other: &Self) -> bool {
         ffi::qvariant_eq(self, other)
+    }
+}
+
+impl fmt::Debug for QVariant {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qvariant_to_debug_qstring(self))
     }
 }
 

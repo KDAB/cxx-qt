@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 /// The QMap class is a template class that provides an associative array.
 ///
@@ -63,6 +64,17 @@ where
     T: QMapPair,
     T::Value: Eq,
 {
+}
+
+impl<T> fmt::Debug for QMap<T>
+where
+    T: QMapPair,
+    T::Key: fmt::Debug,
+    T::Value: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_map().entries(self.iter()).finish()
+    }
 }
 
 impl<T> QMap<T>

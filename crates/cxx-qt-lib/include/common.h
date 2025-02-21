@@ -32,7 +32,7 @@ drop(T& value)
 
 template<typename T>
 QString
-toQString(const T& value)
+toDebugQString(const T& value)
 {
   // We can't convert value directly into a string.
   // However most Qt types are able to stream into a QDebug object such as

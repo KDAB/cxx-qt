@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -320,6 +321,10 @@ mod ffi {
         #[rust_name = "style_strategy"]
         fn styleStrategy(self: &QFont) -> QFontStyleStrategy;
 
+        /// Returns the font as a string.
+        #[rust_name = "to_qstring"]
+        fn toString(self: &QFont) -> QString;
+
         /// Returns true if underline has been set; otherwise returns false.
         fn underline(self: &QFont) -> bool;
 
@@ -353,11 +358,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qfont_eq"]
         fn operatorEq(a: &QFont, b: &QFont) -> bool;
-
-        #[doc(hidden)]
-        #[rust_name = "qfont_to_qstring"]
-        fn toQString(value: &QFont) -> QString;
-
     }
 }
 
@@ -390,9 +390,15 @@ impl Clone for QFont {
     }
 }
 
-impl std::fmt::Display for QFont {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qfont_to_qstring(self))
+impl fmt::Display for QFont {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_qstring())
+    }
+}
+
+impl fmt::Debug for QFont {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.to_qstring())
     }
 }
 

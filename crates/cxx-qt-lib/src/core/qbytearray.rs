@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -151,9 +152,9 @@ impl std::cmp::PartialEq for QByteArray {
 
 impl std::cmp::Eq for QByteArray {}
 
-impl std::fmt::Display for QByteArray {
+impl fmt::Display for QByteArray {
     /// Convert the QByteArray to a Rust string
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if let Ok(string) = String::from_utf8(self.into()) {
             write!(f, "{string}")
         } else {
@@ -162,8 +163,8 @@ impl std::fmt::Display for QByteArray {
     }
 }
 
-impl std::fmt::Debug for QByteArray {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+impl fmt::Debug for QByteArray {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{self}")
     }
 }
