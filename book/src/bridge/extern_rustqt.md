@@ -226,11 +226,12 @@ For documentation see the [inheritance](../concepts/inheritance.md) page.
 
 Generated methods can have C++ specifiers necessary to implement inheritance.
 
-| C++ keyword | CXX-Qt attribute              |
-|-------------|-------------------------------|
-| `override`  | `#[cxx_override]` |
-| `virtual`   | `#[cxx_virtual]`  |
-| `final`     | `#[cxx_final]`    |
+| C++ keyword  | CXX-Qt attribute  |
+|--------------|-------------------|
+| `override`   | `#[cxx_override]` |
+| `virtual`    | `#[cxx_virtual]`  |
+| `final`      | `#[cxx_final]`    |
+| `= 0` (pure) | `#[cxx_pure]`     |
 
 These are specified as an attribute on the method signature.
 
