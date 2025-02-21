@@ -120,7 +120,7 @@ where
 
     /// An iterator visiting all key-value pairs in an arbitrary order.
     /// The iterator element type is (&T::Key, &T::Value).
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             map: self,
             index: 0,
@@ -193,7 +193,7 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for Iter<'a, T>
+impl<T> ExactSizeIterator for Iter<'_, T>
 where
     T: QMapPair,
 {

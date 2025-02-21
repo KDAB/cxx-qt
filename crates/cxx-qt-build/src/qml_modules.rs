@@ -35,7 +35,7 @@ where
     pub qrc_files: &'a [A],
 }
 
-impl<'a, A, B> Default for QmlModule<'a, A, B>
+impl<A, B> Default for QmlModule<'_, A, B>
 where
     A: AsRef<Path>,
     B: AsRef<Path>,
