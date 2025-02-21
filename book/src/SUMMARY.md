@@ -21,6 +21,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   - [Types](./concepts/types.md)
   - [Nested Objects](./concepts/nested_objects.md)
   - [Inheritance & Overriding](./concepts/inheritance.md)
+  - [Casting](./concepts/casting.md)
 - [Reference: the bridge module](./bridge/index.md)
   - [`extern "RustQt"`](./bridge/extern_rustqt.md)
   - [`extern "C++Qt"`](./bridge/extern_cppqt.md)
