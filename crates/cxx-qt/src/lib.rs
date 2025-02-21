@@ -132,14 +132,23 @@ pub trait Threading: Sized {
 /// Will not be implemented if no types inherit from QObject or base.
 pub trait Upcast<T> {
     #[doc(hidden)]
+    /// # Safety
+    ///
     /// Internal function, Should not be implemented manually
+    /// Upcasts a pointer to `Self` to a pointer to the base class `T`
+    /// Internal implementation uses `static_cast`
     unsafe fn upcast_ptr(this: *const Self) -> *const T;
 
     #[doc(hidden)]
+    /// # Safety
     /// Internal function, Should not be implemented manually
+    ///
+    /// Downcasts a pointer to base class `T` to a pointer to `Self`
+    /// Return a null pointer if the class cannot be downcast
+    /// Internal implementation uses `dynamic_cast`
     unsafe fn from_base_ptr(base: *const T) -> *const Self;
 
-    /// Upcast a reference to a reference to the base class
+    /// Upcast a reference to self to a reference to the base class
     fn upcast(&self) -> &T {
         let ptr = self as *const Self;
         unsafe {
@@ -148,7 +157,7 @@ pub trait Upcast<T> {
         }
     }
 
-    /// Upcast a mutable reference to a mutable reference to the base class
+    /// Upcast a mutable reference to sell to a mutable reference to the base class
     fn upcast_mut(&mut self) -> &mut T {
         let ptr = self as *const Self;
         unsafe {
@@ -157,7 +166,7 @@ pub trait Upcast<T> {
         }
     }
 
-    /// Upcast a pinned mutable reference to a pinned mutable reference to the base class
+    /// Upcast a pinned mutable reference to self to a pinned mutable reference to the base class
     fn upcast_pin(self: Pin<&mut Self>) -> Pin<&mut T> {
         let this = self.deref() as *const Self;
         unsafe {
@@ -168,8 +177,9 @@ pub trait Upcast<T> {
 }
 
 /// Trait for downcasting to a subclass, provided the subclass implements Upcast to this type
+/// Returns `None` in cases where the base class cannot be downcast
 pub trait Downcast: Sized {
-    /// try Downcast to a subclass of this, given that the subclass upcasts to this type
+    /// Try to downcast to a subclass of this type, given that the subclass upcasts to this type
     fn downcast<Sub: Upcast<Self>>(&self) -> Option<&Sub> {
         unsafe {
             let ptr = Sub::from_base_ptr(self as *const Self);
@@ -181,7 +191,7 @@ pub trait Downcast: Sized {
         }
     }
 
-    /// try Downcast mutably to a subclass of this, given that the subclass upcasts to this type
+    /// Try to downcast mutably to a subclass of this, given that the subclass upcasts to this type
     fn downcast_mut<Sub: Upcast<Self>>(&mut self) -> Option<&mut Sub> {
         unsafe {
             let ptr = Sub::from_base_ptr(self as *const Self) as *mut Sub;
@@ -193,7 +203,7 @@ pub trait Downcast: Sized {
         }
     }
 
-    /// try Downcast a pin to a pinned subclass of this, given that the subclass upcasts to this type
+    /// Try to downcast a pin to a pinned subclass of this, given that the subclass upcasts to this type
     fn downcast_pin<Sub: Upcast<Self>>(self: Pin<&mut Self>) -> Option<Pin<&mut Sub>> {
         let this = self.deref() as *const Self;
         unsafe {
@@ -207,6 +217,7 @@ pub trait Downcast: Sized {
     }
 }
 
+/// Automatic implementation of Downcast for any applicable types
 impl<T: Sized> Downcast for T {}
 
 /// This trait can be implemented on any [CxxQtType] to define a
