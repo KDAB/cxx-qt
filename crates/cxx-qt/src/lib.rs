@@ -15,7 +15,7 @@ use std::{fs::File, io::Write, path::Path};
 
 mod connection;
 mod connectionguard;
-pub mod qobject;
+mod qobject;
 #[doc(hidden)]
 pub mod signalhandler;
 mod threading;
@@ -24,6 +24,7 @@ pub use cxx_qt_macro::bridge;
 pub use cxx_qt_macro::init_crate;
 pub use cxx_qt_macro::init_qml_module;
 pub use cxx_qt_macro::qobject;
+pub use qobject::QObject;
 
 pub use connection::{ConnectionType, QMetaObjectConnection};
 pub use connectionguard::QMetaObjectConnectionGuard;

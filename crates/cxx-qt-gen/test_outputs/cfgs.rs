@@ -481,7 +481,7 @@ mod ffi {
     extern "C++" {
         #[doc(hidden)]
         #[namespace = ""]
-        type QObject = cxx_qt::qobject::QObject;
+        type QObject = cxx_qt::QObject;
     }
 }
 #[cfg(not(enabled))]
@@ -632,11 +632,11 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QObjectEnabledCxxQtSignalClosuresignal_enabled>,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::QObjectEnabled {
-    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectEnabled {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectEnabled_upcastPtr(this)
     }
-    unsafe fn from_base_ptr(base: *const ::cxx_qt::qobject::QObject) -> *const Self {
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
         ffi::cxx_qt_ffi_QObjectEnabled_downcastPtr(base)
     }
 }
@@ -811,11 +811,11 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QObjectDisabledCxxQtSignalClosuresignal_enabled>,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<::cxx_qt::qobject::QObject> for ffi::QObjectDisabled {
-    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::qobject::QObject {
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectDisabled {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectDisabled_upcastPtr(this)
     }
-    unsafe fn from_base_ptr(base: *const ::cxx_qt::qobject::QObject) -> *const Self {
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
         ffi::cxx_qt_ffi_QObjectDisabled_downcastPtr(base)
     }
 }

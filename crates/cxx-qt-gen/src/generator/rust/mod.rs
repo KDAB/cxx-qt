@@ -107,7 +107,7 @@ fn add_qobject_import(qobjects: &[ParsedQObject]) -> GeneratedRustFragment {
                 extern "C++" {
                     #[doc(hidden)]
                     #[namespace=""]
-                    type QObject = cxx_qt::qobject::QObject;
+                    type QObject = cxx_qt::QObject;
                 }
             }],
             cxx_qt_mod_contents: vec![],

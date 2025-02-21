@@ -16,6 +16,20 @@ mod ffi {
         include!("cxx-qt-lib/qqmlapplicationengine.h");
         type QQmlApplicationEngine;
 
+        include!("cxx-qt/casting.h");
+
+        #[doc(hidden)]
+        #[rust_name = "upcast_qqmlapplication_engine"]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn upcast(thiz: *const QQmlApplicationEngine) -> *const QQmlEngine;
+
+        #[doc(hidden)]
+        #[rust_name = "downcast_qqml_engine"]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn downcast(base: *const QQmlEngine) -> *const QQmlApplicationEngine;
+
         /// Adds path as a directory where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "add_import_path"]
         fn addImportPath(self: Pin<&mut QQmlApplicationEngine>, path: &QString);
@@ -71,12 +85,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qqmlapplicationengine_new"]
         fn qqmlapplicationengineNew() -> UniquePtr<QQmlApplicationEngine>;
-
-        #[doc(hidden)]
-        #[rust_name = "qqmlapplicationengine_as_qqmlengine"]
-        fn qqmlapplicationengineAsQQmlEngine(
-            ptr: Pin<&mut QQmlApplicationEngine>,
-        ) -> Pin<&mut QQmlEngine>;
     }
 
     // QQmlApplicationEngine is not a trivial to CXX and is not relocatable in Qt
@@ -87,16 +95,21 @@ mod ffi {
 }
 
 use crate::QQmlEngine;
-use core::pin::Pin;
+use cxx_qt::Upcast;
 
 pub use ffi::QQmlApplicationEngine;
 
-impl QQmlApplicationEngine {
-    /// Convert the existing [QQmlApplicationEngine] to a [QQmlEngine]
-    pub fn as_qqmlengine<'a>(self: Pin<&'a mut Self>) -> Pin<&'a mut QQmlEngine> {
-        ffi::qqmlapplicationengine_as_qqmlengine(self)
+impl Upcast<QQmlEngine> for QQmlApplicationEngine {
+    unsafe fn upcast_ptr(this: *const Self) -> *const QQmlEngine {
+        ffi::upcast_qqmlapplication_engine(this)
     }
 
+    unsafe fn from_base_ptr(base: *const QQmlEngine) -> *const Self {
+        ffi::downcast_qqml_engine(base)
+    }
+}
+
+impl QQmlApplicationEngine {
     /// Create a new QQmlApplicationEngine
     pub fn new() -> cxx::UniquePtr<Self> {
         ffi::qqmlapplicationengine_new()
