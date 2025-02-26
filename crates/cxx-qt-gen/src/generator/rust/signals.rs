@@ -15,6 +15,7 @@ use crate::{
     naming::{rust::syn_type_cxx_bridge_to_qualified, Name, TypeNames},
     parser::signals::ParsedSignal,
 };
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{parse_quote, FnArg, Ident, Result, Type};
 
@@ -22,6 +23,7 @@ pub fn generate_rust_signal(
     signal: &ParsedSignal,
     qobject_name: &Name,
     type_names: &TypeNames,
+    unsafety_block: Option<TokenStream>,
 ) -> Result<GeneratedRustFragment> {
     let idents = QSignalNames::from(signal);
     let idents_helper = QSignalHelperNames::new(&idents, qobject_name)?;
@@ -115,7 +117,7 @@ pub fn generate_rust_signal(
     // TODO: what happens with RustQt signals, can they be private yet?
     if !signal.private {
         cxx_bridge.push(quote! {
-            unsafe extern "C++" {
+            #unsafety_block extern "C++" {
                 #[cxx_name = #cpp_ident]
                 #(#cfgs)*
                 #(#doc_comments)*
@@ -246,6 +248,8 @@ pub fn generate_rust_signals(
             signal,
             &qobject_names.name,
             type_names,
+            // When generating from a RustQt block we always use unsafe extern C++
+            Some(quote! { unsafe }),
         )?);
     }
 
@@ -394,7 +398,13 @@ mod tests {
             generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names).unwrap();
 
         let qobject_name = type_names.lookup(&qsignal.qobject_ident).unwrap().clone();
-        let other_generated = generate_rust_signal(&qsignal, &qobject_name, &type_names).unwrap();
+        let other_generated = generate_rust_signal(
+            &qsignal,
+            &qobject_name,
+            &type_names,
+            Some(quote! { unsafe }),
+        )
+        .unwrap();
 
         assert_eq!(generated, other_generated);
 
@@ -857,7 +867,13 @@ mod tests {
         let type_names = TypeNames::mock();
 
         let qobject_name = type_names.lookup(&qsignal.qobject_ident).unwrap().clone();
-        let generated = generate_rust_signal(&qsignal, &qobject_name, &type_names).unwrap();
+        let generated = generate_rust_signal(
+            &qsignal,
+            &qobject_name,
+            &type_names,
+            Some(quote! { unsafe }),
+        )
+        .unwrap();
 
         common_asserts(&generated.cxx_mod_contents, &generated.cxx_qt_mod_contents);
     }
