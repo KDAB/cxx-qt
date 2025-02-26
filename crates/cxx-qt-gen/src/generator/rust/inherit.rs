@@ -70,29 +70,20 @@ pub fn generate(
 mod tests {
     use super::*;
     use crate::parser::CaseConversion;
-    use crate::{
-        generator::naming::qobject::tests::create_qobjectname, syntax::safety::Safety,
-        tests::assert_tokens_eq,
-    };
+    use crate::{generator::naming::qobject::tests::create_qobjectname, tests::assert_tokens_eq};
     use syn::{parse_quote, ForeignItemFn};
 
-    fn generate_from_foreign(
-        method: ForeignItemFn,
-        safety: Safety,
-    ) -> Result<GeneratedRustFragment> {
-        let method = ParsedInheritedMethod::parse(method, safety, CaseConversion::none())?;
+    fn generate_from_foreign(method: ForeignItemFn) -> Result<GeneratedRustFragment> {
+        let method = ParsedInheritedMethod::parse(method, CaseConversion::none())?;
         let inherited_methods = vec![&method];
         generate(&create_qobjectname(), &inherited_methods)
     }
 
     #[test]
     fn test_mutable() {
-        let generated = generate_from_foreign(
-            parse_quote! {
-                fn test(self: Pin<&mut MyObject>, a: B, b: C);
-            },
-            Safety::Safe,
-        )
+        let generated = generate_from_foreign(parse_quote! {
+            fn test(self: Pin<&mut MyObject>, a: B, b: C);
+        })
         .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 1);
@@ -111,12 +102,9 @@ mod tests {
 
     #[test]
     fn test_immutable() {
-        let generated = generate_from_foreign(
-            parse_quote! {
-                fn test(self: &MyObject, a: B, b: C);
-            },
-            Safety::Safe,
-        )
+        let generated = generate_from_foreign(parse_quote! {
+            fn test(self: &MyObject, a: B, b: C);
+        })
         .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 1);
@@ -135,12 +123,9 @@ mod tests {
 
     #[test]
     fn test_unsafe() {
-        let generated = generate_from_foreign(
-            parse_quote! {
-                unsafe fn test(self: &MyObject);
-            },
-            Safety::Unsafe,
-        )
+        let generated = generate_from_foreign(parse_quote! {
+            unsafe fn test(self: &MyObject);
+        })
         .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 1);

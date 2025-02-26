@@ -4,10 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
-    check_safety, extract_cfgs, extract_docs, method::MethodFields, require_attributes,
-    CaseConversion,
+    extract_cfgs, extract_docs, method::MethodFields, require_attributes, CaseConversion,
 };
-use crate::syntax::safety::Safety;
 use core::ops::Deref;
 use quote::format_ident;
 use syn::{Attribute, ForeignItemFn, Ident, Result};
@@ -32,8 +30,7 @@ impl ParsedInheritedMethod {
         "cfg",
     ];
 
-    pub fn parse(method: ForeignItemFn, safety: Safety, auto_case: CaseConversion) -> Result<Self> {
-        check_safety(&method, &safety)?;
+    pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
         require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
         let docs = extract_docs(&method.attrs);
         let cfgs = extract_cfgs(&method.attrs);
@@ -67,16 +64,8 @@ mod tests {
 
     #[test]
     fn test_parser_errors() {
-        // Missing "unsafe"
-        let function: ForeignItemFn = parse_quote! {
-            fn test(self: &T);
-        };
-        assert!(
-            ParsedInheritedMethod::parse(function, Safety::Unsafe, CaseConversion::none()).is_err()
-        );
-
         assert_parse_errors! {
-            |item| ParsedInheritedMethod::parse(item, Safety::Safe, CaseConversion::none()) =>
+            |item| ParsedInheritedMethod::parse(item, CaseConversion::none()) =>
 
             // Missing self type
             { fn test(&self); }
@@ -99,7 +88,6 @@ mod tests {
             parse_quote! {
                 fn test(self: &T);
             },
-            Safety::Safe,
             CaseConversion::none()
         )
         .is_ok());
@@ -108,7 +96,6 @@ mod tests {
             parse_quote! {
                 fn test(self: Pin<&mut T>);
             },
-            Safety::Safe,
             CaseConversion::none()
         )
         .is_ok());
@@ -121,8 +108,7 @@ mod tests {
             fn test(self: Pin<&mut T>, a: i32, b: &str);
         };
 
-        let parsed =
-            ParsedInheritedMethod::parse(function, Safety::Safe, CaseConversion::none()).unwrap();
+        let parsed = ParsedInheritedMethod::parse(function, CaseConversion::none()).unwrap();
 
         assert_eq!(parsed.qobject_ident, format_ident!("T"));
         assert_eq!(parsed.parameters.len(), 2);
