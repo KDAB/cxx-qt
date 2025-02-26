@@ -19,7 +19,7 @@ pub mod qobject {
     }
 
     // ANCHOR: book_signals_block
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// A Q_SIGNAL emitted when a connection occurs
         #[qsignal]
         fn connected(self: Pin<&mut RustSignals>, url: &QUrl);
@@ -35,7 +35,7 @@ pub mod qobject {
     // ANCHOR_END: book_signals_block
 
     // ANCHOR: book_signals_struct
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qml_element]
         #[qproperty(bool, logging_enabled)]
@@ -44,7 +44,7 @@ pub mod qobject {
     // ANCHOR_END: book_signals_struct
 
     // ANCHOR: book_rust_obj_impl
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Connect to the given url
         #[qinvokable]
         fn connect(self: Pin<&mut RustSignals>, url: &QUrl);

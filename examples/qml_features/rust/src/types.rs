@@ -71,7 +71,7 @@ pub mod ffi {
         fn qvariantValueOrDefault(variant: &QVariant) -> CustomStruct;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qml_element]
         #[qproperty(bool, boolean)]

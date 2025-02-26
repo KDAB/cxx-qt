@@ -19,7 +19,7 @@ use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 /// ```rust
 /// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 /// mod qobject {
-///     unsafe extern "RustQt" {
+///     extern "RustQt" {
 ///         #[qobject]
 ///         # // Note that we can't use properties as this confuses the linker on Windows
 ///         type MyObject = super::MyObjectRust;

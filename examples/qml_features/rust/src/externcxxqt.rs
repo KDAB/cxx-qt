@@ -27,7 +27,7 @@ pub mod ffi {
         pub(self) fn triggeredPrivateSignal(self: Pin<&mut ExternalQObject>);
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qml_element]
         #[qproperty(u32, count)]

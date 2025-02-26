@@ -19,7 +19,7 @@ pub mod qobject {
         type QString = cxx_qt_lib::QString;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qml_element]
         #[qproperty(i32, number)]
