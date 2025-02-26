@@ -15,6 +15,7 @@ use crate::{
     naming::{rust::syn_type_cxx_bridge_to_qualified, Name, TypeNames},
     parser::signals::ParsedSignal,
 };
+use proc_macro2::TokenStream;
 use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
 use syn::{parse_quote, parse_quote_spanned, FnArg, Ident, Result, Type};
@@ -23,6 +24,7 @@ pub fn generate_rust_signal(
     signal: &ParsedSignal,
     qobject_name: &Name,
     type_names: &TypeNames,
+    unsafety_block: Option<TokenStream>,
 ) -> Result<GeneratedRustFragment> {
     let span = signal.method.span();
     let idents = QSignalNames::from(signal);
@@ -125,7 +127,7 @@ pub fn generate_rust_signal(
     if !signal.private {
         cxx_mod_contents.push(parse_quote_spanned! {
             span=>
-            unsafe extern "C++" {
+            #unsafety_block extern "C++" {
                 #[cxx_name = #cpp_ident]
                 #(#cfgs)*
                 #(#doc_comments)*
@@ -252,7 +254,15 @@ pub fn generate_rust_signals(
 ) -> Result<GeneratedRustFragment> {
     let generated = signals
         .iter()
-        .map(|signal| generate_rust_signal(signal, &qobject_names.name, type_names))
+        .map(|signal| {
+            generate_rust_signal(
+                signal,
+                &qobject_names.name,
+                type_names,
+                // When generating from a RustQt block we always use unsafe extern C++
+                Some(quote! { unsafe }),
+            )
+        })
         .collect::<Result<Vec<_>>>()?;
 
     Ok(GeneratedRustFragment::flatten(generated))
@@ -400,7 +410,13 @@ mod tests {
             generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names).unwrap();
 
         let qobject_name = type_names.lookup(&qsignal.qobject_ident).unwrap().clone();
-        let other_generated = generate_rust_signal(&qsignal, &qobject_name, &type_names).unwrap();
+        let other_generated = generate_rust_signal(
+            &qsignal,
+            &qobject_name,
+            &type_names,
+            Some(quote! { unsafe }),
+        )
+        .unwrap();
 
         assert_eq!(generated, other_generated);
 
@@ -863,7 +879,13 @@ mod tests {
         let type_names = TypeNames::mock();
 
         let qobject_name = type_names.lookup(&qsignal.qobject_ident).unwrap().clone();
-        let generated = generate_rust_signal(&qsignal, &qobject_name, &type_names).unwrap();
+        let generated = generate_rust_signal(
+            &qsignal,
+            &qobject_name,
+            &type_names,
+            Some(quote! { unsafe }),
+        )
+        .unwrap();
 
         common_asserts(&generated.cxx_mod_contents, &generated.cxx_qt_mod_contents);
     }
