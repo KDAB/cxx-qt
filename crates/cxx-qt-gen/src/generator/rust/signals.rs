@@ -88,18 +88,16 @@ pub fn generate_rust_signal(
     let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx, type_names)?;
     let qualified_impl = qobject_name.rust_qualified();
 
-    let mut unsafe_block = None;
-    let mut unsafe_call = Some(quote! { unsafe });
-    if signal.safe {
-        std::mem::swap(&mut unsafe_call, &mut unsafe_block);
-    }
-
     let mut cxx_bridge = vec![];
 
     let rust_class_name = qobject_name.rust_unqualified();
-
     let cpp_ident = idents.name.cxx_unqualified();
 
+    let unsafe_call = if signal.safe {
+        None
+    } else {
+        Some(quote! { unsafe })
+    };
     let doc_comments = &signal.docs;
     let cfgs = &signal.cfgs;
     let namespace = if let Some(namespace) = qobject_name.namespace() {
@@ -117,7 +115,7 @@ pub fn generate_rust_signal(
     // TODO: what happens with RustQt signals, can they be private yet?
     if !signal.private {
         cxx_bridge.push(quote! {
-            #unsafe_block extern "C++" {
+            unsafe extern "C++" {
                 #[cxx_name = #cpp_ident]
                 #(#cfgs)*
                 #(#doc_comments)*
@@ -578,7 +576,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_mod_contents[0],
             quote! {
-                extern "C++" {
+                unsafe extern "C++" {
                     #[cxx_name = "unsafeSignal"]
                     unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
                 }

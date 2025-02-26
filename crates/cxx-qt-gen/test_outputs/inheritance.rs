@@ -56,7 +56,7 @@ mod inheritance {
         #[cxx_name = "helloWorldCxxQtInherit"]
         fn hello_world(self: &MyObject, parent: &QModelIndex) -> bool;
     }
-    extern "C++" {
+    unsafe extern "C++" {
         #[cxx_name = "fetch_moreCxxQtInherit"]
         #[doc = " Inherited fetchMore from the base class"]
         unsafe fn fetch_more(self: Pin<&mut MyObject>, index: &QModelIndex);
