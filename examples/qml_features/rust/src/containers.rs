@@ -32,7 +32,7 @@ pub mod qobject {
         type QVector_i32 = cxx_qt_lib::QVector<i32>;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qml_element]
         #[qproperty(QString, string_hash, cxx_name = "stringHash")]

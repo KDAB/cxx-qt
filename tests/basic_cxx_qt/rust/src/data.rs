@@ -30,7 +30,7 @@ mod qobject {
         type QString = cxx_qt_lib::QString;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qproperty(i32, number)]
         #[qproperty(QString, string)]

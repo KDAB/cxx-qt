@@ -34,7 +34,7 @@ pub mod qobject {
     impl cxx_qt::Threading for ThreadingWebsite {}
     // ANCHOR_END: book_threading_trait
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Swap the URL between kdab.com and github.com
         #[qinvokable]
         #[cxx_name = "changeUrl"]

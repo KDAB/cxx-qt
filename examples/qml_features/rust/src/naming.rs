@@ -8,7 +8,7 @@
 /// A CXX-Qt bridge containing renamed and namespaced types
 #[cxx_qt::bridge]
 pub mod qobject {
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qml_element]
         #[qproperty(i32, num, cxx_name = "numberProp")]
@@ -17,7 +17,7 @@ pub mod qobject {
         type NamedObject = super::NamedObjectRust;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qinvokable]
         #[cxx_name = "increment"]
         #[rust_name = "plus_one"]
@@ -25,7 +25,7 @@ pub mod qobject {
     }
 
     #[auto_cxx_name]
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qinvokable]
         fn get_num(self: &NamedObject) -> i32;
     }
