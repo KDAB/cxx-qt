@@ -85,7 +85,7 @@ pub mod qobject {
     }
     // ANCHOR_END: book_qsignals_inherit
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Add a new row to the QAbstractListModel on the current thread
         #[qinvokable]
         fn add(self: Pin<&mut CustomBaseClass>);
@@ -105,14 +105,14 @@ pub mod qobject {
     }
 
     // ANCHOR: book_inherit_clear_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Clear the rows in the QAbstractListModel
         #[qinvokable]
         pub fn clear(self: Pin<&mut CustomBaseClass>);
     }
     // ANCHOR_END: book_inherit_clear_signature
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Multiply the number in the row with the given index by the given factor
         #[qinvokable]
         pub fn multiply(self: Pin<&mut CustomBaseClass>, index: i32, factor: f64);
@@ -184,7 +184,7 @@ pub mod qobject {
 
     // QAbstractListModel implementation
     // ANCHOR: book_inherit_data_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qinvokable]
         #[cxx_override]
         fn data(self: &CustomBaseClass, index: &QModelIndex, role: i32) -> QVariant;
@@ -192,7 +192,7 @@ pub mod qobject {
     // ANCHOR_END: book_inherit_data_signature
 
     // ANCHOR: book_inherit_can_fetch_more_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Return whether the base class can fetch more
         // Example of overriding a C++ virtual method and calling the base class implementation.
         #[qinvokable]
@@ -202,7 +202,7 @@ pub mod qobject {
     }
     // ANCHOR_END: book_inherit_can_fetch_more_signature
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Return the role names for the QAbstractListModel
         #[qinvokable]
         #[cxx_override]

@@ -9,7 +9,7 @@
 // ANCHOR: book_macro_code
 #[cxx_qt::bridge]
 pub mod qobject {
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qml_element]
         #[qml_singleton]
