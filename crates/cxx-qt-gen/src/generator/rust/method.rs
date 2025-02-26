@@ -35,10 +35,11 @@ pub fn generate_rust_methods(
 
         let return_type = &invokable.method.sig.output;
 
-        let mut unsafe_call = Some(quote! { unsafe });
-        if invokable.safe {
-            std::mem::swap(&mut unsafe_call, &mut None);
-        }
+        let unsafe_call = if invokable.safe {
+            None
+        } else {
+            Some(quote! { unsafe })
+        };
 
         let cfgs = &invokable.cfgs;
         let cxx_namespace = qobject_names.namespace_tokens();
