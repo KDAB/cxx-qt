@@ -14,7 +14,7 @@ use crate::{
     },
     syntax::{
         attribute::attribute_get_path, expr::expr_to_string, foreignmod::ForeignTypeIdentAlias,
-        path::path_compare_str, safety::Safety,
+        path::path_compare_str,
     },
 };
 use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, ItemMacro, Meta, Result};
@@ -142,19 +142,12 @@ impl ParsedCxxQtData {
             .transpose()?
             .or_else(|| self.namespace.clone());
 
-        let safe_call = if foreign_mod.unsafety.is_some() {
-            Safety::Safe
-        } else {
-            Safety::Unsafe
-        };
-
         for item in foreign_mod.items.drain(..) {
             match item {
                 ForeignItem::Fn(foreign_fn) => {
                     // Test if the function is a signal
                     if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
-                        let parsed_signal_method =
-                            ParsedSignal::parse(foreign_fn, safe_call, auto_case)?;
+                        let parsed_signal_method = ParsedSignal::parse(foreign_fn, auto_case)?;
                         self.signals.push(parsed_signal_method);
 
                         // Test if the function is an inheritance method
@@ -162,12 +155,12 @@ impl ParsedCxxQtData {
                         // Note that we need to test for qsignal first as qsignals have their own inherit meaning
                     } else if attribute_get_path(&foreign_fn.attrs, &["inherit"]).is_some() {
                         let parsed_inherited_method =
-                            ParsedInheritedMethod::parse(foreign_fn, safe_call, auto_case)?;
+                            ParsedInheritedMethod::parse(foreign_fn, auto_case)?;
 
                         self.inherited_methods.push(parsed_inherited_method);
                         // Remaining methods are either C++ methods or invokables
                     } else {
-                        let parsed_method = ParsedMethod::parse(foreign_fn, safe_call, auto_case)?;
+                        let parsed_method = ParsedMethod::parse(foreign_fn, auto_case)?;
                         self.methods.push(parsed_method);
                     }
                 }
@@ -243,13 +236,6 @@ mod tests {
                 unsafe extern "RustQt" {
                     #[qinvokable]
                     fn invokable(self: &MyObject::Bad);
-                }
-            }
-            {
-                // Not unsafe
-                extern "RustQt" {
-                    #[qinvokable]
-                    fn invokable(self: &MyObject);
                 }
             }
             {

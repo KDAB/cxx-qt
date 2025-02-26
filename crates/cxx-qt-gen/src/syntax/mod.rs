@@ -11,7 +11,6 @@ pub mod lifetimes;
 pub mod path;
 mod qtfile;
 mod qtitem;
-pub mod safety;
 pub mod types;
 
 pub use qtfile::{parse_qt_file, CxxQtFile};

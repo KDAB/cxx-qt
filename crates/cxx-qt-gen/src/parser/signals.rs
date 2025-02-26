@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::parser::CaseConversion;
 use crate::{
-    parser::{check_safety, extract_cfgs, extract_docs, method::MethodFields, require_attributes},
-    syntax::{path::path_compare_str, safety::Safety},
+    parser::{extract_cfgs, extract_docs, method::MethodFields, require_attributes},
+    syntax::path::path_compare_str,
 };
 use core::ops::Deref;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
@@ -32,12 +32,10 @@ impl ParsedSignal {
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
     pub fn mock(method: &ForeignItemFn) -> Self {
-        Self::parse(method.clone(), Safety::Safe, CaseConversion::none()).unwrap()
+        Self::parse(method.clone(), CaseConversion::none()).unwrap()
     }
 
-    pub fn parse(method: ForeignItemFn, safety: Safety, auto_case: CaseConversion) -> Result<Self> {
-        check_safety(&method, &safety)?;
-
+    pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
         let docs = extract_docs(&method.attrs);
         let cfgs = extract_cfgs(&method.attrs);
         let fields = MethodFields::parse(method, auto_case)?;
@@ -89,7 +87,7 @@ mod tests {
     #[test]
     fn test_parse_signal_invalid() {
         assert_parse_errors! {
-            |input| ParsedSignal::parse(input, Safety::Safe, CaseConversion::none()) =>
+            |input| ParsedSignal::parse(input, CaseConversion::none()) =>
 
             // No immutable signals
             { fn ready(self: &MyObject); }
@@ -110,8 +108,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
-        let signal =
-            ParsedSignal::parse(method.clone(), Safety::Safe, CaseConversion::none()).unwrap();
+        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
@@ -128,7 +125,7 @@ mod tests {
             #[cxx_name = "cppReady"]
             fn ready(self: Pin<&mut MyObject>);
         };
-        let signal = ParsedSignal::parse(method, Safety::Safe, CaseConversion::none()).unwrap();
+        let signal = ParsedSignal::parse(method, CaseConversion::none()).unwrap();
 
         let expected_method: ForeignItemFn = parse_quote! {
             #[cxx_name = "cppReady"]
@@ -150,8 +147,7 @@ mod tests {
             #[inherit]
             fn ready(self: Pin<&mut MyObject>);
         };
-        let signal =
-            ParsedSignal::parse(method.clone(), Safety::Safe, CaseConversion::none()).unwrap();
+        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
 
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
@@ -168,8 +164,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>, x: f64, y: f64);
         };
-        let signal =
-            ParsedSignal::parse(method.clone(), Safety::Safe, CaseConversion::none()).unwrap();
+        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
@@ -189,8 +184,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             pub(self) fn ready(self: Pin<&mut MyObject>);
         };
-        let signal =
-            ParsedSignal::parse(method.clone(), Safety::Safe, CaseConversion::none()).unwrap();
+        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
@@ -206,8 +200,7 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             unsafe fn ready(self: Pin<&mut MyObject>);
         };
-        let signal =
-            ParsedSignal::parse(method.clone(), Safety::Unsafe, CaseConversion::none()).unwrap();
+        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
@@ -216,14 +209,5 @@ mod tests {
         assert!(!signal.safe);
         assert!(!signal.inherit);
         assert!(!signal.private);
-    }
-
-    #[test]
-    fn test_parse_signal_unsafe_error() {
-        let method: ForeignItemFn = parse_quote! {
-            fn ready(self: Pin<&mut MyObject>);
-        };
-        // Can't be safe on the block and the method
-        assert!(ParsedSignal::parse(method, Safety::Unsafe, CaseConversion::none()).is_err());
     }
 }

@@ -63,14 +63,14 @@ mod tests {
 
     use super::*;
     use crate::generator::cpp::property::tests::require_header;
+    use crate::parser::inherit::ParsedInheritedMethod;
     use crate::parser::CaseConversion;
-    use crate::{parser::inherit::ParsedInheritedMethod, syntax::safety::Safety};
 
     fn generate_from_foreign(
         method: ForeignItemFn,
         base_class: Option<&str>,
     ) -> Result<GeneratedCppQObjectBlocks> {
-        let method = ParsedInheritedMethod::parse(method, Safety::Safe, CaseConversion::none())?;
+        let method = ParsedInheritedMethod::parse(method, CaseConversion::none())?;
         let inherited_methods = vec![&method];
         let base_class = base_class.map(|s| s.to_owned());
         generate(
@@ -93,8 +93,7 @@ mod tests {
             #[cfg(test_cfg_disabled)]
             fn test(self: &T, a: B, b: C);
         };
-        let method =
-            ParsedInheritedMethod::parse(method, Safety::Safe, CaseConversion::none()).unwrap();
+        let method = ParsedInheritedMethod::parse(method, CaseConversion::none()).unwrap();
         let inherited_methods = vec![&method];
         let base_class = Some("TestBaseClass".to_owned());
         let opt = GeneratedOpt {

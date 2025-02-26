@@ -8,7 +8,7 @@ use crate::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
         CaseConversion,
     },
-    syntax::{attribute::attribute_get_path, expr::expr_to_string, safety::Safety},
+    syntax::{attribute::attribute_get_path, expr::expr_to_string},
 };
 use syn::{spanned::Spanned, Error, ForeignItem, Ident, ItemForeignMod, Result, Token};
 
@@ -54,19 +54,13 @@ impl ParsedExternCxxQt {
             ..Default::default()
         };
 
-        let safe_call = if foreign_mod.unsafety.is_some() {
-            Safety::Safe
-        } else {
-            Safety::Unsafe
-        };
-
         // Parse any signals, other items are passed through
         for item in foreign_mod.items.drain(..) {
             match item {
                 ForeignItem::Fn(foreign_fn) => {
                     // Test if the function is a signal
                     if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
-                        let mut signal = ParsedSignal::parse(foreign_fn, safe_call, auto_case)?;
+                        let mut signal = ParsedSignal::parse(foreign_fn, auto_case)?;
                         // extern "C++Qt" signals are always inherit = true
                         // as they always exist on an existing QObject
                         signal.inherit = true;
