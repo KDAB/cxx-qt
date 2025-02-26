@@ -17,7 +17,7 @@ pub mod qobject {
         type QUrl = cxx_qt_lib::QUrl;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         // ANCHOR: book_properties_signature
         #[qobject]
         #[qml_element]

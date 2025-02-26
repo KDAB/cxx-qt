@@ -59,7 +59,7 @@ pub trait CxxQtType {
 /// # // FIXME: test doesn't link correctly on Windows
 /// #[cxx_qt::bridge]
 /// mod qobject {
-///     unsafe extern "RustQt" {
+///     extern "RustQt" {
 ///         #[qobject]
 ///         type MyStruct = super::MyStructRust;
 ///

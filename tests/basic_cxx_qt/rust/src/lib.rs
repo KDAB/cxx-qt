@@ -17,7 +17,7 @@ mod qobject {
         type QString = cxx_qt_lib::QString;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qproperty(i32, number)]
         #[qproperty(QString, string)]
@@ -28,7 +28,7 @@ mod qobject {
     impl cxx_qt::Threading for MyObject {}
 
     // Note that we are only testing with C++ here so we don't need qinvokable
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[cxx_name = "doubleNumberSelf"]
         fn double_number_self(self: Pin<&mut MyObject>);
 

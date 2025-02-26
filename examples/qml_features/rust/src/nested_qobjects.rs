@@ -47,7 +47,7 @@ pub mod qobject {
         unsafe fn called(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Print the count of the given inner QObject
         ///
         /// # Safety

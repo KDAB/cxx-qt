@@ -13,7 +13,7 @@ mod qobject {
         type QString = cxx_qt_lib::QString;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qproperty(i32, number)]
         #[qproperty(QString, string)]
@@ -27,7 +27,7 @@ mod qobject {
     }
 
     // Note that we are only testing with C++ here so we don't need qinvokable
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[cxx_name = "sayHi"]
         fn say_hi(self: &NamedObject, string: &QString, number: i32);
 

@@ -28,7 +28,7 @@ pub mod qobject {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for FirstObject {}
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Accepted Q_SIGNAL
         #[qsignal]
         fn accepted(self: Pin<&mut FirstObject>);
@@ -38,7 +38,7 @@ pub mod qobject {
         fn rejected(self: Pin<&mut FirstObject>);
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// A Q_INVOKABLE on the first QObject which increments a counter
         #[qinvokable]
         fn increment(self: Pin<&mut FirstObject>);
@@ -55,7 +55,7 @@ pub mod qobject {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for SecondObject {}
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Accepted Q_SIGNAL
         #[qsignal]
         fn accepted(self: Pin<&mut SecondObject>);
@@ -65,7 +65,7 @@ pub mod qobject {
         fn rejected(self: Pin<&mut SecondObject>);
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// A Q_INVOKABLE on the second QObject which increments a counter
         #[qinvokable]
         fn increment(self: Pin<&mut SecondObject>);
