@@ -80,7 +80,13 @@ impl GeneratedRustFragment {
         // Build the signals
         for signal in &extern_cxxqt_block.signals {
             let qobject_name = type_names.lookup(&signal.qobject_ident)?;
-            generated.push(generate_rust_signal(signal, qobject_name, type_names)?);
+            generated.push(generate_rust_signal(
+                signal,
+                qobject_name,
+                type_names,
+                // Copy the same safety as the extern C++Qt block into the generated extern C++
+                extern_cxxqt_block.unsafety.map(|_| quote! { unsafe }),
+            )?);
         }
 
         Ok(GeneratedRustFragment::flatten(generated))
