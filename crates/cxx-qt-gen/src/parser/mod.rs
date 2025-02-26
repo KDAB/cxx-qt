@@ -19,7 +19,7 @@ pub mod trait_impl;
 
 use crate::{
     naming::TypeNames,
-    syntax::{expr::expr_to_string, path::path_compare_str, safety::Safety},
+    syntax::{expr::expr_to_string, path::path_compare_str},
 };
 use convert_case::Case;
 use cxxqtdata::ParsedCxxQtData;
@@ -28,7 +28,7 @@ use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
     token::{Brace, Semi},
-    Attribute, Error, Expr, ForeignItemFn, Ident, Item, ItemMod, Meta, Result, Token, Visibility,
+    Attribute, Error, Expr, Ident, Item, ItemMod, Meta, Result, Token, Visibility,
 };
 
 #[derive(Copy, Clone)]
@@ -83,18 +83,6 @@ impl CaseConversion {
             .transpose()?;
 
         Ok(Self { rust, cxx })
-    }
-}
-
-/// Validates that an invokable is either unsafe, or is in an unsafe extern block
-fn check_safety(method: &ForeignItemFn, safety: &Safety) -> Result<()> {
-    if safety == &Safety::Unsafe && method.sig.unsafety.is_none() {
-        Err(Error::new(
-            method.span(),
-            "Invokables must be marked as unsafe or wrapped in an `unsafe extern \"RustQt\"` block!",
-        ))
-    } else {
-        Ok(())
     }
 }
 

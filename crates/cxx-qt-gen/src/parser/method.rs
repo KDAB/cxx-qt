@@ -5,8 +5,8 @@
 use crate::parser::CaseConversion;
 use crate::{
     naming::Name,
-    parser::{check_safety, extract_cfgs, parameter::ParsedFunctionParameter, require_attributes},
-    syntax::{foreignmod, safety::Safety, types},
+    parser::{extract_cfgs, parameter::ParsedFunctionParameter, require_attributes},
+    syntax::{foreignmod, types},
 };
 use core::ops::Deref;
 use std::collections::{BTreeMap, HashSet};
@@ -74,7 +74,7 @@ impl ParsedMethod {
     pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
         Self {
             is_qinvokable: true,
-            ..Self::parse(method.clone(), Safety::Safe, CaseConversion::none()).unwrap()
+            ..Self::parse(method.clone(), CaseConversion::none()).unwrap()
         }
     }
 
@@ -105,8 +105,7 @@ impl ParsedMethod {
         Self { specifiers, ..self }
     }
 
-    pub fn parse(method: ForeignItemFn, safety: Safety, auto_case: CaseConversion) -> Result<Self> {
-        check_safety(&method, &safety)?;
+    pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&fields.method.attrs);
