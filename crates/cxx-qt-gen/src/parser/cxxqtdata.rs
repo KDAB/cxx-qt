@@ -17,7 +17,10 @@ use crate::{
         path::path_compare_str,
     },
 };
-use syn::{ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl, ItemMacro, Meta, Result};
+use syn::{
+    spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl,
+    ItemMacro, Meta, Result,
+};
 
 pub struct ParsedCxxQtData {
     /// Map of the QObjects defined in the module that will be used for code generation
@@ -147,20 +150,39 @@ impl ParsedCxxQtData {
                 ForeignItem::Fn(foreign_fn) => {
                     // Test if the function is a signal
                     if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
-                        let parsed_signal_method = ParsedSignal::parse(foreign_fn, auto_case)?;
+                        let parsed_signal_method =
+                            ParsedSignal::parse(foreign_fn.clone(), auto_case)?;
+                        if parsed_signal_method.inherit
+                            && foreign_fn.sig.unsafety.is_none()
+                            && foreign_mod.unsafety.is_none()
+                        {
+                            return Err(Error::new(foreign_fn.span(), "block must be declared `unsafe extern \"RustQt\"` if it contains any safe-to-call #[inherit] qsignals"));
+                        }
+
                         self.signals.push(parsed_signal_method);
 
                         // Test if the function is an inheritance method
                         //
                         // Note that we need to test for qsignal first as qsignals have their own inherit meaning
                     } else if attribute_get_path(&foreign_fn.attrs, &["inherit"]).is_some() {
+                        // We need to check that any safe functions are defined inside an unsafe block
+                        // as with inherit we cannot fully prove the implementation and we can then
+                        // directly copy the unsafetyness into the generated extern C++ block
+                        if foreign_fn.sig.unsafety.is_none() && foreign_mod.unsafety.is_none() {
+                            return Err(Error::new(foreign_fn.span(), "block must be declared `unsafe extern \"RustQt\"` if it contains any safe-to-call #[inherit] functions"));
+                        }
+
                         let parsed_inherited_method =
                             ParsedInheritedMethod::parse(foreign_fn, auto_case)?;
 
                         self.inherited_methods.push(parsed_inherited_method);
                         // Remaining methods are either C++ methods or invokables
                     } else {
-                        let parsed_method = ParsedMethod::parse(foreign_fn, auto_case)?;
+                        let parsed_method = ParsedMethod::parse(
+                            foreign_fn,
+                            auto_case,
+                            foreign_mod.unsafety.is_some(),
+                        )?;
                         self.methods.push(parsed_method);
                     }
                 }
@@ -244,6 +266,21 @@ mod tests {
                     #[qinvokable]
                     #[namespace = "disallowed"]
                     fn invokable(self: &MyObject);
+                }
+            }
+            {
+                // Block or fn must be unsafe for inherit methods
+                extern "RustQt" {
+                    #[inherit]
+                    fn invokable(self: &MyObject);
+                }
+            }
+            {
+                // Block or fn must be unsafe for inherit qsignals
+                extern "RustQt" {
+                    #[inherit]
+                    #[qsignal]
+                    fn signal(self: Pin<&mut MyObject>);
                 }
             }
             {

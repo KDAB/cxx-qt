@@ -248,8 +248,13 @@ pub fn generate_rust_signals(
             signal,
             &qobject_names.name,
             type_names,
-            // When generating from a RustQt block we always use unsafe extern C++
-            Some(quote! { unsafe }),
+            // When generating from a RustQt block we use the opposite of the signal safety
+            // This means that a safe signal has unsafe block, and the reverse
+            if signal.safe {
+                Some(quote! { unsafe })
+            } else {
+                None
+            },
         )?);
     }
 
@@ -586,7 +591,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_mod_contents[0],
             quote! {
-                unsafe extern "C++" {
+                extern "C++" {
                     #[cxx_name = "unsafeSignal"]
                     unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
                 }

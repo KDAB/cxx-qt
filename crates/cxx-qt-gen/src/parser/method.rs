@@ -56,6 +56,8 @@ pub struct ParsedMethod {
     // This means any docs on the bridge declaration would be ignored
     /// Cfgs for the method
     pub cfgs: Vec<Attribute>,
+    /// Whether the block containing the method is safe or unsafe
+    pub unsafe_block: bool,
 }
 
 impl ParsedMethod {
@@ -74,7 +76,7 @@ impl ParsedMethod {
     pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
         Self {
             is_qinvokable: true,
-            ..Self::parse(method.clone(), CaseConversion::none()).unwrap()
+            ..Self::parse(method.clone(), CaseConversion::none(), false).unwrap()
         }
     }
 
@@ -105,7 +107,11 @@ impl ParsedMethod {
         Self { specifiers, ..self }
     }
 
-    pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
+    pub fn parse(
+        method: ForeignItemFn,
+        auto_case: CaseConversion,
+        unsafe_block: bool,
+    ) -> Result<Self> {
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&fields.method.attrs);
@@ -119,6 +125,7 @@ impl ParsedMethod {
             specifiers,
             is_qinvokable,
             cfgs,
+            unsafe_block,
         })
     }
 }
