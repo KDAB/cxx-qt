@@ -35,14 +35,21 @@ pub fn generate_rust_methods(
 
         let return_type = &invokable.method.sig.output;
 
+        let cfgs = &invokable.cfgs;
+        let cxx_namespace = qobject_names.namespace_tokens();
+
+        // When generating extern Rust forward the block unsafe to fn
+        // This allows for then defining pointer args when the whole block
+        // is unsafe, as CXX does not allow for unsafe Rust
         let unsafe_call = if invokable.safe {
-            None
+            if invokable.unsafe_block {
+                Some(quote! { unsafe })
+            } else {
+                None
+            }
         } else {
             Some(quote! { unsafe })
         };
-
-        let cfgs = &invokable.cfgs;
-        let cxx_namespace = qobject_names.namespace_tokens();
 
         let fragment = RustFragmentPair {
             cxx_bridge: vec![quote_spanned! {

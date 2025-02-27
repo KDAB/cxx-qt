@@ -42,7 +42,7 @@ mod ffi {
         #[cxx_name = "invokable"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable(self: Pin<&mut MyObject>);
+        unsafe fn invokable(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]

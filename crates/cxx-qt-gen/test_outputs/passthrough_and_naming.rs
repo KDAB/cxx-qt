@@ -134,7 +134,7 @@ pub mod ffi {
         #[cxx_name = "invokable_name"]
         #[namespace = "cxx_qt::multi_object"]
         #[doc(hidden)]
-        fn invokable_name(self: Pin<&mut MyObject>);
+        unsafe fn invokable_name(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
@@ -244,13 +244,13 @@ pub mod ffi {
         #[cxx_name = "invokableName"]
         #[namespace = "second_object"]
         #[doc(hidden)]
-        fn invokable_name(self: Pin<&mut SecondObject>);
+        unsafe fn invokable_name(self: Pin<&mut SecondObject>);
     }
     extern "Rust" {
         #[cxx_name = "myRenamedFunction"]
         #[namespace = "second_object"]
         #[doc(hidden)]
-        fn my_function(self: &SecondObject);
+        unsafe fn my_function(self: &SecondObject);
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]

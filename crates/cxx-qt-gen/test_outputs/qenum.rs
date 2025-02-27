@@ -88,7 +88,7 @@ mod ffi {
         #[cxx_name = "my_invokable"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
+        unsafe fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
