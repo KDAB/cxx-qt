@@ -42,19 +42,19 @@ pub fn generate(
             };
             let return_type = &method.method.sig.output;
 
+            let mut unsafe_block = None;
             // Needs to be unspanned or clippy breaks surrounding the safety comment
-            let unsafe_call = if method.safe {
-                None
-            } else {
-                Some(quote! { unsafe })
-            };
+            let mut unsafe_call = Some(quote! { unsafe });
+            if method.safe {
+                std::mem::swap(&mut unsafe_call, &mut unsafe_block);
+            }
             let doc_comments = &method.docs;
             let cfgs = &method.cfgs;
             let namespace = qobject_names.namespace_tokens();
 
             syn::parse2(quote_spanned! {
                 span =>
-                unsafe extern "C++" {
+                #unsafe_block extern "C++" {
                     #[cxx_name = #cxx_name_string]
                     #namespace
                     #(#cfgs)*
@@ -138,7 +138,7 @@ mod tests {
             &generated.cxx_mod_contents[0],
             // TODO: Maybe remove the trailing comma after self?
             quote! {
-                unsafe extern "C++" {
+                extern "C++" {
                     #[cxx_name = "testCxxQtInherit"]
                     unsafe fn test(self: &MyObject,);
                 }
