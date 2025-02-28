@@ -11,8 +11,8 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 
-use crate::parser::CaseConversion;
-use syn::{Attribute, Error, Expr, Ident, Meta, Result};
+use crate::parser::{parse_base_type, CaseConversion};
+use syn::{Attribute, Error, Ident, Meta, Result};
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -91,20 +91,7 @@ impl ParsedQObject {
 
         let has_qobject_macro = attributes.contains_key("qobject");
 
-        let base_class = attributes
-            .get("base")
-            .map(|attr| -> Result<Ident> {
-                let expr = &attr.meta.require_name_value()?.value;
-                if let Expr::Path(path_expr) = expr {
-                    Ok(path_expr.path.require_ident()?.clone())
-                } else {
-                    Err(Error::new_spanned(
-                        expr,
-                        "Base must be a identifier and cannot be empty!",
-                    ))
-                }
-            })
-            .transpose()?;
+        let base_class = parse_base_type(&attributes)?;
 
         // Ensure that if there is no qobject macro that a base class is specificed
         if !has_qobject_macro && base_class.is_none() {

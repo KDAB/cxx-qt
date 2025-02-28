@@ -140,6 +140,24 @@ pub fn require_attributes<'a>(
     Ok(output)
 }
 
+// Extract base identifier from attribute
+pub fn parse_base_type(attributes: &BTreeMap<&str, &Attribute>) -> Result<Option<Ident>> {
+    attributes
+        .get("base")
+        .map(|attr| -> Result<Ident> {
+            let expr = &attr.meta.require_name_value()?.value;
+            if let Expr::Path(path_expr) = expr {
+                Ok(path_expr.path.require_ident()?.clone())
+            } else {
+                Err(Error::new_spanned(
+                    expr,
+                    "Base must be a identifier and cannot be empty!",
+                ))
+            }
+        })
+        .transpose()
+}
+
 /// Struct representing the necessary components of a cxx mod to be passed through to generation
 pub struct PassthroughMod {
     pub(crate) items: Option<Vec<Item>>,

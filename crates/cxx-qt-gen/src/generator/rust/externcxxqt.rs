@@ -3,14 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::generator::naming::qobject::QObjectNames;
-use crate::naming::Name;
 use crate::{
     generator::rust::{fragment::GeneratedRustFragment, signals::generate_rust_signal},
     naming::TypeNames,
     parser::externcxxqt::ParsedExternCxxQt,
     syntax::path::path_compare_str,
 };
-use quote::{format_ident, quote};
+use quote::quote;
 use syn::{parse_quote, Attribute, Result};
 
 impl GeneratedRustFragment {
@@ -35,50 +34,12 @@ impl GeneratedRustFragment {
 
                 let qobject_names = QObjectNames::from_extern_qobject(ty, type_names)?;
 
-                let base = ty
-                    .base_class
-                    .as_ref()
-                    .map(|name| type_names.lookup(name))
-                    .transpose()?
-                    .cloned()
-                    .unwrap_or(Name::new(format_ident!("QObject")).with_module(parse_quote! {::cxx_qt}));
-
-                let base_unqualified = base.rust_unqualified();
-                let base_qualified = base.rust_qualified();
-
-                let struct_name = ty.name.rust_qualified();
-                let struct_name_unqualified = ty.name.rust_unqualified();
-                let (upcast_fn, upcast_fn_attrs, upcast_fn_qualified) = qobject_names
-                    .cxx_qt_ffi_method("upcastPtr")
-                    .into_cxx_parts();
-                let (downcast_fn, downcast_fn_attrs, downcast_fn_qualified) = qobject_names
-                    .cxx_qt_ffi_method("downcastPtr")
-                    .into_cxx_parts();
-
-                generated.push(GeneratedRustFragment {
-                    cxx_mod_contents: vec![parse_quote! {
-                        extern "C++" {
-                            #[doc(hidden)]
-                            #(#upcast_fn_attrs)*
-                            unsafe fn #upcast_fn(thiz: *const #struct_name_unqualified) -> *const #base_unqualified;
-
-                            #[doc(hidden)]
-                            #(#downcast_fn_attrs)*
-                            unsafe fn #downcast_fn(base: *const #base_unqualified) -> *const #struct_name_unqualified;
-                        }
-                    }],
-                    cxx_qt_mod_contents: vec![parse_quote! {
-                        impl ::cxx_qt::Upcast<#base_qualified> for #struct_name {
-                            unsafe fn upcast_ptr(this: *const Self) -> *const #base_qualified {
-                                #upcast_fn_qualified(this)
-                            }
-
-                            unsafe fn from_base_ptr(base: *const #base_qualified) -> *const Self {
-                                #downcast_fn_qualified(base)
-                            }
-                        }
-                    }],
-                });
+                generated.push(GeneratedRustFragment::generate_casting_impl(
+                    &qobject_names,
+                    type_names,
+                    &ty.name,
+                    &ty.base_class,
+                )?);
 
                 let namespace = if let Some(namespace) = &ty.name.namespace() {
                     quote! { #[namespace = #namespace ] }
