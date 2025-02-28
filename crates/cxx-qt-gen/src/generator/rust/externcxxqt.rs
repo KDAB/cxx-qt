@@ -31,7 +31,6 @@ impl GeneratedRustFragment {
             .iter()
             .map(|ty| -> Result<GeneratedRustFragment> {
                 let mut generated = vec![];
-
                 let qobject_names = QObjectNames::from_extern_qobject(ty, type_names)?;
 
                 generated.push(GeneratedRustFragment::generate_casting_impl(

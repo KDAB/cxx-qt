@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#[cxx::bridge]
+#[cxx_qt::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
@@ -12,23 +12,6 @@ mod ffi {
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
-
-        include!("cxx-qt-lib/qqmlapplicationengine.h");
-        type QQmlApplicationEngine;
-
-        include!("cxx-qt/casting.h");
-
-        #[doc(hidden)]
-        #[rust_name = "upcast_qqmlapplication_engine"]
-        #[cxx_name = "upcastPtr"]
-        #[namespace = "rust::cxxqt1"]
-        unsafe fn upcast(thiz: *const QQmlApplicationEngine) -> *const QQmlEngine;
-
-        #[doc(hidden)]
-        #[rust_name = "downcast_qqml_engine"]
-        #[cxx_name = "downcastPtr"]
-        #[namespace = "rust::cxxqt1"]
-        unsafe fn downcast(base: *const QQmlEngine) -> *const QQmlApplicationEngine;
 
         /// Adds path as a directory where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "add_import_path"]
@@ -75,6 +58,13 @@ mod ffi {
         fn setOfflineStoragePath(self: Pin<&mut QQmlApplicationEngine>, dir: &QString);
     }
 
+    unsafe extern "C++Qt" {
+        include!("cxx-qt-lib/qqmlapplicationengine.h");
+        #[qobject]
+        #[base = QQmlEngine]
+        type QQmlApplicationEngine;
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qqmlengine.h");
         type QQmlEngine = crate::QQmlEngine;
@@ -94,20 +84,7 @@ mod ffi {
     impl UniquePtr<QQmlApplicationEngine> {}
 }
 
-use crate::QQmlEngine;
-use cxx_qt::Upcast;
-
 pub use ffi::QQmlApplicationEngine;
-
-impl Upcast<QQmlEngine> for QQmlApplicationEngine {
-    unsafe fn upcast_ptr(this: *const Self) -> *const QQmlEngine {
-        ffi::upcast_qqmlapplication_engine(this)
-    }
-
-    unsafe fn from_base_ptr(base: *const QQmlEngine) -> *const Self {
-        ffi::downcast_qqml_engine(base)
-    }
-}
 
 impl QQmlApplicationEngine {
     /// Create a new QQmlApplicationEngine
