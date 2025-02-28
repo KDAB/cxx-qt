@@ -334,6 +334,20 @@ mod ffi {
             outer: Pin<&mut QObjectDisabled>,
         ) -> Pin<&mut QObjectDisabledRust>;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectExternEnabled_upcastPtr(
+            thiz: *const QObjectExternEnabled,
+        ) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectExternEnabled_downcastPtr(
+            base: *const QObject,
+        ) -> *const QObjectExternEnabled;
+    }
     unsafe extern "C++" {
         #[cfg(enabled)]
         type QObjectExternEnabled;
@@ -405,6 +419,20 @@ mod ffi {
             handler: &mut QObjectExternEnabledCxxQtSignalHandlersignal_enabled1,
             self_value: Pin<&mut QObjectExternEnabled>,
         );
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectExternDisabled_upcastPtr(
+            thiz: *const QObjectExternDisabled,
+        ) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectExternDisabled_downcastPtr(
+            base: *const QObject,
+        ) -> *const QObjectExternDisabled;
     }
     unsafe extern "C++" {
         #[cfg(not(enabled))]
@@ -842,6 +870,14 @@ impl ::cxx_qt::CxxQtType for ffi::QObjectDisabled {
         ffi::cxx_qt_ffi_QObjectDisabled_unsafeRustMut(self)
     }
 }
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectExternEnabled {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_QObjectExternEnabled_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_QObjectExternEnabled_downcastPtr(base)
+    }
+}
 #[cfg(not(enabled))]
 impl ffi::QObjectExternEnabled {
     #[doc = "Connect the given function pointer to the signal "]
@@ -1004,6 +1040,14 @@ cxx_qt::static_assertions::assert_eq_size!(
     >,
     [usize; 2]
 );
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectExternDisabled {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_QObjectExternDisabled_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_QObjectExternDisabled_downcastPtr(base)
+    }
+}
 #[cfg(not(enabled))]
 impl ffi::QObjectExternDisabled {
     #[doc = "Connect the given function pointer to the signal "]

@@ -19,7 +19,6 @@ use quote::{format_ident, quote};
 use syn::{parse_quote, Attribute, Result};
 
 impl GeneratedRustFragment {
-    // Might need to be refactored to use a StructuredQObject instead (confirm with Leon)
     pub fn from_qobject(
         structured_qobject: &StructuredQObject,
         type_names: &TypeNames,

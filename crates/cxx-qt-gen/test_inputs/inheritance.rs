@@ -9,6 +9,12 @@ mod inheritance {
         type QAbstractItemModel;
     }
 
+    extern "C++Qt" {
+        include!(<QtWidgets/QPushButton>);
+        #[qobject]
+        type QPushButton;
+    }
+
     extern "RustQt" {
         #[qobject]
         #[base = QAbstractItemModel]

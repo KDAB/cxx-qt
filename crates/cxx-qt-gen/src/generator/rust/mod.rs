@@ -16,6 +16,7 @@ pub mod signals;
 pub mod threading;
 
 use crate::generator::{rust::fragment::GeneratedRustFragment, structuring};
+use crate::parser::externqobject::ParsedExternQObject;
 use crate::parser::{parameter::ParsedFunctionParameter, qobject::ParsedQObject, Parser};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
@@ -60,7 +61,14 @@ impl GeneratedRustBlocks {
         let namespace = parser.cxx_qt_data.namespace.clone().unwrap_or_default();
         let passthrough_mod = &parser.passthrough_module;
 
-        fragments.extend(vec![add_qobject_import(&parser.cxx_qt_data.qobjects)]);
+        let qobject_import = add_qobject_import(&parser.cxx_qt_data.qobjects);
+        if qobject_import.is_empty() {
+            for block in &parser.cxx_qt_data.extern_cxxqt_blocks {
+                fragments.push(add_extern_qobject_import(&block.qobjects))
+            }
+        } else {
+            fragments.push(qobject_import);
+        }
 
         let vis = &passthrough_mod.vis;
         let ident = &passthrough_mod.module_ident;
@@ -101,6 +109,28 @@ fn add_qobject_import(qobjects: &[ParsedQObject]) -> GeneratedRustFragment {
     let includes = qobjects
         .iter()
         .any(|obj| obj.has_qobject_macro && obj.base_class.is_none());
+    if includes {
+        GeneratedRustFragment {
+            cxx_mod_contents: vec![parse_quote! {
+                extern "C++" {
+                    #[doc(hidden)]
+                    #[namespace=""]
+                    type QObject = cxx_qt::QObject;
+                }
+            }],
+            cxx_qt_mod_contents: vec![],
+        }
+    } else {
+        GeneratedRustFragment {
+            cxx_mod_contents: vec![],
+            cxx_qt_mod_contents: vec![],
+        }
+    }
+}
+
+fn add_extern_qobject_import(qobjects: &[ParsedExternQObject]) -> GeneratedRustFragment {
+    // All extern C++Qt types must have QObject macro
+    let includes = qobjects.iter().any(|obj| obj.base_class.is_none());
     if includes {
         GeneratedRustFragment {
             cxx_mod_contents: vec![parse_quote! {
