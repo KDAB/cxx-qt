@@ -367,10 +367,36 @@ pub mod ffi {
             outer: Pin<&mut MyRustName>,
         ) -> Pin<&mut ThirdObjectRust>;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QPushButton_upcastPtr(thiz: *const QPushButton) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QPushButton_downcastPtr(base: *const QObject) -> *const QPushButton;
+    }
     #[namespace = ""]
     unsafe extern "C++" {
         #[namespace = "cxx_qt::multi_object"]
         type QPushButton;
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_ExternObjectCpp_upcastPtr(thiz: *const ExternObject)
+            -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_ExternObjectCpp_downcastPtr(
+            base: *const QObject,
+        ) -> *const ExternObject;
+    }
+    #[namespace = ""]
+    unsafe extern "C++" {
         #[namespace = "mynamespace"]
         #[cxx_name = "ExternObjectCpp"]
         type ExternObject;
@@ -850,6 +876,22 @@ impl ::cxx_qt::CxxQtType for ffi::MyRustName {
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         ffi::cxx_qt_ffi_MyCxxName_unsafeRustMut(self)
+    }
+}
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QPushButton {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_QPushButton_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_QPushButton_downcastPtr(base)
+    }
+}
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::ExternObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_ExternObjectCpp_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_ExternObjectCpp_downcastPtr(base)
     }
 }
 impl ffi::QPushButton {

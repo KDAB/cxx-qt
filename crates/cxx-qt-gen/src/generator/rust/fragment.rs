@@ -34,4 +34,8 @@ impl GeneratedRustFragment {
             ..Default::default()
         }
     }
+
+    pub fn is_empty(&self) -> bool {
+        self.cxx_mod_contents.is_empty() && self.cxx_qt_mod_contents.is_empty()
+    }
 }
