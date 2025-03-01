@@ -4,9 +4,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QByteArray, QFont, QString, QStringList, QVector};
+use crate::{QByteArray, QCoreApplication, QFont, QString, QStringList, QVector};
 use core::pin::Pin;
 use cxx_qt::Upcast;
+use std::ops::Deref;
 
 #[cxx::bridge]
 mod ffi {
@@ -21,26 +22,24 @@ mod ffi {
         type QVector_QByteArray = crate::QVector<QByteArray>;
         include!("cxx-qt-lib/qfont.h");
         type QFont = crate::QFont;
+        include!("cxx-qt-lib/qcoreapplication.h");
+        type QCoreApplication = crate::QCoreApplication;
 
         include!("cxx-qt-lib/qguiapplication.h");
         type QGuiApplication;
+    }
 
-        include!("cxx-qt-lib/qcoreapplication.h");
-        type QCoreApplication;
-
+    #[namespace = "rust::cxxqt1"]
+    unsafe extern "C++" {
         include!("cxx-qt/casting.h");
 
         #[doc(hidden)]
         #[rust_name = "upcast_qguiapplication"]
-        #[cxx_name = "upcastPtr"]
-        #[namespace = "rust::cxxqt1"]
-        unsafe fn upcast(thiz: *const QGuiApplication) -> *const QCoreApplication;
+        unsafe fn upcastPtr(thiz: *const QGuiApplication) -> *const QCoreApplication;
 
         #[doc(hidden)]
         #[rust_name = "downcast_qcoreapplication"]
-        #[cxx_name = "downcastPtr"]
-        #[namespace = "rust::cxxqt1"]
-        unsafe fn downcast(base: *const QCoreApplication) -> *const QGuiApplication;
+        unsafe fn downcastPtr(base: *const QCoreApplication) -> *const QGuiApplication;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -116,17 +115,23 @@ mod ffi {
     impl UniquePtr<QGuiApplication> {}
 }
 
-pub use ffi::{
-    downcast_qcoreapplication, upcast_qguiapplication, QCoreApplication, QGuiApplication,
-};
+pub use ffi::QGuiApplication;
+
+impl Deref for QGuiApplication {
+    type Target = QCoreApplication;
+
+    fn deref(&self) -> &Self::Target {
+        self.upcast()
+    }
+}
 
 impl Upcast<QCoreApplication> for QGuiApplication {
     unsafe fn upcast_ptr(this: *const Self) -> *const QCoreApplication {
-        upcast_qguiapplication(this)
+        ffi::upcast_qguiapplication(this)
     }
 
     unsafe fn from_base_ptr(base: *const QCoreApplication) -> *const Self {
-        downcast_qcoreapplication(base)
+        ffi::downcast_qcoreapplication(base)
     }
 }
 
