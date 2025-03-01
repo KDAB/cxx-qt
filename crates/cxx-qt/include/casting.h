@@ -5,6 +5,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
+#include <QtCore/QObject>
 #include <type_traits>
 
 namespace rust::cxxqt1 {
@@ -22,7 +23,15 @@ const Sub*
 downcastPtr(const Base* base)
 {
   static_assert(std::is_base_of_v<Base, Sub>);
-  return dynamic_cast<const Sub*>(base);
+  return qobject_cast<const Sub*>(base);
+}
+
+template<typename Sub, typename Base>
+const Sub*
+downcastPtrStatic(const Base* base)
+{
+  static_assert(std::is_base_of_v<Base, Sub>);
+  return static_cast<const Sub*>(base);
 }
 
 }

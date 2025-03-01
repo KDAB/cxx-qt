@@ -147,7 +147,7 @@ pub trait Upcast<T> {
     /// Automatically available for types in RustQt blocks in [cxx_qt::bridge](bridge)s.
     /// Downcasts a pointer to base class `T` to a pointer to `Self`.
     /// Return a null pointer if `Self` is not actually a child of base.
-    /// > Note: Internal implementation uses `dynamic_cast`.
+    /// > Note: Internal implementation uses `qobject_cast`.
     unsafe fn from_base_ptr(base: *const T) -> *const Self;
 
     /// Upcast a reference to self to a reference to the base class
