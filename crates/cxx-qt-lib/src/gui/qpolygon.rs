@@ -5,6 +5,7 @@
 use crate::{QPoint, QRect, QVector};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use cxx_qt::Upcast;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
@@ -17,9 +18,6 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qvector.h");
-        type QVector_QPoint = crate::QVector<QPoint>;
-
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qrect.h");
@@ -29,6 +27,9 @@ mod ffi {
         include!("cxx-qt-lib/qpolygonf.h");
         #[allow(dead_code)]
         type QPolygonF = crate::QPolygonF;
+
+        include!("cxx-qt-lib/qvector.h");
+        type QVector_QPoint = crate::QVector<QPoint>;
 
         include!("cxx-qt-lib/qpolygon.h");
         type QPolygon = super::QPolygon;
@@ -74,6 +75,19 @@ mod ffi {
         fn united(self: &QPolygon, r: &QPolygon) -> QPolygon;
     }
 
+    #[namespace = "rust::cxxqt1"]
+    unsafe extern "C++" {
+        include!("cxx-qt/casting.h");
+
+        #[doc(hidden)]
+        #[rust_name = "upcast_qpolygon"]
+        unsafe fn upcastPtr(thiz: *const QPolygon) -> *const QVector_QPoint;
+
+        #[doc(hidden)]
+        #[rust_name = "downcast_qvector_qpoint"]
+        unsafe fn downcastPtrStatic(base: *const QVector_QPoint) -> *const QPolygon;
+    }
+
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
@@ -101,15 +115,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpolygon_to_debug_qstring"]
         fn toDebugQString(value: &QPolygon) -> QString;
-    }
-
-    #[namespace = "rust::cxxqtlib1"]
-    unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "qpolygon_as_qvector_qpoint_ref"]
-        fn qpolygonAsQVectorQPointRef(shape: &QPolygon) -> &QVector_QPoint;
-        #[rust_name = "qpolygon_as_qvector_qpoint_ref_mut"]
-        fn qpolygonAsQVectorQPointRef(shape: &mut QPolygon) -> &mut QVector_QPoint;
     }
 }
 
@@ -178,13 +183,23 @@ impl Deref for QPolygon {
     type Target = QVector<QPoint>;
 
     fn deref(&self) -> &Self::Target {
-        ffi::qpolygon_as_qvector_qpoint_ref(self)
+        self.upcast()
     }
 }
 
 impl DerefMut for QPolygon {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        ffi::qpolygon_as_qvector_qpoint_ref_mut(self)
+        self.upcast_mut()
+    }
+}
+
+impl Upcast<QVector<QPoint>> for QPolygon {
+    unsafe fn upcast_ptr(this: *const Self) -> *const QVector<QPoint> {
+        ffi::upcast_qpolygon(this)
+    }
+
+    unsafe fn from_base_ptr(base: *const QVector<QPoint>) -> *const Self {
+        ffi::downcast_qvector_qpoint(base)
     }
 }
 
