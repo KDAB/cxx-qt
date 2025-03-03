@@ -4,9 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use core::pin::Pin;
-use cxx_qt::Upcast;
-use cxx_qt_lib::{QByteArray, QFont, QGuiApplication, QString, QStringList, QVector};
-use std::ops::Deref;
+use cxx_qt_lib::{QByteArray, QFont, QString, QStringList, QVector};
 
 #[cxx::bridge]
 mod ffi {
@@ -21,24 +19,9 @@ mod ffi {
         type QVector_QByteArray = cxx_qt_lib::QVector<QByteArray>;
         include!("cxx-qt-lib/qfont.h");
         type QFont = cxx_qt_lib::QFont;
-        include!("cxx-qt-lib/qguiapplication.h");
-        type QGuiApplication = cxx_qt_lib::QGuiApplication;
 
         include!("cxx-qt-lib-extras/qapplication.h");
         type QApplication;
-    }
-
-    #[namespace = "rust::cxxqt1"]
-    unsafe extern "C++" {
-        include!("cxx-qt/casting.h");
-
-        #[doc(hidden)]
-        #[rust_name = "upcast_qapplication"]
-        unsafe fn upcastPtr(thiz: *const QApplication) -> *const QGuiApplication;
-
-        #[doc(hidden)]
-        #[rust_name = "downcast_qapplication"]
-        unsafe fn downcastPtr(base: *const QGuiApplication) -> *const QApplication;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -109,24 +92,6 @@ mod ffi {
 }
 
 pub use ffi::QApplication;
-
-impl Upcast<QGuiApplication> for QApplication {
-    unsafe fn upcast_ptr(this: *const Self) -> *const QGuiApplication {
-        ffi::upcast_qapplication(this)
-    }
-
-    unsafe fn from_base_ptr(base: *const QGuiApplication) -> *const Self {
-        ffi::downcast_qapplication(base)
-    }
-}
-
-impl Deref for QApplication {
-    type Target = QGuiApplication;
-
-    fn deref(&self) -> &Self::Target {
-        self.upcast()
-    }
-}
 
 impl QApplication {
     /// Prepends path to the beginning of the library path list,
