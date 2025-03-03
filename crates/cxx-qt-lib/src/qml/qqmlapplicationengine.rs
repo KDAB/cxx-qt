@@ -3,10 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::QQmlEngine;
-use cxx_qt::Upcast;
-use std::ops::Deref;
-
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -17,11 +13,22 @@ mod ffi {
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
 
-        include!("cxx-qt-lib/qqmlengine.h");
-        type QQmlEngine = crate::QQmlEngine;
-
         include!("cxx-qt-lib/qqmlapplicationengine.h");
         type QQmlApplicationEngine;
+
+        include!("cxx-qt/casting.h");
+
+        #[doc(hidden)]
+        #[rust_name = "upcast_qqmlapplication_engine"]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn upcast(thiz: *const QQmlApplicationEngine) -> *const QQmlEngine;
+
+        #[doc(hidden)]
+        #[rust_name = "downcast_qqml_engine"]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn downcast(base: *const QQmlEngine) -> *const QQmlApplicationEngine;
 
         /// Adds path as a directory where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "add_import_path"]
@@ -31,8 +38,25 @@ mod ffi {
         #[rust_name = "add_plugin_path"]
         fn addPluginPath(self: Pin<&mut QQmlApplicationEngine>, path: &QString);
 
+        /// Return the base URL for this engine.
+        /// The base URL is only used to resolve components when a relative URL is passed to the QQmlComponent constructor.
+        #[rust_name = "base_url"]
+        fn baseUrl(self: &QQmlApplicationEngine) -> QUrl;
+
+        /// Returns the list of directories where the engine searches for installed modules in a URL-based directory structure.
+        #[rust_name = "import_path_list"]
+        fn importPathList(self: &QQmlApplicationEngine) -> QStringList;
+
         /// Loads the root QML file located at url.
         fn load(self: Pin<&mut QQmlApplicationEngine>, url: &QUrl);
+
+        /// This property holds the directory for storing offline user data
+        #[rust_name = "offline_storage_path"]
+        fn offlineStoragePath(self: &QQmlApplicationEngine) -> QString;
+
+        /// Returns the list of directories where the engine searches for native plugins for imported modules (referenced in the qmldir file).
+        #[rust_name = "plugin_path_list"]
+        fn pluginPathList(self: &QQmlApplicationEngine) -> QStringList;
 
         /// Set the base URL for this engine to url.
         #[rust_name = "set_base_url"]
@@ -51,17 +75,9 @@ mod ffi {
         fn setOfflineStoragePath(self: Pin<&mut QQmlApplicationEngine>, dir: &QString);
     }
 
-    #[namespace = "rust::cxxqt1"]
     unsafe extern "C++" {
-        include!("cxx-qt/casting.h");
-
-        #[doc(hidden)]
-        #[rust_name = "upcast_qqmlapplication_engine"]
-        unsafe fn upcastPtr(thiz: *const QQmlApplicationEngine) -> *const QQmlEngine;
-
-        #[doc(hidden)]
-        #[rust_name = "downcast_qqml_engine"]
-        unsafe fn downcastPtr(base: *const QQmlEngine) -> *const QQmlApplicationEngine;
+        include!("cxx-qt-lib/qqmlengine.h");
+        type QQmlEngine = crate::QQmlEngine;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -78,15 +94,10 @@ mod ffi {
     impl UniquePtr<QQmlApplicationEngine> {}
 }
 
+use crate::QQmlEngine;
+use cxx_qt::Upcast;
+
 pub use ffi::QQmlApplicationEngine;
-
-impl Deref for QQmlApplicationEngine {
-    type Target = QQmlEngine;
-
-    fn deref(&self) -> &Self::Target {
-        self.upcast()
-    }
-}
 
 impl Upcast<QQmlEngine> for QQmlApplicationEngine {
     unsafe fn upcast_ptr(this: *const Self) -> *const QQmlEngine {
