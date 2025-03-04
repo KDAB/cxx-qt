@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.7.0...HEAD)
+## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.7.1...HEAD)
 
 ### Added
 
@@ -23,7 +23,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for further types: `QUuid`
 - New example: Basic greeter app
 - Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`
-- Allow creating a `QImage` from an `image::RgbaImage`.
 - Support for `cfg` attributes through to C++ generation
 - CXX-Qt-build: Improved compile time and propagation of initializers between crates
 - CXX-Qt-build: Multi-crate projects are now possible with Cargo and CMake (see `examples/qml_multi_crates`)
@@ -32,14 +31,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add wrappers for up and down casting, for all types which inherit from QObject, available for &T, &mut T and Pin<&mut T>
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 
-### Fixed
-
-- Build warnings due to unused unsafe blocks since CXX 1.0.130
-
 ### Removed
 
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)
 - CXX-Qt-build: Interface no longer includes initializers
+
+## [0.7.1](https://github.com/KDAB/cxx-qt/compare/v0.7.0...v0.7.1) - 2025-03-04
+
+### Added
+
+- Allow creating a `QImage` from an `image::RgbaImage`.
+
+### Fixed
+
+- Prevent clippy from tripping lint
+- Build warnings due to unused unsafe blocks since CXX 1.0.130
+- On non-Unix platforms, use deep copying rather than symlinking
 
 ## [0.7.0](https://github.com/KDAB/cxx-qt/compare/v0.6.1...v0.7.0) - 2024-10-30
 
