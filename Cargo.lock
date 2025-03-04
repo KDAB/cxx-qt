@@ -357,7 +357,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "cxx",
  "cxx-qt-build",
@@ -379,7 +379,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-build"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "cc",
  "codespan-reporting",
@@ -395,7 +395,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-gen"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "clang-format",
  "convert_case",
@@ -409,7 +409,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-lib"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "bytes",
  "chrono",
@@ -429,7 +429,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-lib-extras"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "cxx",
  "cxx-qt",
@@ -439,7 +439,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-macro"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "cxx",
  "cxx-qt",
@@ -1173,7 +1173,7 @@ dependencies = [
 
 [[package]]
 name = "qt-build-utils"
-version = "0.7.0"
+version = "0.7.1"
 dependencies = [
  "cc",
  "serde",
