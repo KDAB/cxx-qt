@@ -181,6 +181,14 @@ jobs:
         with:
           path: /home/runner/.cache/sccache
           key: "${{ env.GITHUB_COMPILER_CACHE_KEY }}"
+
+      - name: "Start sccache server"
+        # If the compiler cache couldn't be restored, we have to create the cache path,
+        # as otherwise the server startup fails.
+        run: |
+          mkdir -p /home/runner/.cache/sccache
+          sccache --start-server
+
       - name: "emsdk cache"
         uses: actions/cache@v4
         id: emsdk-cache
@@ -458,6 +466,22 @@ jobs:
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
+
+    - name: "[Windows] Start sccache server"
+      # If the compiler cache couldn't be restored, we have to create the cache path,
+      # as otherwise the server startup fails.
+      if: runner.os == 'Windows'
+      run: |
+        md ${{ matrix.compiler_cache_path }} -ea 0
+        sccache --start-server
+
+    - name: "[Other] Start sccache server"
+      # If the compiler cache couldn't be restored, we have to create the cache path,
+      # as otherwise the server startup fails.
+      if: runner.os != 'Windows'
+      run: |
+        mkdir -p ${{ matrix.compiler_cache_path }}
+        sccache --start-server
 
     - name: "Install clang-format"
       # Note ensure that clang-format runner is updated too
