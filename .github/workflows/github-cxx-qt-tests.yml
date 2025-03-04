@@ -201,7 +201,7 @@ jobs:
       - name: "Delete previous compiler cache"
         # Updating th cache doesn't work from forks
         # So update it once it's merged into the repo
-        if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
+        if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' && github.ref_name == 'main' }}
         continue-on-error: true
         run: |
           gh extension install actions/gh-actions-cache
@@ -211,7 +211,7 @@ jobs:
       - name: "Save Compiler Cache"
         # Updating th cache doesn't work from forks
         # So update it once it's merged into the repo
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         uses: actions/cache/save@v4
         with:
           path: /home/runner/.cache/sccache
@@ -488,7 +488,7 @@ jobs:
     - name: "Delete previous compiler cache"
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
-      if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
+      if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' && github.ref_name == 'main' }}
       continue-on-error: true
       run: |
         gh extension install actions/gh-actions-cache
@@ -498,7 +498,7 @@ jobs:
     - name: "Save Compiler Cache"
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
       uses: actions/cache/save@v4
       with:
         path: ${{ matrix.compiler_cache_path }}
