@@ -17,7 +17,7 @@ license.workspace = true
 description = "Code generation for integrating `cxx-qt` into higher level tools"
 repository.workspace = true
 exclude = ["update_expected.sh"]
-rust-version = "1.64.0"
+rust-version.workspace = true
 
 [dependencies]
 cxx-gen.workspace = true
