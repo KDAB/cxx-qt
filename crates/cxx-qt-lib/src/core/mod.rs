@@ -109,6 +109,9 @@ pub use qvariant::{QVariant, QVariantValue};
 mod qvector;
 pub use qvector::{QVector, QVectorElement};
 
+mod qtlogging;
+pub use qtlogging::{qt_message_output, QMessageLogContext, QtMsgType};
+
 #[cxx::bridge]
 mod ffi {
     #[namespace = "rust::cxxqtlib1"]
