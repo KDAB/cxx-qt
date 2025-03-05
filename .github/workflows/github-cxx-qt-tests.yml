@@ -83,14 +83,16 @@ jobs:
       #
       # See versions from the table in this link
       # https://github.com/taiki-e/cargo-llvm-cov?tab=readme-ov-file#get-coverage-of-cc-code-linked-to-rust-librarybinary
-      - name: Install llvm 17
+      - name: Install llvm 19
         run: |
-          sudo apt-get update && sudo apt-get install -y llvm-17
-          test -d /usr/lib/llvm-17/bin/
+          sudo apt-get update && sudo apt-get install -y llvm-19
+          test -d /usr/lib/llvm-19/bin/
       - name: Setup toolchain
         run: |
           # Note that the llvm version needs to match, see the link above
-          rustup default 1.77.2
+          # grcov currently requires a newer version of the Rust compiler than CXX-Qts MSRV
+          # So use a newer version here than in the other tests
+          rustup default 1.85.0
           cargo install grcov
           rustup component add rustfmt
       # Ensure we do not have any existing coverage files
