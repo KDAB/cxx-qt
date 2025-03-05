@@ -6,9 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include <cstdint>
-
-#include "qlist_QByteArray.h"
 #include "qlist_bool.h"
 #include "qlist_f32.h"
 #include "qlist_f64.h"
@@ -19,6 +16,7 @@
 #ifdef CXX_QT_GUI_FEATURE
 #include "qlist_QColor.h"
 #endif
+#include "qlist_QByteArray.h"
 #include "qlist_QDate.h"
 #include "qlist_QDateTime.h"
 #include "qlist_QLine.h"

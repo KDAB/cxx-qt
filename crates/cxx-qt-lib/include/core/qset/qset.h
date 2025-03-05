@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include "qset_QByteArray.h"
 #include "qset_bool.h"
 #include "qset_f32.h"
 #include "qset_f64.h"
@@ -14,6 +13,7 @@
 #include "qset_i32.h"
 #include "qset_i64.h"
 #include "qset_i8.h"
+#include "qset_QByteArray.h"
 #include "qset_QDate.h"
 #include "qset_QDateTime.h"
 #include "qset_QPersistentModelIndex.h"
