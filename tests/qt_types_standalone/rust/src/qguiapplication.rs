@@ -21,11 +21,11 @@ mod qguiapplication_cxx {
 fn construct_qguiapplication() -> cxx::UniquePtr<QGuiApplication> {
     let mut app = QGuiApplication::new();
     if let Some(app) = app.as_mut() {
-        app.set_application_name(&QString::from("kdab"));
+        QGuiApplication::set_application_name(&QString::from("kdab"));
     }
     app
 }
 
 fn read_qguiapplication(app: &QGuiApplication) -> bool {
-    app.application_name().to_string() == "kdab"
+    QGuiApplication::application_name().to_string() == "kdab"
 }

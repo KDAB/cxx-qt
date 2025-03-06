@@ -21,11 +21,11 @@ mod qcoreapplication_cxx {
 fn construct_qcoreapplication() -> cxx::UniquePtr<QCoreApplication> {
     let mut app = QCoreApplication::new();
     if let Some(app) = app.as_mut() {
-        app.set_application_name(&QString::from("kdab"));
+        QCoreApplication::set_application_name(&QString::from("kdab"));
     }
     app
 }
 
 fn read_qcoreapplication(app: &QCoreApplication) -> bool {
-    app.application_name().to_string() == "kdab"
+    QCoreApplication::application_name().to_string() == "kdab"
 }
