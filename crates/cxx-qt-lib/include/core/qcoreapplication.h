@@ -36,96 +36,44 @@ private:
 ::std::unique_ptr<QCoreApplication>
 qcoreapplicationNew(const QVector<QByteArray>& args);
 
-template<typename T>
 void
-qapplicationAddLibraryPath(T& app, const QString& path)
-{
-  app.addLibraryPath(path);
-}
+qcoreapplicationAddLibraryPath(const QString& path);
 
-template<typename T>
 QString
-qapplicationApplicationName(const T& app)
-{
-  return app.applicationName();
-}
+qcoreapplicationApplicationName();
 
-template<typename T>
 QString
-qapplicationApplicationVersion(const T& app)
-{
-  return app.applicationVersion();
-}
+qcoreapplicationApplicationVersion();
 
-template<typename T>
 ::std::int32_t
-qapplicationExec(T& app)
-{
-  return static_cast<::std::int32_t>(app.exec());
-}
+qcoreapplicationExec();
 
-template<typename T>
 QStringList
-qapplicationLibraryPaths(const T& app)
-{
-  return app.libraryPaths();
-}
+qcoreapplicationLibraryPaths();
 
-template<typename T>
 QString
-qapplicationOrganizationDomain(const T& app)
-{
-  return app.organizationDomain();
-}
+qcoreapplicationOrganizationDomain();
 
-template<typename T>
 QString
-qapplicationOrganizationName(const T& app)
-{
-  return app.organizationName();
-}
+qcoreapplicationOrganizationName();
 
-template<typename T>
 void
-qapplicationSetApplicationName(T& app, const QString& name)
-{
-  app.setApplicationName(name);
-}
+qcoreapplicationSetApplicationName(const QString& name);
 
-template<typename T>
 void
-qapplicationSetApplicationVersion(T& app, const QString& version)
-{
-  app.setApplicationVersion(version);
-}
+qcoreapplicationSetApplicationVersion(const QString& version);
 
-template<typename T>
 void
-qapplicationSetLibraryPaths(T& app, const QStringList& paths)
-{
-  app.setLibraryPaths(paths);
-}
+qcoreapplicationSetLibraryPaths(const QStringList& paths);
 
-template<typename T>
 void
-qapplicationSetOrganizationDomain(T& app, const QString& domain)
-{
-  app.setOrganizationDomain(domain);
-}
+qcoreapplicationSetOrganizationDomain(const QString& domain);
 
-template<typename T>
 void
-qapplicationSetOrganizationName(T& app, const QString& name)
-{
-  app.setOrganizationName(name);
-}
+qcoreapplicationSetOrganizationName(const QString& name);
 
-template<typename T>
 void
-qapplicationRemoveLibraryPath(T& app, const QString& path)
-{
-  app.removeLibraryPath(path);
-}
+qcoreapplicationRemoveLibraryPath(const QString& path);
 
 }
 }
