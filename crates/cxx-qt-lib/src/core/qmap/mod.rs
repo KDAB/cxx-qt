@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 /// The QMap class is a template class that provides an associative array.
 ///
@@ -65,6 +66,17 @@ where
 {
 }
 
+impl<T> fmt::Debug for QMap<T>
+where
+    T: QMapPair,
+    T::Key: fmt::Debug,
+    T::Value: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_map().entries(self.iter()).finish()
+    }
+}
+
 impl<T> QMap<T>
 where
     T: QMapPair,
@@ -108,7 +120,7 @@ where
 
     /// An iterator visiting all key-value pairs in an arbitrary order.
     /// The iterator element type is (&T::Key, &T::Value).
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             map: self,
             index: 0,
@@ -181,7 +193,7 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for Iter<'a, T>
+impl<T> ExactSizeIterator for Iter<'_, T>
 where
     T: QMapPair,
 {

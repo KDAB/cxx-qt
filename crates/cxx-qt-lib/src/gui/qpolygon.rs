@@ -5,6 +5,7 @@
 use crate::{QPoint, QRect, QVector};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::ops::{Deref, DerefMut};
 
 #[cxx::bridge]
@@ -98,8 +99,8 @@ mod ffi {
         fn operatorEq(a: &QPolygon, b: &QPolygon) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qpolygon_to_qstring"]
-        fn toQString(value: &QPolygon) -> QString;
+        #[rust_name = "qpolygon_to_debug_qstring"]
+        fn toDebugQString(value: &QPolygon) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -159,15 +160,15 @@ impl PartialEq for QPolygon {
     }
 }
 
-impl std::fmt::Debug for QPolygon {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        QVector::fmt(self, f)
+impl fmt::Display for QPolygon {
+    fn fmt(&self, f: &mut fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", ffi::qpolygon_to_debug_qstring(self))
     }
 }
 
-impl std::fmt::Display for QPolygon {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qpolygon_to_qstring(self))
+impl fmt::Debug for QPolygon {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", **self)
     }
 }
 

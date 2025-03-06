@@ -70,8 +70,8 @@ mod ffi {
         #[rust_name = "qpoint_init"]
         fn construct(x: i32, y: i32) -> QPoint;
         #[doc(hidden)]
-        #[rust_name = "qpoint_to_qstring"]
-        fn toQString(value: &QPoint) -> QString;
+        #[rust_name = "qpoint_to_debug_qstring"]
+        fn toDebugQString(value: &QPoint) -> QString;
         #[doc(hidden)]
         #[rust_name = "qpoint_plus"]
         fn operatorPlus(a: &QPoint, b: &QPoint) -> QPoint;
@@ -126,7 +126,7 @@ impl Default for QPoint {
 
 impl fmt::Display for QPoint {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qpoint_to_qstring(self))
+        write!(f, "{}", ffi::qpoint_to_debug_qstring(self))
     }
 }
 

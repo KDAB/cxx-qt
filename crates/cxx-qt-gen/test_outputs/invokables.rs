@@ -48,67 +48,78 @@ mod ffi {
         #[cxx_name = "cpp_method"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn cpp_method(self: &MyObject);
+        unsafe fn cpp_method(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable(self: &MyObject);
+        unsafe fn invokable(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable_mutable"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_mutable(self: Pin<&mut MyObject>);
+        unsafe fn invokable_mutable(self: Pin<&mut MyObject>);
     }
     extern "Rust" {
         #[cxx_name = "invokable_parameters"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
+        unsafe fn invokable_parameters(
+            self: &MyObject,
+            opaque: &QColor,
+            trivial: &QPoint,
+            primitive: i32,
+        );
     }
     extern "Rust" {
         #[cxx_name = "invokable_return_opaque"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
+        unsafe fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
     }
     extern "Rust" {
         #[cxx_name = "invokable_return_trivial"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
+        unsafe fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
     }
     extern "Rust" {
         #[cxx_name = "invokable_final"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_final(self: &MyObject);
+        unsafe fn invokable_final(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable_override"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_override(self: &MyObject);
+        unsafe fn invokable_override(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable_virtual"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_virtual(self: &MyObject);
+        unsafe fn invokable_virtual(self: &MyObject);
+    }
+    unsafe extern "C++" {
+        #[cxx_name = "invokable_pure_virtual"]
+        #[namespace = "cxx_qt::my_object"]
+        #[doc(hidden)]
+        fn invokable_pure_virtual(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable_result_tuple"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_result_tuple(self: &MyObject) -> Result<()>;
+        unsafe fn invokable_result_tuple(self: &MyObject) -> Result<()>;
     }
     extern "Rust" {
         #[cxx_name = "invokable_result_type"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        fn invokable_result_type(self: &MyObject) -> Result<String>;
+        unsafe fn invokable_result_type(self: &MyObject) -> Result<String>;
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -145,6 +156,16 @@ mod ffi {
     extern "Rust" {
         #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
         type MyObjectCxxQtThreadQueuedFn;
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_downcastPtr(base: *const QObject) -> *const MyObject;
     }
     #[namespace = "cxx_qt::my_object::cxx_qt_MyObject"]
     #[cxx_name = "CxxQtConstructorArguments0"]
@@ -247,6 +268,11 @@ mod ffi {
         #[namespace = "rust::cxxqt1"]
         fn cxx_qt_ffi_MyObject_unsafeRustMut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[namespace = ""]
+        type QObject = cxx_qt::QObject;
+    }
 }
 impl cxx_qt::Threading for ffi::MyObject {
     type BoxedQueuedFn = MyObjectCxxQtThreadQueuedFn;
@@ -299,6 +325,14 @@ impl cxx_qt::Threading for ffi::MyObject {
 #[doc(hidden)]
 pub struct MyObjectCxxQtThreadQueuedFn {
     inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut ffi::MyObject>) + Send>,
+}
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_MyObject_downcastPtr(base)
+    }
 }
 #[doc(hidden)]
 pub fn route_arguments_MyObject_0<'a>(

@@ -10,6 +10,24 @@ set -e
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 
+function generate_qlist_header(){
+tee "$SCRIPTPATH/../../../include/core/qlist/qlist_$1.h" <<EOF
+// clang-format off
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// clang-format on
+// SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+//! This is an auto-generated file. Do not edit.
+//! Edit instead: cxx-qt-lib/src/core/qlist/generate.sh
+#pragma once
+#include "qlist_private.h"
+$3
+using QList_$1 = QList<$2>;
+EOF
+}
+
 function generate_bridge_primitive() {
     tee "$SCRIPTPATH/qlist_$1.rs" <<EOF
 // SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
@@ -20,7 +38,7 @@ function generate_bridge_primitive() {
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_$1.h");
         type QList_$1 = crate::QList<$1>;
     }
 
@@ -119,7 +137,7 @@ pub mod ffi {
         include!("cxx-qt-lib/$2.h");
         type $1 = crate::$1;
 
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_$1.h");
         type QList_$1 = crate::QList<$1>;
     }
 
@@ -203,6 +221,38 @@ pub(crate) fn remove(s: &mut ffi::QList_$1, pos: isize) {
 EOF
     rustfmt "$SCRIPTPATH/qlist_$2.rs"
 }
+
+generate_qlist_header "bool" "bool" 
+generate_qlist_header "f32" "float"
+generate_qlist_header "f64" "double"
+generate_qlist_header "i8" "::std::int8_t"
+generate_qlist_header "i16" "::std::int16_t"
+generate_qlist_header "i32" "::std::int32_t"
+generate_qlist_header "i64" "std::int64_t"
+generate_qlist_header "QByteArray" "::QByteArray" "#include <QtCore/QByteArray>"
+generate_qlist_header "QDate" "::QDate" "#include <QtCore/QDate>"
+generate_qlist_header "QDateTime" "::QDateTime" "#include <QtCore/QDateTime>"
+generate_qlist_header "QLine" "::QLine" "#include <QtCore/QLine>"
+generate_qlist_header "QLineF" "::QLineF" "#include <QtCore/QLineF>"
+generate_qlist_header "QMargins" "::QMargins" "#include <QtCore/QMargins>"
+generate_qlist_header "QMarginsF" "::QMarginsF" "#include <QtCore/QMarginsF>"
+generate_qlist_header "QPersistentModelIndex" "::QPersistentModelIndex" "#include <QtCore/QPersistentModelIndex>"
+generate_qlist_header "QPoint" "::QPoint" "#include <QtCore/QPoint>"
+generate_qlist_header "QPointF" "::QPointF" "#include <QtCore/QPointF>" 
+generate_qlist_header "QRect" "::QRect" "#include <QtCore/QRect>" 
+generate_qlist_header "QRectF" "::QRectF" "#include <QtCore/QRectF>" 
+generate_qlist_header "QSize" "::QSize" "#include <QtCore/QSize>"
+generate_qlist_header "QSizeF" "::QSizeF" "#include <QtCore/QSizeF>"
+generate_qlist_header "QString" "::QString" "#include <QtCore/QString>"
+generate_qlist_header "QTime" "::QTime" "#include <QtCore/QTime>"
+generate_qlist_header "QUuid" "::QUuid" "#include <QtCore/QUuid>"
+generate_qlist_header "QUrl" "::QUrl" "#include <QtCore/QUrl>"
+generate_qlist_header "QVariant" "::QVariant" "#include <QtCore/QVariant>"
+generate_qlist_header "u8" "::std::uint8_t"
+generate_qlist_header "u16" "::std::uint16_t"
+generate_qlist_header "u32" "::std::uint32_t"
+generate_qlist_header "u64" "::std::uint64_t"
+generate_qlist_header "QColor" "::QColor" "#include <QtGui/QColor>"
 
 generate_bridge_primitive "bool"
 generate_bridge_primitive "f32"

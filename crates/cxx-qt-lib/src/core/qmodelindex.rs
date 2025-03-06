@@ -14,6 +14,7 @@ mod ffi {
 
         type QModelIndex = super::QModelIndex;
         type QString = crate::QString;
+        type quintptr = crate::quintptr;
 
         /// Returns the column this model index refers to.
         fn column(self: &QModelIndex) -> i32;
@@ -35,6 +36,9 @@ mod ffi {
         #[rust_name = "sibling_at_row"]
         fn siblingAtRow(self: &QModelIndex, row: i32) -> QModelIndex;
 
+        /// Returns a `quintptr` used by the model to associate the index with the internal data structure.
+        #[rust_name = "internal_id"]
+        fn internalId(self: &QModelIndex) -> quintptr;
         /// Returns a `*mut c_void` pointer used by the model to associate the index with the internal data structure.
         #[rust_name = "internal_pointer_mut"]
         fn internalPointer(self: &QModelIndex) -> *mut c_void;
@@ -52,12 +56,8 @@ mod ffi {
         #[rust_name = "qmodelindex_eq"]
         fn operatorEq(a: &QModelIndex, b: &QModelIndex) -> bool;
         #[doc(hidden)]
-        #[rust_name = "qmodelindex_to_qstring"]
-        fn toQString(value: &QModelIndex) -> QString;
-
-        #[doc(hidden)]
-        #[rust_name = "qmodelindex_internal_id"]
-        fn qmodelindexInternalId(index: &QModelIndex) -> usize;
+        #[rust_name = "qmodelindex_to_debug_qstring"]
+        fn toDebugQString(value: &QModelIndex) -> QString;
     }
 }
 
@@ -69,15 +69,6 @@ pub struct QModelIndex {
     _c: MaybeUninit<i32>,
     _i: MaybeUninit<usize>,
     _m: MaybeUninit<usize>,
-}
-
-impl QModelIndex {
-    /// Returns a `usize` used by the model to associate the index with the internal data structure.
-    //
-    // TODO: need to add support for quintptr
-    pub fn internal_id(&self) -> usize {
-        ffi::qmodelindex_internal_id(self)
-    }
 }
 
 impl Default for QModelIndex {
@@ -97,13 +88,13 @@ impl std::cmp::Eq for QModelIndex {}
 
 impl fmt::Display for QModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qmodelindex_to_qstring(self))
+        write!(f, "{self:?}")
     }
 }
 
 impl fmt::Debug for QModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        write!(f, "{}", ffi::qmodelindex_to_debug_qstring(self))
     }
 }
 

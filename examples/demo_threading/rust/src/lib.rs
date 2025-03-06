@@ -29,7 +29,7 @@ pub mod qobject {
     // Enabling threading on the qobject
     impl cxx_qt::Threading for EnergyUsage {}
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// A new sensor has been detected
         #[qsignal]
         #[cxx_name = "sensorAdded"]
@@ -44,7 +44,7 @@ pub mod qobject {
         fn sensor_removed(self: Pin<&mut EnergyUsage>, uuid: QString);
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// A Q_INVOKABLE that returns the current power usage for a given uuid
         #[qinvokable]
         #[cxx_name = "sensorPower"]

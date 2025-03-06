@@ -7,6 +7,7 @@ use crate::QDateTime;
 use crate::{QByteArray, QDate, QPersistentModelIndex, QString, QTime, QUrl, QUuid};
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 /// The QSet class is a template class that provides a hash-table-based set.
 ///
@@ -64,11 +65,11 @@ where
 
 impl<T> Eq for QSet<T> where T: QSetElement + PartialEq {}
 
-impl<T> std::fmt::Debug for QSet<T>
+impl<T> fmt::Debug for QSet<T>
 where
-    T: QSetElement + std::fmt::Debug,
+    T: QSetElement + fmt::Debug,
 {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.debug_set().entries(self.iter()).finish()
     }
 }
@@ -103,7 +104,7 @@ where
 
     /// An iterator visiting all elements in arbitrary order.
     /// The iterator element type is &'a T.
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             set: self,
             index: 0,
@@ -177,7 +178,7 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for Iter<'a, T>
+impl<T> ExactSizeIterator for Iter<'_, T>
 where
     T: QSetElement,
 {

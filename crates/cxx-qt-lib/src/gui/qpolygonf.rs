@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use std::fmt;
 use std::ops::{Deref, DerefMut};
 
 use crate::{QPointF, QVector};
@@ -89,8 +90,8 @@ mod ffi {
         fn operatorEq(a: &QPolygonF, b: &QPolygonF) -> bool;
 
         #[doc(hidden)]
-        #[rust_name = "qpolygonf_to_qstring"]
-        fn toQString(value: &QPolygonF) -> QString;
+        #[rust_name = "qpolygonf_to_debug_qstring"]
+        fn toDebugQString(value: &QPolygonF) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -141,15 +142,15 @@ impl PartialEq for QPolygonF {
     }
 }
 
-impl std::fmt::Debug for QPolygonF {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        QVector::fmt(self, f)
+impl fmt::Display for QPolygonF {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", ffi::qpolygonf_to_debug_qstring(self))
     }
 }
 
-impl std::fmt::Display for QPolygonF {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qpolygonf_to_qstring(self))
+impl fmt::Debug for QPolygonF {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", **self)
     }
 }
 

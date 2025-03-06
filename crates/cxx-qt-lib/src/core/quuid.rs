@@ -138,13 +138,13 @@ impl Default for QUuid {
 
 impl fmt::Display for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.format(QUuidStringFormat::WithoutBraces).fmt(f)
+        write!(f, "{}", self.format(QUuidStringFormat::WithBraces))
     }
 }
 
 impl fmt::Debug for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.format(QUuidStringFormat::WithoutBraces).fmt(f)
+        write!(f, "{self}")
     }
 }
 
@@ -237,7 +237,7 @@ impl QUuid {
     }
 
     /// Converts self to big endian from the target’s endianness.
-    // This function is analogous to [`u8::to_be`](https://doc.rust-lang.org/src/core/num/uint_macros.rs.html#399-431).
+    /// This function is analogous to [`u8::to_be`](https://doc.rust-lang.org/src/core/num/uint_macros.rs.html#399-431).
     ///
     /// On big endian this is a no-op. On little endian the bytes are swapped.
     ///
@@ -452,7 +452,7 @@ mod test {
     fn quuid_to_string() {
         assert_eq!(
             QUuid::from_u128(0x7e95e361a22c51c18c297ac24cb61e83).to_string(),
-            "7e95e361-a22c-51c1-8c29-7ac24cb61e83"
+            "{7e95e361-a22c-51c1-8c29-7ac24cb61e83}"
         )
     }
 

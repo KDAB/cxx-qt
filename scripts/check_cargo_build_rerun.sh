@@ -7,15 +7,16 @@
 
 set -ex
 
+SOURCE_FOLDER=$1
+BUILD_FOLDER=$2
+
 # Ensure we are in the right directory
-SCRIPT=$(realpath "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-cd "$SCRIPTPATH/../"
+cd "$SOURCE_FOLDER"
 
 # Ensure that we do see a "Compiling" in the output
 # as if we do it means we have a cargo::rerun-if-changed incorrectly
 function check_build_contains_compiling() {
-    BUILD=$(cargo build -p qml-minimal-no-cmake 2>&1)
+    BUILD=$(cargo build --locked --release --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake 2>&1)
 
     if ! echo "$BUILD" | grep -q Compiling; then
         echo "cargo build is missing text 'Compiling', likely an incorrect cargo::rerun-if-changed in a build script."
@@ -26,7 +27,7 @@ function check_build_contains_compiling() {
 # Ensure that we don't see any "Compiling" in the output
 # as if we do it means we have a cargo::rerun-if-changed incorrectly
 function check_build_no_compiling() {
-    BUILD=$(cargo build -p qml-minimal-no-cmake 2>&1)
+    BUILD=$(cargo build --locked --release --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake 2>&1)
 
     if echo "$BUILD" | grep -q Compiling; then
         echo "cargo build contained text 'Compiling', likely an incorrect cargo::rerun-if-changed in a build script."
@@ -35,20 +36,20 @@ function check_build_no_compiling() {
 }
 
 # Build once
-cargo build -p qml-minimal-no-cmake
+cargo build --locked --release --target-dir="$BUILD_FOLDER" -p qml-minimal-no-cmake
 
 # Build a second time
 check_build_no_compiling
 
 # Modify a qml file
-touch "$SCRIPTPATH/../examples/cargo_without_cmake/qml/main.qml"
+touch "$SOURCE_FOLDER/examples/cargo_without_cmake/qml/main.qml"
 
 # Build a third and fourth time
 check_build_contains_compiling
 check_build_no_compiling
 
 # Modify a Rust file
-touch "$SCRIPTPATH/../examples/cargo_without_cmake/src/cxxqt_object.rs"
+touch "$SOURCE_FOLDER/examples/cargo_without_cmake/src/cxxqt_object.rs"
 
 # Build a fifth and sixth time
 check_build_contains_compiling

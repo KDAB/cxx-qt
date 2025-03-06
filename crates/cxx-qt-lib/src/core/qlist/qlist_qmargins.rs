@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qmargins.h");
         type QMargins = crate::QMargins;
 
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QMargins.h");
         type QList_QMargins = crate::QList<QMargins>;
     }
 

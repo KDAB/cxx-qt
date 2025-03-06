@@ -92,7 +92,7 @@ Use the CXX `include!` macro to include the appropriate C++ header for the base 
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_base_include}}
 ```
 
-For more information on inheritance and how to override methods see the [Inheritance & Overriding](../concepts/inheritance.md) page.
+For more information on inheritance and how to override methods see the [Inheritance & Overriding](../concepts/inheritance.md) page and the [Casting](../concepts/casting.md) page.
 
 [Full Example](https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs)
 
@@ -226,11 +226,12 @@ For documentation see the [inheritance](../concepts/inheritance.md) page.
 
 Generated methods can have C++ specifiers necessary to implement inheritance.
 
-| C++ keyword | CXX-Qt attribute              |
-|-------------|-------------------------------|
-| `override`  | `#[cxx_override]` |
-| `virtual`   | `#[cxx_virtual]`  |
-| `final`     | `#[cxx_final]`    |
+| C++ keyword  | CXX-Qt attribute  |
+|--------------|-------------------|
+| `override`   | `#[cxx_override]` |
+| `virtual`    | `#[cxx_virtual]`  |
+| `final`      | `#[cxx_final]`    |
+| `= 0` (pure) | `#[cxx_pure]`     |
 
 These are specified as an attribute on the method signature.
 

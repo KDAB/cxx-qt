@@ -5,49 +5,59 @@
 
 use crate::generator::rust::get_params_tokens;
 use crate::{
-    generator::{
-        naming::qobject::QObjectNames,
-        rust::fragment::{GeneratedRustFragment, RustFragmentPair},
-    },
+    generator::{naming::qobject::QObjectNames, rust::fragment::GeneratedRustFragment},
     parser::method::ParsedMethod,
 };
-use quote::{quote, quote_spanned};
-use syn::{spanned::Spanned, Result};
+use quote::quote;
+use syn::{parse_quote_spanned, spanned::Spanned, Result};
 
 pub fn generate_rust_methods(
-    invokables: &Vec<&ParsedMethod>,
+    invokables: &[&ParsedMethod],
     qobject_names: &QObjectNames,
 ) -> Result<GeneratedRustFragment> {
-    let mut generated = GeneratedRustFragment::default();
     let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
-    for &invokable in invokables {
-        // TODO: once we aren't using qobject::T in the extern "RustQt"
-        // we can just pass through the original ExternFn block and add the attribute?
-        let invokable_ident_cpp = invokable.name.cxx_unqualified();
-        let invokable_ident_rust = invokable.name.rust_unqualified();
+    let generated = invokables
+        .iter()
+        .map(|invokable| {
+            // TODO: once we aren't using qobject::T in the extern "RustQt"
+            // we can just pass through the original ExternFn block and add the attribute?
+            let invokable_ident_cpp = invokable.name.cxx_unqualified();
+            let invokable_ident_rust = invokable.name.rust_unqualified();
 
-        let parameter_signatures = get_params_tokens(
-            invokable.mutable,
-            &invokable.parameters,
-            cpp_class_name_rust,
-        );
+            let parameter_signatures = get_params_tokens(
+                invokable.mutable,
+                &invokable.parameters,
+                cpp_class_name_rust,
+            );
 
-        let return_type = &invokable.method.sig.output;
+            let return_type = &invokable.method.sig.output;
 
-        let mut unsafe_call = Some(quote! { unsafe });
-        if invokable.safe {
-            std::mem::swap(&mut unsafe_call, &mut None);
-        }
+            let cfgs = &invokable.cfgs;
+            let cxx_namespace = qobject_names.namespace_tokens();
 
-        let cfgs = &invokable.cfgs;
-        let cxx_namespace = qobject_names.namespace_tokens();
+            let (block_type, block_safety) = if invokable.is_pure {
+                ("C++", Some(quote! { unsafe }))
+            } else {
+                ("Rust", None)
+            };
+            // When generating extern Rust forward the block unsafe to fn
+            // This allows for then defining pointer args when the whole block
+            // is unsafe, as CXX does not allow for unsafe Rust
+            let unsafe_call = if invokable.safe {
+                if block_safety.is_none() && invokable.unsafe_block {
+                    Some(quote! { unsafe })
+                } else {
+                    None
+                }
+            } else {
+                Some(quote! { unsafe })
+            };
 
-        let fragment = RustFragmentPair {
-            cxx_bridge: vec![quote_spanned! {
+            GeneratedRustFragment::from_cxx_item(parse_quote_spanned! {
                 invokable.method.span() =>
                 // Note: extern "Rust" block does not need to be unsafe
-                extern "Rust" {
+                #block_safety extern #block_type {
                     // Note that we are exposing a Rust method on the C++ type to C++
                     //
                     // CXX ends up generating the source, then we generate the matching header.
@@ -61,19 +71,11 @@ pub fn generate_rust_methods(
                     #[doc(hidden)]
                     #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                 }
-            }],
-            implementation: vec![],
-        };
+            })
+        })
+        .collect::<Vec<_>>();
 
-        generated
-            .cxx_mod_contents
-            .append(&mut fragment.cxx_bridge_as_items()?);
-        generated
-            .cxx_qt_mod_contents
-            .append(&mut fragment.implementation_as_items()?);
-    }
-
-    Ok(generated)
+    Ok(GeneratedRustFragment::flatten(generated))
 }
 
 #[cfg(test)]
@@ -111,7 +113,7 @@ mod tests {
         let qobject_names = create_qobjectname();
 
         let generated =
-            generate_rust_methods(&invokables.iter().collect(), &qobject_names).unwrap();
+            generate_rust_methods(&invokables.iter().collect::<Vec<_>>(), &qobject_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 0);

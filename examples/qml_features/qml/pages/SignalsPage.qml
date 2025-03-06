@@ -28,10 +28,10 @@ Page {
 
             ToolButton {
                 checkable: true
-                checked: rustSignals.loggingEnabled
+                checked: rustSignals.logging_enabled
                 text: qsTr("Toggle Logging")
 
-                onClicked: rustSignals.loggingEnabled = !rustSignals.loggingEnabled
+                onClicked: rustSignals.logging_enabled = !rustSignals.logging_enabled
             }
 
             Item {

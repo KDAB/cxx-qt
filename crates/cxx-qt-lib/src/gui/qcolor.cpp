@@ -7,7 +7,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #include "cxx-qt-lib/qcolor.h"
-#include "cxx-qt-lib/qstring.h"
 
 #include <cxx-qt-lib/assertion_utils.h>
 
@@ -136,12 +135,6 @@ qcolorInitFromRgbF(float red, float green, float blue, float alpha)
                           static_cast<qreal>(blue),
                           static_cast<qreal>(alpha));
 #endif
-}
-
-QColor
-qcolorInitFromRustString(::rust::Str string)
-{
-  return QColor(qstringInitFromRustString(string));
 }
 
 // Qt 5 uses qreal and Qt 6 uses float, so cast all to floats

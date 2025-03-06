@@ -249,7 +249,7 @@ impl fmt::Display for QString {
     ///
     /// Note that this converts from UTF-16 to UTF-8
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", <&QString as Into<String>>::into(self))
+        write!(f, "{}", String::from(self))
     }
 }
 

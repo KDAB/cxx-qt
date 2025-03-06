@@ -56,6 +56,7 @@ set(CRATE qml_features)
 cxx_qt_import_crate(
     MANIFEST_PATH rust/Cargo.toml
     CRATES ${CRATE}
+    LOCKED
     QT_MODULES Qt::Core Qt::Gui Qt::Qml Qt::Quick
 )
 cxx_qt_import_qml_module(${CRATE}_qml

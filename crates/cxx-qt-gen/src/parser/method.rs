@@ -5,8 +5,8 @@
 use crate::parser::CaseConversion;
 use crate::{
     naming::Name,
-    parser::{check_safety, extract_cfgs, parameter::ParsedFunctionParameter, require_attributes},
-    syntax::{foreignmod, safety::Safety, types},
+    parser::{extract_cfgs, parameter::ParsedFunctionParameter, require_attributes},
+    syntax::{foreignmod, types},
 };
 use core::ops::Deref;
 use std::collections::{BTreeMap, HashSet};
@@ -18,6 +18,7 @@ pub enum ParsedQInvokableSpecifiers {
     Final,
     Override,
     Virtual,
+    Pure,
 }
 
 impl ParsedQInvokableSpecifiers {
@@ -26,6 +27,7 @@ impl ParsedQInvokableSpecifiers {
             ParsedQInvokableSpecifiers::Final => "cxx_final",
             ParsedQInvokableSpecifiers::Override => "cxx_override",
             ParsedQInvokableSpecifiers::Virtual => "cxx_virtual",
+            ParsedQInvokableSpecifiers::Pure => "cxx_pure",
         }
     }
 
@@ -35,6 +37,7 @@ impl ParsedQInvokableSpecifiers {
             ParsedQInvokableSpecifiers::Final,
             ParsedQInvokableSpecifiers::Override,
             ParsedQInvokableSpecifiers::Virtual,
+            ParsedQInvokableSpecifiers::Pure,
         ] {
             if attrs.contains_key(specifier.as_str()) {
                 output.insert(specifier);
@@ -52,20 +55,25 @@ pub struct ParsedMethod {
     pub specifiers: HashSet<ParsedQInvokableSpecifiers>,
     /// Whether the method is qinvokable
     pub is_qinvokable: bool,
+    /// Whether the method is a pure virtual method
+    pub is_pure: bool,
     // No docs field since the docs should be on the method implementation outside the bridge
     // This means any docs on the bridge declaration would be ignored
     /// Cfgs for the method
     pub cfgs: Vec<Attribute>,
+    /// Whether the block containing the method is safe or unsafe
+    pub unsafe_block: bool,
 }
 
 impl ParsedMethod {
-    const ALLOWED_ATTRS: [&'static str; 8] = [
+    const ALLOWED_ATTRS: [&'static str; 9] = [
         "cxx_name",
         "rust_name",
         "qinvokable",
         "cxx_final",
         "cxx_override",
         "cxx_virtual",
+        "cxx_pure",
         "doc",
         "cfg",
     ];
@@ -74,7 +82,7 @@ impl ParsedMethod {
     pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
         Self {
             is_qinvokable: true,
-            ..Self::parse(method.clone(), Safety::Safe, CaseConversion::none()).unwrap()
+            ..Self::parse(method.clone(), CaseConversion::none(), false).unwrap()
         }
     }
 
@@ -105,21 +113,27 @@ impl ParsedMethod {
         Self { specifiers, ..self }
     }
 
-    pub fn parse(method: ForeignItemFn, safety: Safety, auto_case: CaseConversion) -> Result<Self> {
-        check_safety(&method, &safety)?;
+    pub fn parse(
+        method: ForeignItemFn,
+        auto_case: CaseConversion,
+        unsafe_block: bool,
+    ) -> Result<Self> {
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&fields.method.attrs);
 
         // Determine if the method is invokable
         let is_qinvokable = attrs.contains_key("qinvokable");
+        let is_pure = attrs.contains_key("cxx_pure");
         let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs);
 
         Ok(Self {
             method_fields: fields,
             specifiers,
             is_qinvokable,
+            is_pure,
             cfgs,
+            unsafe_block,
         })
     }
 }

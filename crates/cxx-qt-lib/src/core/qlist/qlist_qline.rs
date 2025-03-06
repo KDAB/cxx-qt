@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qline.h");
         type QLine = crate::QLine;
 
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QLine.h");
         type QList_QLine = crate::QList<QLine>;
     }
 

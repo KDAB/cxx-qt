@@ -8,7 +8,11 @@ use std::collections::BTreeSet;
 use indoc::formatdoc;
 use syn::Result;
 
-use crate::{parser::qenum::ParsedQEnum, writer::cpp::namespaced};
+use crate::{
+    generator::{cfg::try_eval_attributes, GeneratedOpt},
+    parser::qenum::ParsedQEnum,
+    writer::cpp::namespaced,
+};
 
 use super::{qobject::GeneratedCppQObjectBlocks, utils::Indent};
 
@@ -29,7 +33,16 @@ fn generate_definition(qenum: &ParsedQEnum) -> String {
         "#, enum_values = enum_values.indented(2) }
 }
 
-pub fn generate_declaration(qenum: &ParsedQEnum, includes: &mut BTreeSet<String>) -> String {
+pub fn generate_declaration(
+    qenum: &ParsedQEnum,
+    includes: &mut BTreeSet<String>,
+    opt: &GeneratedOpt,
+) -> Result<String> {
+    // Skip if the cfg attributes are not resolved to true
+    if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &qenum.cfgs)? {
+        return Ok(String::new());
+    }
+
     let is_standalone = qenum.qobject.is_none();
     if is_standalone {
         // required for Q_NAMESPACE and Q_ENUM_NS if we're not on a QObject
@@ -38,7 +51,7 @@ pub fn generate_declaration(qenum: &ParsedQEnum, includes: &mut BTreeSet<String>
 
     let enum_definition = generate_definition(qenum).indented(2);
     let enum_name = &qenum.name.cxx_unqualified();
-    namespaced(
+    Ok(namespaced(
         qenum.name.namespace().unwrap_or_default(),
         // The declaration must still include Q_NAMESPACE, as otherwise moc will complain.
         // This is redundant with `qnamespace!`, which is now only required if you want to specify
@@ -51,15 +64,21 @@ pub fn generate_declaration(qenum: &ParsedQEnum, includes: &mut BTreeSet<String>
         } else {
             enum_definition
         },
-    )
+    ))
 }
 
 pub fn generate_on_qobject<'a>(
     qenums: impl Iterator<Item = &'a ParsedQEnum>,
+    opt: &GeneratedOpt,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
 
     for qenum in qenums {
+        // Skip if the cfg attributes are not resolved to true
+        if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &qenum.cfgs)? {
+            continue;
+        }
+
         let mut qualified_name = qenum.name.cxx_qualified();
         let enum_name = qenum.name.cxx_unqualified();
         // TODO: this is a workaround for cxx_qualified not returning a fully-qualified
@@ -90,10 +109,33 @@ mod tests {
     use std::assert_eq;
 
     use super::*;
+    use crate::tests::CfgEvaluatorTest;
     use indoc::indoc;
     use pretty_assertions::assert_str_eq;
     use quote::format_ident;
     use syn::parse_quote;
+
+    #[test]
+    fn test_cfg() {
+        let qenums = [ParsedQEnum::parse(
+            parse_quote! {
+                #[cfg(test_cfg_disabled)]
+                enum MyEnum {
+                    A, B, C
+                }
+            },
+            Some(format_ident!("MyObject")),
+            None,
+            &format_ident!("qobject"),
+        )
+        .unwrap()];
+        let opt = GeneratedOpt {
+            cfg_evaluator: Box::new(CfgEvaluatorTest::default()),
+        };
+        let generated = generate_on_qobject(qenums.iter(), &opt).unwrap();
+
+        assert!(generated.methods.is_empty());
+    }
 
     #[test]
     fn generates() {
@@ -109,7 +151,7 @@ mod tests {
         )
         .unwrap()];
 
-        let generated = generate_on_qobject(qenums.iter()).unwrap();
+        let generated = generate_on_qobject(qenums.iter(), &GeneratedOpt::default()).unwrap();
         assert_eq!(generated.includes.len(), 1);
         assert!(generated.includes.contains("#include <cstdint>"));
         assert_eq!(generated.metaobjects.len(), 1);

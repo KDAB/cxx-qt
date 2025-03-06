@@ -20,8 +20,8 @@ use crate::{
 use proc_macro2::{Span, TokenStream};
 use quote::{format_ident, quote};
 use syn::{
-    parse_quote, parse_quote_spanned, spanned::Spanned, Error, Expr, FnArg, Ident, Item, Lifetime,
-    Result, Type,
+    parse_quote, parse_quote_spanned, spanned::Spanned, Attribute, Error, Expr, FnArg, Ident, Item,
+    Lifetime, Result, Type,
 };
 
 const CONSTRUCTOR_ARGUMENTS: &str = "CxxQtConstructorArguments";
@@ -64,6 +64,7 @@ fn argument_members(args: &[Type]) -> Vec<TokenStream> {
 fn generate_default_constructor(
     qobject_idents: &QObjectNames,
     namespace: &NamespaceName,
+    cfgs: &[Attribute],
 ) -> GeneratedRustFragment {
     let rust_struct_ident = qobject_idents.rust_struct.rust_unqualified();
 
@@ -78,12 +79,14 @@ fn generate_default_constructor(
         extern "Rust" {
             #[cxx_name = "createRs"]
             #[namespace = #namespace_internals]
+            #(#cfgs)*
             fn #create_rs_ident() -> Box<#rust_struct_ident>;
         }
         }],
         cxx_qt_mod_contents: vec![parse_quote! {
             #[doc(hidden)]
             #[allow(clippy::unnecessary_box_returns)]
+            #(#cfgs)*
             pub fn #create_rs_ident() -> std::boxed::Box<#rust_struct_ident> {
                 // Wrapping the call to Default::default in a Box::new call leads
                 // to a nicer error message, as it's not trying to infer trait bounds
@@ -99,6 +102,7 @@ fn generate_arguments_struct(
     struct_name: &Name,
     lifetime: &Option<TokenStream>,
     argument_list: &[Type],
+    cfgs: &[Attribute],
 ) -> Item {
     let argument_members = argument_members(argument_list);
     let not_empty = if argument_list.is_empty() {
@@ -113,6 +117,7 @@ fn generate_arguments_struct(
         #[namespace = #namespace_internals]
         #[cxx_name = #cxx_name]
         #[doc(hidden)]
+        #(#cfgs)*
         struct #rust_name #lifetime {
             #(#argument_members,)*
             #not_empty // Make sure there's always at least one struct member, as CXX
@@ -125,6 +130,7 @@ fn generate_arguments_initialization(
     struct_name: &Ident,
     instance_name: Ident,
     argument_list: &[Type],
+    cfgs: &[Attribute],
 ) -> Expr {
     let init_arguments = extract_arguments_from_tuple(argument_list, instance_name);
     let not_empty = if argument_list.is_empty() {
@@ -134,6 +140,7 @@ fn generate_arguments_initialization(
     };
 
     parse_quote! {
+        #(#cfgs)*
         #struct_name {
             #(#init_arguments,)*
             #not_empty
@@ -183,9 +190,10 @@ pub fn generate(
     qobject_names: &QObjectNames,
     namespace: &NamespaceName,
     type_names: &TypeNames,
+    cfgs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     if constructors.is_empty() {
-        return Ok(generate_default_constructor(qobject_names, namespace));
+        return Ok(generate_default_constructor(qobject_names, namespace, cfgs));
     }
 
     let module_ident = qobject_names.name.require_module()?;
@@ -320,16 +328,19 @@ pub fn generate(
             &new_arguments_rust,
             format_ident!("new_arguments"),
             &constructor.new_arguments,
+            cfgs,
         );
         let init_initalize_arguments = generate_arguments_initialization(
             &initialize_arguments_rust,
             format_ident!("initialize_arguments"),
             &constructor.initialize_arguments,
+            cfgs,
         );
         let init_base_arguments = generate_arguments_initialization(
             &base_arguments_rust,
             format_ident!("base_arguments"),
             &constructor.base_arguments,
+            cfgs,
         );
 
         let extract_new_arguments = extract_arguments_from_struct(
@@ -356,12 +367,13 @@ pub fn generate(
                     initialize: #initialize_arguments_rust #initialize_lifetime,
                 }
             },
-            generate_arguments_struct(&namespace.internal, &Name::new(base_arguments_rust.clone()).with_cxx_name(base_arguments_cxx.to_string()), &base_lifetime, &constructor.base_arguments),
-            generate_arguments_struct(&namespace.internal, &Name::new(new_arguments_rust.clone()).with_cxx_name(new_arguments_cxx.to_string()), &new_lifetime, &constructor.new_arguments),
-            generate_arguments_struct(&namespace.internal, &Name::new(initialize_arguments_rust.clone()).with_cxx_name(initialize_arguments_cxx.to_string()), &initialize_lifetime, &constructor.initialize_arguments),
+            generate_arguments_struct(&namespace.internal, &Name::new(base_arguments_rust.clone()).with_cxx_name(base_arguments_cxx.to_string()), &base_lifetime, &constructor.base_arguments, cfgs),
+            generate_arguments_struct(&namespace.internal, &Name::new(new_arguments_rust.clone()).with_cxx_name(new_arguments_cxx.to_string()), &new_lifetime, &constructor.new_arguments, cfgs),
+            generate_arguments_struct(&namespace.internal, &Name::new(initialize_arguments_rust.clone()).with_cxx_name(initialize_arguments_cxx.to_string()), &initialize_lifetime, &constructor.initialize_arguments, cfgs),
             parse_quote_spanned! {
                 constructor.imp.span() =>
                 #[allow(clippy::needless_lifetimes)]
+                #(#cfgs)*
                 extern "Rust" {
                     #[namespace = #namespace_internals]
                     #[cxx_name = #route_arguments_cxx]
@@ -381,6 +393,7 @@ pub fn generate(
         result.cxx_qt_mod_contents.append(&mut vec![parse_quote_spanned! {
             constructor.imp.span() =>
             #[doc(hidden)]
+            #(#cfgs)*
             // Use the catch-all lifetime here, as if a lifetime argument is specified, it should
             // be used in either the argument list itself, or the returned, routed arguments.
             // So it must be used by this function somewhere.
@@ -407,6 +420,7 @@ pub fn generate(
             #[allow(unused_variables)]
             #[allow(clippy::extra_unused_lifetimes)]
             #[allow(clippy::unnecessary_box_returns)]
+            #(#cfgs)*
             // If we use the lifetime here for casting to the specific Constructor type, then
             // clippy for some reason thinks that the lifetime is unused even though it is used
             // by the `as` expression.
@@ -420,6 +434,7 @@ pub fn generate(
             #[doc(hidden)]
             #[allow(unused_variables)]
             #[allow(clippy::extra_unused_lifetimes)]
+            #(#cfgs)*
             // If we use the lifetime here for casting to the specific Constructor type, then
             // clippy for some reason thinks that the lifetime is unused even though it is used
             // by the `as` expression.
@@ -469,7 +484,14 @@ mod tests {
 
         type_names.mock_insert("QString", None, None, None);
         type_names.mock_insert("QObject", None, None, None);
-        generate(constructors, &mock_name(), &mock_namespace(), &type_names).unwrap()
+        generate(
+            constructors,
+            &mock_name(),
+            &mock_namespace(),
+            &type_names,
+            &vec![],
+        )
+        .unwrap()
     }
 
     #[test]
@@ -805,6 +827,7 @@ mod tests {
             &mock_name(),
             &mock_namespace(),
             &TypeNames::mock(),
+            &vec![],
         )
         .is_err());
     }

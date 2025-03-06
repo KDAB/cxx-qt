@@ -175,6 +175,7 @@ pub fn write_cpp_header(generated: &GeneratedCppBlocks, include_path: &str) -> S
 mod tests {
     use super::*;
 
+    use crate::generator::GeneratedOpt;
     use crate::tests::format_cpp;
     use crate::writer::cpp::tests::{
         create_generated_cpp, create_generated_cpp_multi_qobjects,
@@ -250,11 +251,12 @@ mod tests {
 
         let parser = Parser::from(module.clone()).unwrap();
 
-        let generated = GeneratedCppBlocks::from(&parser).unwrap();
+        let generated = GeneratedCppBlocks::from(&parser, &GeneratedOpt::default()).unwrap();
         let header = write_cpp_header(&generated, "cxx-qt-gen/ffi");
         let expected = indoc! {r#"
 #pragma once
 
+#include <cxx-qt/casting.h>
 #include <cxx-qt/type.h>
 
 class MyObject;

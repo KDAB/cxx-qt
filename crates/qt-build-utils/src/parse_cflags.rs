@@ -11,10 +11,13 @@
 use std::env;
 
 #[cfg(feature = "link_qt_object_files")]
-use std::{collections::HashSet, sync::OnceLock};
+use std::{
+    collections::HashSet,
+    sync::{OnceLock, RwLock},
+};
 
 #[cfg(feature = "link_qt_object_files")]
-static mut LINKED_OBJECT_FILES: OnceLock<HashSet<String>> = OnceLock::new();
+static LINKED_OBJECT_FILES: OnceLock<RwLock<HashSet<String>>> = OnceLock::new();
 
 /// Extract the &str to pass to cargo::rustc-link-lib from a filename (just the file name, not including directories)
 /// using target-specific logic.
@@ -71,6 +74,17 @@ fn extract_lib_from_filename<'a>(target: &str, filename: &'a str) -> Option<&'a 
             None
         }
     }
+}
+
+/// Tests whether a file is an object file to be linked.
+fn is_object_file(path: &std::path::Path) -> bool {
+    let Some(ext_os) = path.extension() else {
+        return false;
+    };
+    let Some(ext) = ext_os.to_str() else {
+        return false;
+    };
+    ext == "o" || ext == "obj"
 }
 
 /// Split link_args produced by pkg-config --cflags and / or --libs into separate flags.
@@ -172,25 +186,30 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                         (path.parent(), path.file_name(), &target)
                     {
                         let file_name = file_name.to_string_lossy();
-                        if file_name.ends_with(".o") {
+                        if is_object_file(path) {
                             #[cfg(feature = "link_qt_object_files")]
                             {
                                 let path_string = path.to_string_lossy().to_string();
-                                unsafe {
-                                    // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
-                                    // Many of Qt's .prl files repeat listing .o files that other .prl files also list.
-                                    let already_linked_object_files =
-                                        LINKED_OBJECT_FILES.get_or_init(HashSet::new);
-                                    if !already_linked_object_files.contains(&path_string) {
-                                        // Cargo doesn't have a means to directly specify an object to link,
-                                        // so use the cc crate to specify it instead.
-                                        // TODO: pass file path directly when link-arg library type is stabilized
-                                        // https://github.com/rust-lang/rust/issues/99427#issuecomment-1562092085
-                                        // TODO: remove builder argument when it's not used anymore to link object files.
-                                        // also remove the dependency on cc when this is done
-                                        _builder.object(path);
-                                    }
-                                    LINKED_OBJECT_FILES.get_mut().unwrap().insert(path_string);
+                                // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
+                                // Many of Qt's .prl files repeat listing .o files that other .prl files also list.
+                                let already_linked_object_files =
+                                    LINKED_OBJECT_FILES.get_or_init(|| RwLock::new(HashSet::new()));
+                                if !already_linked_object_files
+                                    .read()
+                                    .expect("Lock poisoned")
+                                    .contains(&path_string)
+                                {
+                                    // Cargo doesn't have a means to directly specify an object to link,
+                                    // so use the cc crate to specify it instead.
+                                    // TODO: pass file path directly when link-arg library type is stabilized
+                                    // https://github.com/rust-lang/rust/issues/99427#issuecomment-1562092085
+                                    // TODO: remove builder argument when it's not used anymore to link object files.
+                                    // also remove the dependency on cc when this is done
+                                    _builder.object(path);
+                                    already_linked_object_files
+                                        .write()
+                                        .expect("Lock poisoned!")
+                                        .insert(path_string.clone());
                                 }
                             }
                         } else {

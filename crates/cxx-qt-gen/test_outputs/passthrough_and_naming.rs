@@ -134,7 +134,7 @@ pub mod ffi {
         #[cxx_name = "invokable_name"]
         #[namespace = "cxx_qt::multi_object"]
         #[doc(hidden)]
-        fn invokable_name(self: Pin<&mut MyObject>);
+        unsafe fn invokable_name(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
@@ -164,6 +164,17 @@ pub mod ffi {
             handler: &mut MyObjectCxxQtSignalHandlerready,
             self_value: Pin<&mut MyObject>,
         );
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_upcastPtr(thiz: *const MyObject) -> *const QStringListModel;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyObject_downcastPtr(base: *const QStringListModel)
+            -> *const MyObject;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -244,13 +255,13 @@ pub mod ffi {
         #[cxx_name = "invokableName"]
         #[namespace = "second_object"]
         #[doc(hidden)]
-        fn invokable_name(self: Pin<&mut SecondObject>);
+        unsafe fn invokable_name(self: Pin<&mut SecondObject>);
     }
     extern "Rust" {
         #[cxx_name = "myRenamedFunction"]
         #[namespace = "second_object"]
         #[doc(hidden)]
-        fn my_function(self: &SecondObject);
+        unsafe fn my_function(self: &SecondObject);
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
@@ -280,6 +291,16 @@ pub mod ffi {
             handler: &mut SecondObjectCxxQtSignalHandlerready,
             self_value: Pin<&mut SecondObject>,
         );
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_SecondObject_upcastPtr(thiz: *const SecondObject) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_SecondObject_downcastPtr(base: *const QObject) -> *const SecondObject;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -316,6 +337,16 @@ pub mod ffi {
     extern "Rust" {
         #[namespace = "my_namespace"]
         type ThirdObjectRust;
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyCxxName_upcastPtr(thiz: *const MyRustName) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_MyCxxName_downcastPtr(base: *const QObject) -> *const MyRustName;
     }
     extern "Rust" {
         #[cxx_name = "createRs"]
@@ -439,11 +470,12 @@ pub mod ffi {
             self_value: Pin<&mut ExternObject>,
         );
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[namespace = ""]
+        type QObject = cxx_qt::QObject;
+    }
 }
-impl cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {}
-#[allow(unused_imports)]
-#[allow(dead_code)]
-use ffi::QStringListModel as _;
 impl ffi::MyObject {
     #[doc = "Getter for the Q_PROPERTY "]
     #[doc = "property_name"]
@@ -471,7 +503,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_property_name_changed(
@@ -493,7 +525,7 @@ impl ffi::MyObject {
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_property_name_changed(
             self,
@@ -537,7 +569,7 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
@@ -557,7 +589,7 @@ impl ffi::MyObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
             self,
@@ -590,6 +622,14 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureready>,
     [usize; 2]
 );
+impl ::cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ffi::QStringListModel {
+        ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ffi::QStringListModel) -> *const Self {
+        ffi::cxx_qt_ffi_MyObject_downcastPtr(base)
+    }
+}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_MyObjectRust() -> std::boxed::Box<MyObjectRust> {
@@ -637,7 +677,7 @@ impl ffi::SecondObject {
         F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::SecondObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::SecondObject_connect_property_name_changed(
@@ -659,7 +699,7 @@ impl ffi::SecondObject {
         F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::SecondObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::SecondObject_connect_property_name_changed(
             self,
@@ -703,7 +743,7 @@ impl ffi::SecondObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::SecondObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::SecondObject_connect_ready(
@@ -723,7 +763,7 @@ impl ffi::SecondObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::SecondObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::SecondObject_connect_ready(
             self,
@@ -756,6 +796,14 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<SecondObjectCxxQtSignalClosureready>,
     [usize; 2]
 );
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::SecondObject {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_SecondObject_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_SecondObject_downcastPtr(base)
+    }
+}
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_SecondObjectRust() -> std::boxed::Box<SecondObjectRust> {
@@ -774,6 +822,14 @@ impl ::cxx_qt::CxxQtType for ffi::SecondObject {
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         ffi::cxx_qt_ffi_SecondObject_unsafeRustMut(self)
+    }
+}
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyRustName {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_MyCxxName_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_MyCxxName_downcastPtr(base)
     }
 }
 #[doc(hidden)]
@@ -804,7 +860,7 @@ impl ffi::QPushButton {
         F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QPushButton>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QPushButton_connect_clicked(
@@ -824,7 +880,7 @@ impl ffi::QPushButton {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_clicked<F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::QPushButton>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::QPushButton_connect_clicked(
             self,
@@ -865,7 +921,7 @@ impl ffi::ExternObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: ExternObject_connect_data_ready (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < ExternObjectCxxQtSignalClosuredataReady > :: new (Box :: new (closure)) , conn_type ,))
@@ -879,7 +935,7 @@ impl ffi::ExternObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: ExternObject_connect_data_ready (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < ExternObjectCxxQtSignalClosuredataReady > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
@@ -916,7 +972,7 @@ impl ffi::ExternObject {
         F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::ExternObject>,
-        mut closure: F,
+        closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
@@ -938,7 +994,7 @@ impl ffi::ExternObject {
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_error_occurred<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
-        mut closure: F,
+        closure: F,
     ) -> cxx_qt::QMetaObjectConnectionGuard {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::ExternObject_connect_error_occurred(

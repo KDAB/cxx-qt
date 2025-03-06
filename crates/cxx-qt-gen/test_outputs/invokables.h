@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cxx-qt/casting.h>
 #include <cxx-qt/threading.h>
 #include <cxx-qt/type.h>
 
@@ -34,6 +35,7 @@ public:
   Q_INVOKABLE void invokable_final() const noexcept final;
   Q_INVOKABLE void invokable_override() const noexcept override;
   Q_INVOKABLE virtual void invokable_virtual() const noexcept;
+  Q_INVOKABLE virtual void invokable_pure_virtual() const noexcept = 0;
   Q_INVOKABLE void invokable_result_tuple() const;
   Q_INVOKABLE ::rust::String invokable_result_type() const;
   explicit MyObject(::std::int32_t arg0, QString const& arg1);

@@ -22,7 +22,7 @@ pub mod qobject {
     // ANCHOR_END: book_qstring_import
 
     // ANCHOR: book_rustobj_struct_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         // The QObject definition
         // We tell CXX-Qt that we want a QObject class with the name MyObject
         // based on the Rust struct MyObjectRust.
@@ -36,7 +36,7 @@ pub mod qobject {
     // ANCHOR_END: book_rustobj_struct_signature
 
     // ANCHOR: book_rustobj_invokable_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         // Declare the invokable methods we want to expose on the QObject
         #[qinvokable]
         #[cxx_name = "incrementNumber"]

@@ -3,8 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use proc_macro2::TokenStream;
-use syn::{Item, Result};
+use syn::Item;
 
 #[derive(Default, Eq, PartialEq, Debug)]
 pub struct GeneratedRustFragment {
@@ -15,31 +14,24 @@ pub struct GeneratedRustFragment {
 }
 
 impl GeneratedRustFragment {
-    pub fn append(&mut self, other: &mut Self) {
-        self.cxx_mod_contents.append(&mut other.cxx_mod_contents);
-        self.cxx_qt_mod_contents
-            .append(&mut other.cxx_qt_mod_contents);
-    }
-}
-
-/// A generic Rust CXX bridge definition and the corresponding implementation
-pub struct RustFragmentPair {
-    pub cxx_bridge: Vec<TokenStream>,
-    pub implementation: Vec<TokenStream>,
-}
-
-impl RustFragmentPair {
-    pub fn cxx_bridge_as_items(&self) -> Result<Vec<Item>> {
-        self.cxx_bridge
-            .iter()
-            .map(|tokens| syn::parse2(tokens.clone()))
-            .collect()
+    pub fn append(&mut self, other: Self) {
+        self.cxx_mod_contents.extend(other.cxx_mod_contents);
+        self.cxx_qt_mod_contents.extend(other.cxx_qt_mod_contents);
     }
 
-    pub fn implementation_as_items(&self) -> Result<Vec<Item>> {
-        self.implementation
-            .iter()
-            .map(|tokens| syn::parse2(tokens.clone()))
-            .collect()
+    // Create a singular GeneratedRustFragment from a Vector of multiple
+    pub fn flatten(others: Vec<Self>) -> Self {
+        let mut this = Self::default();
+        for other in others {
+            this.append(other);
+        }
+        this
+    }
+
+    pub fn from_cxx_item(contents: Item) -> Self {
+        Self {
+            cxx_mod_contents: vec![contents],
+            ..Default::default()
+        }
     }
 }

@@ -15,7 +15,7 @@ pub mod qobject {
         type QColor = cxx_qt_lib::QColor;
     }
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qobject]
         #[qml_element]
         type RustInvokables = super::RustInvokablesRust;
@@ -41,7 +41,7 @@ pub mod qobject {
     // ANCHOR_END: book_namespaced_qenum
 
     // ANCHOR: book_invokable_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Immutable invokable method that returns the QColor
         #[qinvokable]
         #[cxx_name = "loadColor"]
@@ -64,7 +64,7 @@ pub mod qobject {
     // ANCHOR_END: book_invokable_signature
 
     // ANCHOR: book_cpp_method_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// C++ only method which returns the red value
         #[cxx_name = "redValue"]
         fn red_value(self: &RustInvokables) -> f32;

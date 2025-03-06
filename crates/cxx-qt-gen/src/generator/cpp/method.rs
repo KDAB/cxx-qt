@@ -3,11 +3,15 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::cpp::get_cpp_params;
 use crate::{
-    generator::cpp::{
-        fragment::{CppFragment, CppNamedType},
-        qobject::GeneratedCppQObjectBlocks,
+    generator::{
+        cfg::try_eval_attributes,
+        cpp::{
+            fragment::{CppFragment, CppNamedType},
+            get_cpp_params,
+            qobject::GeneratedCppQObjectBlocks,
+            GeneratedOpt,
+        },
     },
     naming::cpp::{syn_return_type_to_cpp_except, syn_type_to_cpp_return_type},
     naming::TypeNames,
@@ -18,9 +22,15 @@ use syn::Result;
 pub fn generate_cpp_methods(
     invokables: &Vec<&ParsedMethod>,
     type_names: &TypeNames,
+    opt: &GeneratedOpt,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let mut generated = GeneratedCppQObjectBlocks::default();
     for &invokable in invokables {
+        // Skip if the cfg attributes are not resolved to true
+        if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &invokable.cfgs)? {
+            continue;
+        }
+
         let return_cxx_ty = syn_type_to_cpp_return_type(&invokable.method.sig.output, type_names)?;
 
         let parameters: Vec<CppNamedType> = get_cpp_params(&invokable.method, type_names)?;
@@ -35,6 +45,7 @@ pub fn generate_cpp_methods(
         let mut is_final = "";
         let mut is_override = "";
         let mut is_virtual = "";
+        let mut is_pure = "";
 
         // Set specifiers into string values
         invokable
@@ -44,6 +55,7 @@ pub fn generate_cpp_methods(
                 ParsedQInvokableSpecifiers::Final => is_final = " final",
                 ParsedQInvokableSpecifiers::Override => is_override = " override",
                 ParsedQInvokableSpecifiers::Virtual => is_virtual = "virtual ",
+                ParsedQInvokableSpecifiers::Pure => is_pure = " = 0",
             });
 
         let is_qinvokable = invokable
@@ -64,7 +76,7 @@ pub fn generate_cpp_methods(
         // CXX generates the source and we just need the matching header.
         let has_noexcept = syn_return_type_to_cpp_except(&invokable.method.sig.output);
         generated.methods.push(CppFragment::Header(format!(
-            "{is_qinvokable}{is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const} {has_noexcept}{is_final}{is_override};",
+            "{is_qinvokable}{is_virtual}{return_cxx_ty} {ident}({parameter_types}){is_const} {has_noexcept}{is_final}{is_override}{is_pure};",
             ident = invokable.name.cxx_unqualified(),
         )));
     }
@@ -77,9 +89,28 @@ mod tests {
     use super::*;
 
     use crate::generator::cpp::property::tests::require_header;
+    use crate::tests::CfgEvaluatorTest;
     use pretty_assertions::assert_str_eq;
     use std::collections::HashSet;
     use syn::{parse_quote, ForeignItemFn};
+
+    #[test]
+    fn test_generate_cpp_invokables_cfg() {
+        let method: ForeignItemFn = parse_quote! {
+            #[cfg(test_cfg_disabled)]
+            #[cxx_name = "voidInvokable"]
+            fn void_invokable(self: &MyObject);
+        };
+        let invokables = vec![ParsedMethod::mock_qinvokable(&method)];
+        let type_names = TypeNames::mock();
+        let opt = GeneratedOpt {
+            cfg_evaluator: Box::new(CfgEvaluatorTest::default()),
+        };
+        let generated =
+            generate_cpp_methods(&invokables.iter().collect(), &type_names, &opt).unwrap();
+
+        assert!(generated.methods.is_empty());
+    }
 
     #[test]
     fn test_generate_cpp_invokables() {
@@ -122,7 +153,12 @@ mod tests {
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
 
-        let generated = generate_cpp_methods(&invokables.iter().collect(), &type_names).unwrap();
+        let generated = generate_cpp_methods(
+            &invokables.iter().collect(),
+            &type_names,
+            &GeneratedOpt::default(),
+        )
+        .unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 5);
@@ -168,7 +204,8 @@ mod tests {
         type_names.mock_insert("A", None, Some("A1"), None);
         type_names.mock_insert("B", None, Some("B2"), None);
 
-        let generated = generate_cpp_methods(&invokables, &type_names).unwrap();
+        let generated =
+            generate_cpp_methods(&invokables, &type_names, &GeneratedOpt::default()).unwrap();
 
         // methods
         assert_eq!(generated.methods.len(), 1);

@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
 
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QRect.h");
         type QList_QRect = crate::QList<QRect>;
     }
 

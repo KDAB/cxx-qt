@@ -60,6 +60,10 @@ pub mod qobject {
     extern "RustQt" {
         #[qobject]
         #[base = QAbstractListModel]
+        type AbstractBaseClass = super::AbstractBaseClassRust;
+
+        #[qobject]
+        #[base = AbstractBaseClass]
         #[qml_element]
         #[qproperty(State, state)]
         type CustomBaseClass = super::CustomBaseClassRust;
@@ -85,7 +89,18 @@ pub mod qobject {
     }
     // ANCHOR_END: book_qsignals_inherit
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
+        /// Log the state of the abstract class
+        #[qinvokable]
+        #[cxx_virtual]
+        #[cxx_pure]
+        fn log(self: &AbstractBaseClass);
+
+        /// Override to Log the state of the custom base class
+        #[qinvokable]
+        #[cxx_override]
+        fn log(self: &CustomBaseClass);
+
         /// Add a new row to the QAbstractListModel on the current thread
         #[qinvokable]
         fn add(self: Pin<&mut CustomBaseClass>);
@@ -105,14 +120,14 @@ pub mod qobject {
     }
 
     // ANCHOR: book_inherit_clear_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Clear the rows in the QAbstractListModel
         #[qinvokable]
         pub fn clear(self: Pin<&mut CustomBaseClass>);
     }
     // ANCHOR_END: book_inherit_clear_signature
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Multiply the number in the row with the given index by the given factor
         #[qinvokable]
         pub fn multiply(self: Pin<&mut CustomBaseClass>, index: i32, factor: f64);
@@ -125,7 +140,10 @@ pub mod qobject {
     // ANCHOR: book_inherit_qalm_impl_unsafe
     // Create Rust bindings for C++ functions of the base class (QAbstractItemModel)
     extern "RustQt" {
-        /// Inherited beginInsertRows from the base class
+        /// # Safety
+        ///
+        /// Inherited beginInsertRows from the base class.
+        /// If you call begin_insert_rows, it is your responsibility to ensure end_insert_rows is called
         #[inherit]
         #[cxx_name = "beginInsertRows"]
         unsafe fn begin_insert_rows(
@@ -134,12 +152,18 @@ pub mod qobject {
             first: i32,
             last: i32,
         );
-        /// Inherited endInsertRows from the base class
+        /// # Safety
+        ///
+        /// Inherited endInsertRows from the base class.
+        /// If you call `begin_insert_rows`, it is your responsibility to ensure `end_insert_rows` is called
         #[inherit]
         #[cxx_name = "endInsertRows"]
         unsafe fn end_insert_rows(self: Pin<&mut CustomBaseClass>);
 
-        /// Inherited beginRemoveRows from the base class
+        /// # Safety
+        ///
+        /// Inherited beginRemoveRows from the base class.
+        /// If you call `begin_remove_rows`, it is your responsibility to ensure `end_remove_rows` is called
         #[inherit]
         #[cxx_name = "beginRemoveRows"]
         unsafe fn begin_remove_rows(
@@ -148,16 +172,25 @@ pub mod qobject {
             first: i32,
             last: i32,
         );
-        /// Inherited endRemoveRows from the base class
+        /// # Safety
+        ///
+        /// Inherited endRemoveRows from the base class.
+        /// If you call `begin_remove_rows`, it is your responsibility to ensure `end_remove_rows` is called
         #[inherit]
         #[cxx_name = "endRemoveRows"]
         unsafe fn end_remove_rows(self: Pin<&mut CustomBaseClass>);
 
-        /// Inherited beginResetModel from the base class
+        /// # Safety
+        ///
+        /// Inherited beginResetModel from the base class.
+        /// If you call `begin_reset_model`, it is your responsibility to ensure `end_reset_model` is called
         #[inherit]
         #[cxx_name = "beginResetModel"]
         unsafe fn begin_reset_model(self: Pin<&mut CustomBaseClass>);
-        /// Inherited endResetModel from the base class
+        /// # Safety
+        ///
+        /// Inherited endResetModel from the base class.
+        /// If you call `begin_reset_model`, it is your responsibility to ensure `end_reset_model` is called
         #[inherit]
         #[cxx_name = "endResetModel"]
         unsafe fn end_reset_model(self: Pin<&mut CustomBaseClass>);
@@ -184,7 +217,7 @@ pub mod qobject {
 
     // QAbstractListModel implementation
     // ANCHOR: book_inherit_data_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         #[qinvokable]
         #[cxx_override]
         fn data(self: &CustomBaseClass, index: &QModelIndex, role: i32) -> QVariant;
@@ -192,7 +225,7 @@ pub mod qobject {
     // ANCHOR_END: book_inherit_data_signature
 
     // ANCHOR: book_inherit_can_fetch_more_signature
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Return whether the base class can fetch more
         // Example of overriding a C++ virtual method and calling the base class implementation.
         #[qinvokable]
@@ -202,7 +235,7 @@ pub mod qobject {
     }
     // ANCHOR_END: book_inherit_can_fetch_more_signature
 
-    unsafe extern "RustQt" {
+    extern "RustQt" {
         /// Return the role names for the QAbstractListModel
         #[qinvokable]
         #[cxx_override]
@@ -239,6 +272,7 @@ pub mod qobject {
     }
 }
 
+use crate::custom_base_class::qobject::CustomBaseClass;
 use core::pin::Pin;
 use cxx_qt::{CxxQtType, Threading};
 use cxx_qt_lib::{QByteArray, QHash, QHashPair_i32_QByteArray, QModelIndex, QVariant, QVector};
@@ -251,6 +285,10 @@ impl Default for qobject::State {
 
 /// A struct which inherits from QAbstractListModel
 #[derive(Default)]
+pub struct AbstractBaseClassRust {}
+
+/// A struct which inherits from our custom abstract parent
+#[derive(Default)]
 pub struct CustomBaseClassRust {
     state: qobject::State,
     pending_adds: i32,
@@ -260,6 +298,14 @@ pub struct CustomBaseClassRust {
 }
 
 impl qobject::CustomBaseClass {
+    /// Virtual method for logging type
+    pub fn log(self: &CustomBaseClass) {
+        println!(
+            "state: {}\npending adds: {}\nid: {}\nvector: {:?}\n",
+            self.state.repr, self.pending_adds, self.id, self.vector
+        );
+    }
+
     /// Add a new row to the QAbstractListModel on the current thread
     pub fn add(self: Pin<&mut Self>) {
         self.add_cpp_context();

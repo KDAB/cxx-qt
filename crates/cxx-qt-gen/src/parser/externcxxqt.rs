@@ -8,7 +8,7 @@ use crate::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
         CaseConversion,
     },
-    syntax::{attribute::attribute_get_path, expr::expr_to_string, safety::Safety},
+    syntax::{attribute::attribute_get_path, expr::expr_to_string},
 };
 use syn::{spanned::Spanned, Error, ForeignItem, Ident, ItemForeignMod, Result, Token};
 
@@ -54,19 +54,20 @@ impl ParsedExternCxxQt {
             ..Default::default()
         };
 
-        let safe_call = if foreign_mod.unsafety.is_some() {
-            Safety::Safe
-        } else {
-            Safety::Unsafe
-        };
-
         // Parse any signals, other items are passed through
         for item in foreign_mod.items.drain(..) {
             match item {
                 ForeignItem::Fn(foreign_fn) => {
+                    // We need to check that any safe functions are defined inside an unsafe block
+                    // as with C++Qt blocks we directly copy the unsafetyness into the generated
+                    // extern C++ block
+                    if foreign_fn.sig.unsafety.is_none() && extern_cxx_block.unsafety.is_none() {
+                        return Err(Error::new(foreign_fn.span(), "block must be declared `unsafe extern \"C++Qt\"` if it contains any safe-to-call C++ functions"));
+                    }
+
                     // Test if the function is a signal
                     if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
-                        let mut signal = ParsedSignal::parse(foreign_fn, safe_call, auto_case)?;
+                        let mut signal = ParsedSignal::parse(foreign_fn, auto_case)?;
                         // extern "C++Qt" signals are always inherit = true
                         // as they always exist on an existing QObject
                         signal.inherit = true;
@@ -176,7 +177,7 @@ mod tests {
     fn test_extern_cxxqt_type_non_type() {
         let extern_cxx_qt = ParsedExternCxxQt::parse(
             parse_quote! {
-                extern "C++Qt" {
+                unsafe extern "C++Qt" {
                     fn myFunction();
                 }
             },
@@ -187,6 +188,21 @@ mod tests {
         // Check that the non Type object is detected and error
         assert!(extern_cxx_qt.qobjects.is_empty());
         assert!(extern_cxx_qt.signals.is_empty());
-        assert!(extern_cxx_qt.unsafety.is_none());
+        assert!(extern_cxx_qt.unsafety.is_some());
+    }
+
+    #[test]
+    fn test_extern_cxxqt_invalid_safe() {
+        let extern_cxx_qt = ParsedExternCxxQt::parse(
+            parse_quote! {
+                extern "C++Qt" {
+                    fn myFunction();
+                }
+            },
+            &format_ident!("qobject"),
+            None,
+        );
+        // Ensure that a safe
+        assert!(extern_cxx_qt.is_err());
     }
 }

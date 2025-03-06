@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
 
-        include!("cxx-qt-lib/qset.h");
+        include!("cxx-qt-lib/qset_QUrl.h");
         type QSet_QUrl = crate::QSet<QUrl>;
     }
 

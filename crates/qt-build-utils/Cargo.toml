@@ -15,6 +15,7 @@ rust-version.workspace = true
 
 [dependencies]
 cc.workspace = true
+serde = { workspace = true, optional = true }
 versions = "6.3"
 thiserror.workspace = true
 
@@ -30,6 +31,7 @@ thiserror.workspace = true
 #
 # When linking Qt dynamically, this makes no difference.
 link_qt_object_files = []
+serde = ["dep:serde"]
 
 [lints]
 workspace = true

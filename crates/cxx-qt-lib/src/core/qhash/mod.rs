@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
+use std::fmt;
 
 /// The QHash class is a template class that provides a hash-table-based dictionary.
 ///
@@ -110,7 +111,7 @@ where
 
     /// An iterator visiting all key-value pairs in arbitrary order.
     /// The iterator element type is (&'a T::Key, &'a T::Value).
-    pub fn iter(&self) -> Iter<T> {
+    pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             hash: self,
             index: 0,
@@ -139,6 +140,17 @@ where
     /// Inserts a new item with the key and a value of value.
     pub fn insert(&mut self, key: T::Key, value: T::Value) {
         T::insert(self, key, value)
+    }
+}
+
+impl<T> fmt::Debug for QHash<T>
+where
+    T: QHashPair,
+    T::Key: fmt::Debug,
+    T::Value: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_map().entries(self.iter()).finish()
     }
 }
 
@@ -185,7 +197,7 @@ where
     }
 }
 
-impl<'a, T> ExactSizeIterator for Iter<'a, T>
+impl<T> ExactSizeIterator for Iter<'_, T>
 where
     T: QHashPair,
 {

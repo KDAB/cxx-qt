@@ -5,7 +5,6 @@
 
 use cxx_qt_build::CxxQtBuilder;
 use std::path::PathBuf;
-
 fn qt_gui_enabled() -> bool {
     std::env::var("CARGO_FEATURE_QT_GUI").is_ok()
 }
@@ -31,16 +30,45 @@ fn write_headers_in(subfolder: &str) {
         std::fs::read_dir(format!("include/{subfolder}")).expect("Failed to read include directory")
     {
         let entry = entry.expect("Failed to read header file!");
-        let header_name = entry.file_name();
+        let file_name = entry.file_name();
+        let path = entry.path();
         println!(
             "cargo::rerun-if-changed=include/{subfolder}/{header_name}",
-            header_name = header_name.to_string_lossy()
+            header_name = file_name.to_string_lossy()
         );
 
         // TODO: Do we want to add the headers into a subdirectory?
-        std::fs::copy(entry.path(), header_dir().join(header_name))
-            .expect("Failed to copy header file!");
+        if path.is_dir() {
+            write_headers_in(&format!("{}/{}", subfolder, file_name.to_str().expect("")));
+        } else {
+            std::fs::copy(path, header_dir().join(file_name)).expect("Failed to copy header file!");
+        }
     }
+}
+
+fn write_definitions_header() {
+    // We cannot ensure that downstream dependencies set the same compile-time definitions.
+    // So we generate a header file that adds those definitions, which will be passed along
+    // to downstream dependencies with all other headers.
+    //
+    // Thanks to David Faure for reminding us of this useful trick in his blog post:
+    // https://www.kdab.com/setting-defines-with-cmake/
+    let mut definitions = "#pragma once\n".to_owned();
+
+    if qt_gui_enabled() {
+        definitions.push_str("#define CXX_QT_GUI_FEATURE\n");
+    }
+
+    if qt_qml_enabled() {
+        definitions.push_str("#define CXX_QT_QML_FEATURE\n");
+    }
+
+    if qt_quickcontrols_enabled() {
+        definitions.push_str("#define CXX_QT_QUICKCONTROLS_FEATURE\n");
+    }
+
+    std::fs::write(header_dir().join("definitions.h"), definitions)
+        .expect("Failed to write cxx-qt-lib/definitions.h");
 }
 
 fn write_headers() {
@@ -66,6 +94,8 @@ fn write_headers() {
     if qt_quickcontrols_enabled() {
         write_headers_in("quickcontrols");
     }
+
+    write_definitions_header();
 }
 
 fn main() {
@@ -149,6 +179,8 @@ fn main() {
         "core/qstringlist",
         "core/qt",
         "core/qtime",
+        "core/qtlogging",
+        "core/qtypes",
         "core/qurl",
         "core/quuid",
         "core/qvariant/mod",
@@ -276,6 +308,8 @@ fn main() {
         "core/qstring",
         "core/qstringlist",
         "core/qtime",
+        "core/qtlogging",
+        "core/qtypes",
         "core/qurl",
         "core/quuid",
         "core/qvariant/qvariant",
@@ -316,30 +350,25 @@ fn main() {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
-    let mut interface = cxx_qt_build::Interface::default()
-        .initializer("src/core/init.cpp")
+    let interface = cxx_qt_build::Interface::default()
         .export_include_prefixes([])
         .export_include_directory(header_dir(), "cxx-qt-lib")
         .reexport_dependency("cxx-qt");
 
-    if qt_gui_enabled() {
-        interface = interface
-            .define("CXX_QT_GUI_FEATURE", None)
-            .initializer("src/gui/init.cpp");
-    }
-
-    if qt_qml_enabled() {
-        interface = interface.define("CXX_QT_QML_FEATURE", None);
-    }
-
-    if qt_quickcontrols_enabled() {
-        interface = interface.define("CXX_QT_QUICKCONTROLS_FEATURE", None);
-    }
-
-    let mut builder = CxxQtBuilder::library(interface).include_prefix("cxx-qt-lib-internals");
+    let mut builder = CxxQtBuilder::library(interface)
+        .include_prefix("cxx-qt-lib-internals")
+        .initializer(qt_build_utils::Initializer {
+            file: Some("src/core/init.cpp".into()),
+            ..qt_build_utils::Initializer::default_signature("init_cxx_qt_lib_core")
+        });
 
     if qt_gui_enabled() {
-        builder = builder.qt_module("Gui");
+        builder = builder
+            .qt_module("Gui")
+            .initializer(qt_build_utils::Initializer {
+                file: Some("src/gui/init.cpp".into()),
+                ..qt_build_utils::Initializer::default_signature("init_cxx_qt_lib_gui")
+            });
     }
 
     if qt_qml_enabled() {
@@ -362,6 +391,5 @@ fn main() {
         cc.file("src/qt_types.cpp");
         println!("cargo::rerun-if-changed=src/qt_types.cpp");
     });
-
     builder.build();
 }

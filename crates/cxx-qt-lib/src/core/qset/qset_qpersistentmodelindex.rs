@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qpersistentmodelindex.h");
         type QPersistentModelIndex = crate::QPersistentModelIndex;
 
-        include!("cxx-qt-lib/qset.h");
+        include!("cxx-qt-lib/qset_QPersistentModelIndex.h");
         type QSet_QPersistentModelIndex = crate::QSet<QPersistentModelIndex>;
     }
 

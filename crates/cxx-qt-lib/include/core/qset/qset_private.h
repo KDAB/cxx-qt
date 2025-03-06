@@ -10,15 +10,6 @@
 
 #include <QtCore/QSet>
 
-#include <QtCore/QByteArray>
-#include <QtCore/QDate>
-#include <QtCore/QDateTime>
-#include <QtCore/QPersistentModelIndex>
-#include <QtCore/QString>
-#include <QtCore/QTime>
-#include <QtCore/QUrl>
-#include <QtCore/QUuid>
-
 #include "rust/cxx.h"
 
 // Define namespace otherwise we hit a GCC bug
@@ -83,23 +74,3 @@ qsetReserve(QSet<T>& s, ::rust::isize size) noexcept
 }
 }
 }
-
-using QSet_bool = QSet<bool>;
-using QSet_f32 = QSet<float>;
-using QSet_f64 = QSet<double>;
-using QSet_i8 = QSet<::std::int8_t>;
-using QSet_i16 = QSet<::std::int16_t>;
-using QSet_i32 = QSet<::std::int32_t>;
-using QSet_i64 = QSet<::std::int64_t>;
-using QSet_QByteArray = QSet<::QByteArray>;
-using QSet_QDate = QSet<::QDate>;
-using QSet_QDateTime = QSet<::QDateTime>;
-using QSet_QPersistentModelIndex = QSet<::QPersistentModelIndex>;
-using QSet_QString = QSet<::QString>;
-using QSet_QTime = QSet<::QTime>;
-using QSet_QUrl = QSet<::QUrl>;
-using QSet_QUuid = QSet<::QUuid>;
-using QSet_u8 = QSet<::std::uint8_t>;
-using QSet_u16 = QSet<::std::uint16_t>;
-using QSet_u32 = QSet<::std::uint32_t>;
-using QSet_u64 = QSet<::std::uint64_t>;

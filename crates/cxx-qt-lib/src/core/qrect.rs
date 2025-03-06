@@ -257,8 +257,8 @@ mod ffi {
         #[rust_name = "qrect_init"]
         fn construct(x: i32, y: i32, width: i32, height: i32) -> QRect;
         #[doc(hidden)]
-        #[rust_name = "qrect_to_qstring"]
-        fn toQString(value: &QRect) -> QString;
+        #[rust_name = "qrect_to_debug_qstring"]
+        fn toDebugQString(value: &QRect) -> QString;
         #[doc(hidden)]
         #[rust_name = "qrect_plus"]
         fn operatorPlus(a: &QRect, b: &QMargins) -> QRect;
@@ -299,7 +299,7 @@ impl Default for QRect {
 
 impl fmt::Display for QRect {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qrect_to_qstring(self))
+        write!(f, "{}", ffi::qrect_to_debug_qstring(self))
     }
 }
 

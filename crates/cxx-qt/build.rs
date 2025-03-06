@@ -19,6 +19,7 @@ fn write_headers() {
 
     for file_path in [
         "connection.h",
+        "casting.h",
         "signalhandler.h",
         "thread.h",
         "threading.h",
@@ -40,7 +41,7 @@ fn main() {
     let mut builder = CxxQtBuilder::library(interface);
 
     let cpp_files = ["src/connection.cpp"];
-    let rust_bridges = ["src/connection.rs"];
+    let rust_bridges = ["src/connection.rs", "src/qobject.rs"];
 
     for bridge in &rust_bridges {
         builder = builder.file(bridge);
@@ -51,6 +52,10 @@ fn main() {
             cc.file(cpp_file);
             println!("cargo::rerun-if-changed={cpp_file}");
         }
+    });
+    builder = builder.initializer(qt_build_utils::Initializer {
+        file: Some("src/init.cpp".into()),
+        ..qt_build_utils::Initializer::default_signature("init_cxx_qt_core")
     });
 
     builder.build();

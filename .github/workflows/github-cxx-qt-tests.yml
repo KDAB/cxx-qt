@@ -15,6 +15,14 @@ on:
     # Run daily at 01:01
     # This ensures CI still works and ensures the cache remains active
     - cron: "1 1 * * *"
+  workflow_dispatch:
+    inputs:
+      tmate_debugging:
+        type: boolean
+        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        required: false
+        default: false
+
 # Cancel any previous runs for the same pull request
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
@@ -71,37 +79,61 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+      # Note we need to match the LLVM and Rust versions
+      #
+      # See versions from the table in this link
+      # https://github.com/taiki-e/cargo-llvm-cov?tab=readme-ov-file#get-coverage-of-cc-code-linked-to-rust-librarybinary
+      - name: Install llvm 17
+        run: |
+          sudo apt-get update && sudo apt-get install -y llvm-17
+          test -d /usr/lib/llvm-17/bin/
       - name: Setup toolchain
         run: |
+          # Note that the llvm version needs to match, see the link above
           rustup default 1.77.2
-          cargo install grcov
-          rustup component add llvm-tools rustfmt
+          cargo install --locked --version 0.8.20 grcov
+          rustup component add rustfmt
+      # Ensure we do not have any existing coverage files
+      - run: rm -f coverage/*.profraw
       - name: build
         env:
+          CARGO_INCREMENTAL: 0
           RUSTFLAGS: -Cinstrument-coverage
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
         run: cargo build --package cxx-qt-gen
       - name: test
         env:
+          CARGO_INCREMENTAL: 0
           RUSTFLAGS: -Cinstrument-coverage
           LLVM_PROFILE_FILE: coverage/coverage_data-%p-%m.profraw
         run: cargo test --lib --package cxx-qt-gen
       - name: generate-report
-        run: grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing -o ./target/debug/lcov.info --excl-start CODECOV_EXCLUDE_START --excl-stop CODECOV_EXCLUDE_STOP
+        # Note that --llvm-path is important here to ensure the matching llvm version to the Rust version (1.77.x)
+        # Note that --keep-only is important here to ensure crates.io paths don't conflict
+        run: grcov . -s . --binary-path ./target/debug/ -t lcov --branch --ignore-not-existing --llvm --llvm-path /usr/lib/llvm-17/bin/ --keep-only "crates/*" -o ./target/debug/lcov.info --excl-start CODECOV_EXCLUDE_START --excl-stop CODECOV_EXCLUDE_STOP
       - name: upload-report
         uses: codecov/codecov-action@v5
         with:
           directory: ./target/debug/
+          disable-search: true
           files: lcov.info
           fail_ci_if_error: true
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
+      - name: Upload GitHub Actions artifacts of lcov
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lcov
+          path: ./target/debug/lcov.info
+          if-no-files-found: ignore
 
   build-wasm:
     name: Ubuntu 24.04 (wasm_32) Qt 6
     needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
     runs-on: ubuntu-24.04
     env:
+      GITHUB_COMPILER_CACHE_KEY: "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache"
       SCCACHE_CACHE_SIZE: 600M
     steps:
       - name: "Checkout repository"
@@ -119,14 +151,15 @@ jobs:
             ~/.cargo/bin/sccache
             ~/.cargo/bin/mdbook
             ~/.cargo/bin/mdbook-linkcheck
-          key: ubuntu-24.04_sccache-0.8.2_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+          key: ubuntu-24.04_sccache-0.9.1-patched_mdbook-0.4.36_mdbook-linkcheck-0.7.7
       - name: "Build Rust tools"
         if: steps.rust-tools-cache.outputs.cache-hit != 'true'
         # Do not build with storage backends enabled, we only need local
+        # cargo install --locked --no-default-features --version 0.9.1 sccache
         run: |
-          cargo install --no-default-features --version 0.8.2 sccache
-          cargo install --version 0.4.36 mdbook 
-          cargo install --version 0.7.7 mdbook-linkcheck
+          cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
+          cargo install --locked --version 0.4.36 mdbook 
+          cargo install --locked --version 0.7.7 mdbook-linkcheck
       # We want our compiler cache to always update to the newest state.
       # The best way for us to achieve this is to **always** update the cache after every landed commit.
       # That way it will closely follow our development.
@@ -147,7 +180,15 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: /home/runner/.cache/sccache
-          key: "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache"
+          key: "${{ env.GITHUB_COMPILER_CACHE_KEY }}"
+
+      - name: "Start sccache server"
+        # If the compiler cache couldn't be restored, we have to create the cache path,
+        # as otherwise the server startup fails.
+        run: |
+          mkdir -p /home/runner/.cache/sccache
+          sccache --start-server
+
       - name: "emsdk cache"
         uses: actions/cache@v4
         id: emsdk-cache
@@ -205,21 +246,21 @@ jobs:
       - name: "Delete previous compiler cache"
         # Updating th cache doesn't work from forks
         # So update it once it's merged into the repo
-        if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
+        if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' && github.ref_name == 'main' }}
         continue-on-error: true
         run: |
           gh extension install actions/gh-actions-cache
-          gh actions-cache delete "Ubuntu 22.04 (wasm_32) Qt6_compiler_cache" --confirm
+          gh actions-cache delete "${{ env.GITHUB_COMPILER_CACHE_KEY }}" --confirm
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: "Save Compiler Cache"
         # Updating th cache doesn't work from forks
         # So update it once it's merged into the repo
-        if: ${{ github.event_name == 'push' }}
+        if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
         uses: actions/cache/save@v4
         with:
           path: /home/runner/.cache/sccache
-          key: "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache"
+          key: "${{ env.GITHUB_COMPILER_CACHE_KEY }}"
 
   build:
     # Run after pre checks
@@ -240,6 +281,7 @@ jobs:
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
+            sccache_log_path: /home/runner/.cache/sccache_log.txt
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
@@ -255,6 +297,7 @@ jobs:
             ctest_args: --exclude-regex '^(example_qml_features_test_valgrind|example_qml_minimal_myobject_test_valgrind)$'
             qt_qpa_platform: offscreen
             compiler_cache_path: /home/runner/.cache/sccache
+            sccache_log_path: /home/runner/.cache/sccache_log.txt
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
@@ -278,12 +321,12 @@ jobs:
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
+            sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
             clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
-            # sccache is disabled due on macOS to https://github.com/mozilla/sccache/issues/2092
-            cmake_args: -DSCCACHE=OFF
+            rustc_wrapper: sccache
           - name: macOS 14 (clang) Qt6
             os: macos-14
             qt_version: 6
@@ -299,12 +342,12 @@ jobs:
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|example_qml_features_test|example_qml_minimal_myobject_test|cargo_build_rerun|.*valgrind)$'
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
+            sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
             clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
-            # sccache is disabled on macOS due to https://github.com/mozilla/sccache/issues/2092
-            cmake_args: -DSCCACHE=OFF
+            rustc_wrapper: sccache
 
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
@@ -317,6 +360,7 @@ jobs:
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
             clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
@@ -333,6 +377,7 @@ jobs:
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
             clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
@@ -349,6 +394,7 @@ jobs:
             exe_suffix: .exe
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
+            sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
             clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
@@ -365,6 +411,8 @@ jobs:
         # Allow a larger cache size so that code in branches can be cached
         # but still leave room for the tools cache
         SCCACHE_CACHE_SIZE: 600M
+        SCCACHE_LOG: debug
+        SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
 
     steps:
     - name: "Clone Git repository"
@@ -387,14 +435,15 @@ jobs:
           ${{ matrix.cargo_dir }}/bin/sccache${{ matrix.exe_suffix }}
           ${{ matrix.cargo_dir }}/bin/mdbook${{ matrix.exe_suffix }}
           ${{ matrix.cargo_dir }}/bin/mdbook-linkcheck${{ matrix.exe_suffix }}
-        key: ${{ matrix.os }}_sccache-0.8.2_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+        key: ${{ matrix.os }}_sccache-0.9.1-patched_mdbook-0.4.36_mdbook-linkcheck-0.7.7
     - name: "Build Rust tools"
       if: steps.rust-tools-cache.outputs.cache-hit != 'true'
       # Do not build with storage backends enabled, we only need local
+      # cargo install --locked --no-default-features --version 0.9.1 sccache
       run: |
-        cargo install --no-default-features --version 0.8.2 sccache
-        cargo install --version 0.4.36 mdbook 
-        cargo install --version 0.7.7 mdbook-linkcheck
+        cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
+        cargo install --locked --version 0.4.36 mdbook 
+        cargo install --locked --version 0.7.7 mdbook-linkcheck
 
     # We want our compiler cache to always update to the newest state.
     # The best way for us to achieve this is to **always** update the cache after every landed commit.
@@ -417,6 +466,22 @@ jobs:
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
+
+    - name: "[Windows] Start sccache server"
+      # If the compiler cache couldn't be restored, we have to create the cache path,
+      # as otherwise the server startup fails.
+      if: runner.os == 'Windows'
+      run: |
+        md ${{ matrix.compiler_cache_path }} -ea 0
+        sccache --start-server
+
+    - name: "[Other] Start sccache server"
+      # If the compiler cache couldn't be restored, we have to create the cache path,
+      # as otherwise the server startup fails.
+      if: runner.os != 'Windows'
+      run: |
+        mkdir -p ${{ matrix.compiler_cache_path }}
+        sccache --start-server
 
     - name: "Install clang-format"
       # Note ensure that clang-format runner is updated too
@@ -461,6 +526,11 @@ jobs:
       if: runner.os == 'Windows'
       uses: seanmiddleditch/gha-setup-vsdevenv@v4
 
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.tmate_debugging }}
+      uses: mxschmitt/action-tmate@v3
+
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
     - name: "Configure"
       run: >-
@@ -477,6 +547,10 @@ jobs:
       run: cmake --build build --config Release --parallel ${{ matrix.cores }}
       env:
         RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
+
+    - name: "Print compiler cache statistics"
+      run: sccache --show-stats
+
     - name: "Test"
       run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
       working-directory: ./build
@@ -491,13 +565,12 @@ jobs:
     - name: "Print compiler cache statistics"
       run: sccache --show-stats
 
-
     # This is a workaround for the fact that GH doesn't support updating existing caches.
     # See: https://github.com/azu/github-actions-overwrite-cache-example
     - name: "Delete previous compiler cache"
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
-      if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' }}
+      if: ${{ steps.compiler-cache-restore.outputs.cache-hit &&  github.event_name == 'push' && github.ref_name == 'main' }}
       continue-on-error: true
       run: |
         gh extension install actions/gh-actions-cache
@@ -507,8 +580,16 @@ jobs:
     - name: "Save Compiler Cache"
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
-      if: ${{ github.event_name == 'push' }}
+      if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
       uses: actions/cache/save@v4
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
+
+    - name: Upload GitHub Actions artifacts of sccache debug log
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: sccache_log_${{ matrix.name }}
+        path: ${{ matrix.sccache_log_path }}
+        if-no-files-found: ignore
