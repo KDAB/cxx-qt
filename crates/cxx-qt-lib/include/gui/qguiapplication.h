@@ -20,10 +20,49 @@ namespace cxxqtlib1 {
 qguiapplicationNew(const QVector<QByteArray>& args);
 
 void
-qguiapplicationSetFont(QGuiApplication& app, const QFont& font);
+qguiapplicationAddLibraryPath(const QString& path);
+
+QString
+qguiapplicationApplicationName();
+
+QString
+qguiapplicationApplicationVersion();
+
+::std::int32_t
+qguiapplicationExec();
+
+QStringList
+qguiapplicationLibraryPaths();
+
+QString
+qguiapplicationOrganizationDomain();
+
+QString
+qguiapplicationOrganizationName();
+
+void
+qguiapplicationSetApplicationName(const QString& name);
+
+void
+qguiapplicationSetApplicationVersion(const QString& version);
+
+void
+qguiapplicationSetLibraryPaths(const QStringList& paths);
+
+void
+qguiapplicationSetOrganizationDomain(const QString& domain);
+
+void
+qguiapplicationSetOrganizationName(const QString& name);
+
+void
+qguiapplicationRemoveLibraryPath(const QString& path);
+
+void
+qguiapplicationSetFont(const QFont& font);
 
 QFont
-qguiapplicationFont(const QGuiApplication& app);
+qguiapplicationFont();
 
 void
 qguiapplicationSetDesktopFileName(const QString& name);
