@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/quuid.h");
         type QUuid = crate::QUuid;
 
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QUuid.h");
         type QList_QUuid = crate::QList<QUuid>;
     }
 
