@@ -32,20 +32,3 @@ static_assert(!::std::is_trivially_copy_constructible<QPolygon>::value);
 static_assert(!::std::is_trivially_destructible<QPolygon>::value);
 
 static_assert(QTypeInfo<QPolygon>::isRelocatable);
-
-namespace rust {
-namespace cxxqtlib1 {
-const QVector<QPoint>&
-qpolygonAsQVectorQPointRef(const QPolygon& shape)
-{
-  return static_cast<const QVector<QPoint>&>(shape);
-}
-
-QVector<QPoint>&
-qpolygonAsQVectorQPointRef(QPolygon& shape)
-{
-  return static_cast<QVector<QPoint>&>(shape);
-}
-
-}
-}
