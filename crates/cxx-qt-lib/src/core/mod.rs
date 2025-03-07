@@ -47,6 +47,9 @@ pub use cxx_qt::{QMetaObjectConnection, QMetaObjectConnectionGuard};
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;
 
+mod qobject;
+pub use qobject::QObjectExt;
+
 mod qpersistentmodelindex;
 pub use qpersistentmodelindex::QPersistentModelIndex;
 
