@@ -127,9 +127,9 @@ pub fn generate_rust_signal(
     if !signal.private {
         cxx_mod_contents.push(parse_quote_spanned! {
             span=>
+            #(#cfgs)*
             #unsafety_block extern "C++" {
                 #[cxx_name = #cpp_ident]
-                #(#cfgs)*
                 #(#doc_comments)*
                 #namespace
                 #unsafe_call fn #signal_ident_cpp(#parameter_signatures) #return_type;
@@ -155,6 +155,7 @@ pub fn generate_rust_signal(
         parse_quote_spanned! {
             span=>
             #[namespace = #namespace_str]
+            #(#cfgs)*
             extern "Rust" {
                 #[doc(hidden)]
                 fn #signal_handler_drop(handler: #signal_handler_alias);
