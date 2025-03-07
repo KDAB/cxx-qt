@@ -1,0 +1,75 @@
+// SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Ben Ford <ben.ford@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+use cxx_qt::QObject;
+use std::pin::Pin;
+
+#[cxx_qt::bridge]
+mod ffi {
+    unsafe extern "C++" {
+        #[rust_name = "QObjectExternal"]
+        type QObject;
+
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        #[rust_name = "block_signals"]
+        pub fn blockSignals(self: Pin<&mut QObjectExternal>, block: bool) -> bool;
+
+        #[rust_name = "signals_blocked"]
+        pub fn signalsBlocked(self: &QObjectExternal) -> bool;
+
+        #[rust_name = "set_object_name"]
+        pub fn setObjectName(self: Pin<&mut QObjectExternal>, name: &QString);
+
+        #[rust_name = "object_name"]
+        pub fn objectName(self: &QObjectExternal) -> QString;
+    }
+}
+
+use crate::core::qobject::ffi::QString;
+use ffi::QObjectExternal;
+
+pub trait QObjectExt {
+    fn block_signals(self: Pin<&mut Self>, block: bool) -> bool;
+
+    fn signals_blocked(&self) -> bool;
+
+    fn set_object_name(self: Pin<&mut Self>, name: &QString);
+
+    fn object_name(&self) -> QString;
+}
+
+fn cast_pin(obj: Pin<&mut QObject>) -> Pin<&mut QObjectExternal> {
+    unsafe {
+        let mut_ptr = obj.get_unchecked_mut() as *mut QObject as *mut QObjectExternal;
+        Pin::new_unchecked(&mut *mut_ptr)
+    }
+}
+
+fn cast(obj: &QObject) -> &QObjectExternal {
+    unsafe {
+        let ptr = obj as *const QObject as *const QObjectExternal;
+        &*ptr
+    }
+}
+
+impl QObjectExt for QObject {
+    fn block_signals(self: Pin<&mut Self>, block: bool) -> bool {
+        cast_pin(self).block_signals(block)
+    }
+
+    fn signals_blocked(&self) -> bool {
+        cast(self).signals_blocked()
+    }
+
+    fn set_object_name(self: Pin<&mut Self>, name: &QString) {
+        cast_pin(self).set_object_name(name)
+    }
+
+    fn object_name(&self) -> QString {
+        cast(self).object_name()
+    }
+}
