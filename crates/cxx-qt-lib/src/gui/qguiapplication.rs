@@ -22,7 +22,7 @@ mod ffi {
         type QFont = crate::QFont;
 
         include!("cxx-qt-lib/qcoreapplication.h");
-        type QCoreApplication;
+        type QCoreApplication = crate::QCoreApplication;
     }
 
     unsafe extern "C++Qt" {

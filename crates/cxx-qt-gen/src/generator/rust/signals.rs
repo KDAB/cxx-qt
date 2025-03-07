@@ -127,6 +127,7 @@ pub fn generate_rust_signal(
     if !signal.private {
         cxx_mod_contents.push(parse_quote_spanned! {
             span=>
+            #(#cfgs)*
             #unsafety_block extern "C++" {
                 #[cxx_name = #cpp_ident]
                 #(#cfgs)*
@@ -144,22 +145,27 @@ pub fn generate_rust_signal(
             unsafe extern "C++" {
                 #[doc(hidden)]
                 #[namespace = #namespace_str]
+                #(#cfgs)*
                 type #signal_handler_alias = cxx_qt::signalhandler::CxxQtSignalHandler<super::#closure_struct>;
 
                 #[doc(hidden)]
                 #[namespace = #namespace_str]
                 #[cxx_name = #free_connect_ident_cpp]
+                #(#cfgs)*
                 fn #free_connect_ident_rust(self_value: #self_type_cxx, signal_handler: #signal_handler_alias, conn_type: CxxQtConnectionType) -> CxxQtQMetaObjectConnection;
             }
         },
         parse_quote_spanned! {
             span=>
             #[namespace = #namespace_str]
+            #(#cfgs)*
             extern "Rust" {
                 #[doc(hidden)]
+                #(#cfgs)*
                 fn #signal_handler_drop(handler: #signal_handler_alias);
 
                 #[doc(hidden)]
+                #(#cfgs)*
                 #unsafe_call fn #signal_handler_call(handler: &mut #signal_handler_alias, self_value: #self_type_cxx, #(#parameters_cxx),*);
             }
         }]);
@@ -174,6 +180,7 @@ pub fn generate_rust_signal(
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = #signal_name_cpp]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+                    #(#cfgs)*
                     pub fn #connect_ident_rust<F: FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + 'static + Send>(self: #self_type_qualified, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
                     {
                         cxx_qt::QMetaObjectConnectionGuard::from(#module_ident::#free_connect_ident_rust(
@@ -193,6 +200,7 @@ pub fn generate_rust_signal(
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
+                    #(#cfgs)*
                     pub fn #on_ident_rust<F: FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + 'static + Send>(self: #self_type_qualified, closure: F) -> cxx_qt::QMetaObjectConnectionGuard
                     {
                         cxx_qt::QMetaObjectConnectionGuard::from(#module_ident::#free_connect_ident_rust(
@@ -213,7 +221,9 @@ pub fn generate_rust_signal(
                 span =>
                 #(#cfgs)*
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for #closure_struct {
+                    #(#cfgs)*
                     type Id = cxx::type_id!(#signal_handler_alias_namespaced_str);
+                    #(#cfgs)*
                     type FnType = dyn FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + Send;
                 }
             },
