@@ -150,6 +150,7 @@ fn main() {
         "core/qmargins",
         "core/qmarginsf",
         "core/qmodelindex",
+        "core/qobject",
         "core/qpersistentmodelindex",
         "core/qpoint",
         "core/qpointf",
