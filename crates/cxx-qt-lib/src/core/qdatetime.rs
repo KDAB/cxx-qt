@@ -195,6 +195,7 @@ mod ffi {
         fn qdatetimeTimeZone(datetime: &QDateTime) -> UniquePtr<QTimeZone>;
         #[rust_name = "qdatetime_settimezone"]
         fn qdatetimeSetTimeZone(datetime: &mut QDateTime, time_zone: &QTimeZone);
+        #[doc(hidden)]
         #[rust_name = "qdatetime_from_string"]
         fn qdatetimeFromQString(string: &QString, format: DateFormat) -> QDateTime;
     }
@@ -513,6 +514,17 @@ mod test {
         assert_eq!(qdatetime_a.cmp(&qdatetime_b), Ordering::Less);
         assert_eq!(qdatetime_b.cmp(&qdatetime_a), Ordering::Greater);
         assert_eq!(qdatetime_a.cmp(&qdatetime_a), Ordering::Equal);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qdatetime_serde() {
+        let qdatetime = QDateTime::from_date_and_time_time_zone(
+            &QDate::new(2023, 1, 1),
+            &QTime::new(1, 1, 1, 1),
+            &ffi::QTimeZone::utc(),
+        );
+        assert_eq!(crate::serde_impl::roundtrip(&qdatetime), qdatetime);
     }
 }
 

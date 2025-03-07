@@ -159,6 +159,10 @@ mod ffi {
         #[rust_name = "default_family"]
         fn defaultFamily(self: &QFont) -> QString;
 
+        /// Returns a description of the font. The description is a comma-separated list of the attributes.
+        #[rust_name = "description"]
+        fn toString(self: &QFont) -> QString;
+
         /// Returns true if a window system font exactly matching
         /// the settings of this font is available.
         #[rust_name = "exact_match"]
@@ -177,8 +181,8 @@ mod ffi {
         #[rust_name = "fixed_pitch"]
         fn fixedPitch(self: &QFont) -> bool;
 
-        /// Sets this font to match the description descrip. The description is a comma-separated
-        /// list of the font attributes, as returned by toString().
+        /// Sets this font to match the description *descrip*. The description is a comma-separated
+        /// list of the font attributes, as returned by [`QFont::description`].
         #[rust_name = "from_string"]
         fn fromString(self: &mut QFont, descrip: &QString) -> bool;
 
@@ -423,10 +427,60 @@ impl QFont {
     }
 }
 
+#[cfg(feature = "serde")]
+impl serde::Serialize for QFont {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        self.description().serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QFont {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        use serde::de::{Error as _, Unexpected};
+
+        let qstring = ffi::QString::deserialize(deserializer)?;
+        let mut font = QFont::default();
+        if !font.from_string(&qstring) {
+            return Err(D::Error::invalid_value(
+                Unexpected::Str(&String::from(&qstring)),
+                &"QFont description",
+            ));
+        }
+        Ok(font)
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
 unsafe impl ExternType for QFont {
     type Id = type_id!("QFont");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qfont_serde() {
+        let mut qfont = QFont::default();
+        qfont.set_family(&ffi::QString::from("Arial"));
+        qfont.set_bold(true);
+        qfont.set_pixel_size(10);
+        qfont.set_style_hint(QFontStyleHint::Courier, QFontStyleStrategy::PreferAntialias);
+        qfont.set_strikeout(true);
+        qfont.set_capitalization(QFontCapitalization::AllLowercase);
+        qfont.set_letter_spacing(QFontSpacingType::AbsoluteSpacing, 10.0);
+        qfont.set_word_spacing(1.5);
+        qfont.set_stretch(2);
+        qfont.set_style(QFontStyle::StyleItalic);
+
+        assert_eq!(
+            crate::serde_impl::roundtrip(&qfont).description(),
+            qfont.description()
+        );
+    }
 }

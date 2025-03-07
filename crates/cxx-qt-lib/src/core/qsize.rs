@@ -113,9 +113,12 @@ mod ffi {
         fn operatorDiv(a: f64, b: &QSize) -> QSize;
     }
 }
+#[cfg(feature = "serde")]
+use serde::{Deserialize, Serialize};
 
 /// The QSize struct defines the size of a two-dimensional object using integer point precision.
 #[derive(Debug, Clone, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[repr(C)]
 pub struct QSize {
     width: i32,

@@ -10,6 +10,7 @@
 
 #include "rust/cxx.h"
 
+using QUuidStringFormat = QUuid::StringFormat;
 using QUuidVariant = QUuid::Variant;
 using QUuidVersion = QUuid::Version;
 
@@ -23,9 +24,6 @@ quuidCreateUuid();
 
 QUuid
 quuidCreateUuidV5(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice);
-
-QString
-quuidToString(const QUuid& uuid);
 
 QUuid
 quuidFromString(const QString& string);
