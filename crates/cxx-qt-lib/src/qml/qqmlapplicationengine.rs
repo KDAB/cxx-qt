@@ -73,6 +73,11 @@ mod ffi {
             qobject: *mut QObject,
             url: &QUrl,
         );
+
+        #[qsignal]
+        #[rust_name = "object_creation_failed"]
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
+        fn objectCreationFailed(self: Pin<&mut QQmlApplicationEngine>, url: &QUrl);
     }
 
     unsafe extern "C++" {
