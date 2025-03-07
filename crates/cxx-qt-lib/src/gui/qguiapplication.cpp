@@ -30,15 +30,93 @@ qguiapplicationNew(const QVector<QByteArray>& args)
 }
 
 void
-qguiapplicationSetFont(QGuiApplication& app, const QFont& font)
+qguiapplicationAddLibraryPath(const QString& path)
 {
-  app.setFont(font);
+  QGuiApplication::addLibraryPath(path);
+}
+
+QString
+qguiapplicationApplicationName()
+{
+  return QGuiApplication::applicationName();
+}
+
+QString
+qguiapplicationApplicationVersion()
+{
+  return QGuiApplication::applicationVersion();
+}
+
+::std::int32_t
+qguiapplicationExec()
+{
+  return static_cast<::std::int32_t>(QGuiApplication::exec());
+}
+
+QStringList
+qguiapplicationLibraryPaths()
+{
+  return QGuiApplication::libraryPaths();
+}
+
+QString
+qguiapplicationOrganizationDomain()
+{
+  return QGuiApplication::organizationDomain();
+}
+
+QString
+qguiapplicationOrganizationName()
+{
+  return QGuiApplication::organizationName();
+}
+
+void
+qguiapplicationSetApplicationName(const QString& name)
+{
+  QGuiApplication::setApplicationName(name);
+}
+
+void
+qguiapplicationSetApplicationVersion(const QString& version)
+{
+  QGuiApplication::setApplicationVersion(version);
+}
+
+void
+qguiapplicationSetLibraryPaths(const QStringList& paths)
+{
+  QGuiApplication::setLibraryPaths(paths);
+}
+
+void
+qguiapplicationSetOrganizationDomain(const QString& domain)
+{
+  QGuiApplication::setOrganizationDomain(domain);
+}
+
+void
+qguiapplicationSetOrganizationName(const QString& name)
+{
+  QGuiApplication::setOrganizationName(name);
+}
+
+void
+qguiapplicationRemoveLibraryPath(const QString& path)
+{
+  QGuiApplication::removeLibraryPath(path);
+}
+
+void
+qguiapplicationSetFont(const QFont& font)
+{
+  QGuiApplication::setFont(font);
 }
 
 QFont
-qguiapplicationFont(const QGuiApplication& app)
+qguiapplicationFont()
 {
-  return app.font();
+  return QGuiApplication::font();
 }
 
 void

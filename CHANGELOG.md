@@ -31,6 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add wrappers for up and down casting, for all types which inherit from QObject, available for &T, &mut T and Pin<&mut T>
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 
+#### Changed
+
+- The static methods of `QCoreApplication`, `QGuiApplication`, and `QApplication` no longer use a `self` parameter.
+
 ### Removed
 
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)

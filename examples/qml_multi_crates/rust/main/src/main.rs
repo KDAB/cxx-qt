@@ -12,7 +12,7 @@ fn main() {
     cxx_qt::init_crate!(qml_multi_crates);
 
     // Create the application and engine
-    let mut app = QGuiApplication::new();
+    let app = QGuiApplication::new();
     let mut engine = QQmlApplicationEngine::new();
 
     // Load the QML path into the engine
@@ -30,10 +30,7 @@ fn main() {
             .release();
     }
 
-    // Start the app
-    if let Some(app) = app.as_mut() {
-        app.exec();
-    }
+    app.exec();
 }
 
 #[cfg(test)]
