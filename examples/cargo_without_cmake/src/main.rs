@@ -21,7 +21,7 @@ use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 // ANCHOR: book_cargo_rust_main
 fn main() {
     // Create the application and engine
-    let mut app = QGuiApplication::new();
+    let app = QGuiApplication::new();
     let mut engine = QQmlApplicationEngine::new();
 
     // Load the QML path into the engine
@@ -39,9 +39,6 @@ fn main() {
             .release();
     }
 
-    // Start the app
-    if let Some(app) = app.as_mut() {
-        app.exec();
-    }
+    app.exec();
 }
 // ANCHOR_END: book_cargo_rust_main

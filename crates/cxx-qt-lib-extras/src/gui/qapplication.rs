@@ -112,7 +112,7 @@ impl QApplication {
 
     /// Enters the main event loop and waits until exit() is called,
     /// and then returns the value that was set to exit() (which is 0 if exit() is called via quit()).
-    pub fn exec() -> i32 {
+    pub fn exec(&self) -> i32 {
         ffi::qapplication_exec()
     }
 
