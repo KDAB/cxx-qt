@@ -65,6 +65,16 @@ mod ffi {
         type QQmlApplicationEngine;
     }
 
+    unsafe extern "C++Qt" {
+        #[qsignal]
+        #[rust_name = "object_created"]
+        unsafe fn objectCreated(
+            self: Pin<&mut QQmlApplicationEngine>,
+            qobject: *mut QObject,
+            url: &QUrl,
+        );
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qqmlengine.h");
         type QQmlEngine = crate::QQmlEngine;
