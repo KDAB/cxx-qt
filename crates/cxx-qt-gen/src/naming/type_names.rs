@@ -119,6 +119,14 @@ impl TypeNames {
         type_names.populate_from_cxx_items(cxx_items, bridge_namespace, module_ident)?;
         type_names.populate_from_cxx_qt_data(cxx_qt_data, bridge_namespace, module_ident)?;
 
+        let qobject = Name {
+            rust: format_ident!("QObject"),
+            cxx: None,
+            module: Some(Path::from(module_ident.clone())),
+            namespace: None,
+        };
+        type_names.names.insert(qobject.rust.clone(), qobject);
+
         Ok(type_names)
     }
 
