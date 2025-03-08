@@ -52,11 +52,5 @@ qdateIsLeapYear(::std::int32_t year)
   return QDate::isLeapYear(static_cast<int>(year));
 }
 
-QString
-qdateToFormat(const QDate& date, const QString& format)
-{
-  return date.toString(format);
-}
-
 }
 }

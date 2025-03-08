@@ -6,7 +6,7 @@ use cxx::{type_id, ExternType};
 use std::mem::MaybeUninit;
 use std::{cmp::Ordering, fmt};
 
-use crate::{QDate, QTime};
+use crate::{AnyDateFormat, QDate, QString, QTime};
 
 #[cxx::bridge]
 mod ffi {
@@ -140,10 +140,13 @@ mod ffi {
         #[rust_name = "to_secs_since_epoch"]
         fn toSecsSinceEpoch(self: &QDateTime) -> qint64;
 
-        /// Returns the time as a string. The format parameter determines the format of the string.
-        #[rust_name = "format_enum"]
-        fn toString(self: &QDateTime, format: DateFormat) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "format_qstring"]
+        fn toString(self: &QDateTime, format: &QString) -> QString;
 
+        #[doc(hidden)]
+        #[rust_name = "format_dateformat"]
+        fn toString(self: &QDateTime, format: DateFormat) -> QString;
         /// Returns a copy of this datetime converted to the given time spec.
         ///
         /// Note this method is only available with Qt < 6.8
@@ -195,7 +198,11 @@ mod ffi {
         fn qdatetimeTimeZone(datetime: &QDateTime) -> UniquePtr<QTimeZone>;
         #[rust_name = "qdatetime_settimezone"]
         fn qdatetimeSetTimeZone(datetime: &mut QDateTime, time_zone: &QTimeZone);
-        #[rust_name = "qdatetime_from_string"]
+        #[doc(hidden)]
+        #[rust_name = "qdatetime_from_qstring_qstring"]
+        fn qdatetimeFromQString(string: &QString, format: &QString) -> QDateTime;
+        #[doc(hidden)]
+        #[rust_name = "qdatetime_from_qstring_dateformat"]
         fn qdatetimeFromQString(string: &QString, format: DateFormat) -> QDateTime;
     }
 
@@ -210,11 +217,11 @@ mod ffi {
         #[rust_name = "qdatetime_init_default"]
         fn construct() -> QDateTime;
         #[doc(hidden)]
-        #[rust_name = "qdatetime_init_from_date_and_time_time_zone"]
+        #[rust_name = "qdatetime_init_from_date_time_timezone"]
         fn construct(date: &QDate, time: &QTime, time_zone: &QTimeZone) -> QDateTime;
         #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[doc(hidden)]
-        #[rust_name = "qdatetime_init_from_date_and_time_time_spec"]
+        #[rust_name = "qdatetime_init_from_date_time_time_spec"]
         fn construct(
             date: &QDate,
             time: &QTime,
@@ -271,25 +278,21 @@ impl QDateTime {
     }
 
     /// Construct a Rust QDateTime from a given QDate, QTime, and QTimeZone
-    pub fn from_date_and_time_time_zone(
-        date: &QDate,
-        time: &QTime,
-        time_zone: &ffi::QTimeZone,
-    ) -> Self {
-        ffi::qdatetime_init_from_date_and_time_time_zone(date, time, time_zone)
+    pub fn from_date_time_timezone(date: &QDate, time: &QTime, time_zone: &ffi::QTimeZone) -> Self {
+        ffi::qdatetime_init_from_date_time_timezone(date, time, time_zone)
     }
 
     /// Construct a Rust QDateTime from a given QDate, QTime, Qt::TimeSpec, and offset
     ///
     /// Note this method is only available with Qt < 6.8
     #[cfg(not(cxxqt_qt_version_at_least_6_8))]
-    pub fn from_date_and_time_time_spec(
+    pub fn from_date_time_timespec(
         date: &QDate,
         time: &QTime,
         time_spec: ffi::TimeSpec,
         offset_seconds: i32,
     ) -> Self {
-        ffi::qdatetime_init_from_date_and_time_time_spec(date, time, time_spec, offset_seconds)
+        ffi::qdatetime_init_from_date_time_time_spec(date, time, time_spec, offset_seconds)
     }
 
     /// Returns a datetime whose date and time are the number of milliseconds msecs that have passed since 1970-01-01T00:00:00.000,
@@ -304,13 +307,40 @@ impl QDateTime {
         ffi::qdatetime_from_secs_since_epoch(secs, time_zone)
     }
 
-    /// Returns the datetime represented in the string as a QDateTime using the format given, or None if this is not possible.
-    pub fn from_string(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
-        let date = ffi::qdatetime_from_string(string, format);
-        if date.is_valid() {
-            Some(date)
+    /// Returns the QDateTime represented by the string, using the format given.
+    /// If the string cannot be parsed, returns `None`.
+    pub fn from_qstring_opt<'a, T>(string: &QString, format: T) -> Option<Self>
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        let parsed = Self::from_qstring(string, format);
+        if parsed.is_valid() {
+            Some(parsed)
         } else {
             None
+        }
+    }
+
+    /// Returns the QDateTime represented by the string, using the format given.
+    /// If the string cannot be parsed, returns an invalid datetime.
+    fn from_qstring<'a, T>(string: &QString, format: T) -> Self
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        match format.into() {
+            AnyDateFormat::DateFormat(f) => ffi::qdatetime_from_qstring_dateformat(string, f),
+            AnyDateFormat::QString(f) => ffi::qdatetime_from_qstring_qstring(string, f),
+        }
+    }
+
+    /// Returns the datetime as a string. The format parameter determines the format of the result string.
+    pub fn to_qstring<'a, T>(&self, format: T) -> QString
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        match format.into() {
+            AnyDateFormat::DateFormat(f) => self.format_dateformat(f),
+            AnyDateFormat::QString(f) => self.format_qstring(f),
         }
     }
 
@@ -368,7 +398,7 @@ impl Ord for QDateTime {
 
 impl fmt::Display for QDateTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.format_enum(ffi::DateFormat::TextDate))
+        write!(f, "{}", self.to_qstring(ffi::DateFormat::TextDate))
     }
 }
 
@@ -394,7 +424,7 @@ impl<Tz: chrono::TimeZone> TryFrom<chrono::DateTime<Tz>> for QDateTime {
 
     fn try_from(value: chrono::DateTime<Tz>) -> Result<Self, Self::Error> {
         let tz = crate::QTimeZone::from_offset_seconds(value.offset().fix().local_minus_utc());
-        Ok(QDateTime::from_date_and_time_time_zone(
+        Ok(QDateTime::from_date_time_timezone(
             &QDate::from(value.date_naive()),
             &QTime::try_from(value.time())?,
             tz.as_ref().ok_or("Could not construct timezone")?,
@@ -440,7 +470,7 @@ impl TryFrom<QDateTime> for chrono::DateTime<chrono::Utc> {
 impl From<time::OffsetDateTime> for QDateTime {
     fn from(value: time::OffsetDateTime) -> Self {
         let tz = crate::QTimeZone::from_offset_seconds(value.offset().whole_seconds());
-        QDateTime::from_date_and_time_time_zone(
+        QDateTime::from_date_time_timezone(
             &QDate::from(value.date()),
             &QTime::from(value.time()),
             tz.as_ref().expect("Could not construct timezone"),
@@ -452,7 +482,7 @@ impl From<time::OffsetDateTime> for QDateTime {
 impl From<time::PrimitiveDateTime> for QDateTime {
     fn from(value: time::PrimitiveDateTime) -> Self {
         let tz = crate::QTimeZone::utc();
-        QDateTime::from_date_and_time_time_zone(
+        QDateTime::from_date_time_timezone(
             &QDate::from(value.date()),
             &QTime::from(value.time()),
             tz.as_ref().expect("Could not construct timezone"),
@@ -498,12 +528,12 @@ mod test {
 
     #[test]
     fn test_ordering() {
-        let qdatetime_a = QDateTime::from_date_and_time_time_zone(
+        let qdatetime_a = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 1, 1, 1),
             &ffi::QTimeZone::utc(),
         );
-        let qdatetime_b = QDateTime::from_date_and_time_time_zone(
+        let qdatetime_b = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 2, 2),
             &QTime::new(2, 2, 2, 2),
             &ffi::QTimeZone::utc(),
@@ -535,7 +565,7 @@ mod test_chrono {
             )
         };
 
-        let qdatetime = QDateTime::from_date_and_time_time_zone(
+        let qdatetime = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             // Chrono adds the offset to the given time, so add the offset here to match Chrono
             &QTime::new(1 + 1 /* plus the offset */, 2, 3, 4),
@@ -559,7 +589,7 @@ mod test_chrono {
             )
         };
 
-        let qdatetime = QDateTime::from_date_and_time_time_zone(
+        let qdatetime = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::from_offset_seconds(60 * 60),
@@ -583,7 +613,7 @@ mod test_chrono {
             )
         };
 
-        let qdatetime = QDateTime::from_date_and_time_time_zone(
+        let qdatetime = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::utc(),
@@ -607,7 +637,7 @@ mod test_chrono {
             )
         };
 
-        let qdatetime = QDateTime::from_date_and_time_time_zone(
+        let qdatetime = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             // Should cause one hour offset when in chrono::DateTime
@@ -633,7 +663,7 @@ mod test_time {
             .unwrap()
             .assume_offset(time::UtcOffset::from_whole_seconds(60 * 60).unwrap());
 
-        let qdatetime = QDateTime::from_date_and_time_time_zone(
+        let qdatetime = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::from_offset_seconds(60 * 60),
@@ -651,7 +681,7 @@ mod test_time {
             .with_hms_milli(1, 2, 3, 4)
             .unwrap();
 
-        let qdatetime = QDateTime::from_date_and_time_time_zone(
+        let qdatetime = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::utc(),
@@ -670,7 +700,7 @@ mod test_time {
             .unwrap()
             .assume_offset(time::UtcOffset::from_whole_seconds(60 * 60).unwrap());
 
-        let qdatetime = QDateTime::from_date_and_time_time_zone(
+        let qdatetime = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::from_offset_seconds(60 * 60),
@@ -685,7 +715,7 @@ mod test_time {
             .with_hms_milli(1, 2, 3, 4)
             .unwrap();
 
-        let qdatetime = QDateTime::from_date_and_time_time_zone(
+        let qdatetime = QDateTime::from_date_time_timezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::utc(),

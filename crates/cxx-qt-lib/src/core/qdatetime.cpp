@@ -98,5 +98,11 @@ qdatetimeFromQString(const QString& string, const Qt::DateFormat format)
   return QDateTime::fromString(string, format);
 }
 
+QDateTime
+qdatetimeFromQString(const QString& string, const QString &format)
+{
+  return QDateTime::fromString(string, format);
+}
+
 }
 }

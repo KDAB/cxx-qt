@@ -26,8 +26,6 @@ qint64
 qdateDaysTo(const QDate& date, QDate d);
 bool
 qdateIsLeapYear(::std::int32_t year);
-QString
-qdateToFormat(const QDate& date, const QString& format);
 
 }
 }

@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::{AnyDateFormat, QString};
 use cxx::{type_id, ExternType};
 use std::fmt;
 
@@ -61,12 +62,12 @@ mod ffi {
         #[rust_name = "set_hms"]
         fn setHMS(self: &mut QTime, h: i32, m: i32, s: i32, ms: i32) -> bool;
 
-        /// Returns the time as a string. The format parameter determines the format of the result string.
-        #[rust_name = "format"]
+        #[doc(hidden)]
+        #[rust_name = "format_qstring"]
         fn toString(self: &QTime, format: &QString) -> QString;
 
-        /// Returns the time as a string. The format parameter determines the format of the string.
-        #[rust_name = "format_enum"]
+        #[doc(hidden)]
+        #[rust_name = "format_dateformat"]
         fn toString(self: &QTime, format: DateFormat) -> QString;
     }
 
@@ -81,10 +82,10 @@ mod ffi {
         fn qtimeFromMSecsSinceStartOfDay(msecs: i32) -> QTime;
 
         #[doc(hidden)]
-        #[rust_name = "qtime_from_string"]
+        #[rust_name = "qtime_from_qstring_qstring"]
         fn qtimeFromString(string: &QString, format: &QString) -> QTime;
         #[doc(hidden)]
-        #[rust_name = "qtime_from_string_enum"]
+        #[rust_name = "qtime_from_qstring_dateformat"]
         fn qtimeFromString(string: &QString, format: DateFormat) -> QTime;
 
         #[doc(hidden)]
@@ -135,14 +136,41 @@ impl QTime {
         ffi::qtime_from_msecs_since_start_of_day(msecs)
     }
 
-    /// Returns the QTime represented by the string, using the format given, or an invalid time if the string cannot be parsed.
-    pub fn from_string(string: &ffi::QString, format: &ffi::QString) -> Self {
-        ffi::qtime_from_string(string, format)
+    /// Returns the QTime represented by the string, using the format given.
+    /// If the string cannot be parsed, returns `None`.
+    pub fn from_qstring_opt<'a, T>(string: &QString, format: T) -> Option<Self>
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        let parsed = Self::from_qstring(string, format);
+        if parsed.is_valid() {
+            Some(parsed)
+        } else {
+            None
+        }
     }
 
-    /// Returns the time represented in the string as a QTime using the format given, or an invalid time if this is not possible.
-    pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Self {
-        ffi::qtime_from_string_enum(string, format)
+    /// Returns the QTime represented by the string, using the format given.
+    /// If the string cannot be parsed, returns an invalid time.
+    fn from_qstring<'a, T>(string: &QString, format: T) -> Self
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        match format.into() {
+            AnyDateFormat::DateFormat(f) => ffi::qtime_from_qstring_dateformat(string, f),
+            AnyDateFormat::QString(f) => ffi::qtime_from_qstring_qstring(string, f),
+        }
+    }
+
+    /// Returns the time as a string. The format parameter determines the format of the result string.
+    pub fn to_qstring<'a, T>(&self, format: T) -> QString
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        match format.into() {
+            AnyDateFormat::DateFormat(f) => self.format_dateformat(f),
+            AnyDateFormat::QString(f) => self.format_qstring(f),
+        }
     }
 
     /// Returns the number of milliseconds from this time to t.
@@ -178,7 +206,7 @@ impl Default for QTime {
 
 impl fmt::Display for QTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.format_enum(ffi::DateFormat::TextDate))
+        write!(f, "{}", self.to_qstring(ffi::DateFormat::TextDate))
     }
 }
 
