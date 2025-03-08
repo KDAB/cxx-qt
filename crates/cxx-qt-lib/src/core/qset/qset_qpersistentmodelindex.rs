@@ -45,6 +45,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_QPersistentModelIndex, _: &QPersistentModelIndex);
         #[rust_name = "len_QPersistentModelIndex"]
         fn qsetLen(_: &QSet_QPersistentModelIndex) -> isize;
+        #[rust_name = "reserve_QPersistentModelIndex"]
+        fn qsetReserve(_: &mut QSet_QPersistentModelIndex, size: isize);
     }
 }
 
@@ -73,4 +75,8 @@ pub(crate) fn insert(s: &mut ffi::QSet_QPersistentModelIndex, value: &ffi::QPers
 
 pub(crate) fn len(s: &ffi::QSet_QPersistentModelIndex) -> isize {
     ffi::len_QPersistentModelIndex(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_QPersistentModelIndex, size: isize) {
+    ffi::reserve_QPersistentModelIndex(s, size);
 }

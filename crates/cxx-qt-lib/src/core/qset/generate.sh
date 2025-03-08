@@ -72,6 +72,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
         fn qsetLen(_: &QSet_$1) -> isize;
+        #[rust_name = "reserve_$1"]
+        fn qsetReserve(_: &mut QSet_$1, size: isize);
     }
 }
 
@@ -97,6 +99,10 @@ pub(crate) fn insert(s: &mut ffi::QSet_$1, value: &$1) {
 
 pub(crate) fn len(s: &ffi::QSet_$1) -> isize {
     ffi::len_$1(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_$1, size: isize) {
+  ffi::reserve_$1(s, size);
 }
 EOF
     rustfmt "$SCRIPTPATH/qset_$1.rs"
@@ -148,6 +154,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
         fn qsetLen(_: &QSet_$1) -> isize;
+        #[rust_name = "reserve_$1"]
+        fn qsetReserve(_: &mut QSet_$1, size: isize);
     }
 }
 
@@ -173,6 +181,10 @@ pub(crate) fn insert(s: &mut ffi::QSet_$1, value: &ffi::$1) {
 
 pub(crate) fn len(s: &ffi::QSet_$1) -> isize {
     ffi::len_$1(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_$1, size: isize) {
+  ffi::reserve_$1(s, size);
 }
 EOF
     rustfmt "$SCRIPTPATH/qset_$2.rs"
