@@ -244,4 +244,13 @@ mod test {
             Some("element".to_owned())
         );
     }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qstringlist_serde() {
+        let mut qstringlist = QStringList::default();
+        qstringlist.append(QString::from("element 1"));
+        qstringlist.append(QString::from("element 2"));
+        assert_eq!(crate::serde_impl::roundtrip(&qstringlist), qstringlist)
+    }
 }

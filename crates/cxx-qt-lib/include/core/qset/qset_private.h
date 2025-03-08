@@ -58,6 +58,19 @@ qsetLen(const QSet<T>& s) noexcept
   return static_cast<::rust::isize>(s.size());
 }
 
+template<typename T>
+void
+qsetReserve(QSet<T>& s, ::rust::isize size) noexcept
+{
+  Q_ASSERT(size >= 0);
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  s.reserve(static_cast<qsizetype>(size));
+#else
+  s.reserve(static_cast<int>(size));
+#endif
+}
+
 }
 }
 }

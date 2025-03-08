@@ -501,6 +501,21 @@ impl TryFrom<&QUrl> for url::Url {
     }
 }
 
+#[cfg(feature = "serde")]
+impl serde::Serialize for QUrl {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        ffi::qurl_to_qstring(self).serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QUrl {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let string = ffi::QString::deserialize(deserializer)?;
+        Ok(Self::from(&string))
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
@@ -511,8 +526,14 @@ unsafe impl ExternType for QUrl {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(any(feature = "http", feature = "url"))]
     use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qurl_serde() {
+        let qurl = QUrl::from("https://github.com/kdab/cxx-qt");
+        assert_eq!(crate::serde_impl::roundtrip(&qurl), qurl);
+    }
 
     #[cfg(feature = "http")]
     #[test]
