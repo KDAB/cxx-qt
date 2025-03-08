@@ -28,7 +28,7 @@ mod qdatetime_cxx {
 }
 
 fn construct_qdatetime(date: &QDate, time: &QTime, time_zone: &QTimeZone) -> QDateTime {
-    QDateTime::from_date_and_time_time_zone(date, time, time_zone)
+    QDateTime::from_qdate_qtime_qtimezone(date, time, time_zone)
 }
 
 fn read_qdatetime(dt: &QDateTime, date: &QDate, time: &QTime) -> bool {

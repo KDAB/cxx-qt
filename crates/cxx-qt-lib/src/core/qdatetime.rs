@@ -217,7 +217,7 @@ mod ffi {
         #[rust_name = "qdatetime_init_default"]
         fn construct() -> QDateTime;
         #[doc(hidden)]
-        #[rust_name = "qdatetime_init_from_date_time_timezone"]
+        #[rust_name = "qdatetime_init_from_qdate_qtime_qtimezone"]
         fn construct(date: &QDate, time: &QTime, time_zone: &QTimeZone) -> QDateTime;
         #[cfg(not(cxxqt_qt_version_at_least_6_8))]
         #[doc(hidden)]
@@ -278,15 +278,19 @@ impl QDateTime {
     }
 
     /// Construct a Rust QDateTime from a given QDate, QTime, and QTimeZone
-    pub fn from_date_time_timezone(date: &QDate, time: &QTime, time_zone: &ffi::QTimeZone) -> Self {
-        ffi::qdatetime_init_from_date_time_timezone(date, time, time_zone)
+    pub fn from_qdate_qtime_qtimezone(
+        date: &QDate,
+        time: &QTime,
+        time_zone: &ffi::QTimeZone,
+    ) -> Self {
+        ffi::qdatetime_init_from_qdate_qtime_qtimezone(date, time, time_zone)
     }
 
     /// Construct a Rust QDateTime from a given QDate, QTime, Qt::TimeSpec, and offset
     ///
     /// Note this method is only available with Qt < 6.8
     #[cfg(not(cxxqt_qt_version_at_least_6_8))]
-    pub fn from_date_time_timespec(
+    pub fn from_qdate_qtime_timespec(
         date: &QDate,
         time: &QTime,
         time_spec: ffi::TimeSpec,
@@ -424,7 +428,7 @@ impl<Tz: chrono::TimeZone> TryFrom<chrono::DateTime<Tz>> for QDateTime {
 
     fn try_from(value: chrono::DateTime<Tz>) -> Result<Self, Self::Error> {
         let tz = crate::QTimeZone::from_offset_seconds(value.offset().fix().local_minus_utc());
-        Ok(QDateTime::from_date_time_timezone(
+        Ok(QDateTime::from_qdate_qtime_qtimezone(
             &QDate::from(value.date_naive()),
             &QTime::try_from(value.time())?,
             tz.as_ref().ok_or("Could not construct timezone")?,
@@ -470,7 +474,7 @@ impl TryFrom<QDateTime> for chrono::DateTime<chrono::Utc> {
 impl From<time::OffsetDateTime> for QDateTime {
     fn from(value: time::OffsetDateTime) -> Self {
         let tz = crate::QTimeZone::from_offset_seconds(value.offset().whole_seconds());
-        QDateTime::from_date_time_timezone(
+        QDateTime::from_qdate_qtime_qtimezone(
             &QDate::from(value.date()),
             &QTime::from(value.time()),
             tz.as_ref().expect("Could not construct timezone"),
@@ -482,7 +486,7 @@ impl From<time::OffsetDateTime> for QDateTime {
 impl From<time::PrimitiveDateTime> for QDateTime {
     fn from(value: time::PrimitiveDateTime) -> Self {
         let tz = crate::QTimeZone::utc();
-        QDateTime::from_date_time_timezone(
+        QDateTime::from_qdate_qtime_qtimezone(
             &QDate::from(value.date()),
             &QTime::from(value.time()),
             tz.as_ref().expect("Could not construct timezone"),
@@ -528,12 +532,12 @@ mod test {
 
     #[test]
     fn test_ordering() {
-        let qdatetime_a = QDateTime::from_date_time_timezone(
+        let qdatetime_a = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 1, 1, 1),
             &ffi::QTimeZone::utc(),
         );
-        let qdatetime_b = QDateTime::from_date_time_timezone(
+        let qdatetime_b = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 2, 2),
             &QTime::new(2, 2, 2, 2),
             &ffi::QTimeZone::utc(),
@@ -565,7 +569,7 @@ mod test_chrono {
             )
         };
 
-        let qdatetime = QDateTime::from_date_time_timezone(
+        let qdatetime = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             // Chrono adds the offset to the given time, so add the offset here to match Chrono
             &QTime::new(1 + 1 /* plus the offset */, 2, 3, 4),
@@ -589,7 +593,7 @@ mod test_chrono {
             )
         };
 
-        let qdatetime = QDateTime::from_date_time_timezone(
+        let qdatetime = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::from_offset_seconds(60 * 60),
@@ -613,7 +617,7 @@ mod test_chrono {
             )
         };
 
-        let qdatetime = QDateTime::from_date_time_timezone(
+        let qdatetime = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::utc(),
@@ -637,7 +641,7 @@ mod test_chrono {
             )
         };
 
-        let qdatetime = QDateTime::from_date_time_timezone(
+        let qdatetime = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             // Should cause one hour offset when in chrono::DateTime
@@ -663,7 +667,7 @@ mod test_time {
             .unwrap()
             .assume_offset(time::UtcOffset::from_whole_seconds(60 * 60).unwrap());
 
-        let qdatetime = QDateTime::from_date_time_timezone(
+        let qdatetime = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::from_offset_seconds(60 * 60),
@@ -681,7 +685,7 @@ mod test_time {
             .with_hms_milli(1, 2, 3, 4)
             .unwrap();
 
-        let qdatetime = QDateTime::from_date_time_timezone(
+        let qdatetime = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::utc(),
@@ -700,7 +704,7 @@ mod test_time {
             .unwrap()
             .assume_offset(time::UtcOffset::from_whole_seconds(60 * 60).unwrap());
 
-        let qdatetime = QDateTime::from_date_time_timezone(
+        let qdatetime = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::from_offset_seconds(60 * 60),
@@ -715,7 +719,7 @@ mod test_time {
             .with_hms_milli(1, 2, 3, 4)
             .unwrap();
 
-        let qdatetime = QDateTime::from_date_time_timezone(
+        let qdatetime = QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &ffi::QTimeZone::utc(),
