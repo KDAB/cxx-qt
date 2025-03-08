@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `QDateTime::from_string` to parse `QDateTime` from a `QString`.
+- `QSet::reserve` to reserve capacity up-front.
 - Support for further types: `QUuid`
 - New example: Basic greeter app
 - Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`
