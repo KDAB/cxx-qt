@@ -35,7 +35,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 - Serde support for further types: `QByteArray`, `QSet`, `QStringList`, `QVector`, `QUrl`
 
-
 ### Removed
 
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)
@@ -149,7 +148,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Do not use -bundle otherwise CMake builds are missing qt-static-initalizers (note this is broken in rustc 1.69)
 - Do not import `Pin` in hidden module as invokables are outside now, resolving IDE integration
-- Rust always links against a non-debug Windows runtime with *-msvc targets, so we need to link to MultiThreadedDLL
+- Rust always links against a non-debug Windows runtime with \*-msvc targets, so we need to link to MultiThreadedDLL
 
 ### Removed
 
