@@ -99,7 +99,7 @@ qdatetimeFromQString(const QString& string, const Qt::DateFormat format)
 }
 
 QDateTime
-qdatetimeFromQString(const QString& string, const QString &format)
+qdatetimeFromQString(const QString& string, const QString& format)
 {
   return QDateTime::fromString(string, format);
 }
