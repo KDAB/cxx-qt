@@ -78,14 +78,6 @@ mod ffi {
         #[rust_name = "set_date"]
         fn setDate(self: &mut QDate, y: i32, m: i32, d: i32) -> bool;
 
-        #[doc(hidden)]
-        #[rust_name = "format_qstring"]
-        fn toString(self: &QDate, format: &QString) -> QString;
-
-        #[doc(hidden)]
-        #[rust_name = "format_dateformat"]
-        fn toString(self: &QDate, format: DateFormat) -> QString;
-
         /// Returns the year of this date.
         fn year(self: &QDate) -> i32;
     }
@@ -102,10 +94,17 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qdate_from_qstring_qstring"]
-        fn qdateFromString(string: &QString, format: &QString) -> QDate;
+        fn qdateFromQString(string: &QString, format: &QString) -> QDate;
         #[doc(hidden)]
         #[rust_name = "qdate_from_qstring_dateformat"]
-        fn qdateFromString(string: &QString, format: DateFormat) -> QDate;
+        fn qdateFromQString(string: &QString, format: DateFormat) -> QDate;
+
+        #[doc(hidden)]
+        #[rust_name = "qdate_to_qstring_qstring"]
+        fn qdateToQString(date: &QDate, format: &QString) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qdate_to_qstring_dateformat"]
+        fn qdateToQString(date: &QDate, format: DateFormat) -> QString;
 
         #[doc(hidden)]
         #[rust_name = "qdate_is_leap_year"]
@@ -219,8 +218,8 @@ impl QDate {
         T: Into<AnyDateFormat<'a>>,
     {
         match format.into() {
-            AnyDateFormat::DateFormat(f) => self.format_dateformat(f),
-            AnyDateFormat::QString(f) => self.format_qstring(f),
+            AnyDateFormat::DateFormat(f) => ffi::qdate_to_qstring_dateformat(self, f),
+            AnyDateFormat::QString(f) => ffi::qdate_to_qstring_qstring(self, f),
         }
     }
 }

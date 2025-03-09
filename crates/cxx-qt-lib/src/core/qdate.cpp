@@ -35,13 +35,13 @@ qdateDaysTo(const QDate& date, QDate d)
 }
 
 QDate
-qdateFromString(const QString& string, const QString& format)
+qdateFromQString(const QString& string, const QString& format)
 {
   return QDate::fromString(string, format);
 }
 
 QDate
-qdateFromString(const QString& string, Qt::DateFormat format)
+qdateFromQString(const QString& string, Qt::DateFormat format)
 {
   return QDate::fromString(string, format);
 }
@@ -50,6 +50,18 @@ bool
 qdateIsLeapYear(::std::int32_t year)
 {
   return QDate::isLeapYear(static_cast<int>(year));
+}
+
+QString
+qdateToQString(const QDate& date, const QString& format)
+{
+  return date.toString(format);
+}
+
+QString
+qdateToQString(const QDate& date, Qt::DateFormat format)
+{
+  return date.toString(format);
 }
 
 }

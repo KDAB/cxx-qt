@@ -140,13 +140,6 @@ mod ffi {
         #[rust_name = "to_secs_since_epoch"]
         fn toSecsSinceEpoch(self: &QDateTime) -> qint64;
 
-        #[doc(hidden)]
-        #[rust_name = "format_qstring"]
-        fn toString(self: &QDateTime, format: &QString) -> QString;
-
-        #[doc(hidden)]
-        #[rust_name = "format_dateformat"]
-        fn toString(self: &QDateTime, format: DateFormat) -> QString;
         /// Returns a copy of this datetime converted to the given time spec.
         ///
         /// Note this method is only available with Qt < 6.8
@@ -198,12 +191,21 @@ mod ffi {
         fn qdatetimeTimeZone(datetime: &QDateTime) -> UniquePtr<QTimeZone>;
         #[rust_name = "qdatetime_settimezone"]
         fn qdatetimeSetTimeZone(datetime: &mut QDateTime, time_zone: &QTimeZone);
+
         #[doc(hidden)]
         #[rust_name = "qdatetime_from_qstring_qstring"]
         fn qdatetimeFromQString(string: &QString, format: &QString) -> QDateTime;
         #[doc(hidden)]
         #[rust_name = "qdatetime_from_qstring_dateformat"]
         fn qdatetimeFromQString(string: &QString, format: DateFormat) -> QDateTime;
+
+        #[doc(hidden)]
+        #[rust_name = "qdatetime_to_qstring_qstring"]
+        fn qdatetimeToQString(date: &QDateTime, format: &QString) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qdatetime_to_qstring_dateformat"]
+        fn qdatetimeToQString(date: &QDateTime, format: DateFormat) -> QString;
+
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -343,8 +345,8 @@ impl QDateTime {
         T: Into<AnyDateFormat<'a>>,
     {
         match format.into() {
-            AnyDateFormat::DateFormat(f) => self.format_dateformat(f),
-            AnyDateFormat::QString(f) => self.format_qstring(f),
+            AnyDateFormat::DateFormat(f) => ffi::qdatetime_to_qstring_dateformat(self, f),
+            AnyDateFormat::QString(f) => ffi::qdatetime_to_qstring_qstring(self, f),
         }
     }
 

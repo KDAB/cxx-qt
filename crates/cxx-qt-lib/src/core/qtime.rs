@@ -61,14 +61,6 @@ mod ffi {
         /// Sets the time to hour h, minute m, seconds s and milliseconds ms.
         #[rust_name = "set_hms"]
         fn setHMS(self: &mut QTime, h: i32, m: i32, s: i32, ms: i32) -> bool;
-
-        #[doc(hidden)]
-        #[rust_name = "format_qstring"]
-        fn toString(self: &QTime, format: &QString) -> QString;
-
-        #[doc(hidden)]
-        #[rust_name = "format_dateformat"]
-        fn toString(self: &QTime, format: DateFormat) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -83,10 +75,17 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qtime_from_qstring_qstring"]
-        fn qtimeFromString(string: &QString, format: &QString) -> QTime;
+        fn qtimeFromQString(string: &QString, format: &QString) -> QTime;
         #[doc(hidden)]
         #[rust_name = "qtime_from_qstring_dateformat"]
-        fn qtimeFromString(string: &QString, format: DateFormat) -> QTime;
+        fn qtimeFromQString(string: &QString, format: DateFormat) -> QTime;
+
+        #[doc(hidden)]
+        #[rust_name = "qtime_to_qstring_qstring"]
+        fn qtimeToQString(time: &QTime, format: &QString) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qtime_to_qstring_dateformat"]
+        fn qtimeToQString(time: &QTime, format: DateFormat) -> QString;
 
         #[doc(hidden)]
         #[rust_name = "qtime_msecs_to"]
@@ -168,8 +167,8 @@ impl QTime {
         T: Into<AnyDateFormat<'a>>,
     {
         match format.into() {
-            AnyDateFormat::DateFormat(f) => self.format_dateformat(f),
-            AnyDateFormat::QString(f) => self.format_qstring(f),
+            AnyDateFormat::DateFormat(f) => ffi::qtime_to_qstring_dateformat(self, f),
+            AnyDateFormat::QString(f) => ffi::qtime_to_qstring_qstring(self, f),
         }
     }
 
