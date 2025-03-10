@@ -9,7 +9,7 @@ use std::collections::HashSet;
 
 use std::path::{Path, PathBuf};
 
-use crate::{Dependency, Manifest};
+use crate::{dir, dir::INCLUDE_VERB, Dependency, Manifest};
 
 /// When generating a library with cxx-qt-build, the library may need to export certain flags or headers.
 /// These are all specified by this Interface struct, which should be passed to the [crate::CxxQtBuilder::library] function.
@@ -101,6 +101,8 @@ impl Interface {
     }
 
     pub(crate) fn export(self, mut manifest: Manifest, dependencies: &[Dependency]) {
+        self.write_exported_include_directories();
+
         // We automatically reexport all qt_modules and downstream dependencies
         // as they will always need to be enabled in the final binary.
         // However, we only reexport the headers of libraries that
@@ -109,7 +111,7 @@ impl Interface {
 
         manifest.exported_include_prefixes = all_include_prefixes(&self, &dependencies);
 
-        let manifest_path = crate::dir::crate_target().join("manifest.json");
+        let manifest_path = dir::crate_target().join("manifest.json");
         let manifest_json =
             serde_json::to_string_pretty(&manifest).expect("Failed to convert Manifest to JSON!");
         std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
@@ -117,6 +119,19 @@ impl Interface {
             "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
             manifest_path.to_string_lossy()
         );
+    }
+
+    fn write_exported_include_directories(&self) {
+        let header_root = dir::header_root();
+        for (header_dir, dest) in &self.exported_include_directories {
+            let dest_dir = header_root.join(dest);
+            if let Err(e) = dir::symlink_or_copy_directory(header_dir, dest_dir) {
+                panic!(
+                        "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
+                        dir_name = header_dir.to_string_lossy()
+                    )
+            };
+        }
     }
 }
 
