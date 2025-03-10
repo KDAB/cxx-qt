@@ -113,6 +113,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectEnabled_signal_handler_signal_disabled(
@@ -147,6 +148,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectEnabled_signal_handler_signal_enabled(
@@ -253,6 +255,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectDisabled_signal_handler_signal_disabled(
@@ -287,6 +290,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectDisabled_signal_handler_signal_enabled(
@@ -375,6 +379,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectExternEnabled_signal_handler_signal_disabled1(
@@ -409,6 +414,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectExternEnabled_signal_handler_signal_enabled1(
@@ -461,6 +467,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectExternDisabled_signal_handler_signal_disabled2(
@@ -495,6 +502,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectExternDisabled_signal_handler_signal_enabled2(

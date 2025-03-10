@@ -155,6 +155,7 @@ pub fn generate_rust_signal(
         parse_quote_spanned! {
             span=>
             #[namespace = #namespace_str]
+            #(#cfgs)*
             extern "Rust" {
                 #[doc(hidden)]
                 fn #signal_handler_drop(handler: #signal_handler_alias);
