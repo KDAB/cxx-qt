@@ -1047,22 +1047,6 @@ extern "C" bool {init_fun}() {{
         qt_modules
     }
 
-    fn write_interface_include_dirs(&self) {
-        let Some(interface) = &self.public_interface else {
-            return;
-        };
-        let header_root = dir::header_root();
-        for (header_dir, dest) in &interface.exported_include_directories {
-            let dest_dir = header_root.join(dest);
-            if let Err(e) = dir::symlink_or_copy_directory(header_dir, dest_dir) {
-                panic!(
-                        "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
-                        dir_name = header_dir.to_string_lossy()
-                    )
-            };
-        }
-    }
-
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) {
@@ -1073,7 +1057,6 @@ extern "C" bool {init_fun}() {{
         // Also write the common headers first, to make sure they don't conflict with any
         // dependencies
         Self::write_common_headers();
-        self.write_interface_include_dirs();
         let dependencies = Dependency::find_all();
         for dependency in &dependencies {
             self.include_dependency(dependency);
