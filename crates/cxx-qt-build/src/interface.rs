@@ -104,7 +104,9 @@ impl Interface {
         self
     }
 
-    pub(crate) fn export(mut self) {
+    /// Export the manifest for this crate so that is can be used by downstream
+    /// crates or CMake
+    pub fn export(mut self) {
         self.write_exported_include_directories();
 
         // We automatically reexport all qt_modules and downstream dependencies
