@@ -1044,42 +1044,6 @@ extern "C" bool {init_fun}() {{
             .collect()
     }
 
-    fn write_manifest(
-        &self,
-        dependencies: &[Dependency],
-        qt_modules: HashSet<String>,
-        initializers: Vec<qt_build_utils::Initializer>,
-    ) {
-        if let Some(interface) = &self.public_interface {
-            // We automatically reexport all qt_modules and downstream dependencies
-            // as they will always need to be enabled in the final binary.
-            // However, we only reexport the headers of libraries that
-            // are marked as re-export.
-            let dependencies = interface::reexported_dependencies(interface, dependencies);
-
-            let exported_include_prefixes =
-                interface::all_include_prefixes(interface, &dependencies);
-
-            let manifest = Manifest {
-                name: crate_name(),
-                link_name: link_name()
-                    .expect("The links key must be set when creating a library with CXX-Qt-build!"),
-                initializers,
-                qt_modules: qt_modules.into_iter().collect(),
-                exported_include_prefixes,
-            };
-
-            let manifest_path = dir::crate_target().join("manifest.json");
-            let manifest_json = serde_json::to_string_pretty(&manifest)
-                .expect("Failed to convert Manifest to JSON!");
-            std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
-            println!(
-                "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
-                manifest_path.to_string_lossy()
-            );
-        }
-    }
-
     fn qt_modules(&self, dependencies: &[Dependency]) -> HashSet<String> {
         let mut qt_modules = self.qt_modules.clone();
         for dependency in dependencies {
@@ -1183,10 +1147,16 @@ extern "C" bool {init_fun}() {{
             self.cc_builder.compile(&static_lib_name());
         }
 
-        self.write_manifest(
-            &dependencies,
-            qt_modules,
-            vec![public_initializer.strip_file()],
-        );
+        if let Some(interface) = self.public_interface {
+            let manifest = Manifest {
+                name: crate_name(),
+                link_name: link_name()
+                    .expect("The links key must be set when creating a library with CXX-Qt-build!"),
+                initializers: vec![public_initializer.strip_file()],
+                qt_modules: qt_modules.into_iter().collect(),
+                exported_include_prefixes: vec![],
+            };
+            interface.export(manifest, &dependencies);
+        }
     }
 }

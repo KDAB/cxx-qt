@@ -9,7 +9,7 @@ use std::collections::HashSet;
 
 use std::path::{Path, PathBuf};
 
-use crate::Dependency;
+use crate::{Dependency, Manifest};
 
 /// When generating a library with cxx-qt-build, the library may need to export certain flags or headers.
 /// These are all specified by this Interface struct, which should be passed to the [crate::CxxQtBuilder::library] function.
@@ -99,12 +99,28 @@ impl Interface {
         self.reexport_links.insert(link_name.to_owned());
         self
     }
+
+    pub(crate) fn export(self, mut manifest: Manifest, dependencies: &[Dependency]) {
+        // We automatically reexport all qt_modules and downstream dependencies
+        // as they will always need to be enabled in the final binary.
+        // However, we only reexport the headers of libraries that
+        // are marked as re-export.
+        let dependencies = reexported_dependencies(&self, &dependencies);
+
+        manifest.exported_include_prefixes = all_include_prefixes(&self, &dependencies);
+
+        let manifest_path = crate::dir::crate_target().join("manifest.json");
+        let manifest_json =
+            serde_json::to_string_pretty(&manifest).expect("Failed to convert Manifest to JSON!");
+        std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
+        println!(
+            "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
+            manifest_path.to_string_lossy()
+        );
+    }
 }
 
-pub(crate) fn all_include_prefixes(
-    interface: &Interface,
-    dependencies: &[Dependency],
-) -> Vec<String> {
+fn all_include_prefixes(interface: &Interface, dependencies: &[Dependency]) -> Vec<String> {
     interface
         .exported_include_prefixes
         .iter()
@@ -124,10 +140,7 @@ pub(crate) fn all_include_prefixes(
         .collect()
 }
 
-pub(crate) fn reexported_dependencies(
-    interface: &Interface,
-    dependencies: &[Dependency],
-) -> Vec<Dependency> {
+fn reexported_dependencies(interface: &Interface, dependencies: &[Dependency]) -> Vec<Dependency> {
     let mut exported_dependencies = Vec::new();
     for link_name in &interface.reexport_links {
         if let Some(dependency) = dependencies
