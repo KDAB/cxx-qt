@@ -11,3 +11,6 @@ pub use crate::core::*;
 
 mod gui;
 pub use crate::gui::*;
+
+mod qml;
+pub use crate::qml::*;
