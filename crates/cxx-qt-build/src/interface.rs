@@ -18,6 +18,8 @@ pub struct Interface {
     pub(crate) reexport_links: HashSet<String>,
     pub(crate) exported_include_prefixes: Vec<String>,
     pub(crate) exported_include_directories: Vec<(PathBuf, String)>,
+    pub(crate) manifest: Manifest,
+    pub(crate) dependencies: Vec<Dependency>,
     // TODO: In future, we want to also set up the include paths so that you can include anything
     // from the crates source directory.
     // Once this is done, this flag should indicate whether or not to export our own crates source
@@ -31,6 +33,8 @@ impl Default for Interface {
             reexport_links: HashSet::new(),
             exported_include_prefixes: vec![super::crate_name()],
             exported_include_directories: Vec::new(),
+            manifest: Manifest::default(),
+            dependencies: Vec::new(),
         }
     }
 }
@@ -100,20 +104,20 @@ impl Interface {
         self
     }
 
-    pub(crate) fn export(self, mut manifest: Manifest, dependencies: &[Dependency]) {
+    pub(crate) fn export(mut self) {
         self.write_exported_include_directories();
 
         // We automatically reexport all qt_modules and downstream dependencies
         // as they will always need to be enabled in the final binary.
         // However, we only reexport the headers of libraries that
         // are marked as re-export.
-        let dependencies = reexported_dependencies(&self, &dependencies);
+        let dependencies = reexported_dependencies(&self, &self.dependencies);
 
-        manifest.exported_include_prefixes = all_include_prefixes(&self, &dependencies);
+        self.manifest.exported_include_prefixes = all_include_prefixes(&self, &dependencies);
 
         let manifest_path = dir::crate_target().join("manifest.json");
-        let manifest_json =
-            serde_json::to_string_pretty(&manifest).expect("Failed to convert Manifest to JSON!");
+        let manifest_json = serde_json::to_string_pretty(&self.manifest)
+            .expect("Failed to convert Manifest to JSON!");
         std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
         println!(
             "cargo::metadata=CXX_QT_MANIFEST_PATH={}",

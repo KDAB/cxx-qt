@@ -1125,8 +1125,8 @@ extern "C" bool {init_fun}() {{
             self.cc_builder.compile(&static_lib_name());
         }
 
-        if let Some(interface) = self.public_interface {
-            let manifest = Manifest {
+        if let Some(mut interface) = self.public_interface {
+            interface.manifest = Manifest {
                 name: crate_name(),
                 link_name: link_name()
                     .expect("The links key must be set when creating a library with CXX-Qt-build!"),
@@ -1134,7 +1134,8 @@ extern "C" bool {init_fun}() {{
                 qt_modules: qt_modules.into_iter().collect(),
                 exported_include_prefixes: vec![],
             };
-            interface.export(manifest, &dependencies);
+            interface.dependencies = dependencies;
+            interface.export();
         }
     }
 }
