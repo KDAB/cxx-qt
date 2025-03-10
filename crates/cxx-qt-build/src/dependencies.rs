@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 
 use std::path::PathBuf;
 
-#[derive(Clone, Serialize, Deserialize)]
+#[derive(Clone, Default, Serialize, Deserialize)]
 /// This struct is used by cxx-qt-build internally to propagate data through to downstream
 /// dependencies
 pub(crate) struct Manifest {
