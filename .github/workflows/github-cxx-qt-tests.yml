@@ -524,7 +524,7 @@ jobs:
     # Required for CMake to find Ninja
     - name: "[Windows] Set up MSVC Developer Command Prompt"
       if: runner.os == 'Windows'
-      uses: seanmiddleditch/gha-setup-vsdevenv@v4
+      uses: seanmiddleditch/gha-setup-vsdevenv@v5
 
     # Enable tmate debugging of manually-triggered workflows if the input option was provided
     - name: Setup tmate session
