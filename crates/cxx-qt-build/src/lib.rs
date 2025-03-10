@@ -373,7 +373,6 @@ pub struct CxxQtBuilder {
     qt_modules: HashSet<String>,
     qml_modules: Vec<OwningQmlModule>,
     cc_builder: cc::Build,
-    public_interface: Option<Interface>,
     include_prefix: String,
 }
 
@@ -413,7 +412,6 @@ impl CxxQtBuilder {
             qt_modules,
             qml_modules: vec![],
             cc_builder: cc::Build::new(),
-            public_interface: None,
             include_prefix: crate_name(),
         }
     }
@@ -422,15 +420,12 @@ impl CxxQtBuilder {
     /// included by later dependencies.
     ///
     /// The headers generated for this crate will be specified
-    pub fn library(interface_definition: Interface) -> Self {
-        let mut this = Self::new();
-        this.public_interface = Some(interface_definition);
-
+    pub fn library() -> Self {
         if link_name().is_none() {
             panic!("Building a Cxx-Qt based library requires setting a `links` field in the Cargo.toml file.\nConsider adding:\n\tlinks = \"{}\"\nto your Cargo.toml\n", crate_name());
         }
 
-        this
+        Self::new()
     }
 
     /// Specify rust file paths to parse through the cxx-qt marco
@@ -1054,7 +1049,7 @@ extern "C" bool {init_fun}() {{
 
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
-    pub fn build(mut self) {
+    pub fn build(mut self) -> Interface {
         dir::clean(dir::crate_target()).expect("Failed to clean crate export directory!");
 
         // We will do these two steps first, as setting up the dependencies can modify flags we
@@ -1130,17 +1125,17 @@ extern "C" bool {init_fun}() {{
             self.cc_builder.compile(&static_lib_name());
         }
 
-        if let Some(mut interface) = self.public_interface {
-            interface.manifest = Manifest {
+        Interface {
+            manifest: Manifest {
                 name: crate_name(),
                 link_name: link_name()
                     .expect("The links key must be set when creating a library with CXX-Qt-build!"),
                 initializers: vec![public_initializer.strip_file()],
                 qt_modules: qt_modules.into_iter().collect(),
                 exported_include_prefixes: vec![],
-            };
-            interface.dependencies = dependencies;
-            interface.export();
+            },
+            dependencies,
+            ..Default::default()
         }
     }
 }

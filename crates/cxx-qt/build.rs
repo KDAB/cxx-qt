@@ -5,7 +5,7 @@
 
 use std::path::PathBuf;
 
-use cxx_qt_build::{CxxQtBuilder, Interface};
+use cxx_qt_build::CxxQtBuilder;
 
 fn header_dir() -> PathBuf {
     PathBuf::from(std::env::var("OUT_DIR").unwrap())
@@ -34,11 +34,7 @@ fn write_headers() {
 fn main() {
     write_headers();
 
-    let interface = Interface::default()
-        .export_include_prefixes([])
-        .export_include_directory(header_dir(), "cxx-qt");
-
-    let mut builder = CxxQtBuilder::library(interface);
+    let mut builder = CxxQtBuilder::library();
 
     let cpp_files = ["src/connection.cpp"];
     let rust_bridges = ["src/connection.rs", "src/qobject.rs"];
@@ -58,5 +54,9 @@ fn main() {
         ..qt_build_utils::Initializer::default_signature("init_cxx_qt_core")
     });
 
-    builder.build();
+    let interface = builder.build();
+    interface
+        .export_include_prefixes([])
+        .export_include_directory(header_dir(), "cxx-qt")
+        .export();
 }
