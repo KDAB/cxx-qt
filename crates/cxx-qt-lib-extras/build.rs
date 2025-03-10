@@ -42,13 +42,7 @@ fn write_headers() {
 fn main() {
     write_headers();
 
-    let interface = cxx_qt_build::Interface::default()
-        // Disable exporting the standard include directory, as we are exporting custom headers
-        .export_include_prefixes([])
-        .export_include_directory(header_dir(), "cxx-qt-lib-extras")
-        .reexport_dependency("cxx-qt-lib");
-
-    let mut builder = CxxQtBuilder::library(interface)
+    let mut builder = CxxQtBuilder::library()
         .qt_module("Gui")
         .qt_module("Widgets");
 
@@ -80,7 +74,14 @@ fn main() {
     });
     println!("cargo::rerun-if-changed=src/assertion_utils.h");
 
-    builder
+    let interface = builder
         .include_prefix("cxx-qt-lib-extras-internals")
         .build();
+
+    // Disable exporting the standard include directory, as we are exporting custom header
+    interface
+        .export_include_prefixes([])
+        .export_include_directory(header_dir(), "cxx-qt-lib-extras")
+        .reexport_dependency("cxx-qt-lib")
+        .export();
 }
