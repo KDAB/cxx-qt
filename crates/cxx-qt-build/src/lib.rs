@@ -20,8 +20,10 @@ pub mod dir;
 use dir::INCLUDE_VERB;
 
 mod dependencies;
-pub use dependencies::Interface;
 use dependencies::{Dependency, Manifest};
+
+mod interface;
+pub use interface::Interface;
 
 mod opts;
 pub use opts::CxxQtBuildersOpts;
@@ -1051,10 +1053,10 @@ extern "C" bool {init_fun}() {{
             // as they will always need to be enabled in the final binary.
             // However, we only reexport the headers of libraries that
             // are marked as re-export.
-            let dependencies = dependencies::reexported_dependencies(interface, dependencies);
+            let dependencies = interface::reexported_dependencies(interface, dependencies);
 
             let exported_include_prefixes =
-                dependencies::all_include_prefixes(interface, &dependencies);
+                interface::all_include_prefixes(interface, &dependencies);
 
             let manifest = Manifest {
                 name: crate_name(),
