@@ -50,7 +50,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: rustup default 1.77.2
+      - run: rustup default 1.81.0
       - run: rustup component add rustfmt
       - run: cargo fmt --all --check --verbose
 
@@ -90,7 +90,7 @@ jobs:
       - name: Setup toolchain
         run: |
           # Note that the llvm version needs to match, see the link above
-          rustup default 1.77.2
+          rustup default 1.81.0
           cargo install --locked --version 0.8.20 grcov
           rustup component add rustfmt
       # Ensure we do not have any existing coverage files
@@ -424,7 +424,7 @@ jobs:
     - name: "Install Rust toolchain"
       run: |
         rustup toolchain add 1.78.0 --component clippy
-        rustup default 1.77.2
+        rustup default 1.81.0
         rustup component add rustfmt
 
     - name: "Rust tools cache"
