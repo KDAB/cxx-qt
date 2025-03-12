@@ -12,12 +12,14 @@ use crate::{
 use std::collections::BTreeSet;
 use syn::Result;
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 pub struct GeneratedCppExternCxxQtBlocks {
     /// List of includes
     pub includes: BTreeSet<String>,
     /// List of forward declares before the class and include of the generated CXX header
     pub forward_declares: Vec<String>,
+    /// Base class of the QObject
+    pub base_classes: Vec<String>,
     /// List of fragments
     pub fragments: Vec<CppFragment>,
 }
@@ -38,9 +40,30 @@ pub fn generate(
                 includes: data.includes,
                 forward_declares: data.forward_declares,
                 fragments: data.fragments,
+                ..Default::default()
             };
             out.push(block);
         }
+        let mut generated = GeneratedCppExternCxxQtBlocks {
+            base_classes: vec![],
+            ..Default::default()
+        };
+
+        // Include casting header
+        let mut result = GeneratedCppExternCxxQtBlocks::default();
+        result.includes.insert("#include <cxx-qt/casting.h>".into());
+
+        out.push(result);
+
+        for qobject in &block.qobjects {
+            let base_class = if let Some(ident) = &qobject.base_class {
+                type_names.lookup(ident)?.cxx_qualified()
+            } else {
+                "QObject".to_string()
+            };
+            generated.base_classes.push(base_class);
+        }
+        out.push(generated);
     }
 
     Ok(out)
@@ -78,7 +101,7 @@ mod tests {
         assert!(generate(&blocks, &TypeNames::default(), &opt).is_err());
 
         let generated = generate(&blocks, &TypeNames::mock(), &opt).unwrap();
-        assert_eq!(generated.len(), 2);
+        assert_eq!(generated.len(), 4);
     }
 
     #[test]
@@ -103,6 +126,6 @@ mod tests {
         type_names.mock_insert("ObjRust", None, Some("ObjCpp"), Some("mynamespace"));
 
         let generated = generate(&blocks, &type_names, &GeneratedOpt::default()).unwrap();
-        assert_eq!(generated.len(), 1);
+        assert_eq!(generated.len(), 3);
     }
 }

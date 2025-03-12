@@ -16,7 +16,8 @@ pub mod signals;
 pub mod threading;
 
 use crate::generator::{rust::fragment::GeneratedRustFragment, structuring};
-use crate::parser::{parameter::ParsedFunctionParameter, qobject::ParsedQObject, Parser};
+use crate::parser::cxxqtdata::ParsedCxxQtData;
+use crate::parser::{parameter::ParsedFunctionParameter, Parser};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
 use syn::{parse_quote, Item, ItemMod, Result};
@@ -60,7 +61,9 @@ impl GeneratedRustBlocks {
         let namespace = parser.cxx_qt_data.namespace.clone().unwrap_or_default();
         let passthrough_mod = &parser.passthrough_module;
 
-        fragments.extend(vec![add_qobject_import(&parser.cxx_qt_data.qobjects)]);
+        if let Some(qobject_import) = add_qobject_import(&parser.cxx_qt_data) {
+            fragments.push(qobject_import);
+        }
 
         let vis = &passthrough_mod.vis;
         let ident = &passthrough_mod.module_ident;
@@ -97,26 +100,23 @@ impl GeneratedRustBlocks {
     }
 }
 
-fn add_qobject_import(qobjects: &[ParsedQObject]) -> GeneratedRustFragment {
-    let includes = qobjects
+// Generate a type declaration for `QObject` if necessary
+fn add_qobject_import(cxx_qt_data: &ParsedCxxQtData) -> Option<GeneratedRustFragment> {
+    let includes = cxx_qt_data
+        .qobjects
         .iter()
         .any(|obj| obj.has_qobject_macro && obj.base_class.is_none());
-    if includes {
-        GeneratedRustFragment {
-            cxx_mod_contents: vec![parse_quote! {
-                extern "C++" {
-                    #[doc(hidden)]
-                    #[namespace=""]
-                    type QObject = cxx_qt::QObject;
-                }
-            }],
-            cxx_qt_mod_contents: vec![],
-        }
+    if includes
+        || cxx_qt_data
+            .extern_cxxqt_blocks
+            .iter()
+            .filter(|block| !block.qobjects.is_empty())
+            .count()
+            > 0
+    {
+        Some(GeneratedRustFragment::qobject_import())
     } else {
-        GeneratedRustFragment {
-            cxx_mod_contents: vec![],
-            cxx_qt_mod_contents: vec![],
-        }
+        None
     }
 }
 

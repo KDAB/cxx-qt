@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::generator::naming::qobject::QObjectNames;
 use crate::{
     generator::rust::{fragment::GeneratedRustFragment, signals::generate_rust_signal},
     naming::TypeNames,
@@ -25,10 +26,20 @@ impl GeneratedRustFragment {
         // Add the pass through blocks
         let unsafety = &extern_cxxqt_block.unsafety;
         let items = &extern_cxxqt_block.passthrough_items;
-        let types = &extern_cxxqt_block
+        let mut generated = extern_cxxqt_block
             .qobjects
             .iter()
-            .map(|ty| {
+            .map(|ty| -> Result<GeneratedRustFragment> {
+                let mut generated = vec![];
+                let qobject_names = QObjectNames::from_extern_qobject(ty, type_names)?;
+
+                generated.push(GeneratedRustFragment::generate_casting_impl(
+                    &qobject_names,
+                    type_names,
+                    &ty.name,
+                    &ty.base_class,
+                )?);
+
                 let namespace = if let Some(namespace) = &ty.name.namespace() {
                     quote! { #[namespace = #namespace ] }
                 } else {
@@ -58,24 +69,28 @@ impl GeneratedRustFragment {
                     .iter()
                     .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
                     .collect();
-                quote! {
-                    #namespace
-                    #cxx_name
-                    #(#cfgs)*
-                    #(#docs)*
-                    #vis type #ident;
-                }
+                generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
+                    #extern_block_namespace
+                    #unsafety extern "C++" {
+                        #namespace
+                        #cxx_name
+                        #(#cfgs)*
+                        #(#docs)*
+                        #vis type #ident;
+                    }
+                }));
+                Ok(GeneratedRustFragment::flatten(generated))
             })
-            .collect::<Vec<_>>();
+            .collect::<Result<Vec<_>>>()?;
 
-        let mut generated = vec![GeneratedRustFragment::from_cxx_item(parse_quote! {
-            #extern_block_namespace
-            #unsafety extern "C++" {
-                #(#items)*
-
-                #(#types)*
-            }
-        })];
+        if !items.is_empty() {
+            generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
+                #extern_block_namespace
+                #unsafety extern "C++" {
+                    #(#items)*
+                }
+            }));
+        }
 
         // Build the signals
         for signal in &extern_cxxqt_block.signals {

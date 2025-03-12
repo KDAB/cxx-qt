@@ -91,6 +91,44 @@ mod inheritance {
         #[namespace = "rust::cxxqt1"]
         fn cxx_qt_ffi_MyObject_unsafeRustMut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QPushButton_upcastPtr(thiz: *const QPushButton) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QPushButton_downcastPtr(base: *const QObject) -> *const QPushButton;
+    }
+    extern "C++" {
+        type QPushButton;
+    }
+    extern "C++" {
+        include ! (< QtWidgets / QPushButton >);
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QPushButtonChild_upcastPtr(
+            thiz: *const QPushButtonChild,
+        ) -> *const QPushButton;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QPushButtonChild_downcastPtr(
+            base: *const QPushButton,
+        ) -> *const QPushButtonChild;
+    }
+    extern "C++" {
+        type QPushButtonChild;
+    }
+    extern "C++" {
+        #[doc(hidden)]
+        #[namespace = ""]
+        type QObject = cxx_qt::QObject;
+    }
 }
 impl ::cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const inheritance::QAbstractItemModel {
@@ -118,5 +156,21 @@ impl ::cxx_qt::CxxQtType for inheritance::MyObject {
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         inheritance::cxx_qt_ffi_MyObject_unsafeRustMut(self)
+    }
+}
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for inheritance::QPushButton {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        inheritance::cxx_qt_ffi_QPushButton_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        inheritance::cxx_qt_ffi_QPushButton_downcastPtr(base)
+    }
+}
+impl ::cxx_qt::Upcast<inheritance::QPushButton> for inheritance::QPushButtonChild {
+    unsafe fn upcast_ptr(this: *const Self) -> *const inheritance::QPushButton {
+        inheritance::cxx_qt_ffi_QPushButtonChild_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const inheritance::QPushButton) -> *const Self {
+        inheritance::cxx_qt_ffi_QPushButtonChild_downcastPtr(base)
     }
 }
