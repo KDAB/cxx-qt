@@ -18,7 +18,7 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qvector.h");
+        include!("cxx-qt-lib/qvector_QPointF.h");
         type QVector_QPointF = crate::QVector<QPointF>;
 
         include!("cxx-qt-lib/qpointf.h");
