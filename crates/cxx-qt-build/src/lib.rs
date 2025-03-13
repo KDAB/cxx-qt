@@ -1126,8 +1126,7 @@ extern "C" bool {init_fun}() {{
         Interface {
             manifest: Manifest {
                 name: crate_name(),
-                link_name: link_name()
-                    .expect("The links key must be set when creating a library with CXX-Qt-build!"),
+                link_name: link_name().unwrap_or_default(),
                 initializers: vec![public_initializer.strip_file()],
                 qt_modules: qt_modules.into_iter().collect(),
                 exported_include_prefixes: vec![],
