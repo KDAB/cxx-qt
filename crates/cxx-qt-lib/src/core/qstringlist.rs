@@ -28,7 +28,7 @@ mod ffi {
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = super::QStringList;
 
-        include!("cxx-qt/casting.h");
+        include!("cxx-qt/include/casting.h");
 
         #[doc(hidden)]
         #[rust_name = "upcast_qstringlist"]

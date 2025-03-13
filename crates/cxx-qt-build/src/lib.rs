@@ -33,6 +33,8 @@ mod qml_modules;
 use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
+mod utils;
+
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::SemVer;
 use quote::ToTokens;
@@ -1083,6 +1085,18 @@ extern "C" bool {init_fun}() {{
         // This is not ideal and should be removed in future as it allows user code direct access
         // to the generated files without any namespacing.
         include_paths.push(header_root.join(&self.include_prefix));
+
+        // Automatically add any header looking files to the header_root, so that they are
+        // a) in the include path
+        // b) able to be reexported
+        let manifest_dir =
+            PathBuf::from(std::env::var("CARGO_MANIFEST_DIR").expect("No CARGO_MANIFEST_DIR set"));
+        let max_depth = 6;
+        utils::best_effort_copy_headers(
+            manifest_dir.as_path(),
+            header_root.join(crate_name()).as_path(),
+            max_depth,
+        );
 
         Self::setup_cc_builder(&mut self.cc_builder, &include_paths);
 

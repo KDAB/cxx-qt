@@ -3,7 +3,7 @@
 mod ffi {
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
-        include!("cxx-qt/connection.h");
+        include!("cxx-qt/include/connection.h");
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]

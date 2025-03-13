@@ -176,7 +176,9 @@ impl GeneratedCppQObject {
 
         // Include casting header
         let mut result = GeneratedCppQObjectBlocks::default();
-        result.includes.insert("#include <cxx-qt/casting.h>".into());
+        result
+            .includes
+            .insert("#include <cxx-qt/include/casting.h>".into());
 
         generated.blocks.append(&mut result);
 

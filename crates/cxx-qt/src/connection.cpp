@@ -4,7 +4,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include "cxx-qt/connection.h"
+#include "cxx-qt/include/connection.h"
 
 #include <type_traits>
 
