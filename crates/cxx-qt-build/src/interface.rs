@@ -107,6 +107,11 @@ impl Interface {
     /// Export the manifest for this crate so that is can be used by downstream
     /// crates or CMake
     pub fn export(mut self) {
+        // TODO: somewhere we need to detect this correctly
+        if self.manifest.link_name.is_empty() {
+            panic!("The links key must be set when exporting");
+        }
+
         self.write_exported_include_directories();
 
         // We automatically reexport all qt_modules and downstream dependencies
