@@ -131,8 +131,17 @@ impl Interface {
         let header_root = dir::header_root();
         for (header_dir, dest) in &self.exported_include_directories {
             let dest_dir = header_root.join(dest);
-            if let Err(e) = dir::symlink_or_copy_directory(header_dir, dest_dir) {
-                panic!(
+            match dir::symlink_or_copy_directory(header_dir, &dest_dir) {
+                Ok(true) => {},
+                // TODO: this now happens because the generated CXX files are put into the
+                // target export directory before the interface exports
+                // Should they go into a different intermediate writable dir and then symlink that?
+                // Ok(false) => panic!("Failed to create symlink folder already exists!"),
+                Ok(false) => {
+                    println!("cargo::warning=Could not symlink due to conflict, using deep copy instead");
+                    dir::deep_copy_directory(header_dir, &dest_dir).unwrap();
+                }
+                Err(e) => panic!(
                         "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
                         dir_name = header_dir.to_string_lossy()
                     )

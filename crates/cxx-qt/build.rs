@@ -32,6 +32,13 @@ fn write_headers() {
 }
 
 fn main() {
+    // TODO: should we even have this ? Instead pass in an include_directory to our
+    // builder that handles this?
+    // As they are first being copied to the OUT_DIR/include/<crate> and then
+    // to the target/cxx-qt-build/../include
+    //
+    // This then causes problems because we try to symlink this dir now after
+    // the CXX files are written already
     write_headers();
 
     let mut builder = CxxQtBuilder::library();
@@ -48,6 +55,11 @@ fn main() {
             cc.file(cpp_file);
             println!("cargo::rerun-if-changed={cpp_file}");
         }
+
+        // TODO: before this came from the export_include_directory
+        // but now that we export after the build it fails
+        // should we always include the crate dir like CXX?
+        cc.include(header_dir().parent().expect("header_dir has a parent"));
     });
     builder = builder.initializer(qt_build_utils::Initializer {
         file: Some("src/init.cpp".into()),

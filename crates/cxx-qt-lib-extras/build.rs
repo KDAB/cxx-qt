@@ -71,6 +71,11 @@ fn main() {
         }
         cc.file("src/qt_types.cpp");
         println!("cargo::rerun-if-changed=src/qt_types.cpp");
+
+        // TODO: before this came from the export_include_directory
+        // but now that we export after the build it fails
+        // should we always include the crate dir like CXX?
+        cc.include(header_dir().parent().expect("header_dir has a parent"));
     });
     println!("cargo::rerun-if-changed=src/assertion_utils.h");
 
