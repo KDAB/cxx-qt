@@ -25,7 +25,7 @@ mod ffi {
     }
 
     extern "C++" {
-        include!("cxx-qt-lib-extras/qeventloop.h");
+        include!("cxx-qt-lib-extras/include/qeventloop.h");
         type QEventLoopProcessEventsFlag;
         type QEventLoopProcessEventsFlags = super::QEventLoopProcessEventsFlags;
     }

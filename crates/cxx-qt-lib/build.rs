@@ -384,6 +384,10 @@ fn main() {
         }
         cc.file("src/qt_types.cpp");
         println!("cargo::rerun-if-changed=src/qt_types.cpp");
+
+        // With cxx-qt-lib we need to have generated headers in the include folder
+        // so we copy them into the OUT_DIR and construct a folder
+        cc.include(header_dir().parent().expect("header_dir has a parent"));
     });
 
     let interface = builder.build();

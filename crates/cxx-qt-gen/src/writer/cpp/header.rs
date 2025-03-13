@@ -256,8 +256,8 @@ mod tests {
         let expected = indoc! {r#"
 #pragma once
 
-#include <cxx-qt/casting.h>
-#include <cxx-qt/type.h>
+#include <cxx-qt/include/casting.h>
+#include <cxx-qt/include/type.h>
 
 class MyObject;
 

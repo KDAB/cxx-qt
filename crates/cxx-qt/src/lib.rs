@@ -9,7 +9,6 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
-use std::{fs::File, io::Write, path::Path};
 
 #[doc(hidden)]
 pub mod casting;
@@ -424,30 +423,5 @@ where
 
     fn initialize(self: core::pin::Pin<&mut Self>, _arguments: Self::InitializeArguments) {
         Self::initialize(self);
-    }
-}
-
-#[doc(hidden)]
-// Write the cxx-qt headers to the specified directory.
-pub fn write_headers(directory: impl AsRef<Path>) {
-    let directory = directory.as_ref();
-    std::fs::create_dir_all(directory).expect("Could not create cxx-qt header directory");
-    // Note ensure that the build script is consistent with files that are copied
-    for (file_contents, file_name) in [
-        (include_str!("../include/connection.h"), "connection.h"),
-        (
-            include_str!("../include/signalhandler.h"),
-            "signalhandler.h",
-        ),
-        (include_str!("../include/thread.h"), "thread.h"),
-        (include_str!("../include/threading.h"), "threading.h"),
-        (include_str!("../include/type.h"), "type.h"),
-    ] {
-        // Note that we do not need rerun-if-changed for these files
-        // as include_str causes a rerun when the header changes
-        // and the files are always written to the target.
-        let h_path = format!("{}/{file_name}", directory.display());
-        let mut header = File::create(h_path).expect("Could not create cxx-qt header");
-        write!(header, "{file_contents}").expect("Could not write cxx-qt header");
     }
 }

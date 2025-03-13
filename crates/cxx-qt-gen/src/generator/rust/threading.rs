@@ -62,7 +62,7 @@ pub fn generate(
                     #[namespace = #cxx_qt_thread_namespace]
                     #(#cfgs)*
                     type #cxx_qt_thread_ident = cxx_qt::CxxQtThread<#cpp_struct_ident>;
-                    include!("cxx-qt/thread.h");
+                    include!("cxx-qt/include/thread.h");
 
                     #[doc(hidden)]
                     #(#thread_fn_attrs)*
@@ -209,7 +209,7 @@ mod tests {
                     #[doc(hidden)]
                     #[namespace = ""]
                     type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObject>;
-                    include!("cxx-qt/thread.h");
+                    include!("cxx-qt/include/thread.h");
 
                     #[doc(hidden)]
                     #[cxx_name = "qtThread"]

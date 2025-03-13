@@ -139,7 +139,15 @@ impl Interface {
             .expect("Failed to create header root for interface");
         for (header_dir, dest) in &self.exported_include_directories {
             let dest_dir = header_root_interface.join(dest);
-            match dir::symlink_or_copy_directory(header_dir, &dest_dir) {
+            // Relative paths are take from under the header root
+            //
+            // TODO: is this correct?
+            let header_dir = if header_dir.is_relative() {
+                dir::header_root().join(header_dir)
+            } else {
+                header_dir.clone()
+            };
+            match dir::symlink_or_copy_directory(&header_dir, &dest_dir) {
                 Ok(true) => {},
                 Ok(false) => panic!("Failed to create symlink folder for `{dest}`"),
                 Err(e) => panic!(

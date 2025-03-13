@@ -10,7 +10,7 @@
 #include <memory>
 #include <mutex>
 
-#include <cxx-qt/thread.h>
+#include <cxx-qt/include/thread.h>
 
 namespace rust::cxxqt1 {
 
