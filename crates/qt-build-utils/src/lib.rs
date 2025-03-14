@@ -37,8 +37,8 @@ pub enum QtBuildError {
     QMakeSetQtMissing {
         /// The value of the qmake environment variable when the error occurred
         qmake_env_var: String,
-        /// The inner [QtBuildError] that occurred
-        error: Box<QtBuildError>,
+        /// The inner error that occurred
+        error: Box<anyhow::Error>,
     },
     /// Qt was not found
     #[error("Could not find Qt")]
@@ -344,7 +344,7 @@ impl QtBuild {
                 Err(e) => {
                     return Err(QtBuildError::QMakeSetQtMissing {
                         qmake_env_var,
-                        error: Box::new(e),
+                        error: Box::new(e.into()),
                     })
                 }
             }
