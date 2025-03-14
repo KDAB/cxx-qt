@@ -42,13 +42,13 @@ qtimeMSecsTo(const QTime& time, QTime t)
 }
 
 QTime
-qtimeFromString(const QString& string, const QString& format)
+qtimeFromQString(const QString& string, const QString& format)
 {
   return QTime::fromString(string, format);
 }
 
 QTime
-qtimeFromString(const QString& string, Qt::DateFormat format)
+qtimeFromQString(const QString& string, Qt::DateFormat format)
 {
   return QTime::fromString(string, format);
 }
@@ -64,6 +64,18 @@ bool
 qtimeIsValid(int h, int m, int s, int ms)
 {
   return QTime::isValid(h, m, s, ms);
+}
+
+QString
+qtimeToQString(const QTime& time, const QString& format)
+{
+  return time.toString(format);
+}
+
+QString
+qtimeToQString(const QTime& time, Qt::DateFormat format)
+{
+  return time.toString(format);
 }
 
 }
