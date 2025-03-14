@@ -236,6 +236,7 @@ pub struct QmlModuleRegistrationFiles {
 /// let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
 /// ```
 pub struct QtBuild {
+    qt_installation: Box<dyn QtInstallation>,
     version: SemVer,
     qmake_executable: String,
     moc_executable: Option<String>,
@@ -284,10 +285,16 @@ impl QtBuild {
     ///     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     /// )
     /// ```
-    pub fn new(mut qt_modules: Vec<String>) -> Result<Self, QtBuildError> {
+    pub fn new(mut qt_modules: Vec<String>) -> anyhow::Result<Self> {
         if qt_modules.is_empty() {
             qt_modules.push("Core".to_string());
         }
+
+        #[cfg(feature = "qmake")]
+        let qt_installation = Box::new(QtInstallationQMake::new()?);
+        #[cfg(not(feature = "qmake"))]
+        unsupported!("Only qmake feature is supported");
+
         println!("cargo::rerun-if-env-changed=QMAKE");
         println!("cargo::rerun-if-env-changed=QT_VERSION_MAJOR");
         fn verify_candidate(candidate: &str) -> Result<(&str, versions::SemVer), QtBuildError> {
@@ -341,6 +348,7 @@ impl QtBuild {
             match verify_candidate(qmake_env_var.trim()) {
                 Ok((executable_name, version)) => {
                     return Ok(Self {
+                        qt_installation,
                         qmake_executable: executable_name.to_string(),
                         moc_executable: None,
                         qmltyperegistrar_executable: None,
@@ -354,7 +362,8 @@ impl QtBuild {
                     return Err(QtBuildError::QMakeSetQtMissing {
                         qmake_env_var,
                         error: Box::new(e.into()),
-                    })
+                    }
+                    .into())
                 }
             }
         }
@@ -365,6 +374,7 @@ impl QtBuild {
             match verify_candidate(executable_name) {
                 Ok((executable_name, version)) => {
                     return Ok(Self {
+                        qt_installation,
                         qmake_executable: executable_name.to_string(),
                         moc_executable: None,
                         qmltyperegistrar_executable: None,
@@ -386,17 +396,18 @@ impl QtBuild {
                         return Err(QtBuildError::QtVersionMajorDoesNotMatch {
                             qmake_version,
                             qt_version_major,
-                        });
+                        }
+                        .into());
                     }
                     eprintln!("Candidate qmake executable `{executable_name}` is for Qt{qmake_version} but QT_VERSION_MAJOR environment variable specified as {qt_version_major}. Trying next candidate executable name `{}`...", candidate_executable_names[index + 1]);
                     continue;
                 }
                 Err(QtBuildError::QtMissing) => continue,
-                Err(e) => return Err(e),
+                Err(e) => return Err(e.into()),
             }
         }
 
-        Err(QtBuildError::QtMissing)
+        Err(QtBuildError::QtMissing.into())
     }
 
     /// Get the output of running `qmake -query var_name`
@@ -623,6 +634,7 @@ impl QtBuild {
 
     /// Version of the detected Qt installation
     pub fn version(&self) -> &SemVer {
+        let _ = self.qt_installation.version();
         &self.version
     }
 
