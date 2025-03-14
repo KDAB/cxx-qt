@@ -33,6 +33,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casting is automatically implmented for qobjects or types which have `#[base = T]` in `"RustQt"` or `"C++Qt"` blocks
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 
+#### Changed
+
+- The static methods of `QCoreApplication`, `QGuiApplication`, and `QApplication` no longer use a `self` parameter.
+
 ### Removed
 
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)
