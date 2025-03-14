@@ -40,6 +40,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_i32, _: &i32);
         #[rust_name = "len_i32"]
         fn qsetLen(_: &QSet_i32) -> isize;
+        #[rust_name = "reserve_i32"]
+        fn qsetReserve(_: &mut QSet_i32, size: isize);
     }
 }
 
@@ -65,4 +67,8 @@ pub(crate) fn insert(s: &mut ffi::QSet_i32, value: &i32) {
 
 pub(crate) fn len(s: &ffi::QSet_i32) -> isize {
     ffi::len_i32(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_i32, size: isize) {
+    ffi::reserve_i32(s, size);
 }
