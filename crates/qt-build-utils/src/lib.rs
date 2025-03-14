@@ -58,9 +58,9 @@ pub enum QtBuildError {
     #[error("qmake version ({qmake_version}) does not match version specified by QT_VERSION_MAJOR ({qt_version_major})")]
     QtVersionMajorDoesNotMatch {
         /// The qmake version
-        qmake_version: u32,
+        qmake_version: u64,
         /// The Qt major version from `QT_VERSION_MAJOR`
-        qt_version_major: u32,
+        qt_version_major: u64,
     },
 }
 
@@ -296,7 +296,7 @@ impl QtBuild {
                             .to_string();
                         let qmake_version = versions::SemVer::new(version_string).unwrap();
                         if let Ok(env_version) = env::var("QT_VERSION_MAJOR") {
-                            let env_version = match env_version.trim().parse::<u32>() {
+                            let env_version = match env_version.trim().parse::<u64>() {
                                 Err(e) if *e.kind() == std::num::IntErrorKind::Empty => {
                                     println!(
                                         "cargo::warning=QT_VERSION_MAJOR environment variable defined but empty"
@@ -311,11 +311,11 @@ impl QtBuild {
                                 }
                                 Ok(int) => int,
                             };
-                            if env_version == qmake_version.major {
+                            if env_version == qmake_version.major as u64 {
                                 return Ok((candidate, qmake_version));
                             } else {
                                 return Err(QtBuildError::QtVersionMajorDoesNotMatch {
-                                    qmake_version: qmake_version.major,
+                                    qmake_version: qmake_version.major as u64,
                                     qt_version_major: env_version,
                                 });
                             }
