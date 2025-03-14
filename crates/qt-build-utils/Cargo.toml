@@ -14,7 +14,9 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+anyhow = "1.0"
 cc.workspace = true
+semver = "1.0"
 serde = { workspace = true, optional = true }
 versions = "6.3"
 thiserror.workspace = true
