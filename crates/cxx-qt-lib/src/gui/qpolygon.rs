@@ -195,3 +195,17 @@ unsafe impl ExternType for QPolygon {
     type Id = type_id!("QPolygon");
     type Kind = cxx::kind::Trivial;
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qpolygon_serde() {
+        let mut polygon = QPolygon::default();
+        polygon.append(QPoint::new(1, 2));
+        polygon.append(QPoint::new(3, 4));
+        assert_eq!(crate::serde_impl::roundtrip(&polygon), polygon);
+    }
+}

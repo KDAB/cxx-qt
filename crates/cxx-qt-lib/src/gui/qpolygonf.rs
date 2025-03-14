@@ -177,3 +177,17 @@ unsafe impl ExternType for QPolygonF {
     type Id = type_id!("QPolygonF");
     type Kind = cxx::kind::Trivial;
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qpolygonf_serde() {
+        let mut polygonf = QPolygonF::default();
+        polygonf.append(QPointF::new(1.0, 2.0));
+        polygonf.append(QPointF::new(3.0, 4.0));
+        assert_eq!(crate::serde_impl::roundtrip(&polygonf), polygonf);
+    }
+}

@@ -19,7 +19,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `Deref` and `DerefMut` implementations to `QList` for `QStringList`, `QPolygon`, and `QPolygonF`.
+- `QDate::format`, `QDateTime::format`, and `QTime::format` to create a `QString` with a specific `DateFormat`.
 - `QDateTime::from_string` to parse `QDateTime` from a `QString`.
+- `QSet::reserve` to reserve capacity up-front.
 - Support for further types: `QUuid`
 - New example: Basic greeter app
 - Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`
@@ -32,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[base = T]` is now suported in `extern "C++Qt"` blocks
 - Casting is automatically implmented for qobjects or types which have `#[base = T]` in `"RustQt"` or `"C++Qt"` blocks
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
+- Serde support for further types: `QByteArray`, `QColor`, `QDate`, `QDateTime`, `QFont`, `QLine`, `QLineF`, `QList`, `QMargins`, `QMarginsF`, `QPoint`, `QPointF`, `QPolygon`, `QPolygonF`, `QRect`, `QRectF`, `QSet`, `QSize`, `QSizeF`, `QStringList`, `QVector`, `QVector2D`, `QVector3D`, `QVector4D`, `QTime`, `QUrl`, `QUuid`
 
 ### Removed
 
@@ -146,7 +150,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Do not use -bundle otherwise CMake builds are missing qt-static-initalizers (note this is broken in rustc 1.69)
 - Do not import `Pin` in hidden module as invokables are outside now, resolving IDE integration
-- Rust always links against a non-debug Windows runtime with *-msvc targets, so we need to link to MultiThreadedDLL
+- Rust always links against a non-debug Windows runtime with \*-msvc targets, so we need to link to MultiThreadedDLL
 
 ### Removed
 

@@ -140,9 +140,29 @@ impl QTime {
         ffi::qtime_from_string(string, format)
     }
 
+    /// Returns the QTime represented by the string, using the format given, or None if the string cannot be parsed.
+    pub fn from_string_opt(string: &ffi::QString, format: &ffi::QString) -> Option<Self> {
+        let time = ffi::qtime_from_string(string, format);
+        if time.is_valid() {
+            Some(time)
+        } else {
+            None
+        }
+    }
+
     /// Returns the time represented in the string as a QTime using the format given, or an invalid time if this is not possible.
     pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Self {
         ffi::qtime_from_string_enum(string, format)
+    }
+
+    /// Returns the time represented in the string as a QTime using the format given, or None if this is not possible.
+    pub fn from_string_enum_opt(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
+        let time = ffi::qtime_from_string_enum(string, format);
+        if time.is_valid() {
+            Some(time)
+        } else {
+            None
+        }
     }
 
     /// Returns the number of milliseconds from this time to t.
@@ -264,6 +284,18 @@ impl TryFrom<QTime> for time::Time {
 unsafe impl ExternType for QTime {
     type Id = type_id!("QTime");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qtime_serde() {
+        let qtime = QTime::new(1, 2, 3, 4);
+        assert_eq!(crate::serde_impl::roundtrip(&qtime), qtime);
+    }
 }
 
 #[cfg(test)]

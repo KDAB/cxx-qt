@@ -422,6 +422,7 @@ dependencies = [
  "qt-build-utils",
  "rgb",
  "serde",
+ "serde_json",
  "time",
  "url",
  "uuid",

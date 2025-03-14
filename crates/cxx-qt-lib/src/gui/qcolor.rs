@@ -619,6 +619,29 @@ impl From<&QColor> for rgb::RGBA8 {
     }
 }
 
+#[cfg(feature = "serde")]
+impl serde::Serialize for QColor {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        let format = if self.alpha() == 255 {
+            ffi::QColorNameFormat::HexRgb
+        } else {
+            ffi::QColorNameFormat::HexArgb
+        };
+        self.name(format).serialize(serializer)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::Deserialize<'de> for QColor {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        let string = ffi::QString::deserialize(deserializer)?;
+        Self::try_from(&string).map_err(|_| {
+            use serde::de::{Error as _, Unexpected};
+            D::Error::invalid_value(Unexpected::Str(&String::from(&string)), &"hex color code")
+        })
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
@@ -629,8 +652,14 @@ unsafe impl ExternType for QColor {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "rgb")]
     use super::*;
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn serde_qcolor() {
+        let qcolor = QColor::from_rgba(10, 20, 30, 40);
+        assert_eq!(crate::serde_impl::roundtrip(&qcolor), qcolor);
+    }
 
     #[cfg(feature = "rgb")]
     #[test]

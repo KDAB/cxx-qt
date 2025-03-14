@@ -400,4 +400,11 @@ mod test {
         let qvec = QVector::<u8>::from(array);
         assert_eq!(Vec::from(&qvec), array);
     }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qvec_serde() {
+        let qvec = QVector::<u8>::from([0, 1, 2]);
+        assert_eq!(crate::serde_impl::roundtrip(&qvec), qvec);
+    }
 }

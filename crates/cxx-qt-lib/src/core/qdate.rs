@@ -176,7 +176,7 @@ impl QDate {
         Self { jd }
     }
 
-    /// Returns the QTime represented by the string, using the format given, or None if the string cannot be parsed.
+    /// Returns the QDate represented by the string, using the format given, or None if the string cannot be parsed.
     pub fn from_string(string: &ffi::QString, format: &ffi::QString) -> Option<Self> {
         let date = ffi::qdate_from_string(string, format);
         if date.is_valid() {
@@ -186,7 +186,7 @@ impl QDate {
         }
     }
 
-    /// Returns the time represented in the string as a QTime using the format given, or None if this is not possible.
+    /// Returns the time represented in the string as a QDate using the format given, or None if this is not possible.
     pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
         let date = ffi::qdate_from_string_enum(string, format);
         if date.is_valid() {
@@ -288,6 +288,13 @@ mod test {
         let naive = chrono::NaiveDate::from_ymd_opt(2023, 1, 1).unwrap();
         let qdate = QDate::new(2023, 1, 1);
         assert_eq!(QDate::from(naive), qdate);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qdate_serde() {
+        let qdate = QDate::new(2023, 1, 1);
+        assert_eq!(crate::serde_impl::roundtrip(&qdate), qdate);
     }
 
     #[cfg(feature = "chrono")]
