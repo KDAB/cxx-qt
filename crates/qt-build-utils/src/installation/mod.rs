@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#[cfg(feature = "qmake")]
+pub(crate) mod qmake;
+
 use semver::Version;
 use std::path::PathBuf;
 
