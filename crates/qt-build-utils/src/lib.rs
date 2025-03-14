@@ -15,6 +15,9 @@
 
 #![allow(clippy::too_many_arguments)]
 
+mod installation;
+pub use installation::QtInstallation;
+
 mod parse_cflags;
 
 mod tool;
