@@ -36,6 +36,18 @@ mod ffi {
         /// Outputs a message in the Qt message handler.
         fn qt_message_output(msgType: QtMsgType, context: &QMessageLogContext, string: &QString);
 
+        /// Generates a formatted string out of the type, context, str arguments.
+        #[cxx_name = "qFormatLogMessage"]
+        fn format_log_message(
+            msgType: QtMsgType,
+            context: &QMessageLogContext,
+            string: &QString,
+        ) -> QString;
+
+        /// Generates a formatted string out of the type, context, str arguments.
+        #[cxx_name = "qSetMessagePattern"]
+        fn set_message_pattern(pattern: &QString);
+
         #[cxx_name = "qmessagelogcontext_line"]
         #[doc(hidden)]
         fn line(context: &QMessageLogContext) -> i32;
@@ -131,4 +143,4 @@ unsafe impl ExternType for QMessageLogContext<'_> {
 }
 
 use crate::const_assert;
-pub use ffi::{qt_message_output, QtMsgType};
+pub use ffi::{format_log_message, qt_message_output, set_message_pattern, QtMsgType};

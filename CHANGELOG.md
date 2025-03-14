@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[base = T]` is now suported in `extern "C++Qt"` blocks
 - Casting is automatically implmented for qobjects or types which have `#[base = T]` in `"RustQt"` or `"C++Qt"` blocks
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
+- Support for setting Qt log message patterns with `set_message_pattern`.
 
 ### Removed
 
