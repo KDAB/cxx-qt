@@ -53,7 +53,7 @@ cc = { version = "1.0.100", features = ["parallel"] }
 # ./book/src/getting-started/4-cargo-executable.md
 # ./book/src/getting-started/5-cmake-integration.md
 # TODO: Can we re-export cxx from cxx-qt, so people don't need to manually add this anymore?
-cxx = "1.0.95"
+cxx = "1.0.144"
 cxx-build = { version = "1.0.95", features = [ "parallel" ] }
 cxx-gen = "0.7.121"
 proc-macro2 = "1.0"
