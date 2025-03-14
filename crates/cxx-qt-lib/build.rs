@@ -350,12 +350,7 @@ fn main() {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
-    let interface = cxx_qt_build::Interface::default()
-        .export_include_prefixes([])
-        .export_include_directory(header_dir(), "cxx-qt-lib")
-        .reexport_dependency("cxx-qt");
-
-    let mut builder = CxxQtBuilder::library(interface)
+    let mut builder = CxxQtBuilder::library()
         .include_prefix("cxx-qt-lib-internals")
         .initializer(qt_build_utils::Initializer {
             file: Some("src/core/init.cpp".into()),
@@ -390,6 +385,17 @@ fn main() {
         }
         cc.file("src/qt_types.cpp");
         println!("cargo::rerun-if-changed=src/qt_types.cpp");
+
+        // TODO: before this came from the export_include_directory
+        // but now that we export after the build it fails
+        // should we always include the crate dir like CXX?
+        cc.include(header_dir().parent().expect("header_dir has a parent"));
     });
-    builder.build();
+
+    let interface = builder.build();
+    interface
+        .export_include_prefixes([])
+        .export_include_directory(header_dir(), "cxx-qt-lib")
+        .reexport_dependency("cxx-qt")
+        .export();
 }

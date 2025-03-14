@@ -6,12 +6,12 @@
 use cxx_qt_build::{CxxQtBuilder, Interface, QmlModule};
 
 fn main() {
-    let interface = Interface::default();
-    CxxQtBuilder::library(interface)
+    CxxQtBuilder::library()
         .qml_module(QmlModule::<_, &str> {
             uri: "com.kdab.cxx_qt.demo.sub2",
             rust_files: &["src/sub2_object.rs"],
             ..Default::default()
         })
-        .build();
+        .build()
+        .export();
 }
