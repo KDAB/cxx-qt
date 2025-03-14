@@ -15,6 +15,12 @@
 
 #![allow(clippy::too_many_arguments)]
 
+mod installation;
+pub use installation::QtInstallation;
+
+#[cfg(feature = "qmake")]
+pub use installation::qmake::QtInstallationQMake;
+
 mod parse_cflags;
 
 use std::{
@@ -38,7 +44,7 @@ pub enum QtBuildError {
         /// The value of the qmake environment variable when the error occurred
         qmake_env_var: String,
         /// The inner [QtBuildError] that occurred
-        error: Box<QtBuildError>,
+        error: Box<anyhow::Error>,
     },
     /// Qt was not found
     #[error("Could not find Qt")]
@@ -58,9 +64,9 @@ pub enum QtBuildError {
     #[error("qmake version ({qmake_version}) does not match version specified by QT_VERSION_MAJOR ({qt_version_major})")]
     QtVersionMajorDoesNotMatch {
         /// The qmake version
-        qmake_version: u32,
+        qmake_version: u64,
         /// The Qt major version from `QT_VERSION_MAJOR`
-        qt_version_major: u32,
+        qt_version_major: u64,
     },
 }
 
@@ -227,6 +233,7 @@ pub struct QmlModuleRegistrationFiles {
 /// let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
 /// ```
 pub struct QtBuild {
+    qt_installation: Box<dyn QtInstallation>,
     version: SemVer,
     qmake_executable: String,
     moc_executable: Option<String>,
@@ -275,10 +282,16 @@ impl QtBuild {
     ///     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
     /// )
     /// ```
-    pub fn new(mut qt_modules: Vec<String>) -> Result<Self, QtBuildError> {
+    pub fn new(mut qt_modules: Vec<String>) -> anyhow::Result<Self> {
         if qt_modules.is_empty() {
             qt_modules.push("Core".to_string());
         }
+
+        #[cfg(feature = "qmake")]
+        let qt_installation = Box::new(QtInstallationQMake::new()?);
+        #[cfg(not(feature = "qmake"))]
+        unsupported!("Only qmake feature is supported");
+
         println!("cargo::rerun-if-env-changed=QMAKE");
         println!("cargo::rerun-if-env-changed=QT_VERSION_MAJOR");
         fn verify_candidate(candidate: &str) -> Result<(&str, versions::SemVer), QtBuildError> {
@@ -296,7 +309,7 @@ impl QtBuild {
                             .to_string();
                         let qmake_version = versions::SemVer::new(version_string).unwrap();
                         if let Ok(env_version) = env::var("QT_VERSION_MAJOR") {
-                            let env_version = match env_version.trim().parse::<u32>() {
+                            let env_version = match env_version.trim().parse::<u64>() {
                                 Err(e) if *e.kind() == std::num::IntErrorKind::Empty => {
                                     println!(
                                         "cargo::warning=QT_VERSION_MAJOR environment variable defined but empty"
@@ -311,11 +324,11 @@ impl QtBuild {
                                 }
                                 Ok(int) => int,
                             };
-                            if env_version == qmake_version.major {
+                            if env_version == qmake_version.major as u64 {
                                 return Ok((candidate, qmake_version));
                             } else {
                                 return Err(QtBuildError::QtVersionMajorDoesNotMatch {
-                                    qmake_version: qmake_version.major,
+                                    qmake_version: qmake_version.major as u64,
                                     qt_version_major: env_version,
                                 });
                             }
@@ -332,6 +345,7 @@ impl QtBuild {
             match verify_candidate(qmake_env_var.trim()) {
                 Ok((executable_name, version)) => {
                     return Ok(Self {
+                        qt_installation,
                         qmake_executable: executable_name.to_string(),
                         moc_executable: None,
                         qmltyperegistrar_executable: None,
@@ -344,8 +358,9 @@ impl QtBuild {
                 Err(e) => {
                     return Err(QtBuildError::QMakeSetQtMissing {
                         qmake_env_var,
-                        error: Box::new(e),
-                    })
+                        error: Box::new(e.into()),
+                    }
+                    .into())
                 }
             }
         }
@@ -356,6 +371,7 @@ impl QtBuild {
             match verify_candidate(executable_name) {
                 Ok((executable_name, version)) => {
                     return Ok(Self {
+                        qt_installation,
                         qmake_executable: executable_name.to_string(),
                         moc_executable: None,
                         qmltyperegistrar_executable: None,
@@ -377,17 +393,18 @@ impl QtBuild {
                         return Err(QtBuildError::QtVersionMajorDoesNotMatch {
                             qmake_version,
                             qt_version_major,
-                        });
+                        }
+                        .into());
                     }
                     eprintln!("Candidate qmake executable `{executable_name}` is for Qt{qmake_version} but QT_VERSION_MAJOR environment variable specified as {qt_version_major}. Trying next candidate executable name `{}`...", candidate_executable_names[index + 1]);
                     continue;
                 }
                 Err(QtBuildError::QtMissing) => continue,
-                Err(e) => return Err(e),
+                Err(e) => return Err(e.into()),
             }
         }
 
-        Err(QtBuildError::QtMissing)
+        Err(QtBuildError::QtMissing.into())
     }
 
     /// Get the output of running `qmake -query var_name`
@@ -614,6 +631,7 @@ impl QtBuild {
 
     /// Version of the detected Qt installation
     pub fn version(&self) -> &SemVer {
+        let _ = self.qt_installation.version();
         &self.version
     }
 
@@ -677,6 +695,9 @@ impl QtBuild {
     /// as well as the path to the generated metatypes.json file, which can be passed to [register_qml_module](Self::register_qml_module).
     ///
     pub fn moc(&mut self, input_file: impl AsRef<Path>, arguments: MocArguments) -> MocProducts {
+        let _ = self
+            .qt_installation
+            .moc(input_file.as_ref(), arguments.clone());
         if self.moc_executable.is_none() {
             self.moc_executable = Some(self.get_qt_tool("moc").expect("Could not find moc"));
         }
@@ -1067,6 +1088,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
     /// the `+whole-archive` flag is used, or the initializer function is called by the
     /// application.
     pub fn qrc(&mut self, input_file: &impl AsRef<Path>) -> Initializer {
+        let _ = self.qt_installation.qrc(input_file.as_ref());
         if self.rcc_executable.is_none() {
             self.rcc_executable = Some(self.get_qt_tool("rcc").expect("Could not find rcc"));
         }
