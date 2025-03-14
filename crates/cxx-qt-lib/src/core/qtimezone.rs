@@ -41,7 +41,7 @@ mod ffi {
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qdatetime.h");
         type QDateTime = crate::QDateTime;
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QByteArray.h");
         type QList_QByteArray = crate::QList<crate::QByteArray>;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
