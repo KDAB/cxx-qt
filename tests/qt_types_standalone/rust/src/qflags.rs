@@ -30,7 +30,8 @@ fn read_qflags(f: &MouseButtons) -> bool {
     f.to_int() == MouseButton::ForwardButton.repr | MouseButton::LeftButton.repr
 }
 
-fn clone_qmargins(f: &MouseButtons) -> QMargins {
+fn clone_qflags(f: &MouseButtons) -> MouseButtons {
+    #[allow(clippy::clone_on_copy)]
     f.clone()
 }
 

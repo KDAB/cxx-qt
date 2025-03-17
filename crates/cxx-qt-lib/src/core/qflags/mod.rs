@@ -254,6 +254,8 @@ unsafe impl<T: QFlag> ExternType for QFlags<T> {
 
 #[cfg(test)]
 mod test {
+    use crate::{KeyboardModifier, KeyboardModifiers};
+
     use super::*;
 
     const ALL_KEYBOARD_MODIFIERS: &[KeyboardModifier] = &[
