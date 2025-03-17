@@ -20,12 +20,15 @@ mod ffi {
         type QVector_QByteArray = crate::QVector<QByteArray>;
         include!("cxx-qt-lib/qfont.h");
         type QFont = crate::QFont;
-        #[namespace = "Qt"]
-        type KeyboardModifiers = crate::KeyboardModifiers;
-        type MouseButtons = crate::MouseButtons;
 
         include!("cxx-qt-lib/qcoreapplication.h");
         type QCoreApplication = crate::QCoreApplication;
+    }
+
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        type KeyboardModifiers = crate::KeyboardModifiers;
+        type MouseButtons = crate::MouseButtons;
     }
 
     unsafe extern "C++Qt" {
