@@ -8,11 +8,11 @@ use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not};
 
-mod macros;
-
 mod qflag;
 pub use qflag::QFlag;
 use qflag::{QFlagExt, QFlagRepr};
+
+mod util;
 
 type QFlagInt<T> = <T as QFlagExt>::Int;
 
