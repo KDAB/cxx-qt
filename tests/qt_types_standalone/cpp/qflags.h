@@ -25,13 +25,13 @@ private Q_SLOTS:
   void read()
   {
     const auto f = Qt::MouseButtons(Qt::ForwardButton) | Qt::LeftButton;
-    QVERIFY(read_qmargins(f));
+    QVERIFY(read_qflags(f));
   }
 
   void clone()
   {
     const auto f = Qt::MouseButtons(Qt::ForwardButton) | Qt::LeftButton;
-    const auto c = clone_qmargins(f);
+    const auto c = clone_qflags(f);
     QCOMPARE(c, f);
   }
 
