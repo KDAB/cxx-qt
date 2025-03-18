@@ -16,7 +16,7 @@ mod util;
 
 type QFlagInt<T> = <T as QFlagExt>::Int;
 
-/// The QFlags<T> class is a template class, where T is an enum type.
+/// The `QFlags<T>` class is a template class, where T is an enum type.
 /// QFlags is used throughout Qt for storing combinations of enum values.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
