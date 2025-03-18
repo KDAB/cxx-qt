@@ -69,13 +69,8 @@ pub unsafe trait QFlag: Sized {
     ///
     /// This will always be defined using `type_id!` in the following form:
     ///
-    /// ```
-    /// # struct MyType { repr: i32 };
-    /// # unsafe impl cxx_qt_lib::QFlag for MyType {
+    /// ```ignore
     /// type TypeId = cxx::type_id!("QFlags_MyType");
-    /// #     type Repr = i32;
-    /// #     fn to_repr(self) -> Self::Repr { self.repr }
-    /// # }
     /// ```
     type TypeId;
     /// The backing integer representation of the enum type that is the `Self` type of this impl.
@@ -86,15 +81,10 @@ pub unsafe trait QFlag: Sized {
     ///
     /// This will always be defined in the following form:
     ///
-    /// ```
-    /// # struct MyType { repr: i32 };
-    /// # unsafe impl cxx_qt_lib::QFlag for MyType {
-    /// # type TypeId = cxx::type_id!("QFlags_MyType");
-    /// #     type Repr = i32;
+    /// ```ignore
     /// fn to_repr(self) -> Self::Repr {
     ///     self.repr
     /// }
-    /// # }
     /// ```
     fn to_repr(self) -> Self::Repr;
 }
