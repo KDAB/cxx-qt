@@ -12,6 +12,7 @@ mod qcolor;
 mod qcoreapplication;
 mod qdate;
 mod qdatetime;
+mod qflags;
 mod qguiapplication;
 mod qhash;
 mod qline;
