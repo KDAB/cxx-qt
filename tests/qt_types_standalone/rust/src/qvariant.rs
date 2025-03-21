@@ -61,7 +61,7 @@ fn construct_qvariant(test: VariantTest) -> QVariant {
         VariantTest::QByteArray => QVariant::from(&QByteArray::from("Rust bytes")),
         VariantTest::QColor => QVariant::from(&QColor::from_rgb(255, 0, 0)),
         VariantTest::QDate => QVariant::from(&QDate::new(2022, 1, 1)),
-        VariantTest::QDateTime => QVariant::from(&QDateTime::from_date_and_time_time_zone(
+        VariantTest::QDateTime => QVariant::from(&QDateTime::from_qdate_qtime_qtimezone(
             &QDate::new(2022, 1, 1),
             &QTime::new(1, 2, 3, 4),
             &QTimeZone::from_offset_seconds(0),

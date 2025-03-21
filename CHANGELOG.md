@@ -35,6 +35,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 - Serde support for further types: `QByteArray`, `QSet`, `QStringList`, `QVector`, `QUrl`
 
+### Changed
+
+- `QTime::from_string` and `QTime::from_string_enum` now return `Option<QTime>` rather than `QTime`, in keeping with the identical functions for `QDate` and `QDateTime`.
+- Combined and renamed the following functions:
+  - `QDate::from_string` and `QDate::from_string_enum` → `QDate::from_qstring_opt`
+  - `QDate::format` and `QDate::format_enum` → `QDate::to_qstring`
+  - `QDateTime::from_date_and_time_time_zone` → `QDateTime::from_qdate_qtime_qtimezone`
+  - `QDateTime::from_date_and_time_time_spec` → `QDateTime::from_qdate_qtime_timespec`
+  - `QDateTime::from_string` and `QDateTime::from_string_enum` → `QDateTime::from_qstring_opt`
+  - `QDateTime::format` and `QDateTime::format_enum` → `QDateTime::to_qstring`
+  - `QImage::from_data` → `QImage::from_data_opt`
+  - `QTime::from_string` and `QTime::from_string_enum` → `QTime::from_qstring_opt`
+  - `QTime::format` and `QTime::format_enum` → `QTime::to_qstring`
+
 ### Removed
 
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)
