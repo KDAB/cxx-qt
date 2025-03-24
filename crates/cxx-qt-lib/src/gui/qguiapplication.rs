@@ -244,7 +244,7 @@ impl QGuiApplication {
     /// It should be noted this may not reflect the actual keys held on the input device at the time
     /// of calling but rather the modifiers as last reported in an event.
     /// If no keys are being held Qt::NoModifier is returned.
-    pub fn keyboard_modifiers() -> KeyboardModifiers {
+    pub fn keyboard_modifiers(&self) -> KeyboardModifiers {
         ffi::qguiapplication_keyboard_modifiers()
     }
 
@@ -255,7 +255,7 @@ impl QGuiApplication {
     /// It should be noted this may not reflect the actual buttons held on the input device at the
     /// time of calling but rather the mouse buttons as last reported in one of the above events.
     /// If no mouse buttons are being held Qt::NoButton is returned.
-    pub fn mouse_buttons() -> MouseButtons {
+    pub fn mouse_buttons(&self) -> MouseButtons {
         ffi::qguiapplication_mouse_buttons()
     }
 
@@ -268,7 +268,7 @@ impl QGuiApplication {
     /// cases, you should use keyboardModifiers(), which is faster and more accurate since it
     /// contains the state of the modifiers as they were when the currently processed event was
     /// received.
-    pub fn query_keyboard_modifiers() -> KeyboardModifiers {
+    pub fn query_keyboard_modifiers(&self) -> KeyboardModifiers {
         ffi::qguiapplication_query_keyboard_modifiers()
     }
 }
