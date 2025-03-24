@@ -106,14 +106,12 @@ impl<T: QFlag> QFlags<T> {
         }
     }
 
-    #[cfg(cxxqt_qt_version_at_least_6_2)]
     /// Returns `true` if any flag set in *flag* is also set in this flags object, otherwise
     /// `false`. If *flag* has no flags set, the return will always be `false`.
     pub fn test_any_flag(self, flag: T) -> bool {
         self.test_any_flags(Self::from(flag))
     }
 
-    #[cfg(cxxqt_qt_version_at_least_6_2)]
     /// Returns `true` if any flag set in *flags* is also set in this flags object, otherwise
     /// `false`. If *flags* has no flags set, the return will always be `false`.
     pub fn test_any_flags(self, flags: Self) -> bool {
@@ -303,7 +301,6 @@ mod test {
         assert!(flags.test_flags(other));
     }
 
-    #[cfg(cxxqt_qt_version_at_least_6_2)]
     #[test]
     fn qflags_test_any_flags() {
         let flags = KeyboardModifier::ControlModifier
