@@ -1,3 +1,8 @@
+// SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Joshua Booth <joshua.n.booth@gmail.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
 use std::fmt::Debug;
 use std::hash::Hash;
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not};
