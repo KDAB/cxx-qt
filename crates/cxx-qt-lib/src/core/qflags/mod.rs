@@ -10,18 +10,19 @@ use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, N
 
 mod qflag;
 pub use qflag::QFlag;
-use qflag::{QFlagExt, QFlagRepr};
+use qflag::QFlagExt;
+
+mod repr;
+pub use repr::QFlagRepr;
 
 mod util;
 
-type QFlagInt<T> = <T as QFlagExt>::Int;
-
 /// The `QFlags<T>` class is a template class, where T is an enum type.
-/// QFlags is used throughout Qt for storing combinations of enum values.
+/// QFlags are used throughout Qt for storing combinations of enum values.
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct QFlags<T: QFlag> {
-    repr: QFlagInt<T>,
+    repr: <T::Repr as QFlagRepr>::Int,
 }
 
 impl<T: QFlag> Copy for QFlags<T> {}
@@ -55,12 +56,12 @@ impl<T: QFlag> QFlags<T> {
     }
 
     /// Constructs a QFlags object representing the integer value *i*.
-    pub const fn from_int(i: QFlagInt<T>) -> Self {
+    pub const fn from_int(i: <T::Repr as QFlagRepr>::Int) -> Self {
         Self { repr: i }
     }
 
     /// Returns the value stored in the QFlags object as an integer.
-    pub const fn to_int(self) -> QFlagInt<T> {
+    pub const fn to_int(self) -> <T::Repr as QFlagRepr>::Int {
         self.repr
     }
 

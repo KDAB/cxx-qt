@@ -18,7 +18,7 @@ mod qdatetime;
 pub use qdatetime::QDateTime;
 
 mod qflags;
-pub use qflags::{QFlag, QFlags};
+pub use qflags::{QFlag, QFlagRepr, QFlags};
 
 mod qhash;
 pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant, QHashPair_i32_QByteArray};
