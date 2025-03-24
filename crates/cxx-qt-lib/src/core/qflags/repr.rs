@@ -9,7 +9,9 @@ mod private {
 }
 
 pub trait QFlagRepr: Sized + private::Sealed {
-    /// Qt chooses the integer representation for a `QFlags<T>` as follows:
+    /// The underlying integer representation for a `QFlags<T>`.
+    ///
+    /// Qt chooses the integer representation as follows:
     ///
     /// - If `T` is signed, use a signed integer. Otherwise, use an unsigned integer.
     /// - If `T` is 32 bits or less, use a 32-bit integer.

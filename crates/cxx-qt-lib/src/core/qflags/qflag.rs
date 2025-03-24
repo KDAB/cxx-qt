@@ -24,7 +24,7 @@ pub unsafe trait QFlag: Sized {
     /// type TypeId = cxx::type_id!("QFlags_MyType");
     /// ```
     type TypeId;
-    /// The backing integer representation of the enum type that is the `Self` type of this impl.
+    /// The backing integer representation of `Self`.
     /// For example, if the enum is defined with `#[repr(i32)]`, then `Repr` should be `i32`.
     type Repr: QFlagRepr + ExternType<Kind = cxx::kind::Trivial>;
 
