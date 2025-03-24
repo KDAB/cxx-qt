@@ -18,11 +18,7 @@ use cxx::ExternType;
 pub unsafe trait QFlag: Sized {
     /// A type-level representation of the C++ namespace and type name of this type's `QFlags<T>`.
     ///
-    /// This will always be defined using `type_id!` in the following form:
-    ///
-    /// ```ignore
-    /// type TypeId = cxx::type_id!("QFlags_MyType");
-    /// ```
+    /// This will always be defined using [cxx::type_id!].
     type TypeId;
     /// The backing integer representation of `Self`.
     /// For example, if the enum is defined with `#[repr(i32)]`, then `Repr` should be `i32`.
