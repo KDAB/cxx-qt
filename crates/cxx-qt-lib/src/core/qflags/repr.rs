@@ -13,6 +13,7 @@ mod private {
     pub trait Sealed {}
 }
 
+/// An integer type that can be used as the backing representation of a `T` in `QFlags<T>`.
 pub trait QFlagRepr: Sized + private::Sealed {
     /// The underlying integer representation for a `QFlags<T>`.
     ///
