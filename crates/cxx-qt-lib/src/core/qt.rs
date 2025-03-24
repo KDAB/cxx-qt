@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::impl_qflag;
+use crate::unsafe_impl_qflag;
 
 #[cxx::bridge(namespace = "Qt")]
 mod ffi {
@@ -246,5 +246,5 @@ pub use cxx_qt::ConnectionType;
 pub type MouseButtons = crate::QFlags<MouseButton>;
 pub type KeyboardModifiers = crate::QFlags<KeyboardModifier>;
 
-impl_qflag!(MouseButton, "Qt::MouseButtons", u32);
-impl_qflag!(KeyboardModifier, "Qt::KeyboardModifiers", u32);
+unsafe_impl_qflag!(MouseButton, "Qt::MouseButtons", u32);
+unsafe_impl_qflag!(KeyboardModifier, "Qt::KeyboardModifiers", u32);

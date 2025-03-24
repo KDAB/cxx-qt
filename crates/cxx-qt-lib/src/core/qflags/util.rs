@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[macro_export]
-macro_rules! impl_qflag {
+macro_rules! unsafe_impl_qflag {
     ( $typeName:ty, $typeId:literal, $repr:ident ) => {
         unsafe impl $crate::QFlag for $typeName {
             type TypeId = ::cxx::type_id!($typeId);
