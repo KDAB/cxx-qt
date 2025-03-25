@@ -21,14 +21,3 @@ struct IsRelocatable<QPolygon> : ::std::true_type
 {};
 
 } // namespace rust
-
-namespace rust {
-namespace cxxqtlib1 {
-
-const QVector<QPoint>&
-qpolygonAsQVectorQPointRef(const QPolygon& shape);
-QVector<QPoint>&
-qpolygonAsQVectorQPointRef(QPolygon& shape);
-
-}
-}
