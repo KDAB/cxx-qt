@@ -4,7 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QByteArray, QFont, QString, QStringList, QVector};
+use crate::{KeyboardModifiers, MouseButtons, QByteArray, QFont, QString, QStringList, QVector};
 use core::pin::Pin;
 
 #[cxx_qt::bridge]
@@ -23,6 +23,12 @@ mod ffi {
 
         include!("cxx-qt-lib/qcoreapplication.h");
         type QCoreApplication = crate::QCoreApplication;
+    }
+
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        type KeyboardModifiers = crate::KeyboardModifiers;
+        type MouseButtons = crate::MouseButtons;
     }
 
     unsafe extern "C++Qt" {
@@ -96,6 +102,15 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qguiapplication_desktop_file_name"]
         fn qguiapplicationDesktopFileName() -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_keyboard_modifiers"]
+        fn qguiapplicationKeyboardModifiers() -> KeyboardModifiers;
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_mouse_buttons"]
+        fn qguiapplicationMouseButtons() -> MouseButtons;
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_query_keyboard_modifiers"]
+        fn qguiapplicationQueryKeyboardModifiers() -> KeyboardModifiers;
     }
 
     // QGuiApplication is not a trivial to CXX and is not relocatable in Qt
@@ -220,5 +235,40 @@ impl QGuiApplication {
     /// Returns the application desktop file name.
     pub fn desktop_file_name() -> QString {
         ffi::qguiapplication_desktop_file_name()
+    }
+
+    /// Returns the current state of the modifier keys on the keyboard. The current state is updated
+    /// synchronously as the event queue is emptied of events that will spontaneously change the
+    /// keyboard state (QEvent::KeyPress and QEvent::KeyRelease events).
+    ///
+    /// It should be noted this may not reflect the actual keys held on the input device at the time
+    /// of calling but rather the modifiers as last reported in an event.
+    /// If no keys are being held Qt::NoModifier is returned.
+    pub fn keyboard_modifiers(&self) -> KeyboardModifiers {
+        ffi::qguiapplication_keyboard_modifiers()
+    }
+
+    /// Returns the current state of the buttons on the mouse. The current state is updated
+    /// synchronously as the event queue is emptied of events that will spontaneously change the
+    /// mouse state (QEvent::MouseButtonPress and QEvent::MouseButtonRelease events).
+    ///
+    /// It should be noted this may not reflect the actual buttons held on the input device at the
+    /// time of calling but rather the mouse buttons as last reported in one of the above events.
+    /// If no mouse buttons are being held Qt::NoButton is returned.
+    pub fn mouse_buttons(&self) -> MouseButtons {
+        ffi::qguiapplication_mouse_buttons()
+    }
+
+    /// Queries and returns the state of the modifier keys on the keyboard. Unlike
+    /// keyboardModifiers, this method returns the actual keys held on the input device at the time
+    /// of calling the method.
+    ///
+    /// It does not rely on the keypress events having been received by this process, which makes it
+    /// possible to check the modifiers while moving a window, for instance. Note that in most
+    /// cases, you should use keyboardModifiers(), which is faster and more accurate since it
+    /// contains the state of the modifiers as they were when the currently processed event was
+    /// received.
+    pub fn query_keyboard_modifiers(&self) -> KeyboardModifiers {
+        ffi::qguiapplication_query_keyboard_modifiers()
     }
 }

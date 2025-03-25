@@ -17,6 +17,9 @@ mod qdatetime;
 #[cfg(not(target_os = "emscripten"))]
 pub use qdatetime::QDateTime;
 
+mod qflags;
+pub use qflags::{QFlag, QFlagRepr, QFlags};
+
 mod qhash;
 pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant, QHashPair_i32_QByteArray};
 
@@ -76,8 +79,8 @@ pub use qstringlist::QStringList;
 mod qt;
 pub use qt::{
     AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, FillRule,
-    LayoutDirection, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
-    TransformationMode,
+    KeyboardModifier, KeyboardModifiers, LayoutDirection, MouseButton, MouseButtons, PenCapStyle,
+    PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
 
 mod qtime;
