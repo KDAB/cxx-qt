@@ -6,13 +6,13 @@
 use cxx_qt_build::{CxxQtBuilder, Interface, QmlModule};
 
 fn main() {
-    let interface = Interface::default();
-    CxxQtBuilder::library(interface)
+    CxxQtBuilder::library()
         .qt_module("Network")
         .qml_module(QmlModule::<_, &str> {
             uri: "com.kdab.cxx_qt.demo.sub1",
             rust_files: &["src/sub1_object.rs"],
             ..Default::default()
         })
-        .build();
+        .build()
+        .export();
 }
