@@ -17,12 +17,14 @@ rust-version.workspace = true
 cxx.workspace = true
 cxx-qt.workspace = true
 cxx-qt-lib = { workspace = true, features = ["qt_full"] }
+serde = { version = "1", features=["derive"], optional = true }
 
 [build-dependencies]
 cxx-qt-build.workspace = true
 
 [features]
-default = []
+default = ["serde"]
+serde = ["dep:serde"]
 link_qt_object_files = ["cxx-qt-build/link_qt_object_files"]
 
 [lints]
