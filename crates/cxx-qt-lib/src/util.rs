@@ -16,3 +16,24 @@ macro_rules! const_assert {
         const _: () = ::core::assert!($x);
     };
 }
+
+use crate::{DateFormat, QString};
+
+/// Types that can be used to format and parse dates and times.
+#[derive(Copy, Clone, PartialEq, Eq)]
+pub enum AnyDateFormat<'a> {
+    DateFormat(DateFormat),
+    QString(&'a QString),
+}
+
+impl From<DateFormat> for AnyDateFormat<'static> {
+    fn from(value: DateFormat) -> Self {
+        Self::DateFormat(value)
+    }
+}
+
+impl<'a> From<&'a QString> for AnyDateFormat<'a> {
+    fn from(value: &'a QString) -> Self {
+        Self::QString(value)
+    }
+}
