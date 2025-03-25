@@ -31,7 +31,7 @@ mod inheritance {
         #[doc = "\n"]
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
-        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/concepts/generated_qobject.html>"]
         type MyObject;
     }
     extern "Rust" {
