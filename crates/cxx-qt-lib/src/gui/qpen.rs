@@ -183,6 +183,19 @@ impl fmt::Debug for QPen {
     }
 }
 
+impl AsRef<ffi::QPen> for ffi::QColor {
+    fn as_ref(&self) -> &ffi::QPen {
+        let pen = ffi::qpen_init_from_qcolor(&self);
+        pen
+    }
+}
+
+impl Into<QPen> for ffi::QColor {
+    fn into(self) -> QPen {
+        ffi::qpen_init_from_qcolor(&self)
+    }
+}
+
 // Safety:
 //
 // Static checks on the C++ side to ensure the size is the same.
