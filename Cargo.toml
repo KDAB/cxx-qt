@@ -24,7 +24,7 @@ members = [
 
     "tests/basic_cxx_only/rust",
     "tests/basic_cxx_qt/rust",
-    "tests/qt_types_standalone/rust",
+    "tests/qt_types_standalone/rust", "examples/span-inspector",
 ]
 resolver = "2"
 

@@ -1,0 +1,21 @@
+[package]
+name = "span-inspector"
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+version.workspace = true
+rust-version.workspace = true
+
+[dependencies]
+cxx.workspace = true
+cxx-qt.workspace = true
+cxx-qt-lib = { workspace = true, features = ["full"] }
+proc-macro2.workspace = true
+prettyplease = "0.2"
+syn.workspace=true
+
+[build-dependencies]
+cxx-qt-build = { workspace = true, features = [ "link_qt_object_files" ] }
+
+[lints]
+workspace = true
