@@ -99,6 +99,19 @@ For more information on inheritance and how to override methods see the [Inherit
 ### Traits
 
 The [`Default` trait](https://doc.rust-lang.org/std/default/trait.Default.html) needs to be implemented for the `#[qobject]` marked struct either by hand or by using the derive macro `#[derive(Default)]`. Or the [`cxx_qt::Constructor`](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) trait needs to be implemented for the type.
+In order to simply implement the `Constructor` trait, the following shorthand is available:
+
+```rust,ignore
+impl cxx_qt::Initialize for x {}
+```
+
+is equivalent to writing
+
+```rust,ignore
+impl cxx_qt::Constructor<()> for x {}
+```
+
+inside the bridge.
 
 For further documentation see the [traits page](./traits.md).
 

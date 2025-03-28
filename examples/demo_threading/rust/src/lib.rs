@@ -51,7 +51,7 @@ pub mod qobject {
         fn sensor_power(self: Pin<&mut EnergyUsage>, uuid: &QString) -> f64;
     }
 
-    impl cxx_qt::Constructor<()> for EnergyUsage {}
+    impl cxx_qt::Initialize for EnergyUsage {}
 }
 
 use crate::{
