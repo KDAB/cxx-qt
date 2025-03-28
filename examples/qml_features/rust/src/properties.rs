@@ -42,7 +42,7 @@ pub mod qobject {
         fn reset_url(self: Pin<&mut RustProperties>);
     }
 
-    impl cxx_qt::Constructor<()> for RustProperties {}
+    impl cxx_qt::Initialize for RustProperties {}
 
     // Dummy constructor, added for an example in the book.
     // ANCHOR: book_constructor_new_decl
