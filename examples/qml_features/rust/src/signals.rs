@@ -56,7 +56,7 @@ pub mod qobject {
     // ANCHOR_END: book_rust_obj_impl
 
     // ANCHOR: book_initialize_decl
-    impl cxx_qt::Constructor<()> for RustSignals {}
+    impl cxx_qt::Initialize for RustSignals {}
     // ANCHOR_END: book_initialize_decl
 
     // ANCHOR: book_constructor_decl
