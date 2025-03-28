@@ -76,6 +76,7 @@ impl qobject::MyObject {
         println!("Hi from Rust! String is '{string}' and number is {number}");
     }
 }
+
 // ANCHOR_END: book_rustobj_invokable_impl
 
 // ANCHOR_END: book_cxx_qt_module
