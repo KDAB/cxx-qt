@@ -62,7 +62,7 @@ pub mod qobject {
         fn reset(self: Pin<&mut OuterObject>);
     }
 
-    impl cxx_qt::Constructor<()> for OuterObject {}
+    impl cxx_qt::Initialize for OuterObject {}
 }
 
 use core::pin::Pin;
