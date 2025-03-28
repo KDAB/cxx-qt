@@ -13,6 +13,9 @@ use syn::{
     Attribute, Expr, Ident, Meta, MetaNameValue, Result, Token, Type,
 };
 
+use crate::generator::naming::property::{
+    getter_name_from_property, notify_name_from_property, setter_name_from_property,
+};
 #[cfg(test)]
 use syn::ItemStruct;
 
@@ -223,6 +226,32 @@ impl ParsedQProperty {
                 }
             }
         })
+    }
+
+    /// Generates a list of method names which will be generated for this property
+    pub fn pending_methods(&self) -> Vec<Name> {
+        let mut pending = vec![];
+
+        if let FlagState::Auto = &self.flags.read {
+            pending.push(getter_name_from_property(&self.name));
+        }
+
+        if let Some(FlagState::Auto) = &self.flags.write {
+            pending.push(setter_name_from_property(&self.name));
+        }
+
+        pending
+    }
+
+    /// Generates a list of signal names which will be generated for this property
+    pub fn pending_signals(&self) -> Vec<Name> {
+        let mut pending = vec![];
+
+        if let Some(FlagState::Auto) = &self.flags.notify {
+            pending.push(notify_name_from_property(&self.name));
+        }
+
+        pending
     }
 }
 #[cfg(test)]
