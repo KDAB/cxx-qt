@@ -20,6 +20,7 @@ mod ffi {
             cxx_name = "renamedProperty",
             rust_name = "renamed_property"
         )]
+        #[qproperty(i32, reused_signal_prop, READ, WRITE, NOTIFY = trivial_changed)]
         #[qproperty(i32, named_prop_2, rust_name = "renamed_property_2")]
         #[qproperty(i32, custom_on_changed_prop, cxx_name = "customOnChangedProp", READ, WRITE, NOTIFY = my_on_changed)]
         #[qproperty(i32, const_prop, cxx_name = "constProp", READ, CONSTANT)]
