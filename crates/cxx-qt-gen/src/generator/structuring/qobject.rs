@@ -22,6 +22,7 @@ pub struct StructuredQObject<'a> {
     pub inherited_methods: Vec<&'a ParsedInheritedMethod>,
     pub signals: Vec<&'a ParsedSignal>,
     pub constructors: Vec<&'a Constructor>,
+    pub pending_generation: Vec<Name>,
     pub threading: bool,
 }
 
@@ -40,6 +41,12 @@ impl<'a> StructuredQObject<'a> {
 
     /// Creates a [StructuredQObject] from a [ParsedQObject] with empty enum, method and signal collections
     pub fn from_qobject(qobject: &'a ParsedQObject) -> Self {
+        let pending_generation = qobject
+            .properties
+            .iter()
+            .flat_map(|property| property.pending_methods())
+            .collect();
+
         Self {
             declaration: qobject,
             qenums: vec![],
@@ -47,8 +54,14 @@ impl<'a> StructuredQObject<'a> {
             inherited_methods: vec![],
             signals: vec![],
             constructors: vec![],
+            pending_generation,
             threading: false,
         }
+    }
+
+    /// Searches for a name in the list of functions pending generation
+    pub fn pending_lookup(&self, id: &Ident) -> Option<Name> {
+        lookup(&self.pending_generation, id, |pending| pending)
     }
 
     /// Returns the name of the method with the provided Rust ident if it exists, or an error
