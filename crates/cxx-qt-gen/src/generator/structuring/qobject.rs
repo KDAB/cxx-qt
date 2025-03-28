@@ -22,6 +22,8 @@ pub struct StructuredQObject<'a> {
     pub inherited_methods: Vec<&'a ParsedInheritedMethod>,
     pub signals: Vec<&'a ParsedSignal>,
     pub constructors: Vec<&'a Constructor>,
+    pub pending_methods: Vec<Name>,
+    pub pending_signals: Vec<Name>,
     pub threading: bool,
 }
 
@@ -40,6 +42,18 @@ impl<'a> StructuredQObject<'a> {
 
     /// Creates a [StructuredQObject] from a [ParsedQObject] with empty enum, method and signal collections
     pub fn from_qobject(qobject: &'a ParsedQObject) -> Self {
+        let pending_methods = qobject
+            .properties
+            .iter()
+            .flat_map(|property| property.pending_methods())
+            .collect();
+
+        let pending_signals = qobject
+            .properties
+            .iter()
+            .flat_map(|property| property.pending_signals())
+            .collect();
+
         Self {
             declaration: qobject,
             qenums: vec![],
@@ -47,6 +61,8 @@ impl<'a> StructuredQObject<'a> {
             inherited_methods: vec![],
             signals: vec![],
             constructors: vec![],
+            pending_methods,
+            pending_signals,
             threading: false,
         }
     }
@@ -55,12 +71,14 @@ impl<'a> StructuredQObject<'a> {
     pub fn method_lookup(&self, id: &Ident) -> Result<Name> {
         lookup(&self.methods, id, |method| &method.name)
             .or_else(|| lookup(&self.inherited_methods, id, |inherited| &inherited.name)) // fallback to searching inherited methods
+            .or_else(|| lookup(&self.pending_methods, id, |pending| pending))
             .ok_or_else(|| not_found_error("Method", id))
     }
 
     /// Returns the name of the signal with the provided Rust ident if it exists, or an error
     pub fn signal_lookup(&self, id: &Ident) -> Result<Name> {
         lookup(&self.signals, id, |signal| &signal.name)
+            .or_else(|| lookup(&self.pending_signals, id, |pending| pending))
             .ok_or_else(|| not_found_error("Signal", id))
     }
 

@@ -83,6 +83,16 @@ mod ffi {
         fn set_renamed_property(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
+        #[cxx_name = "getReusedSignalProp"]
+        #[namespace = "cxx_qt::my_object"]
+        unsafe fn reused_signal_prop<'a>(self: &'a MyObject) -> &'a i32;
+    }
+    extern "Rust" {
+        #[cxx_name = "setReusedSignalProp"]
+        #[namespace = "cxx_qt::my_object"]
+        fn set_reused_signal_prop(self: Pin<&mut MyObject>, value: i32);
+    }
+    extern "Rust" {
         #[cxx_name = "getNamed_prop_2"]
         #[namespace = "cxx_qt::my_object"]
         unsafe fn renamed_property_2<'a>(self: &'a MyObject) -> &'a i32;
@@ -503,6 +513,25 @@ impl ffi::MyObject {
         }
         self.as_mut().rust_mut().renamed_property = value;
         self.as_mut().renamed_property_changed();
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "reused_signal_prop"]
+    pub fn reused_signal_prop(&self) -> &i32 {
+        &self.reused_signal_prop
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "reused_signal_prop"]
+    pub fn set_reused_signal_prop(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.reused_signal_prop == value {
+            return;
+        }
+        self.as_mut().rust_mut().reused_signal_prop = value;
+        self.as_mut().trivial_changed();
     }
 }
 impl ffi::MyObject {
