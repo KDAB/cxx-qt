@@ -11,14 +11,6 @@ set -e
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 
-function tag_ffi() {
-  if [[ $1 =~ ^[[:upper:]] ]]; then
-    echo "ffi::$1"
-  else
-    echo "$1"
-  fi
-}
-
 function generate_qmap_header(){
   local INCLUDE_1=""
   local INCLUDE_2=""
