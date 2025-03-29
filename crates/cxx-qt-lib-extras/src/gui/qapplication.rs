@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::pin::Pin;
+
 use cxx_qt_lib::{QByteArray, QFont, QString, QStringList, QVector};
 
 #[cxx::bridge]
@@ -97,16 +99,17 @@ impl QApplication {
     /// ensuring that it is searched for libraries first.
     /// If path is empty or already in the path list, the path list is not changed.
     pub fn add_library_path(path: &QString) {
+        // Locked by Qt's `libraryPathMutex`.
         ffi::qapplication_add_library_path(path);
     }
 
     /// The name of this application
-    pub fn application_name() -> QString {
+    pub fn application_name(&self) -> QString {
         ffi::qapplication_application_name()
     }
 
     /// The version of this application
-    pub fn application_version() -> QString {
+    pub fn application_version(&self) -> QString {
         ffi::qapplication_application_version()
     }
 
@@ -118,11 +121,13 @@ impl QApplication {
 
     /// Returns the default application font.
     pub fn font() -> QFont {
+        // Locked by Qt's `applicationFontMutex`.
         ffi::qapplication_font()
     }
 
     /// Returns a list of paths that the application will search when dynamically loading libraries.
     pub fn library_paths() -> QStringList {
+        // Locked by Qt's `libraryPathMutex`.
         ffi::qapplication_library_paths()
     }
 
@@ -152,48 +157,51 @@ impl QApplication {
     }
 
     /// The Internet domain of the organization that wrote this application
-    pub fn organization_domain() -> QString {
+    pub fn organization_domain(&self) -> QString {
         ffi::qapplication_organization_domain()
     }
 
     /// The name of the organization that wrote this application
-    pub fn organization_name() -> QString {
+    pub fn organization_name(&self) -> QString {
         ffi::qapplication_organization_name()
     }
 
     /// Set the name of this application
-    pub fn set_application_name(name: &QString) {
+    pub fn set_application_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qapplication_set_application_name(name);
     }
 
     /// Removes path from the library path list. If path is empty or not in the path list, the list is not changed.
     pub fn remove_library_path(path: &QString) {
+        // Locked by Qt's `libraryPathMutex`.
         ffi::qapplication_remove_library_path(path)
     }
 
     /// Set the version of this application
-    pub fn set_application_version(version: &QString) {
+    pub fn set_application_version(self: Pin<&mut Self>, version: &QString) {
         ffi::qapplication_set_application_version(version);
     }
 
     /// Changes the default application font to font.
     pub fn set_application_font(font: &QFont) {
+        // Locked by Qt's `applicationFontMutex`.
         ffi::qapplication_set_font(font);
     }
 
     /// Sets the list of directories to search when loading plugins with QLibrary to paths.
     /// All existing paths will be deleted and the path list will consist of the paths given in paths and the path to the application.
     pub fn set_library_paths(paths: &QStringList) {
+        // Locked by Qt's `libraryPathMutex`.
         ffi::qapplication_set_library_paths(paths);
     }
 
     /// Sets the Internet domain of the organization that wrote this application
-    pub fn set_organization_domain(domain: &QString) {
+    pub fn set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
         ffi::qapplication_set_organization_domain(domain);
     }
 
     /// Sets the name of the organization that wrote this application
-    pub fn set_organization_name(name: &QString) {
+    pub fn set_organization_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qapplication_set_organization_name(name);
     }
 }
