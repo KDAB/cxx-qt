@@ -41,7 +41,8 @@ pub mod ffi {
         #[rust_name = "get_or_default_QString_QVariant"]
         fn qmapGetOrDefault(_: &QMap_QString_QVariant, key: &QString) -> QVariant;
         #[rust_name = "get_unchecked_key_QString_QVariant"]
-        unsafe fn qmapGetUncheckedKey(_: &QMap_QString_QVariant, pos: isize) -> &QString;
+        #[allow(clippy::needless_lifetimes)]
+        unsafe fn qmapGetUncheckedKey<'a>(_: &'a QMap_QString_QVariant, pos: isize) -> &'a QString;
         #[rust_name = "get_unchecked_value_QString_QVariant"]
         unsafe fn qmapGetUncheckedValue(_: &QMap_QString_QVariant, pos: isize) -> &QVariant;
         #[rust_name = "insert_QString_QVariant"]
