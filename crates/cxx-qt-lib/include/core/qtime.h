@@ -23,12 +23,16 @@ qtimeFromMSecsSinceStartOfDay(::std::int32_t msecs);
 ::std::int32_t
 qtimeMSecsTo(const QTime& time, QTime t);
 QTime
-qtimeFromString(const QString& string, const QString& format);
+qtimeFromQString(const QString& string, const QString& format);
 QTime
-qtimeFromString(const QString& string, Qt::DateFormat format);
+qtimeFromQString(const QString& string, Qt::DateFormat format);
 // In Qt 5 t is const-ref, in Qt 6 it is value
 ::std::int32_t
 qtimeSecsTo(const QTime& time, QTime t);
+QString
+qtimeToQString(const QTime& date, Qt::DateFormat format);
+QString
+qtimeToQString(const QTime& date, const QString& format);
 
 bool
 qtimeIsValid(int h, int m, int s, int ms);

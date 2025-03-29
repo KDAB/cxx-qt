@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::{AnyDateFormat, QString};
 use cxx::{type_id, ExternType};
 use std::fmt;
 
@@ -77,10 +78,6 @@ mod ffi {
         #[rust_name = "set_date"]
         fn setDate(self: &mut QDate, y: i32, m: i32, d: i32) -> bool;
 
-        /// Returns the time as a string. The format parameter determines the format of the string.
-        #[rust_name = "format_enum"]
-        fn toString(self: &QDate, format: DateFormat) -> QString;
-
         /// Returns the year of this date.
         fn year(self: &QDate) -> i32;
     }
@@ -96,19 +93,22 @@ mod ffi {
         fn qdateDaysTo(date: &QDate, d: QDate) -> qint64;
 
         #[doc(hidden)]
-        #[rust_name = "qdate_from_string"]
-        fn qdateFromString(string: &QString, format: &QString) -> QDate;
+        #[rust_name = "qdate_from_qstring_qstring"]
+        fn qdateFromQString(string: &QString, format: &QString) -> QDate;
         #[doc(hidden)]
-        #[rust_name = "qdate_from_string_enum"]
-        fn qdateFromString(string: &QString, format: DateFormat) -> QDate;
+        #[rust_name = "qdate_from_qstring_dateformat"]
+        fn qdateFromQString(string: &QString, format: DateFormat) -> QDate;
+
+        #[doc(hidden)]
+        #[rust_name = "qdate_to_qstring_qstring"]
+        fn qdateToQString(date: &QDate, format: &QString) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qdate_to_qstring_dateformat"]
+        fn qdateToQString(date: &QDate, format: DateFormat) -> QString;
 
         #[doc(hidden)]
         #[rust_name = "qdate_is_leap_year"]
         fn qdateIsLeapYear(year: i32) -> bool;
-
-        #[doc(hidden)]
-        #[rust_name = "qdate_to_format"]
-        fn qdateToFormat(date: &QDate, format: &QString) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -143,7 +143,7 @@ impl Default for QDate {
 
 impl fmt::Display for QDate {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.format_enum(ffi::DateFormat::TextDate))
+        write!(f, "{}", self.to_qstring(ffi::DateFormat::TextDate))
     }
 }
 
@@ -166,33 +166,34 @@ impl QDate {
         ffi::qdate_days_to(self, date)
     }
 
-    /// Returns the time as a string. The format parameter determines the format of the result string.
-    pub fn format(&self, format: &ffi::QString) -> ffi::QString {
-        ffi::qdate_to_format(self, format)
-    }
-
     /// Converts the Julian day jd to a QDate.
     pub fn from_julian_day(jd: i64) -> Self {
         Self { jd }
     }
 
-    /// Returns the QTime represented by the string, using the format given, or None if the string cannot be parsed.
-    pub fn from_string(string: &ffi::QString, format: &ffi::QString) -> Option<Self> {
-        let date = ffi::qdate_from_string(string, format);
-        if date.is_valid() {
-            Some(date)
+    /// Returns the QDate represented by the string, using the format given.
+    /// If the string cannot be parsed, returns `None`.
+    pub fn from_qstring_opt<'a, T>(string: &QString, format: T) -> Option<Self>
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        let parsed = Self::from_qstring(string, format);
+        if parsed.is_valid() {
+            Some(parsed)
         } else {
             None
         }
     }
 
-    /// Returns the time represented in the string as a QTime using the format given, or None if this is not possible.
-    pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
-        let date = ffi::qdate_from_string_enum(string, format);
-        if date.is_valid() {
-            Some(date)
-        } else {
-            None
+    /// Returns the QDate represented by the string, using the format given.
+    /// If the string cannot be parsed, returns an invalid date.
+    fn from_qstring<'a, T>(string: &QString, format: T) -> Self
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        match format.into() {
+            AnyDateFormat::DateFormat(f) => ffi::qdate_from_qstring_dateformat(string, f),
+            AnyDateFormat::QString(f) => ffi::qdate_from_qstring_qstring(string, f),
         }
     }
 
@@ -209,6 +210,17 @@ impl QDate {
     /// Converts the date to a Julian day.
     pub fn to_julian_day(&self) -> i64 {
         self.jd
+    }
+
+    /// Returns the date as a string. The format parameter determines the format of the result string.
+    pub fn to_qstring<'a, T>(&self, format: T) -> QString
+    where
+        T: Into<AnyDateFormat<'a>>,
+    {
+        match format.into() {
+            AnyDateFormat::DateFormat(f) => ffi::qdate_to_qstring_dateformat(self, f),
+            AnyDateFormat::QString(f) => ffi::qdate_to_qstring_qstring(self, f),
+        }
     }
 }
 

@@ -375,7 +375,7 @@ impl QImage {
     /// See [`QImageReader::supportedImageFormats()`](https://doc.qt.io/qt-6/qimagereader.html#supportedImageFormats) for the list of supported formats.
     ///
     /// If no `format` is provided, the format will be quessed from the image header.
-    pub fn from_data(data: &[u8], format: Option<&str>) -> Option<Self> {
+    pub fn from_data_opt(data: &[u8], format: Option<&str>) -> Option<Self> {
         let image = ffi::qimage_init_from_data(data, format.unwrap_or(""));
 
         if !image.is_null() {
