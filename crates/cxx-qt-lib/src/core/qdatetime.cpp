@@ -27,42 +27,6 @@ static_assert(QTypeInfo<QDateTime>::isRelocatable);
 namespace rust {
 namespace cxxqtlib1 {
 
-QDateTime
-qdatetimeCurrentDateTime()
-{
-  return QDateTime::currentDateTime();
-}
-
-QDateTime
-qdatetimeCurrentDateTimeUtc()
-{
-  return QDateTime::currentDateTimeUtc();
-}
-
-qint64
-qdatetimeCurrentMSecsSinceEpoch()
-{
-  return QDateTime::currentMSecsSinceEpoch();
-}
-
-qint64
-qdatetimeCurrentSecsSinceEpoch()
-{
-  return QDateTime::currentSecsSinceEpoch();
-}
-
-QDateTime
-qdatetimeFromMSecsSinceEpoch(qint64 msecs, const QTimeZone& timeZone)
-{
-  return QDateTime::fromMSecsSinceEpoch(msecs, timeZone);
-}
-
-QDateTime
-qdatetimeFromSecsSinceEpoch(qint64 secs, const QTimeZone& timeZone)
-{
-  return QDateTime::fromSecsSinceEpoch(secs, timeZone);
-}
-
 void
 qdatetimeSetDate(QDateTime& datetime, QDate date)
 {

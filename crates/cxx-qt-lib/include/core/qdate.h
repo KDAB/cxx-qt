@@ -15,8 +15,10 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-QDate
-qdateCurrentDate();
+inline QDate (*qdateCurrentDate)() = QDate::currentDate;
+
+inline bool (*qdateIsLeapYear)(int) = QDate::isLeapYear;
+
 QDate
 qdateFromString(const QString& string, const QString& format);
 QDate
@@ -24,8 +26,6 @@ qdateFromString(const QString& string, Qt::DateFormat format);
 // In Qt 5 d is const-ref, in Qt 6 it is value
 qint64
 qdateDaysTo(const QDate& date, QDate d);
-bool
-qdateIsLeapYear(::std::int32_t year);
 QString
 qdateToFormat(const QDate& date, const QString& format);
 

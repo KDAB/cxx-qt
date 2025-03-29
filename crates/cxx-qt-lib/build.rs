@@ -342,10 +342,6 @@ fn main() {
         cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
     }
 
-    if qt_quickcontrols_enabled() {
-        cpp_files.extend(["quickcontrols/qquickstyle"]);
-    }
-
     if !emscripten_targeted {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }

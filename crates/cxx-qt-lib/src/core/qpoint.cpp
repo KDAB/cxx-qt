@@ -20,15 +20,3 @@ assert_alignment_and_size(QPoint, {
 });
 
 static_assert(::std::is_trivially_copyable<QPoint>::value);
-
-namespace rust {
-namespace cxxqtlib1 {
-
-::std::int32_t
-qpointDotProduct(const QPoint& p1, const QPoint& p2)
-{
-  return QPoint::dotProduct(p1, p2);
-}
-
-}
-}

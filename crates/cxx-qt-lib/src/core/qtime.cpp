@@ -22,18 +22,6 @@ static_assert(::std::is_trivially_copyable<QTime>::value,
 namespace rust {
 namespace cxxqtlib1 {
 
-QTime
-qtimeCurrentTime()
-{
-  return QTime::currentTime();
-}
-
-QTime
-qtimeFromMSecsSinceStartOfDay(::std::int32_t msecs)
-{
-  return QTime::fromMSecsSinceStartOfDay(static_cast<int>(msecs));
-}
-
 ::std::int32_t
 qtimeMSecsTo(const QTime& time, QTime t)
 {
@@ -58,12 +46,6 @@ qtimeSecsTo(const QTime& time, QTime t)
 {
   // In Qt 5 t is const-ref, in Qt 6 it is value
   return static_cast<::std::int32_t>(time.secsTo(t));
-}
-
-bool
-qtimeIsValid(int h, int m, int s, int ms)
-{
-  return QTime::isValid(h, m, s, ms);
 }
 
 }

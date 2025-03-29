@@ -18,14 +18,12 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-QString
-qquickstyleName();
+inline QString (*qquickstyleName)() = QQuickStyle::name;
 
-void
-qquickstyleSetFallbackStyle(const QString& style);
+inline void (*qquickstyleSetFallbackStyle)(const QString&) =
+  QQuickStyle::setFallbackStyle;
 
-void
-qquickstyleSetStyle(const QString& style);
+inline void (*qquickstyleSetStyle)(const QString&) = QQuickStyle::setStyle;
 
 }
 }

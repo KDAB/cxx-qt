@@ -14,8 +14,8 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-::std::int32_t
-qpointDotProduct(const QPoint& p1, const QPoint& p2);
+inline ::std::int32_t (*qpointDotProduct)(const QPoint&,
+                                          const QPoint&) = QPoint::dotProduct;
 
 }
 }

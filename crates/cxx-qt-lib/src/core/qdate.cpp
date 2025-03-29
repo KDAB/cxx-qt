@@ -21,12 +21,6 @@ static_assert(::std::is_trivially_copyable<QDate>::value,
 namespace rust {
 namespace cxxqtlib1 {
 
-QDate
-qdateCurrentDate()
-{
-  return QDate::currentDate();
-}
-
 qint64
 qdateDaysTo(const QDate& date, QDate d)
 {
@@ -44,12 +38,6 @@ QDate
 qdateFromString(const QString& string, Qt::DateFormat format)
 {
   return QDate::fromString(string, format);
-}
-
-bool
-qdateIsLeapYear(::std::int32_t year)
-{
-  return QDate::isLeapYear(static_cast<int>(year));
 }
 
 QString
