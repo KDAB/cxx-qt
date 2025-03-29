@@ -50,5 +50,83 @@ qcoreapplicationNew(const QVector<QByteArray>& args)
   return ptr;
 }
 
+void
+qcoreapplicationAddLibraryPath(const QString& path)
+{
+  QCoreApplication::addLibraryPath(path);
+}
+
+QString
+qcoreapplicationApplicationName()
+{
+  return QCoreApplication::applicationName();
+}
+
+QString
+qcoreapplicationApplicationVersion()
+{
+  return QCoreApplication::applicationVersion();
+}
+
+::std::int32_t
+qcoreapplicationExec()
+{
+  return static_cast<::std::int32_t>(QCoreApplication::exec());
+}
+
+QStringList
+qcoreapplicationLibraryPaths()
+{
+  return QCoreApplication::libraryPaths();
+}
+
+QString
+qcoreapplicationOrganizationDomain()
+{
+  return QCoreApplication::organizationDomain();
+}
+
+QString
+qcoreapplicationOrganizationName()
+{
+  return QCoreApplication::organizationName();
+}
+
+void
+qcoreapplicationSetApplicationName(const QString& name)
+{
+  QCoreApplication::setApplicationName(name);
+}
+
+void
+qcoreapplicationSetApplicationVersion(const QString& version)
+{
+  QCoreApplication::setApplicationVersion(version);
+}
+
+void
+qcoreapplicationSetLibraryPaths(const QStringList& paths)
+{
+  QCoreApplication::setLibraryPaths(paths);
+}
+
+void
+qcoreapplicationSetOrganizationDomain(const QString& domain)
+{
+  QCoreApplication::setOrganizationDomain(domain);
+}
+
+void
+qcoreapplicationSetOrganizationName(const QString& name)
+{
+  QCoreApplication::setOrganizationName(name);
+}
+
+void
+qcoreapplicationRemoveLibraryPath(const QString& path)
+{
+  QCoreApplication::removeLibraryPath(path);
+}
+
 }
 }

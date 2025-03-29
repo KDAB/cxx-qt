@@ -53,49 +53,49 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qguiapplication_add_library_path"]
-        fn qapplicationAddLibraryPath(app: Pin<&mut QGuiApplication>, path: &QString);
+        fn qguiapplicationAddLibraryPath(path: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_application_name"]
-        fn qapplicationApplicationName(app: &QGuiApplication) -> QString;
+        fn qguiapplicationApplicationName() -> QString;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_remove_library_path"]
-        fn qapplicationRemoveLibraryPath(app: &QGuiApplication, path: &QString);
+        fn qguiapplicationRemoveLibraryPath(path: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_application_version"]
-        fn qapplicationApplicationVersion(app: &QGuiApplication) -> QString;
+        fn qguiapplicationApplicationVersion() -> QString;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_exec"]
-        fn qapplicationExec(app: Pin<&mut QGuiApplication>) -> i32;
+        fn qguiapplicationExec() -> i32;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_library_paths"]
-        fn qapplicationLibraryPaths(app: &QGuiApplication) -> QStringList;
+        fn qguiapplicationLibraryPaths() -> QStringList;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_organization_domain"]
-        fn qapplicationOrganizationDomain(app: &QGuiApplication) -> QString;
+        fn qguiapplicationOrganizationDomain() -> QString;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_organization_name"]
-        fn qapplicationOrganizationName(app: &QGuiApplication) -> QString;
+        fn qguiapplicationOrganizationName() -> QString;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_application_name"]
-        fn qapplicationSetApplicationName(app: Pin<&mut QGuiApplication>, name: &QString);
+        fn qguiapplicationSetApplicationName(name: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_application_version"]
-        fn qapplicationSetApplicationVersion(app: Pin<&mut QGuiApplication>, version: &QString);
+        fn qguiapplicationSetApplicationVersion(version: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_font"]
-        fn qguiapplicationSetFont(app: Pin<&mut QGuiApplication>, font: &QFont);
+        fn qguiapplicationSetFont(font: &QFont);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_font"]
-        fn qguiapplicationFont(app: &QGuiApplication) -> QFont;
+        fn qguiapplicationFont() -> QFont;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_library_paths"]
-        fn qapplicationSetLibraryPaths(app: Pin<&mut QGuiApplication>, paths: &QStringList);
+        fn qguiapplicationSetLibraryPaths(paths: &QStringList);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_organization_domain"]
-        fn qapplicationSetOrganizationDomain(app: Pin<&mut QGuiApplication>, domain: &QString);
+        fn qguiapplicationSetOrganizationDomain(domain: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_organization_name"]
-        fn qapplicationSetOrganizationName(app: Pin<&mut QGuiApplication>, name: &QString);
+        fn qguiapplicationSetOrganizationName(name: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_desktop_file_name"]
         fn qguiapplicationSetDesktopFileName(name: &QString);
@@ -126,34 +126,37 @@ impl QGuiApplication {
     /// Prepends path to the beginning of the library path list,
     /// ensuring that it is searched for libraries first.
     /// If path is empty or already in the path list, the path list is not changed.
-    pub fn add_library_path(self: Pin<&mut Self>, path: &QString) {
-        ffi::qguiapplication_add_library_path(self, path);
+    pub fn add_library_path(path: &QString) {
+        // Locked by Qt's `libraryPathMutex`.
+        ffi::qguiapplication_add_library_path(path);
     }
 
     /// The name of this application
     pub fn application_name(&self) -> QString {
-        ffi::qguiapplication_application_name(self)
+        ffi::qguiapplication_application_name()
     }
 
     /// The version of this application
     pub fn application_version(&self) -> QString {
-        ffi::qguiapplication_application_version(self)
+        ffi::qguiapplication_application_version()
     }
 
     /// Enters the main event loop and waits until exit() is called,
     /// and then returns the value that was set to exit() (which is 0 if exit() is called via quit()).
-    pub fn exec(self: Pin<&mut Self>) -> i32 {
-        ffi::qguiapplication_exec(self)
+    pub fn exec(&self) -> i32 {
+        ffi::qguiapplication_exec()
     }
 
     /// Returns the default application font.
-    pub fn font(&self) -> QFont {
-        ffi::qguiapplication_font(self)
+    pub fn font() -> QFont {
+        // Locked by Qt's `applicationFontMutex`.
+        ffi::qguiapplication_font()
     }
 
     /// Returns a list of paths that the application will search when dynamically loading libraries.
-    pub fn library_paths(&self) -> QStringList {
-        ffi::qguiapplication_library_paths(self)
+    pub fn library_paths() -> QStringList {
+        // Locked by Qt's `libraryPathMutex`.
+        ffi::qguiapplication_library_paths()
     }
 
     /// Initializes the window system and constructs an application object.
@@ -183,57 +186,60 @@ impl QGuiApplication {
 
     /// The Internet domain of the organization that wrote this application
     pub fn organization_domain(&self) -> QString {
-        ffi::qguiapplication_organization_domain(self)
+        ffi::qguiapplication_organization_domain()
     }
 
     /// The name of the organization that wrote this application
     pub fn organization_name(&self) -> QString {
-        ffi::qguiapplication_organization_name(self)
+        ffi::qguiapplication_organization_name()
     }
 
     /// Set the name of this application
     pub fn set_application_name(self: Pin<&mut Self>, name: &QString) {
-        ffi::qguiapplication_set_application_name(self, name);
+        ffi::qguiapplication_set_application_name(name);
     }
 
     /// Removes path from the library path list. If path is empty or not in the path list, the list is not changed.
-    pub fn remove_library_path(&self, path: &QString) {
-        ffi::qguiapplication_remove_library_path(self, path)
+    pub fn remove_library_path(path: &QString) {
+        // Locked by Qt's `libraryPathMutex`.
+        ffi::qguiapplication_remove_library_path(path)
     }
 
     /// Set the version of this application
     pub fn set_application_version(self: Pin<&mut Self>, version: &QString) {
-        ffi::qguiapplication_set_application_version(self, version);
+        ffi::qguiapplication_set_application_version(version);
     }
 
     /// Changes the default application font to font.
-    pub fn set_application_font(self: Pin<&mut Self>, font: &QFont) {
-        ffi::qguiapplication_set_font(self, font);
+    pub fn set_application_font(font: &QFont) {
+        // Locked by Qt's `applicationFontMutex`.
+        ffi::qguiapplication_set_font(font);
     }
 
     /// Sets the list of directories to search when loading plugins with QLibrary to paths.
     /// All existing paths will be deleted and the path list will consist of the paths given in paths and the path to the application.
-    pub fn set_library_paths(self: Pin<&mut Self>, paths: &QStringList) {
-        ffi::qguiapplication_set_library_paths(self, paths);
+    pub fn set_library_paths(paths: &QStringList) {
+        // Locked by Qt's `libraryPathMutex`.
+        ffi::qguiapplication_set_library_paths(paths);
     }
 
     /// Sets the Internet domain of the organization that wrote this application
     pub fn set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
-        ffi::qguiapplication_set_organization_domain(self, domain);
+        ffi::qguiapplication_set_organization_domain(domain);
     }
 
     /// Sets the name of the organization that wrote this application
     pub fn set_organization_name(self: Pin<&mut Self>, name: &QString) {
-        ffi::qguiapplication_set_organization_name(self, name);
+        ffi::qguiapplication_set_organization_name(name);
     }
 
     /// Changes the desktop file name to name.
-    pub fn set_desktop_file_name(name: &QString) {
+    pub fn set_desktop_file_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qguiapplication_set_desktop_file_name(name);
     }
 
     /// Returns the application desktop file name.
-    pub fn desktop_file_name() -> QString {
+    pub fn desktop_file_name(&self) -> QString {
         ffi::qguiapplication_desktop_file_name()
     }
 
