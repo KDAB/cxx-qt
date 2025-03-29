@@ -17,7 +17,7 @@ mod ffi {
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
-        include!("cxx-qt-lib/qvector.h");
+        include!("cxx-qt-lib/qvector_QByteArray.h");
         type QVector_QByteArray = crate::QVector<QByteArray>;
 
         include!("cxx-qt-lib/qcoreapplication.h");

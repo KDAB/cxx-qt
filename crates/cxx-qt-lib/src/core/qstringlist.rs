@@ -22,7 +22,7 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QString.h");
         type QList_QString = crate::QList<QString>;
 
         include!("cxx-qt-lib/qstringlist.h");
@@ -243,5 +243,14 @@ mod test {
             list.get(0).map(|s| s.to_string()),
             Some("element".to_owned())
         );
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn qstringlist_serde() {
+        let mut qstringlist = QStringList::default();
+        qstringlist.append(QString::from("element 1"));
+        qstringlist.append(QString::from("element 2"));
+        assert_eq!(crate::serde_impl::roundtrip(&qstringlist), qstringlist)
     }
 }

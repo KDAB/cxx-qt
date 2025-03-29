@@ -67,6 +67,9 @@ impl ParsedExternCxxQt {
 
                     // Test if the function is a signal
                     if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
+                        if attribute_get_path(&foreign_fn.attrs, &["inherit"]).is_some() {
+                            return Err(Error::new(foreign_fn.span(), "#[inherit] is not allowed or necessary in extern \"C++Qt\" blocks, as all signals are inherited by default"));
+                        }
                         let mut signal = ParsedSignal::parse(foreign_fn, auto_case)?;
                         // extern "C++Qt" signals are always inherit = true
                         // as they always exist on an existing QObject
@@ -203,6 +206,23 @@ mod tests {
             None,
         );
         // Ensure that a safe
+        assert!(extern_cxx_qt.is_err());
+    }
+
+    #[test]
+    fn test_extern_cxxqt_inherit_on_signal() {
+        let extern_cxx_qt = ParsedExternCxxQt::parse(
+            parse_quote! {
+                unsafe extern "C++Qt" {
+                    #[qsignal]
+                    #[inherit]
+                    fn myFunction(self: Pin<&mut MyObject>);
+                }
+            },
+            &format_ident!("qobject"),
+            None,
+        );
+        // Inherit is not allowed in "C++Qt" blocks
         assert!(extern_cxx_qt.is_err());
     }
 }

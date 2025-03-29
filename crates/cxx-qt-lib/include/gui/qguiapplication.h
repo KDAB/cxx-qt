@@ -70,5 +70,14 @@ qguiapplicationSetDesktopFileName(const QString& name);
 QString
 qguiapplicationDesktopFileName();
 
+Qt::KeyboardModifiers
+qguiapplicationKeyboardModifiers();
+
+Qt::MouseButtons
+qguiapplicationMouseButtons();
+
+Qt::KeyboardModifiers
+qguiapplicationQueryKeyboardModifiers();
+
 }
 }

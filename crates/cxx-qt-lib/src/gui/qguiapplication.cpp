@@ -131,5 +131,23 @@ qguiapplicationDesktopFileName()
   return QGuiApplication::desktopFileName();
 }
 
+Qt::KeyboardModifiers
+qguiapplicationKeyboardModifiers()
+{
+  return QGuiApplication::keyboardModifiers();
+}
+
+Qt::MouseButtons
+qguiapplicationMouseButtons()
+{
+  return QGuiApplication::mouseButtons();
+}
+
+Qt::KeyboardModifiers
+qguiapplicationQueryKeyboardModifiers()
+{
+  return QGuiApplication::queryKeyboardModifiers();
+}
+
 }
 }
