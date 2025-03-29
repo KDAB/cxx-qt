@@ -12,8 +12,8 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-double
-qpointfDotProduct(const QPointF& p1, const QPointF& p2);
+double (*qpointfDotProduct)(const QPointF&,
+                            const QPointF&) = QPointF::dotProduct;
 
 }
 }

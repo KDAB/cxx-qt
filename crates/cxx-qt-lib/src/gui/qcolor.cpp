@@ -37,22 +37,6 @@ static_assert(::std::is_trivially_destructible<QColor>::value);
 namespace rust {
 namespace cxxqtlib1 {
 
-QStringList
-qcolorColorNames()
-{
-  return QColor::colorNames();
-}
-
-QColor
-qcolorInitFromCmyk(::std::int32_t c,
-                   ::std::int32_t m,
-                   ::std::int32_t y,
-                   ::std::int32_t k,
-                   ::std::int32_t a)
-{
-  return QColor::fromCmyk(c, m, y, k, a);
-}
-
 QColor
 qcolorInitFromCmykF(float c, float m, float y, float k, float a)
 {
@@ -66,15 +50,6 @@ qcolorInitFromCmykF(float c, float m, float y, float k, float a)
                            static_cast<qreal>(k),
                            static_cast<qreal>(a));
 #endif
-}
-
-QColor
-qcolorInitFromHsl(::std::int32_t h,
-                  ::std::int32_t s,
-                  ::std::int32_t l,
-                  ::std::int32_t a)
-{
-  return QColor::fromHsl(h, s, l, a);
 }
 
 QColor
@@ -92,15 +67,6 @@ qcolorInitFromHslF(float h, float s, float l, float a)
 }
 
 QColor
-qcolorInitFromHsv(::std::int32_t h,
-                  ::std::int32_t s,
-                  ::std::int32_t v,
-                  ::std::int32_t a)
-{
-  return QColor::fromHsv(h, s, v, a);
-}
-
-QColor
 qcolorInitFromHsvF(float h, float s, float v, float a)
 {
   // Qt 6 is float and Qt 5 is qreal
@@ -112,15 +78,6 @@ qcolorInitFromHsvF(float h, float s, float v, float a)
                           static_cast<qreal>(v),
                           static_cast<qreal>(a));
 #endif
-}
-
-QColor
-qcolorInitFromRgb(::std::int32_t red,
-                  ::std::int32_t green,
-                  ::std::int32_t blue,
-                  ::std::int32_t alpha)
-{
-  return QColor::fromRgb(red, green, blue, alpha);
 }
 
 QColor

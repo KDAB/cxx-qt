@@ -19,26 +19,23 @@ namespace cxxqtlib1 {
 ::std::unique_ptr<QGuiApplication>
 qguiapplicationNew(const QVector<QByteArray>& args);
 
-void
-qguiapplicationSetFont(QGuiApplication& app, const QFont& font);
+void (*qguiapplicationSetFont)(const QFont&) = QGuiApplication::setFont;
 
-QFont
-qguiapplicationFont(const QGuiApplication& app);
+QFont (*qguiapplicationFont)() = QGuiApplication::font;
 
-void
-qguiapplicationSetDesktopFileName(const QString& name);
+void (*qguiapplicationSetDesktopFileName)(const QString&) =
+  QGuiApplication::setDesktopFileName;
 
-QString
-qguiapplicationDesktopFileName();
+QString (*qguiapplicationDesktopFileName)() = QGuiApplication::desktopFileName;
 
-Qt::KeyboardModifiers
-qguiapplicationKeyboardModifiers();
+Qt::KeyboardModifiers (*qguiapplicationKeyboardModifiers)() =
+  QGuiApplication::keyboardModifiers;
 
-Qt::MouseButtons
-qguiapplicationMouseButtons();
+Qt::MouseButtons (*qguiapplicationMouseButtons)() =
+  QGuiApplication::mouseButtons;
 
-Qt::KeyboardModifiers
-qguiapplicationQueryKeyboardModifiers();
+Qt::KeyboardModifiers (*qguiapplicationQueryKeyboardModifiers)() =
+  QGuiApplication::queryKeyboardModifiers;
 
 }
 }

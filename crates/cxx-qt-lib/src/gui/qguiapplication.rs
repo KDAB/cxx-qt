@@ -83,10 +83,10 @@ mod ffi {
         fn qapplicationSetApplicationVersion(app: Pin<&mut QGuiApplication>, version: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_font"]
-        fn qguiapplicationSetFont(app: Pin<&mut QGuiApplication>, font: &QFont);
+        fn qguiapplicationSetFont(font: &QFont);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_font"]
-        fn qguiapplicationFont(app: &QGuiApplication) -> QFont;
+        fn qguiapplicationFont() -> QFont;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_library_paths"]
         fn qapplicationSetLibraryPaths(app: Pin<&mut QGuiApplication>, paths: &QStringList);
@@ -148,7 +148,7 @@ impl QGuiApplication {
 
     /// Returns the default application font.
     pub fn font(&self) -> QFont {
-        ffi::qguiapplication_font(self)
+        ffi::qguiapplication_font()
     }
 
     /// Returns a list of paths that the application will search when dynamically loading libraries.
@@ -208,7 +208,7 @@ impl QGuiApplication {
 
     /// Changes the default application font to font.
     pub fn set_application_font(self: Pin<&mut Self>, font: &QFont) {
-        ffi::qguiapplication_set_font(self, font);
+        ffi::qguiapplication_set_font(font);
     }
 
     /// Sets the list of directories to search when loading plugins with QLibrary to paths.
