@@ -15,11 +15,11 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-QTime (&qtimeCurrentTime)() = QTime::currentTime;
-QTime (&qtimeFromMSecsSinceStartOfDay)(::std::int32_t) =
+inline QTime (*qtimeCurrentTime)() = QTime::currentTime;
+inline QTime (*qtimeFromMSecsSinceStartOfDay)(::std::int32_t) =
   QTime::fromMSecsSinceStartOfDay;
 
-bool (&qtimeIsValid)(int, int, int, int) = QTime::isValid;
+inline bool (*qtimeIsValid)(int, int, int, int) = QTime::isValid;
 
 // In Qt 5 t is const-ref, in Qt 6 it is value
 ::std::int32_t
