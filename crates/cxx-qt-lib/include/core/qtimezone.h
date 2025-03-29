@@ -19,7 +19,7 @@ using QTimeZoneTimeType = QTimeZone::TimeType;
 namespace rust {
 namespace cxxqtlib1 {
 
-QList<QByteArray> (*qtimezoneAvailableTimeZoneIds)() =
+QList<QByteArray> (&qtimezoneAvailableTimeZoneIds)() =
   QTimeZone::availableTimeZoneIds;
 
 ::std::unique_ptr<QTimeZone>
@@ -36,7 +36,7 @@ qtimezoneFromOffsetSeconds(::std::int32_t offsetSeconds);
 qtimezoneFromIana(const QByteArray& ianaId);
 ::std::unique_ptr<QTimeZone>
 qtimezoneSystemTimeZone();
-QByteArray (*qtimezoneSystemTimeZoneId)() = QTimeZone::systemTimeZoneId;
+QByteArray (&qtimezoneSystemTimeZoneId)() = QTimeZone::systemTimeZoneId;
 ::std::unique_ptr<QTimeZone>
 qtimezoneUtc();
 

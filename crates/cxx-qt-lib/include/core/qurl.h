@@ -37,14 +37,14 @@ QString
 qurlFragment(const QUrl& url);
 QUrl
 qurlFromEncoded(const QByteArray& input);
-QUrl (*qurlFromLocalFile)(const QString&) = QUrl::fromLocalFile;
-QString (*qurlFromPercentEncoding)(const QByteArray&) =
+QUrl (&qurlFromLocalFile)(const QString&) = QUrl::fromLocalFile;
+QString (&qurlFromPercentEncoding)(const QByteArray&) =
   QUrl::fromPercentEncoding;
 QUrl
 qurlFromUserInput(const QString& userInput, const QString& workingDictionary);
 QString
 qurlHost(const QUrl& url);
-QStringList (*qurlIdnWhitelist)() = QUrl::idnWhitelist;
+QStringList (&qurlIdnWhitelist)() = QUrl::idnWhitelist;
 QString
 qurlPath(const QUrl& url);
 QString
@@ -57,7 +57,7 @@ void
 qurlSetFragment(QUrl& url, const QString& fragment);
 void
 qurlSetHost(QUrl& url, const QString& host);
-void (*qurlSetIdnWhitelist)(const QStringList&) = QUrl::setIdnWhitelist;
+void (&qurlSetIdnWhitelist)(const QStringList&) = QUrl::setIdnWhitelist;
 void
 qurlSetPassword(QUrl& url, const QString& password);
 void
@@ -78,7 +78,7 @@ QByteArray
 qurlToEncoded(const QUrl& url);
 QString
 qurlToQString(const QUrl& url);
-QByteArray (*qurlToPercentEncoding)(const QString&,
+QByteArray (&qurlToPercentEncoding)(const QString&,
                                     const QByteArray&,
                                     const QByteArray&) =
   QUrl::toPercentEncoding;
