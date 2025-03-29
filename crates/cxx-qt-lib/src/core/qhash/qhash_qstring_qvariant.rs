@@ -13,7 +13,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = crate::QVariant;
 
-        include!("cxx-qt-lib/qhash.h");
+        include!("cxx-qt-lib/qhash_QString_QVariant.h");
         type QHash_QString_QVariant = crate::QHash<super::QHashPair_QString_QVariant>;
     }
 

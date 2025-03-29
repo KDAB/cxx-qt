@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
 
-        include!("cxx-qt-lib/qhash.h");
+        include!("cxx-qt-lib/qhash_i32_QByteArray.h");
         type QHash_i32_QByteArray = crate::QHash<super::QHashPair_i32_QByteArray>;
     }
 
