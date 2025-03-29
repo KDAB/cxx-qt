@@ -69,6 +69,9 @@ function generate_bridge() {
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This is an auto-generated file. Do not edit.
+//! Edit instead: cxx-qt-lib/src/core/qlist/generate.sh
+
 use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
