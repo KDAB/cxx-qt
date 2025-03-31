@@ -285,6 +285,7 @@ jobs:
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
+            cmake_generator: Ninja
           - name: Ubuntu 24.04 (gcc) Qt6
             os: ubuntu-24.04
             qt_version: 6
@@ -301,6 +302,7 @@ jobs:
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
+            cmake_generator: Ninja
             packages-extra: >-
                 libgl1-mesa-dev
                 libvulkan-dev
@@ -327,6 +329,7 @@ jobs:
             cc: clang
             cxx: clang++
             rustc_wrapper: sccache
+            cmake_generator: Ninja
           - name: macOS 14 (clang) Qt6
             os: macos-14
             qt_version: 6
@@ -348,6 +351,7 @@ jobs:
             cc: clang
             cxx: clang++
             rustc_wrapper: sccache
+            cmake_generator: Ninja
 
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
@@ -366,6 +370,7 @@ jobs:
             cc: cl
             cxx: cl
             rustc_wrapper: sccache
+            cmake_generator: "\"Visual Studio 17 2022\""
           - name: Windows 2022 (MSVC2019) Qt6
             os: windows-2022
             qt_version: 6
@@ -383,6 +388,7 @@ jobs:
             cc: cl
             cxx: cl
             rustc_wrapper: sccache
+            cmake_generator: "\"Visual Studio 16 2019\""
           - name: Windows 2022 (MSVC2022) Qt6
             os: windows-2022
             qt_version: 6
@@ -400,6 +406,7 @@ jobs:
             cc: cl
             cxx: cl
             rustc_wrapper: sccache
+            cmake_generator: "\"Visual Studio 17 2022\""
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -537,7 +544,7 @@ jobs:
         cmake ${{ matrix.cmake_args }}
         -D USE_QT5=${{ matrix.qt_version == 5 }}
         -D CMAKE_BUILD_TYPE=Release
-        -G Ninja
+        -G ${{ matrix.cmake_generator }}
         -S . -B build
       env:
         RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
