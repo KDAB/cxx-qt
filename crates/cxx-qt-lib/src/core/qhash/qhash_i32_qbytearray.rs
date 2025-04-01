@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This is an auto-generated file. Do not edit.
+//! Edit instead: cxx-qt-lib/src/core/qlist/generate.sh
+
 use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
@@ -11,7 +14,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
 
-        include!("cxx-qt-lib/qhash.h");
+        include!("cxx-qt-lib/qhash_i32_QByteArray.h");
         type QHash_i32_QByteArray = crate::QHash<super::QHashPair_i32_QByteArray>;
     }
 
