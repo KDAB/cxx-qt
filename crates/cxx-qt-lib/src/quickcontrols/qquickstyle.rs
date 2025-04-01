@@ -5,9 +5,8 @@
 
 #[cxx_qt::bridge]
 mod ffi {
-    unsafe extern "C++Qt" {
+    unsafe extern "C++" {
         include!("cxx-qt-lib/qquickstyle.h");
-        #[qobject]
         type QQuickStyle;
 
         include!("cxx-qt-lib/qstring.h");

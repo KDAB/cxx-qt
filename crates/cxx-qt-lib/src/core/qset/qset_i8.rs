@@ -6,7 +6,7 @@
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qset.h");
+        include!("cxx-qt-lib/qset_i8.h");
         type QSet_i8 = crate::QSet<i8>;
     }
 
@@ -40,6 +40,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_i8, _: &i8);
         #[rust_name = "len_i8"]
         fn qsetLen(_: &QSet_i8) -> isize;
+        #[rust_name = "reserve_i8"]
+        fn qsetReserve(_: &mut QSet_i8, size: isize);
     }
 }
 
@@ -65,4 +67,8 @@ pub(crate) fn insert(s: &mut ffi::QSet_i8, value: &i8) {
 
 pub(crate) fn len(s: &ffi::QSet_i8) -> isize {
     ffi::len_i8(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_i8, size: isize) {
+    ffi::reserve_i8(s, size);
 }

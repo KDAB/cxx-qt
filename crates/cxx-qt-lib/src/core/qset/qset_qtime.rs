@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qtime.h");
         type QTime = crate::QTime;
 
-        include!("cxx-qt-lib/qset.h");
+        include!("cxx-qt-lib/qset_QTime.h");
         type QSet_QTime = crate::QSet<QTime>;
     }
 
@@ -42,6 +42,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_QTime, _: &QTime);
         #[rust_name = "len_QTime"]
         fn qsetLen(_: &QSet_QTime) -> isize;
+        #[rust_name = "reserve_QTime"]
+        fn qsetReserve(_: &mut QSet_QTime, size: isize);
     }
 }
 
@@ -67,4 +69,8 @@ pub(crate) fn insert(s: &mut ffi::QSet_QTime, value: &ffi::QTime) {
 
 pub(crate) fn len(s: &ffi::QSet_QTime) -> isize {
     ffi::len_QTime(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_QTime, size: isize) {
+    ffi::reserve_QTime(s, size);
 }

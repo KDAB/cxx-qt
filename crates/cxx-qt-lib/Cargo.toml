@@ -42,6 +42,9 @@ image-v0-25 = { version = "0.25", optional = true, package = "image", default-fe
 cxx-qt-build.workspace = true
 qt-build-utils.workspace = true
 
+[dev-dependencies]
+serde_json = "1.0.135"
+
 [features]
 full = ["qt_full", "serde", "url", "uuid", "time", "rgb", "http", "chrono", "bytes", "image-v0-24", "image-v0-25"]
 default = []

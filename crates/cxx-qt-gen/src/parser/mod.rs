@@ -140,6 +140,24 @@ pub fn require_attributes<'a>(
     Ok(output)
 }
 
+// Extract base identifier from attribute
+pub fn parse_base_type(attributes: &BTreeMap<&str, &Attribute>) -> Result<Option<Ident>> {
+    attributes
+        .get("base")
+        .map(|attr| -> Result<Ident> {
+            let expr = &attr.meta.require_name_value()?.value;
+            if let Expr::Path(path_expr) = expr {
+                Ok(path_expr.path.require_ident()?.clone())
+            } else {
+                Err(Error::new_spanned(
+                    expr,
+                    "Base must be a identifier and cannot be empty!",
+                ))
+            }
+        })
+        .transpose()
+}
+
 /// Struct representing the necessary components of a cxx mod to be passed through to generation
 pub struct PassthroughMod {
     pub(crate) items: Option<Vec<Item>>,
@@ -378,7 +396,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, Some("cxx_qt".to_owned()));
         assert_eq!(parser.cxx_qt_data.qobjects.len(), 1);
-        assert_eq!(parser.type_names.num_types(), 18);
+        assert_eq!(parser.type_names.num_types(), 19);
         assert_eq!(
             parser
                 .type_names
@@ -483,7 +501,7 @@ mod tests {
             }
         };
         let parser = Parser::from(module).unwrap();
-        assert_eq!(parser.type_names.num_types(), 22);
+        assert_eq!(parser.type_names.num_types(), 23);
         assert_eq!(
             parser
                 .type_names

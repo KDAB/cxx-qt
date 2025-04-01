@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/quuid.h");
         type QUuid = crate::QUuid;
 
-        include!("cxx-qt-lib/qset.h");
+        include!("cxx-qt-lib/qset_QUuid.h");
         type QSet_QUuid = crate::QSet<QUuid>;
     }
 
@@ -42,6 +42,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_QUuid, _: &QUuid);
         #[rust_name = "len_QUuid"]
         fn qsetLen(_: &QSet_QUuid) -> isize;
+        #[rust_name = "reserve_QUuid"]
+        fn qsetReserve(_: &mut QSet_QUuid, size: isize);
     }
 }
 
@@ -67,4 +69,8 @@ pub(crate) fn insert(s: &mut ffi::QSet_QUuid, value: &ffi::QUuid) {
 
 pub(crate) fn len(s: &ffi::QSet_QUuid) -> isize {
     ffi::len_QUuid(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_QUuid, size: isize) {
+    ffi::reserve_QUuid(s, size);
 }

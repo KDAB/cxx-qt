@@ -4,11 +4,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QByteArray, QFont, QString, QStringList, QVector};
+use crate::{KeyboardModifiers, MouseButtons, QByteArray, QFont, QString, QStringList, QVector};
 use core::pin::Pin;
-use cxx_qt::Upcast;
 
-#[cxx::bridge]
+#[cxx_qt::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
@@ -17,30 +16,26 @@ mod ffi {
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
-        include!("cxx-qt-lib/qvector.h");
+        include!("cxx-qt-lib/qvector_QByteArray.h");
         type QVector_QByteArray = crate::QVector<QByteArray>;
         include!("cxx-qt-lib/qfont.h");
         type QFont = crate::QFont;
 
-        include!("cxx-qt-lib/qguiapplication.h");
-        type QGuiApplication;
-
         include!("cxx-qt-lib/qcoreapplication.h");
-        type QCoreApplication;
+        type QCoreApplication = crate::QCoreApplication;
+    }
 
-        include!("cxx-qt/casting.h");
+    #[namespace = "Qt"]
+    unsafe extern "C++" {
+        type KeyboardModifiers = crate::KeyboardModifiers;
+        type MouseButtons = crate::MouseButtons;
+    }
 
-        #[doc(hidden)]
-        #[rust_name = "upcast_qguiapplication"]
-        #[cxx_name = "upcastPtr"]
-        #[namespace = "rust::cxxqt1"]
-        unsafe fn upcast(thiz: *const QGuiApplication) -> *const QCoreApplication;
-
-        #[doc(hidden)]
-        #[rust_name = "downcast_qcoreapplication"]
-        #[cxx_name = "downcastPtr"]
-        #[namespace = "rust::cxxqt1"]
-        unsafe fn downcast(base: *const QCoreApplication) -> *const QGuiApplication;
+    unsafe extern "C++Qt" {
+        include!("cxx-qt-lib/qguiapplication.h");
+        #[qobject]
+        #[base = QCoreApplication]
+        type QGuiApplication;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -88,10 +83,10 @@ mod ffi {
         fn qapplicationSetApplicationVersion(app: Pin<&mut QGuiApplication>, version: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_font"]
-        fn qguiapplicationSetFont(app: Pin<&mut QGuiApplication>, font: &QFont);
+        fn qguiapplicationSetFont(font: &QFont);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_font"]
-        fn qguiapplicationFont(app: &QGuiApplication) -> QFont;
+        fn qguiapplicationFont() -> QFont;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_library_paths"]
         fn qapplicationSetLibraryPaths(app: Pin<&mut QGuiApplication>, paths: &QStringList);
@@ -107,6 +102,15 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qguiapplication_desktop_file_name"]
         fn qguiapplicationDesktopFileName() -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_keyboard_modifiers"]
+        fn qguiapplicationKeyboardModifiers() -> KeyboardModifiers;
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_mouse_buttons"]
+        fn qguiapplicationMouseButtons() -> MouseButtons;
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_query_keyboard_modifiers"]
+        fn qguiapplicationQueryKeyboardModifiers() -> KeyboardModifiers;
     }
 
     // QGuiApplication is not a trivial to CXX and is not relocatable in Qt
@@ -116,19 +120,7 @@ mod ffi {
     impl UniquePtr<QGuiApplication> {}
 }
 
-pub use ffi::{
-    downcast_qcoreapplication, upcast_qguiapplication, QCoreApplication, QGuiApplication,
-};
-
-impl Upcast<QCoreApplication> for QGuiApplication {
-    unsafe fn upcast_ptr(this: *const Self) -> *const QCoreApplication {
-        upcast_qguiapplication(this)
-    }
-
-    unsafe fn from_base_ptr(base: *const QCoreApplication) -> *const Self {
-        downcast_qcoreapplication(base)
-    }
-}
+pub use ffi::QGuiApplication;
 
 impl QGuiApplication {
     /// Prepends path to the beginning of the library path list,
@@ -156,7 +148,7 @@ impl QGuiApplication {
 
     /// Returns the default application font.
     pub fn font(&self) -> QFont {
-        ffi::qguiapplication_font(self)
+        ffi::qguiapplication_font()
     }
 
     /// Returns a list of paths that the application will search when dynamically loading libraries.
@@ -216,7 +208,7 @@ impl QGuiApplication {
 
     /// Changes the default application font to font.
     pub fn set_application_font(self: Pin<&mut Self>, font: &QFont) {
-        ffi::qguiapplication_set_font(self, font);
+        ffi::qguiapplication_set_font(font);
     }
 
     /// Sets the list of directories to search when loading plugins with QLibrary to paths.
@@ -243,5 +235,40 @@ impl QGuiApplication {
     /// Returns the application desktop file name.
     pub fn desktop_file_name() -> QString {
         ffi::qguiapplication_desktop_file_name()
+    }
+
+    /// Returns the current state of the modifier keys on the keyboard. The current state is updated
+    /// synchronously as the event queue is emptied of events that will spontaneously change the
+    /// keyboard state (QEvent::KeyPress and QEvent::KeyRelease events).
+    ///
+    /// It should be noted this may not reflect the actual keys held on the input device at the time
+    /// of calling but rather the modifiers as last reported in an event.
+    /// If no keys are being held Qt::NoModifier is returned.
+    pub fn keyboard_modifiers(&self) -> KeyboardModifiers {
+        ffi::qguiapplication_keyboard_modifiers()
+    }
+
+    /// Returns the current state of the buttons on the mouse. The current state is updated
+    /// synchronously as the event queue is emptied of events that will spontaneously change the
+    /// mouse state (QEvent::MouseButtonPress and QEvent::MouseButtonRelease events).
+    ///
+    /// It should be noted this may not reflect the actual buttons held on the input device at the
+    /// time of calling but rather the mouse buttons as last reported in one of the above events.
+    /// If no mouse buttons are being held Qt::NoButton is returned.
+    pub fn mouse_buttons(&self) -> MouseButtons {
+        ffi::qguiapplication_mouse_buttons()
+    }
+
+    /// Queries and returns the state of the modifier keys on the keyboard. Unlike
+    /// keyboardModifiers, this method returns the actual keys held on the input device at the time
+    /// of calling the method.
+    ///
+    /// It does not rely on the keypress events having been received by this process, which makes it
+    /// possible to check the modifiers while moving a window, for instance. Note that in most
+    /// cases, you should use keyboardModifiers(), which is faster and more accurate since it
+    /// contains the state of the modifiers as they were when the currently processed event was
+    /// received.
+    pub fn query_keyboard_modifiers(&self) -> KeyboardModifiers {
+        ffi::qguiapplication_query_keyboard_modifiers()
     }
 }

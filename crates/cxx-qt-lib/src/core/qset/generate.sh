@@ -10,6 +10,24 @@ set -e
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 
+function generate_qset_header(){
+tee "$SCRIPTPATH/../../../include/core/qset/qset_$1.h" <<EOF
+// clang-format off
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// clang-format on
+// SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+//! This is an auto-generated file. Do not edit.
+//! Edit instead: cxx-qt-lib/src/core/qset/generate.sh
+#pragma once
+#include "qset_private.h"
+$3
+using QSet_$1 = QSet<$2>;
+EOF
+}
+
 function generate_bridge_primitive() {
     tee "$SCRIPTPATH/qset_$1.rs" <<EOF
 // SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
@@ -20,7 +38,7 @@ function generate_bridge_primitive() {
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qset.h");
+        include!("cxx-qt-lib/qset_$1.h");
         type QSet_$1 = crate::QSet<$1>;
     }
 
@@ -54,6 +72,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
         fn qsetLen(_: &QSet_$1) -> isize;
+        #[rust_name = "reserve_$1"]
+        fn qsetReserve(_: &mut QSet_$1, size: isize);
     }
 }
 
@@ -80,6 +100,10 @@ pub(crate) fn insert(s: &mut ffi::QSet_$1, value: &$1) {
 pub(crate) fn len(s: &ffi::QSet_$1) -> isize {
     ffi::len_$1(s)
 }
+
+pub(crate) fn reserve(s: &mut ffi::QSet_$1, size: isize) {
+  ffi::reserve_$1(s, size);
+}
 EOF
     rustfmt "$SCRIPTPATH/qset_$1.rs"
 }
@@ -97,7 +121,7 @@ pub mod ffi {
         include!("cxx-qt-lib/$2.h");
         type $1 = crate::$1;
 
-        include!("cxx-qt-lib/qset.h");
+        include!("cxx-qt-lib/qset_$1.h");
         type QSet_$1 = crate::QSet<$1>;
     }
 
@@ -130,6 +154,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_$1, _: &$1);
         #[rust_name = "len_$1"]
         fn qsetLen(_: &QSet_$1) -> isize;
+        #[rust_name = "reserve_$1"]
+        fn qsetReserve(_: &mut QSet_$1, size: isize);
     }
 }
 
@@ -156,9 +182,33 @@ pub(crate) fn insert(s: &mut ffi::QSet_$1, value: &ffi::$1) {
 pub(crate) fn len(s: &ffi::QSet_$1) -> isize {
     ffi::len_$1(s)
 }
+
+pub(crate) fn reserve(s: &mut ffi::QSet_$1, size: isize) {
+  ffi::reserve_$1(s, size);
+}
 EOF
     rustfmt "$SCRIPTPATH/qset_$2.rs"
 }
+
+generate_qset_header "bool" "bool" 
+generate_qset_header "f32" "float"
+generate_qset_header "f64" "double"
+generate_qset_header "i8" "::std::int8_t"
+generate_qset_header "i16" "::std::int16_t"
+generate_qset_header "i32" "::std::int32_t"
+generate_qset_header "i64" "std::int64_t"
+generate_qset_header "QByteArray" "::QByteArray" "#include <QtCore/QByteArray>"
+generate_qset_header "QDate" "::QDate" "#include <QtCore/QDate>"
+generate_qset_header "QDateTime" "::QDateTime" "#include <QtCore/QDateTime>"
+generate_qset_header "QPersistentModelIndex" "::QPersistentModelIndex" "#include <QtCore/QPersistentModelIndex>"
+generate_qset_header "QString" "::QString" "#include <QtCore/QString>"
+generate_qset_header "QTime" "::QTime" "#include <QtCore/QTime>"
+generate_qset_header "QUuid" "::QUuid" "#include <QtCore/QUuid>"
+generate_qset_header "QUrl" "::QUrl" "#include <QtCore/QUrl>"
+generate_qset_header "u8" "::std::uint8_t"
+generate_qset_header "u16" "::std::uint16_t"
+generate_qset_header "u32" "::std::uint32_t"
+generate_qset_header "u64" "::std::uint64_t"
 
 generate_bridge_primitive "bool"
 generate_bridge_primitive "f32"

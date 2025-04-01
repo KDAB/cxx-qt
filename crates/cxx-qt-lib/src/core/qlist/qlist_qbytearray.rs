@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
 
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QByteArray.h");
         type QList_QByteArray = crate::QList<QByteArray>;
     }
 

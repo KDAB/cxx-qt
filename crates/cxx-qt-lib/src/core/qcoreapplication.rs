@@ -7,7 +7,7 @@
 use crate::{QByteArray, QString, QStringList, QVector};
 use core::pin::Pin;
 
-#[cxx::bridge]
+#[cxx_qt::bridge]
 mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
@@ -16,7 +16,7 @@ mod ffi {
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
-        include!("cxx-qt-lib/qvector.h");
+        include!("cxx-qt-lib/qvector_QByteArray.h");
         type QVector_QByteArray = crate::QVector<QByteArray>;
 
         include!("cxx-qt-lib/qcoreapplication.h");
@@ -28,6 +28,13 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qcoreapplication_new"]
         fn qcoreapplicationNew(args: &QVector_QByteArray) -> UniquePtr<QCoreApplication>;
+    }
+
+    unsafe extern "C++Qt" {
+        #[doc(hidden)]
+        #[rust_name = "about_to_quit"]
+        #[qsignal]
+        pub(self) fn aboutToQuit(self: Pin<&mut QCoreApplication>);
     }
 
     // These are all static, so we need to create bindings until CXX supports statics

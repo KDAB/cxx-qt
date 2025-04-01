@@ -28,18 +28,19 @@ struct IsRelocatable<QDateTime> : ::std::true_type
 namespace rust {
 namespace cxxqtlib1 {
 
-QDateTime
-qdatetimeCurrentDateTime();
-QDateTime
-qdatetimeCurrentDateTimeUtc();
-qint64
-qdatetimeCurrentMSecsSinceEpoch();
-qint64
-qdatetimeCurrentSecsSinceEpoch();
-QDateTime
-qdatetimeFromMSecsSinceEpoch(qint64 msecs, const QTimeZone& timeZone);
-QDateTime
-qdatetimeFromSecsSinceEpoch(qint64 secs, const QTimeZone& timeZone);
+inline QDateTime (*qdatetimeCurrentDateTime)() = QDateTime::currentDateTime;
+inline QDateTime (*qdatetimeCurrentDateTimeUtc)() =
+  QDateTime::currentDateTimeUtc;
+inline qint64 (*qdatetimeCurrentMSecsSinceEpoch)() =
+  QDateTime::currentMSecsSinceEpoch;
+inline qint64 (*qdatetimeCurrentSecsSinceEpoch)() =
+  QDateTime::currentSecsSinceEpoch;
+
+inline QDateTime (*qdatetimeFromMSecsSinceEpoch)(qint64, const QTimeZone&) =
+  QDateTime::fromMSecsSinceEpoch;
+inline QDateTime (*qdatetimeFromSecsSinceEpoch)(qint64, const QTimeZone&) =
+  QDateTime::fromSecsSinceEpoch;
+
 void
 qdatetimeSetDate(QDateTime& datetime, QDate date);
 void

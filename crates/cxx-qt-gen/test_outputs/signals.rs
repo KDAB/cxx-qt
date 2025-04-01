@@ -30,7 +30,7 @@ mod ffi {
         #[doc = "\n"]
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
-        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/concepts/generated_qobject.html>"]
         #[namespace = "cxx_qt::my_object"]
         type MyObject;
     }
@@ -181,11 +181,23 @@ mod ffi {
         #[namespace = "rust::cxxqt1"]
         fn cxx_qt_ffi_MyObject_unsafeRustMut(outer: Pin<&mut MyObject>) -> Pin<&mut MyObjectRust>;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QTimer_upcastPtr(thiz: *const QTimer) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QTimer_downcastPtr(base: *const QObject) -> *const QTimer;
+    }
     unsafe extern "C++" {
-        include ! (< QtCore / QTimer >);
         #[namespace = "cxx_qt::my_object"]
         #[doc = " QTimer"]
         type QTimer;
+    }
+    unsafe extern "C++" {
+        include ! (< QtCore / QTimer >);
     }
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -469,6 +481,14 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         ffi::cxx_qt_ffi_MyObject_unsafeRustMut(self)
+    }
+}
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QTimer {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_QTimer_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_QTimer_downcastPtr(base)
     }
 }
 impl ffi::QTimer {

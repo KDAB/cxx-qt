@@ -60,7 +60,7 @@ mod ffi {
         #[doc = "\n"]
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
-        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/concepts/generated_qobject.html>"]
         #[cfg(enabled)]
         type QObjectEnabled;
     }
@@ -90,9 +90,9 @@ mod ffi {
         #[cfg(enabled)]
         fn inherit_enabled(self: &QObjectEnabled);
     }
+    #[cfg(not(enabled))]
     unsafe extern "C++" {
         #[cxx_name = "signal_disabled"]
-        #[cfg(not(enabled))]
         fn signal_disabled(self: Pin<&mut QObjectEnabled>);
     }
     #[cfg(not(enabled))]
@@ -113,6 +113,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectEnabled_signal_handler_signal_disabled(
@@ -124,9 +125,9 @@ mod ffi {
             self_value: Pin<&mut QObjectEnabled>,
         );
     }
+    #[cfg(enabled)]
     unsafe extern "C++" {
         #[cxx_name = "signal_enabled"]
-        #[cfg(enabled)]
         fn signal_enabled(self: Pin<&mut QObjectEnabled>);
     }
     #[cfg(enabled)]
@@ -147,6 +148,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectEnabled_signal_handler_signal_enabled(
@@ -200,7 +202,7 @@ mod ffi {
         #[doc = "\n"]
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
-        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/qobject/generated-qobject.html>"]
+        #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/concepts/generated_qobject.html>"]
         #[cfg(not(enabled))]
         type QObjectDisabled;
     }
@@ -230,9 +232,9 @@ mod ffi {
         #[cfg(enabled)]
         fn inherit_enabled(self: &QObjectDisabled);
     }
+    #[cfg(not(enabled))]
     unsafe extern "C++" {
         #[cxx_name = "signal_disabled"]
-        #[cfg(not(enabled))]
         fn signal_disabled(self: Pin<&mut QObjectDisabled>);
     }
     #[cfg(not(enabled))]
@@ -253,6 +255,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectDisabled_signal_handler_signal_disabled(
@@ -264,9 +267,9 @@ mod ffi {
             self_value: Pin<&mut QObjectDisabled>,
         );
     }
+    #[cfg(enabled)]
     unsafe extern "C++" {
         #[cxx_name = "signal_enabled"]
-        #[cfg(enabled)]
         fn signal_enabled(self: Pin<&mut QObjectDisabled>);
     }
     #[cfg(enabled)]
@@ -287,6 +290,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectDisabled_signal_handler_signal_enabled(
@@ -334,13 +338,27 @@ mod ffi {
             outer: Pin<&mut QObjectDisabled>,
         ) -> Pin<&mut QObjectDisabledRust>;
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectExternEnabled_upcastPtr(
+            thiz: *const QObjectExternEnabled,
+        ) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectExternEnabled_downcastPtr(
+            base: *const QObject,
+        ) -> *const QObjectExternEnabled;
+    }
     unsafe extern "C++" {
         #[cfg(enabled)]
         type QObjectExternEnabled;
     }
+    #[cfg(not(enabled))]
     unsafe extern "C++" {
         #[cxx_name = "signal_disabled1"]
-        #[cfg(not(enabled))]
         fn signal_disabled1(self: Pin<&mut QObjectExternEnabled>);
     }
     #[cfg(not(enabled))]
@@ -361,6 +379,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectExternEnabled_signal_handler_signal_disabled1(
@@ -372,9 +391,9 @@ mod ffi {
             self_value: Pin<&mut QObjectExternEnabled>,
         );
     }
+    #[cfg(enabled)]
     unsafe extern "C++" {
         #[cxx_name = "signal_enabled1"]
-        #[cfg(enabled)]
         fn signal_enabled1(self: Pin<&mut QObjectExternEnabled>);
     }
     #[cfg(enabled)]
@@ -395,6 +414,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectExternEnabled_signal_handler_signal_enabled1(
@@ -406,13 +426,27 @@ mod ffi {
             self_value: Pin<&mut QObjectExternEnabled>,
         );
     }
+    extern "C++" {
+        #[doc(hidden)]
+        #[cxx_name = "upcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectExternDisabled_upcastPtr(
+            thiz: *const QObjectExternDisabled,
+        ) -> *const QObject;
+        #[doc(hidden)]
+        #[cxx_name = "downcastPtr"]
+        #[namespace = "rust::cxxqt1"]
+        unsafe fn cxx_qt_ffi_QObjectExternDisabled_downcastPtr(
+            base: *const QObject,
+        ) -> *const QObjectExternDisabled;
+    }
     unsafe extern "C++" {
         #[cfg(not(enabled))]
         type QObjectExternDisabled;
     }
+    #[cfg(not(enabled))]
     unsafe extern "C++" {
         #[cxx_name = "signal_disabled2"]
-        #[cfg(not(enabled))]
         fn signal_disabled2(self: Pin<&mut QObjectExternDisabled>);
     }
     #[cfg(not(enabled))]
@@ -433,6 +467,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectExternDisabled_signal_handler_signal_disabled2(
@@ -444,9 +479,9 @@ mod ffi {
             self_value: Pin<&mut QObjectExternDisabled>,
         );
     }
+    #[cfg(enabled)]
     unsafe extern "C++" {
         #[cxx_name = "signal_enabled2"]
-        #[cfg(enabled)]
         fn signal_enabled2(self: Pin<&mut QObjectExternDisabled>);
     }
     #[cfg(enabled)]
@@ -467,6 +502,7 @@ mod ffi {
         ) -> CxxQtQMetaObjectConnection;
     }
     #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
     extern "Rust" {
         #[doc(hidden)]
         fn drop_QObjectExternDisabled_signal_handler_signal_enabled2(
@@ -842,6 +878,14 @@ impl ::cxx_qt::CxxQtType for ffi::QObjectDisabled {
         ffi::cxx_qt_ffi_QObjectDisabled_unsafeRustMut(self)
     }
 }
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectExternEnabled {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_QObjectExternEnabled_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_QObjectExternEnabled_downcastPtr(base)
+    }
+}
 #[cfg(not(enabled))]
 impl ffi::QObjectExternEnabled {
     #[doc = "Connect the given function pointer to the signal "]
@@ -1004,6 +1048,14 @@ cxx_qt::static_assertions::assert_eq_size!(
     >,
     [usize; 2]
 );
+impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectExternDisabled {
+    unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
+        ffi::cxx_qt_ffi_QObjectExternDisabled_upcastPtr(this)
+    }
+    unsafe fn from_base_ptr(base: *const ::cxx_qt::QObject) -> *const Self {
+        ffi::cxx_qt_ffi_QObjectExternDisabled_downcastPtr(base)
+    }
+}
 #[cfg(not(enabled))]
 impl ffi::QObjectExternDisabled {
     #[doc = "Connect the given function pointer to the signal "]

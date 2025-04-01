@@ -179,6 +179,7 @@ fn main() {
         "core/qstringlist",
         "core/qt",
         "core/qtime",
+        "core/qtlogging",
         "core/qtypes",
         "core/qurl",
         "core/quuid",
@@ -307,6 +308,7 @@ fn main() {
         "core/qstring",
         "core/qstringlist",
         "core/qtime",
+        "core/qtlogging",
         "core/qtypes",
         "core/qurl",
         "core/quuid",
@@ -338,10 +340,6 @@ fn main() {
 
     if qt_qml_enabled() {
         cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
-    }
-
-    if qt_quickcontrols_enabled() {
-        cpp_files.extend(["quickcontrols/qquickstyle"]);
     }
 
     if !emscripten_targeted {

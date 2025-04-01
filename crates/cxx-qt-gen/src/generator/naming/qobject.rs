@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::parser::externqobject::ParsedExternQObject;
 use crate::{
     naming::{Name, TypeNames},
     parser::qobject::ParsedQObject,
@@ -26,6 +27,14 @@ impl QObjectNames {
     /// For a given QObject, create the names associated with it for generation.
     pub fn from_qobject(qobject: &ParsedQObject, type_names: &TypeNames) -> Result<Self> {
         Self::from_name_and_ident(&qobject.name, &qobject.rust_type, type_names)
+    }
+
+    /// For a given ExternQObject, create the names associated with it for generation.
+    pub fn from_extern_qobject(
+        qobject: &ParsedExternQObject,
+        type_names: &TypeNames,
+    ) -> Result<Self> {
+        Self::from_name_and_ident(&qobject.name, qobject.name.rust_unqualified(), type_names)
     }
 
     /// From the QObject name and Rust struct ident, create the names needed for generation.

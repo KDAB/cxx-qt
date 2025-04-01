@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qset.h");
+        include!("cxx-qt-lib/qset_QString.h");
         type QSet_QString = crate::QSet<QString>;
     }
 
@@ -42,6 +42,8 @@ pub mod ffi {
         fn qsetInsert(_: &mut QSet_QString, _: &QString);
         #[rust_name = "len_QString"]
         fn qsetLen(_: &QSet_QString) -> isize;
+        #[rust_name = "reserve_QString"]
+        fn qsetReserve(_: &mut QSet_QString, size: isize);
     }
 }
 
@@ -67,4 +69,8 @@ pub(crate) fn insert(s: &mut ffi::QSet_QString, value: &ffi::QString) {
 
 pub(crate) fn len(s: &ffi::QSet_QString) -> isize {
     ffi::len_QString(s)
+}
+
+pub(crate) fn reserve(s: &mut ffi::QSet_QString, size: isize) {
+    ffi::reserve_QString(s, size);
 }

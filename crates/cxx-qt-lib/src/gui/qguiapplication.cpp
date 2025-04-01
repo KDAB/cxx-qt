@@ -29,29 +29,5 @@ qguiapplicationNew(const QVector<QByteArray>& args)
   return ptr;
 }
 
-void
-qguiapplicationSetFont(QGuiApplication& app, const QFont& font)
-{
-  app.setFont(font);
-}
-
-QFont
-qguiapplicationFont(const QGuiApplication& app)
-{
-  return app.font();
-}
-
-void
-qguiapplicationSetDesktopFileName(const QString& name)
-{
-  QGuiApplication::setDesktopFileName(name);
-}
-
-QString
-qguiapplicationDesktopFileName()
-{
-  return QGuiApplication::desktopFileName();
-}
-
 }
 }

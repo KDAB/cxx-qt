@@ -34,35 +34,30 @@ namespace cxxqtlib1 {
 using QColorNameFormat = QColor::NameFormat;
 using QColorSpec = QColor::Spec;
 
-QStringList
-qcolorColorNames();
-QColor
-qcolorInitFromCmyk(::std::int32_t c,
-                   ::std::int32_t m,
-                   ::std::int32_t y,
-                   ::std::int32_t k,
-                   ::std::int32_t a);
+inline QStringList (*qcolorColorNames)() = QColor::colorNames;
+inline QColor (*qcolorInitFromCmyk)(::std::int32_t,
+                                    ::std::int32_t,
+                                    ::std::int32_t,
+                                    ::std::int32_t,
+                                    ::std::int32_t) = QColor::fromCmyk;
 QColor
 qcolorInitFromCmykF(float c, float m, float y, float k, float a);
-QColor
-qcolorInitFromHsl(::std::int32_t h,
-                  ::std::int32_t s,
-                  ::std::int32_t l,
-                  ::std::int32_t a);
+inline QColor (*qcolorInitFromHsl)(::std::int32_t,
+                                   ::std::int32_t,
+                                   ::std::int32_t,
+                                   ::std::int32_t) = QColor::fromHsl;
 QColor
 qcolorInitFromHslF(float h, float s, float l, float a);
-QColor
-qcolorInitFromHsv(::std::int32_t h,
-                  ::std::int32_t s,
-                  ::std::int32_t v,
-                  ::std::int32_t a);
+inline QColor (*qcolorInitFromHsv)(::std::int32_t,
+                                   ::std::int32_t,
+                                   ::std::int32_t,
+                                   ::std::int32_t) = QColor::fromHsv;
 QColor
 qcolorInitFromHsvF(float h, float s, float v, float a);
-QColor
-qcolorInitFromRgb(::std::int32_t red,
-                  ::std::int32_t green,
-                  ::std::int32_t blue,
-                  ::std::int32_t alpha);
+inline QColor (*qcolorInitFromRgb)(::std::int32_t,
+                                   ::std::int32_t,
+                                   ::std::int32_t,
+                                   ::std::int32_t) = QColor::fromRgb;
 QColor
 qcolorInitFromRgbF(float red, float green, float blue, float alpha);
 

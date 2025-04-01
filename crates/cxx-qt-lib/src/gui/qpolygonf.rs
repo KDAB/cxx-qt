@@ -19,6 +19,9 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        include!("cxx-qt-lib/qvector_QPointF.h");
+        type QVector_QPointF = crate::QVector<QPointF>;
+
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qrectf.h");
@@ -27,9 +30,6 @@ mod ffi {
         type QPolygon = crate::QPolygon;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
-
-        include!("cxx-qt-lib/qvector.h");
-        type QVector_QPointF = crate::QVector<QPointF>;
 
         include!("cxx-qt-lib/qpolygonf.h");
         type QPolygonF = super::QPolygonF;
