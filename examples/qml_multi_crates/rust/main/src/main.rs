@@ -5,8 +5,10 @@
 
 extern crate qml_multi_crates;
 
+use std::pin::Pin;
+
 use cxx_qt::Upcast;
-use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
+use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QQmlEngine, QUrl};
 
 fn main() {
     cxx_qt::init_crate!(qml_multi_crates);
@@ -21,9 +23,9 @@ fn main() {
     }
 
     if let Some(engine) = engine.as_mut() {
+        let engine: Pin<&mut QQmlEngine> = engine.upcast_pin();
         // Listen to a signal from the QML Engine
         engine
-            .upcast_pin()
             .on_quit(|_| {
                 println!("QML Quit!");
             })
