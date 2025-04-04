@@ -27,24 +27,22 @@ pub mod qobject {
         #[qproperty(QString, title)]
         #[qproperty(QUrl, url)]
         type ThreadingWebsite = super::ThreadingWebsiteRust;
+
+        /// Swap the URL between kdab.com and github.com
+        #[qinvokable]
+        #[cxx_name = "changeUrl"]
+        fn change_url(self: Pin<&mut Self>);
+
+        /// Simulate delay of a network request to retrieve the title of the website
+        #[qinvokable]
+        #[cxx_name = "fetchTitle"]
+        fn fetch_title(self: Pin<&mut Self>);
     }
 
     // ANCHOR: book_threading_trait
     // Enabling threading on the qobject
     impl cxx_qt::Threading for ThreadingWebsite {}
     // ANCHOR_END: book_threading_trait
-
-    extern "RustQt" {
-        /// Swap the URL between kdab.com and github.com
-        #[qinvokable]
-        #[cxx_name = "changeUrl"]
-        fn change_url(self: Pin<&mut ThreadingWebsite>);
-
-        /// Simulate delay of a network request to retrieve the title of the website
-        #[qinvokable]
-        #[cxx_name = "fetchTitle"]
-        fn fetch_title(self: Pin<&mut ThreadingWebsite>);
-    }
 }
 
 use core::pin::Pin;
