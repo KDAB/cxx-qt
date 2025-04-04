@@ -68,6 +68,11 @@ impl ParsedCxxQtData {
         }
     }
 
+    /// Inline any `Self` types in the methods signatures with the Ident of a qobject passed in
+    ///
+    /// If there are unresolved methods in the list, but inline is false, it will error,
+    /// as the self inlining is only available if there is exactly one `QObject` in the block,
+    /// and this indicates that no inlining can be done, but some `Self` types were present.
     fn try_inline_self_types(
         inline: bool,
         type_to_inline: &Option<Ident>,
