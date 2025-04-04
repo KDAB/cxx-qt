@@ -46,32 +46,32 @@ pub mod qobject {
 
         /// Reset all the containers
         #[qinvokable]
-        fn reset(self: Pin<&mut RustContainers>);
+        fn reset(self: Pin<&mut Self>);
 
         /// Append the given number to the vector container
         #[qinvokable]
         #[cxx_name = "appendVector"]
-        fn append_vector(self: Pin<&mut RustContainers>, value: i32);
+        fn append_vector(self: Pin<&mut Self>, value: i32);
 
         /// Append the given number to the list container
         #[qinvokable]
         #[cxx_name = "appendList"]
-        fn append_list(self: Pin<&mut RustContainers>, value: i32);
+        fn append_list(self: Pin<&mut Self>, value: i32);
 
         /// Insert the given number into the set container
         #[qinvokable]
         #[cxx_name = "insertSet"]
-        fn insert_set(self: Pin<&mut RustContainers>, value: i32);
+        fn insert_set(self: Pin<&mut Self>, value: i32);
 
         /// Insert the given string and variant to the hash container
         #[qinvokable]
         #[cxx_name = "insertHash"]
-        fn insert_hash(self: Pin<&mut RustContainers>, key: QString, value: QVariant);
+        fn insert_hash(self: Pin<&mut Self>, key: QString, value: QVariant);
 
         /// Insert the given string and variant to the map container
         #[qinvokable]
         #[cxx_name = "insertMap"]
-        fn insert_map(self: Pin<&mut RustContainers>, key: QString, value: QVariant);
+        fn insert_map(self: Pin<&mut Self>, key: QString, value: QVariant);
     }
 }
 

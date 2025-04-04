@@ -8,6 +8,7 @@ use crate::parser::{
 };
 use core::ops::Deref;
 use quote::format_ident;
+use std::ops::DerefMut;
 use syn::{Attribute, ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
@@ -56,6 +57,12 @@ impl Deref for ParsedInheritedMethod {
     }
 }
 
+impl DerefMut for ParsedInheritedMethod {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.method_fields
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -68,7 +75,6 @@ mod tests {
             |item| ParsedInheritedMethod::parse(item, CaseConversion::none()) =>
 
             // Missing self type
-            { fn test(&self); }
             { fn test(self: &mut T); }
             // Pointer types
             { fn test(self: *const T); }
@@ -87,6 +93,14 @@ mod tests {
         assert!(ParsedInheritedMethod::parse(
             parse_quote! {
                 fn test(self: &T);
+            },
+            CaseConversion::none()
+        )
+        .is_ok());
+        // T by ref is ok in this shorthand (provided the block has one QObject)
+        assert!(ParsedInheritedMethod::parse(
+            parse_quote! {
+                fn test(&self);
             },
             CaseConversion::none()
         )
