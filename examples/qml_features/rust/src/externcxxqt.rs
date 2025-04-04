@@ -36,15 +36,12 @@ pub mod ffi {
 
         #[qinvokable]
         #[cxx_name = "connectToExternal"]
-        unsafe fn connect_to_external(
-            self: Pin<&mut ExternalCxxQtHelper>,
-            external: *mut ExternalQObject,
-        );
+        unsafe fn connect_to_external(self: Pin<&mut Self>, external: *mut ExternalQObject);
 
         #[qinvokable]
         #[cxx_name = "triggerOnExternal"]
         unsafe fn trigger_on_external(
-            self: Pin<&mut ExternalCxxQtHelper>,
+            self: Pin<&mut Self>,
             external: *mut ExternalQObject,
             amount: u32,
         );
