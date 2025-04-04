@@ -6,6 +6,7 @@
 use super::qnamespace::ParsedQNamespace;
 use super::trait_impl::TraitImpl;
 use crate::naming::cpp::err_unsupported_item;
+use crate::parser::method::MethodFields;
 use crate::parser::CaseConversion;
 use crate::{
     parser::{
@@ -17,6 +18,8 @@ use crate::{
         path::path_compare_str,
     },
 };
+use quote::format_ident;
+use std::ops::DerefMut;
 use syn::{
     spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl,
     ItemMacro, Meta, Result,
@@ -63,6 +66,33 @@ impl ParsedCxxQtData {
             module_ident,
             namespace,
         }
+    }
+
+    fn try_inline_self_types(
+        inline: bool,
+        type_to_inline: &Option<Ident>,
+        invokables: &mut [impl DerefMut<Target = MethodFields>],
+    ) -> Result<()> {
+        for method in invokables.iter_mut() {
+            if method.self_unresolved {
+                if inline {
+                    if let Some(inline_type) = type_to_inline.clone() {
+                        method.qobject_ident = inline_type;
+                    } else {
+                        return Err(Error::new(
+                            method.method.span(),
+                            "Expected a type to inline, no `qobject` typename was passed!",
+                        ));
+                    }
+                } else {
+                    return Err(Error::new(
+                        method.method.span(),
+                        "`Self` type can only be inferred if the extern block contains only one `qobject`.",
+                    ));
+                }
+            }
+        }
+        Ok(())
     }
 
     /// Determine if the given [syn::Item] is a CXX-Qt related item
@@ -139,6 +169,12 @@ impl ParsedCxxQtData {
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
 
+        let mut qobjects = vec![];
+
+        let mut methods = vec![];
+        let mut signals = vec![];
+        let mut inherited = vec![];
+
         let namespace = attrs
             .get("namespace")
             .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
@@ -159,7 +195,7 @@ impl ParsedCxxQtData {
                             return Err(Error::new(foreign_fn.span(), "block must be declared `unsafe extern \"RustQt\"` if it contains any safe-to-call #[inherit] qsignals"));
                         }
 
-                        self.signals.push(parsed_signal_method);
+                        signals.push(parsed_signal_method);
 
                         // Test if the function is an inheritance method
                         //
@@ -175,7 +211,7 @@ impl ParsedCxxQtData {
                         let parsed_inherited_method =
                             ParsedInheritedMethod::parse(foreign_fn, auto_case)?;
 
-                        self.inherited_methods.push(parsed_inherited_method);
+                        inherited.push(parsed_inherited_method);
                         // Remaining methods are either C++ methods or invokables
                     } else {
                         let parsed_method = ParsedMethod::parse(
@@ -183,7 +219,7 @@ impl ParsedCxxQtData {
                             auto_case,
                             foreign_mod.unsafety.is_some(),
                         )?;
-                        self.methods.push(parsed_method);
+                        methods.push(parsed_method);
                     }
                 }
                 ForeignItem::Verbatim(tokens) => {
@@ -199,12 +235,28 @@ impl ParsedCxxQtData {
 
                     // Note that we assume a compiler error will occur later
                     // if you had two structs with the same name
-                    self.qobjects.push(qobject);
+                    qobjects.push(qobject);
                 }
-                // Const Macro, Type are unsupported in extern "RustQt" for now
+                // Const, Macro, Type are unsupported in extern "RustQt" for now
                 _ => return Err(err_unsupported_item(&item)),
             }
         }
+
+        // If there is exaclty one qobject in the block, it can be inlined as a self type.
+        let inline_self = qobjects.len() == 1;
+        let inline_ident = qobjects
+            .last()
+            .map(|obj| format_ident!("{}", obj.name.cxx_unqualified()));
+
+        Self::try_inline_self_types(inline_self, &inline_ident, &mut methods)?;
+        Self::try_inline_self_types(inline_self, &inline_ident, &mut signals)?;
+        Self::try_inline_self_types(inline_self, &inline_ident, &mut inherited)?;
+
+        self.qobjects.extend(qobjects);
+        self.methods.extend(methods);
+        self.signals.extend(signals);
+        self.inherited_methods.extend(inherited);
+
         Ok(())
     }
 
@@ -734,5 +786,82 @@ mod tests {
                 .namespace(),
             Some("b")
         );
+    }
+
+    #[test]
+    fn test_self_inlining_ref() {
+        let mut parsed_cxxqtdata = ParsedCxxQtData::new(format_ident!("ffi"), None);
+        let extern_rust_qt: Item = parse_quote! {
+            unsafe extern "RustQt" {
+                #[qobject]
+                type MyObject = super::T;
+
+                fn my_method(&self);
+
+                #[inherit]
+                fn my_inherited_method(&self);
+            }
+        };
+
+        parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
+    }
+
+    #[test]
+    fn test_self_inlining_pin() {
+        let mut parsed_cxxqtdata = ParsedCxxQtData::new(format_ident!("ffi"), None);
+        let extern_rust_qt: Item = parse_quote! {
+            unsafe extern "RustQt" {
+                #[qobject]
+                type MyObject = super::T;
+
+                #[qsignal]
+                fn my_signal(self: Pin<&mut Self>);
+            }
+        };
+
+        parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
+    }
+
+    #[test]
+    fn test_self_inlining_methods_invalid() {
+        assert_parse_errors! {
+            |item| ParsedCxxQtData::new(format_ident!("ffi"), None).parse_cxx_qt_item(item) =>
+            // No QObject in block
+            {
+                extern "RustQt" {
+                    fn my_method(&self);
+                }
+            }
+
+            {
+                extern "RustQt" {
+                    fn my_method(self: Pin<&mut Self>);
+                }
+            }
+            // More than 1 QObjects in block
+            {
+                extern "RustQt" {
+                    #[qobject]
+                    type MyObject = super::T;
+
+                    #[qobject]
+                    type MyOtherObject = super::S;
+
+                    fn my_method(&self);
+                }
+            }
+        }
+    }
+
+    #[test]
+    fn test_invalid_inline_call() {
+        let method_sig = parse_quote! {
+            fn test(&self);
+        };
+        let mut methods = vec![ParsedMethod::mock_qinvokable(&method_sig)];
+
+        // If inlining is set to take place, an Ident is required to inline, here it is `None`
+        let data = ParsedCxxQtData::try_inline_self_types(true, &None, &mut methods);
+        assert!(data.is_err());
     }
 }

@@ -8,6 +8,7 @@ use crate::{
     syntax::path::path_compare_str,
 };
 use core::ops::Deref;
+use std::ops::DerefMut;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
 
 #[derive(Clone)]
@@ -71,6 +72,12 @@ impl Deref for ParsedSignal {
 
     fn deref(&self) -> &Self::Target {
         &self.method_fields
+    }
+}
+
+impl DerefMut for ParsedSignal {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.method_fields
     }
 }
 

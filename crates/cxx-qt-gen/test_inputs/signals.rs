@@ -24,11 +24,11 @@ mod ffi {
         type MyObject = super::MyObjectRust;
 
         #[qsignal]
-        fn ready(self: Pin<&mut MyObject>);
+        fn ready(self: Pin<&mut Self>);
 
         #[qsignal]
         fn data_changed(
-            self: Pin<&mut MyObject>,
+            self: Pin<&mut Self>,
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
@@ -39,7 +39,7 @@ mod ffi {
         #[inherit]
         #[qsignal]
         fn base_class_new_data(
-            self: Pin<&mut MyObject>,
+            self: Pin<&mut Self>,
             first: i32,
             second: UniquePtr<Opaque>,
             third: QPoint,
@@ -47,6 +47,6 @@ mod ffi {
         );
 
         #[qinvokable]
-        fn invokable(self: Pin<&mut MyObject>);
+        fn invokable(self: Pin<&mut Self>);
     }
 }
