@@ -313,6 +313,7 @@ impl<T: Sized> Downcast for T {}
 /// To reduce the boilerplate of this use-case, CXX-Qt provides the [Initialize] trait.
 ///
 /// If a QObject implements the `Initialize` trait, and the inner Rust struct is [Default]-constructible it will automatically implement `cxx_qt::Constructor<()>`.
+/// Additionally, implementing `impl cxx_qt::Initialize` will act as shorthand for `cxx_qt::Constructor<()>`.
 pub trait Constructor<Arguments>: CxxQtType {
     /// The arguments that are passed to the [`new()`](Self::new) function to construct the inner Rust struct.
     /// This must be a tuple of CXX compatible types.
@@ -361,6 +362,7 @@ pub trait Constructor<Arguments>: CxxQtType {
 /// that calls the `initialize` function after constructing a default Rust struct.
 ///
 /// Ensure that the `impl cxx_qt::Constructor<()> for ... {}` is declared inside the CXX-Qt bridge.
+/// Alternatively, using `impl cxx_qt::Initialize for ... {}` acts as shorthand for the above line.
 ///
 /// # Example
 ///
@@ -376,6 +378,8 @@ pub trait Constructor<Arguments>: CxxQtType {
 ///
 ///     // Remember to tell the bridge about the default constructor
 ///     impl cxx_qt::Constructor<()> for MyStruct {}
+///     // or
+///     impl cxx_qt::Initialize for MyStruct {}
 /// }
 ///
 /// // Make sure the inner Rust struct implements `Default`
