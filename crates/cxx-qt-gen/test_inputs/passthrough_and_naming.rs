@@ -113,19 +113,17 @@ pub mod ffi {
         fn errorOccurred(self: Pin<&mut ExternObject>);
     }
 
-    extern "RustQt" {
+    unsafe extern "RustQt" {
         #[qobject]
         #[base = QStringListModel]
         #[qproperty(i32, property_name, cxx_name = "propertyName")]
         type MyObject = super::MyObjectRust;
-    }
 
-    unsafe extern "RustQt" {
         #[qsignal]
-        fn ready(self: Pin<&mut MyObject>);
+        fn ready(self: Pin<&mut Self>);
 
         #[qinvokable]
-        fn invokable_name(self: Pin<&mut MyObject>);
+        fn invokable_name(self: Pin<&mut Self>);
     }
 
     extern "RustQt" {
