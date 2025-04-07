@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::cxxqtdata::ParsedCxxQtData;
+use crate::preprocessor::self_inlining::try_inline_self_invokables;
 use crate::{
     parser::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
@@ -113,7 +113,7 @@ impl ParsedExternCxxQt {
             .last()
             .map(|obj| format_ident!("{}", obj.declaration.ident));
 
-        ParsedCxxQtData::try_inline_self_types(inline_self, &inline_ident, &mut signals)?;
+        try_inline_self_invokables(inline_self, &inline_ident, &mut signals)?;
 
         extern_cxx_block.qobjects.extend(qobjects);
         extern_cxx_block.signals.extend(signals);
