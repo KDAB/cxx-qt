@@ -111,7 +111,7 @@ impl ParsedExternCxxQt {
         let inline_self = qobjects.len() == 1;
         let inline_ident = qobjects
             .last()
-            .map(|obj| format_ident!("{}", obj.name.cxx_unqualified()));
+            .map(|obj| format_ident!("{}", obj.declaration.ident));
 
         ParsedCxxQtData::try_inline_self_types(inline_self, &inline_ident, &mut signals)?;
 
