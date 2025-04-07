@@ -11,6 +11,7 @@
 mod generator;
 mod naming;
 mod parser;
+mod preprocessor;
 mod syntax;
 mod writer;
 
