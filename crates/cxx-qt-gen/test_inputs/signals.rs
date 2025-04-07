@@ -16,7 +16,7 @@ mod ffi {
 
         /// When the QTimer timeout occurs
         #[qsignal]
-        pub(self) fn timeout(self: Pin<&mut QTimer>);
+        pub(self) fn timeout(self: Pin<&mut Self>);
     }
 
     unsafe extern "RustQt" {
