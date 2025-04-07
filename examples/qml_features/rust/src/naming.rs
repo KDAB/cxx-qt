@@ -19,7 +19,7 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "increment"]
         #[rust_name = "plus_one"]
-        fn increment_number(self: Pin<&mut NamedObject>);
+        fn increment_number(self: Pin<&mut Self>);
 
     }
 
