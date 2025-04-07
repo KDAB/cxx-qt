@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::cxxqtdata::ParsedCxxQtData;
 use crate::{
     parser::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
@@ -10,6 +11,7 @@ use crate::{
     },
     syntax::{attribute::attribute_get_path, expr::expr_to_string},
 };
+use quote::format_ident;
 use syn::{spanned::Spanned, Error, ForeignItem, Ident, ItemForeignMod, Result, Token};
 
 /// Representation of an extern "C++Qt" block
@@ -54,6 +56,9 @@ impl ParsedExternCxxQt {
             ..Default::default()
         };
 
+        let mut qobjects = vec![];
+        let mut signals = vec![];
+
         // Parse any signals, other items are passed through
         for item in foreign_mod.items.drain(..) {
             match item {
@@ -74,7 +79,7 @@ impl ParsedExternCxxQt {
                         // extern "C++Qt" signals are always inherit = true
                         // as they always exist on an existing QObject
                         signal.inherit = true;
-                        extern_cxx_block.signals.push(signal);
+                        signals.push(signal);
                     } else {
                         extern_cxx_block
                             .passthrough_items
@@ -89,7 +94,7 @@ impl ParsedExternCxxQt {
                         let extern_ty =
                             ParsedExternQObject::parse(foreign_ty, module_ident, parent_namespace)?;
                         // Pass through types separately for generation
-                        extern_cxx_block.qobjects.push(extern_ty);
+                        qobjects.push(extern_ty);
                     } else {
                         return Err(Error::new(
                             foreign_ty.span(),
@@ -102,6 +107,16 @@ impl ParsedExternCxxQt {
                 }
             }
         }
+
+        let inline_self = qobjects.len() == 1;
+        let inline_ident = qobjects
+            .last()
+            .map(|obj| format_ident!("{}", obj.name.cxx_unqualified()));
+
+        ParsedCxxQtData::try_inline_self_types(inline_self, &inline_ident, &mut signals)?;
+
+        extern_cxx_block.qobjects.extend(qobjects);
+        extern_cxx_block.signals.extend(signals);
 
         Ok(extern_cxx_block)
     }

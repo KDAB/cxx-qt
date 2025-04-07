@@ -73,7 +73,7 @@ impl ParsedCxxQtData {
     /// If there are unresolved methods in the list, but inline is false, it will error,
     /// as the self inlining is only available if there is exactly one `QObject` in the block,
     /// and this indicates that no inlining can be done, but some `Self` types were present.
-    fn try_inline_self_types(
+    pub fn try_inline_self_types(
         inline: bool,
         type_to_inline: &Option<Ident>,
         invokables: &mut [impl DerefMut<Target = MethodFields>],
@@ -824,7 +824,18 @@ mod tests {
             }
         };
 
+        let extern_cpp_qt: Item = parse_quote! {
+            unsafe extern "C++Qt" {
+                #[qobject]
+                type MyObject;
+
+                #[qsignal]
+                fn my_signal(self: Pin<&mut Self>);
+            }
+        };
+
         parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
+        parsed_cxxqtdata.parse_cxx_qt_item(extern_cpp_qt).unwrap();
     }
 
     #[test]
