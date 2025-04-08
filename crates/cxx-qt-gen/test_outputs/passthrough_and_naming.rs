@@ -659,7 +659,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureready>,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {
+unsafe impl ::cxx_qt::Upcast<ffi::QStringListModel> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ffi::QStringListModel {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
@@ -839,7 +839,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<SecondObjectCxxQtSignalClosureready>,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::SecondObject {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::SecondObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_SecondObject_upcastPtr(this)
     }
@@ -867,7 +867,7 @@ impl ::cxx_qt::CxxQtType for ffi::SecondObject {
         ffi::cxx_qt_ffi_SecondObject_unsafeRustMut(self)
     }
 }
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyRustName {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyRustName {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_MyCxxName_upcastPtr(this)
     }
@@ -895,7 +895,7 @@ impl ::cxx_qt::CxxQtType for ffi::MyRustName {
         ffi::cxx_qt_ffi_MyCxxName_unsafeRustMut(self)
     }
 }
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QPushButton {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QPushButton {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QPushButton_upcastPtr(this)
     }
@@ -903,7 +903,7 @@ impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QPushButton {
         ffi::cxx_qt_ffi_QPushButton_downcastPtr(base)
     }
 }
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::ExternObject {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::ExternObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_ExternObjectCpp_upcastPtr(this)
     }

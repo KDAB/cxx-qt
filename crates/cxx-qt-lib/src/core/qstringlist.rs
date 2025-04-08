@@ -204,7 +204,7 @@ impl DerefMut for QStringList {
     }
 }
 
-impl Upcast<QList<QString>> for QStringList {
+unsafe impl Upcast<QList<QString>> for QStringList {
     unsafe fn upcast_ptr(this: *const Self) -> *const QList<QString> {
         ffi::upcast_qstringlist(this)
     }

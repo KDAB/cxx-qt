@@ -169,7 +169,7 @@ mod ffi {
         type QObject = cxx_qt::QObject;
     }
 }
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyObject {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
@@ -197,7 +197,7 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
         ffi::cxx_qt_ffi_MyObject_unsafeRustMut(self)
     }
 }
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyRenamedObject {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyRenamedObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_CxxName_upcastPtr(this)
     }

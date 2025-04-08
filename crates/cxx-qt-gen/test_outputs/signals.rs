@@ -464,7 +464,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurenewData>,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyObject {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
@@ -492,7 +492,7 @@ impl ::cxx_qt::CxxQtType for ffi::MyObject {
         ffi::cxx_qt_ffi_MyObject_unsafeRustMut(self)
     }
 }
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QTimer {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QTimer {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QTimer_upcastPtr(this)
     }

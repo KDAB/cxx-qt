@@ -677,7 +677,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QObjectEnabledCxxQtSignalClosuresignal_enabled>,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectEnabled {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectEnabled {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectEnabled_upcastPtr(this)
     }
@@ -864,7 +864,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QObjectDisabledCxxQtSignalClosuresignal_enabled>,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectDisabled {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectDisabled {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectDisabled_upcastPtr(this)
     }
@@ -895,7 +895,7 @@ impl ::cxx_qt::CxxQtType for ffi::QObjectDisabled {
         ffi::cxx_qt_ffi_QObjectDisabled_unsafeRustMut(self)
     }
 }
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectExternEnabled {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectExternEnabled {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectExternEnabled_upcastPtr(this)
     }
@@ -1073,7 +1073,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     >,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectExternDisabled {
+unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::QObjectExternDisabled {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectExternDisabled_upcastPtr(this)
     }
