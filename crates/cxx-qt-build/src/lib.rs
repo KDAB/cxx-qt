@@ -43,8 +43,8 @@ use std::{
 };
 
 use cxx_qt_gen::{
-    parse_qt_file, write_cpp, write_rust, CppFragment, CxxQtItem, GeneratedCppBlocks, GeneratedOpt,
-    GeneratedRustBlocks, Parser,
+    parse_qt_file, qualify_self_types, write_cpp, write_rust, CppFragment, CxxQtItem,
+    GeneratedCppBlocks, GeneratedOpt, GeneratedRustBlocks, Parser,
 };
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
@@ -132,7 +132,10 @@ impl GeneratedCpp {
                     }
                     found_bridge = true;
 
-                    let parser = Parser::from(*m.clone())
+                    let mut parser = Parser::from(*m.clone())
+                        .map_err(GeneratedError::from)
+                        .map_err(to_diagnostic)?;
+                    qualify_self_types(&mut parser)
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
                     let generated_cpp = GeneratedCppBlocks::from(&parser, &cxx_qt_opt)

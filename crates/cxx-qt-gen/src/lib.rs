@@ -21,6 +21,7 @@ pub use generator::{
     GeneratedOpt,
 };
 pub use parser::Parser;
+pub use preprocessor::self_inlining::qualify_self_types;
 pub use syntax::{parse_qt_file, CxxQtFile, CxxQtItem};
 pub use writer::{cpp::write_cpp, rust::write_rust};
 
@@ -175,7 +176,8 @@ mod tests {
         expected_cpp_header: &str,
         expected_cpp_source: &str,
     ) {
-        let parser = Parser::from(syn::parse_str(input).unwrap()).unwrap();
+        let mut parser = Parser::from(syn::parse_str(input).unwrap()).unwrap();
+        qualify_self_types(&mut parser).unwrap();
 
         let mut cfg_evaluator = CfgEvaluatorTest::default();
         cfg_evaluator.cfgs.insert("crate", Some("cxx-qt-gen"));
