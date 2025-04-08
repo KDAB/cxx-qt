@@ -9,10 +9,10 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
-use std::ops::Deref;
-use std::pin::Pin;
 use std::{fs::File, io::Write, path::Path};
 
+#[doc(hidden)]
+pub mod casting;
 mod connection;
 mod connectionguard;
 mod qobject;

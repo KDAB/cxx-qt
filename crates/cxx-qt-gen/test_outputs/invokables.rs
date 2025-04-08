@@ -326,7 +326,7 @@ impl cxx_qt::Threading for ffi::MyObject {
 pub struct MyObjectCxxQtThreadQueuedFn {
     inner: std::boxed::Box<dyn FnOnce(core::pin::Pin<&mut ffi::MyObject>) + Send>,
 }
-unsafe impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyObject {
+unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
