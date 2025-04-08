@@ -7,7 +7,6 @@ use super::qnamespace::ParsedQNamespace;
 use super::trait_impl::TraitImpl;
 use crate::naming::cpp::err_unsupported_item;
 use crate::parser::CaseConversion;
-use crate::preprocessor::self_inlining::try_inline_self_invokables;
 use crate::{
     parser::{
         externcxxqt::ParsedExternCxxQt, inherit::ParsedInheritedMethod, method::ParsedMethod,
@@ -18,7 +17,6 @@ use crate::{
         path::path_compare_str,
     },
 };
-use quote::format_ident;
 use syn::{
     spanned::Spanned, Error, ForeignItem, Ident, Item, ItemEnum, ItemForeignMod, ItemImpl,
     ItemMacro, Meta, Result,
@@ -235,16 +233,6 @@ impl ParsedCxxQtData {
                 _ => return Err(err_unsupported_item(&item)),
             }
         }
-
-        // If there is exaclty one qobject in the block, it can be inlined as a self type.
-        let inline_self = qobjects.len() == 1;
-        let inline_ident = qobjects
-            .last()
-            .map(|obj| format_ident!("{}", obj.declaration.ident_left));
-
-        try_inline_self_invokables(inline_self, &inline_ident, &mut methods)?;
-        try_inline_self_invokables(inline_self, &inline_ident, &mut signals)?;
-        try_inline_self_invokables(inline_self, &inline_ident, &mut inherited)?;
 
         self.qobjects.push(qobjects);
         self.methods.push(methods);
