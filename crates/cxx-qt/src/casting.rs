@@ -127,6 +127,7 @@ unsafe impl<T> Upcast<T> for T {
         self
     }
 }
+
 /// Implements transitive casting in a chain for a type and all its ancestors
 ///
 /// Suppose you have 3 types, A, B and C where A -> B and B -> C casting relationships exist,
