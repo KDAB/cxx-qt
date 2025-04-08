@@ -28,11 +28,6 @@ ApplicationWindow {
         string: qsTr("My String with my number: %1").arg(myObject.number)
     }
 
-    A {
-        id: a
-        number: 10
-    }
-
     Column {
         anchors.fill: parent
         anchors.margins: 10
@@ -58,12 +53,6 @@ ApplicationWindow {
             text: qsTr("Say Hi!")
 
             onClicked: myObject.sayHi(myObject.string, myObject.number)
-        }
-
-        Button {
-            text: qsTr("Test A")
-
-            onClicked: a.test()
         }
 
         Button {
