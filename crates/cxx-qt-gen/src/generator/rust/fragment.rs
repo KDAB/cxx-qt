@@ -83,11 +83,18 @@ impl GeneratedRustFragment {
                         #upcast_fn_qualified(this)
                     }
 
-                    unsafe fn from_base_ptr(base: *const #base_qualified) -> *const Self {
-                        #downcast_fn_qualified(base)
+                        unsafe fn from_base_ptr(base: *const #base_qualified) -> *const Self {
+                            #downcast_fn_qualified(base)
+                        }
                     }
-                }
-            }],
+                },
+                // Add back once we figure out the bug with QObject, for automatic transitive casts
+                // parse_quote! {
+                //     unsafe impl ::cxx_qt::MainCast for #struct_name {
+                //        type Base = #base_qualified;
+                //     }
+                // }
+            ],
         })
     }
 
