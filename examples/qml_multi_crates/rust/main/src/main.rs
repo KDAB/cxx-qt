@@ -5,7 +5,7 @@
 
 extern crate qml_multi_crates;
 
-use cxx_qt::Upcast;
+use cxx_qt::casting::Upcast;
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 
 fn main() {
