@@ -21,6 +21,12 @@ pub mod qobject {
     }
     // ANCHOR_END: book_qstring_import
 
+    unsafe extern "C++" {
+        include!(<QtCore/QAbstractListModel>);
+        /// Base for Qt type
+        type QAbstractListModel;
+    }
+
     // ANCHOR: book_rustobj_struct_signature
     extern "RustQt" {
         // The QObject definition
@@ -31,7 +37,18 @@ pub mod qobject {
         #[qproperty(i32, number)]
         #[qproperty(QString, string)]
         #[namespace = "my_object"]
+        #[base = QAbstractListModel]
         type MyObject = super::MyObjectRust;
+
+        #[base = MyObject]
+        #[qobject]
+        #[qml_element]
+        type B = super::BRust;
+
+        #[base = B]
+        #[qobject]
+        #[qml_element]
+        type A = super::ARust;
     }
     // ANCHOR_END: book_rustobj_struct_signature
 
@@ -45,6 +62,9 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "sayHi"]
         fn say_hi(self: &MyObject, string: &QString, number: i32);
+
+        #[qinvokable]
+        fn test(self: &A);
     }
     // ANCHOR_END: book_rustobj_invokable_signature
 }
@@ -61,9 +81,36 @@ pub struct MyObjectRust {
     number: i32,
     string: QString,
 }
-// ANCHOR_END: book_rustobj_struct
 
+/// A
+#[derive(Default)]
+pub struct ARust {
+    number: i32,
+}
+
+/// A
+#[derive(Default)]
+pub struct BRust {
+    number: i32,
+}
+
+unsafe impl MainCast for A {
+    type Base = B;
+}
+
+unsafe impl MainCast for B {
+    type Base = MyObject;
+}
+
+unsafe impl MainCast for MyObject {
+    type Base = QAbstractListModel;
+}
+
+// ANCHOR_END: book_rustobj_struct
+use crate::cxxqt_object::qobject::{MyObject, QAbstractListModel, A, B};
+use cxx_qt::{CxxQtType, MainCast, QObject, Upcast};
 // ANCHOR: book_rustobj_invokable_impl
+
 impl qobject::MyObject {
     /// Increment the number Q_PROPERTY
     pub fn increment_number(self: Pin<&mut Self>) {
@@ -74,6 +121,18 @@ impl qobject::MyObject {
     /// Print a log message with the given string and number
     pub fn say_hi(&self, string: &QString, number: i32) {
         println!("Hi from Rust! String is '{string}' and number is {number}");
+    }
+}
+
+impl A {
+    /// Test A
+    pub fn test(&self) {
+        println!("Test A");
+        let b: &B = self.upcast();
+        let my_obj: &MyObject = b.upcast();
+        my_obj.say_hi(&QString::from("Test String"), 60);
+        let transitive: &MyObject = self.upcast();
+        transitive.say_hi(&QString::from("Transitive Test String"), 600);
     }
 }
 // ANCHOR_END: book_rustobj_invokable_impl
