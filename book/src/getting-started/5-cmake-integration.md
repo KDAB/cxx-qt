@@ -207,6 +207,13 @@ You should now see the two Labels that display the state of our `MyObject`, as w
 
 ### Windows with MSVC
 
-If you're building CXX-Qt on Windows using MSVC generator, you need to ensure that `set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")` is set in CMake (or use the `-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL` flag) when building with the `Debug` configuration. This flag is necessary to ensure that the correct C Runtime Library is used. Then you can build using `cmake --build build --config Debug`.
+With MSVC, all parts of the build need to agree on the runtime that is linked into the executable.
 
-This issue is caused by a bug in the [cc](https://docs.rs/cc/latest/cc/index.html) crate (as described in [this pull request](https://github.com/rust-lang/cc-rs/pull/717)), which has not been merged yet. Specifically, the problem is that cc generated code always links to the MultiThreaded runtime, even when building in Debug mode. We hope that this step won't be necessary in the future, once the cc crate fix is merged and released.
+As of CXX-Qt 0.7.2, cxx-qt-cmake will automatically set the right linker flags in the debug configuration.
+
+The previous workaround of setting the CMAKE_MSVC_RUNTIME_LIBRARY to "MultiThreadedDLL" is no longer necessary or recommended!
+
+See also:
+
+- <https://corrosion-rs.github.io/corrosion/common_issues.html#linking-debug-cc-libraries-into-rust-fails-on-windows-msvc-targets>
+- <https://github.com/KDAB/cxx-qt/issues/1234>

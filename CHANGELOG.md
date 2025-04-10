@@ -40,6 +40,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)
 - CXX-Qt-build: Interface no longer includes initializers
 
+### Fixed
+
+- CXX-Qt-CMake can now link to the MSVC debug runtime, setting MultiThreadedDLL is no longer recommended.
+
 ## [0.7.1](https://github.com/KDAB/cxx-qt/compare/v0.7.0...v0.7.1) - 2025-03-04
 
 ### Added
