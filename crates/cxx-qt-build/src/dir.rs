@@ -21,6 +21,11 @@ pub(crate) const INCLUDE_VERB: &str = "create symlink";
 #[cfg(not(unix))]
 pub(crate) const INCLUDE_VERB: &str = "deep copy files";
 
+pub(crate) fn gen() -> PathBuf {
+    // Use a short name due to the Windows file path limit!
+    out().join("cxxqtgen")
+}
+
 // Clean a directory by removing it and recreating it.
 pub(crate) fn clean(path: impl AsRef<Path>) -> Result<()> {
     let result = std::fs::remove_dir_all(&path);
@@ -37,14 +42,47 @@ pub(crate) fn clean(path: impl AsRef<Path>) -> Result<()> {
 
 /// The target directory, namespaced by crate
 pub(crate) fn crate_target() -> PathBuf {
-    target().join("crates").join(crate_name())
+    let path = target();
+    if is_exporting() {
+        path.join("crates").join(crate_name())
+    } else {
+        // If we're not exporting, use a shortened path
+        // The paths for files in the OUT_DIR can get pretty long, especially if combined with
+        // Corrosion/CMake.
+        // This is an issue, as Windows has a maximum path length of 260 characters.
+        // The OUT_DIR is already namespaced by crate name, so we don't need to prefix again.
+        // See also: https://github.com/KDAB/cxx-qt/issues/1237
+        path
+    }
 }
 
 /// The target directory, namespaced by plugin
 pub(crate) fn module_target(module_uri: &str) -> PathBuf {
-    target()
-        .join("qml_modules")
-        .join(module_name_from_uri(module_uri))
+    module_export(module_uri).unwrap_or_else(|| {
+        out()
+            // Use a short name due to the Windows file path limit!
+            .join("cxxqtqml")
+            .join(module_name_from_uri(module_uri))
+    })
+}
+
+/// The export directory, namespaced by QML module
+///
+/// In conctrast to the crate_export directory, this is `Some` for downstream dependencies as well.
+/// This allows CMake to import QML modules from dependencies.
+///
+/// TODO: This may conflict if two dependencies are building QML modules with the same name!
+/// We should probably include a lockfile here to avoid this.
+pub(crate) fn module_export(module_uri: &str) -> Option<PathBuf> {
+    // In contrast to crate_export, we don't need to check for the specific crate here.
+    // QML modules should always be exported.
+    env::var("CXX_QT_EXPORT_DIR")
+        .ok()
+        .map(PathBuf::from)
+        .map(|dir| {
+            dir.join("qml_modules")
+                .join(module_name_from_uri(module_uri))
+        })
 }
 
 /// The target directory or another directory where we can write files that will be shared
@@ -54,7 +92,8 @@ pub(crate) fn target() -> PathBuf {
         return export;
     }
 
-    out().join("cxx-qt-build").join("target")
+    // Use a short name due to the Windows file path limit!
+    out().join("cxxqtbuild")
 }
 
 /// The export directory, if one was specified through the environment.

@@ -261,7 +261,7 @@ fn generate_cxxqt_cpp_files(
     header_dir: impl AsRef<Path>,
     include_prefix: &str,
 ) -> Vec<GeneratedCppFilePaths> {
-    let cxx_qt_dir = dir::out().join("cxx-qt-gen");
+    let cxx_qt_dir = dir::gen();
     std::fs::create_dir_all(&cxx_qt_dir).expect("Failed to create cxx-qt-gen directory!");
     std::fs::write(cxx_qt_dir.join("include-prefix.txt"), include_prefix).expect("");
 
