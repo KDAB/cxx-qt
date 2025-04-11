@@ -130,7 +130,7 @@ pub trait Threading: Sized {
 /// This trait is automatically implemented by CXX-Qt and you most likely do not need to manually implement it.
 /// Allows upcasting to either [QObject] or the provided base class of a type.
 /// Will not be implemented if no types inherit from [QObject] or have the `#[base = T]` attribute.
-pub trait Upcast<T> {
+pub unsafe trait Upcast<T> {
     #[doc(hidden)]
     /// # Safety
     ///
@@ -174,6 +174,32 @@ pub trait Upcast<T> {
         unsafe {
             let base = Self::upcast_ptr(this) as *mut T;
             Pin::new_unchecked(&mut *base)
+        }
+    }
+}
+
+/// Docs
+pub unsafe trait MainCast: Upcast<Self::Base> {
+    /// The first parent of the Type
+    type Base;
+}
+
+unsafe impl<T, A, B> Upcast<B> for T
+where
+    T: MainCast<Base = A>,
+    A: MainCast<Base = B>,
+{
+    unsafe fn upcast_ptr(this: *const Self) -> *const B {
+        let base = Self::upcast_ptr(this);
+        A::upcast_ptr(base)
+    }
+
+    unsafe fn from_base_ptr(base: *const B) -> *const Self {
+        let base = A::from_base_ptr(base);
+        if base.is_null() {
+            std::ptr::null()
+        } else {
+            Self::from_base_ptr(base)
         }
     }
 }
