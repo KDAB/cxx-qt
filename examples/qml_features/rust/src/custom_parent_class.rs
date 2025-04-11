@@ -54,7 +54,7 @@ pub mod qobject {
         fn update(self: Pin<&mut CustomParentClass>);
     }
 
-    impl cxx_qt::Constructor<()> for CustomParentClass {}
+    impl cxx_qt::Initialize for CustomParentClass {}
 }
 
 use core::pin::Pin;
