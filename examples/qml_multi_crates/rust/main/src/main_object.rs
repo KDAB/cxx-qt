@@ -17,7 +17,7 @@ pub mod qobject {
         type MainObject = super::MainObjectRust;
 
         #[qinvokable]
-        fn increment(self: Pin<&mut MainObject>);
+        fn increment(self: Pin<&mut Self>);
     }
 }
 

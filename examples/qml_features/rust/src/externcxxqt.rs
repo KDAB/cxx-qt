@@ -14,17 +14,18 @@ pub mod ffi {
         #[qobject]
         type ExternalQObject;
 
+        // Since functions are just passed through the inlining isn't yet supported
         /// Trigger emitting the signal "amount" times
         fn trigger(self: Pin<&mut ExternalQObject>, amount: u32);
 
         /// Signal that is emitted when trigger is fired
         #[qsignal]
-        fn triggered(self: Pin<&mut ExternalQObject>);
+        fn triggered(self: Pin<&mut Self>);
 
         /// Private signal that is emitted when trigger is fired
         #[qsignal]
         #[rust_name = "triggered_private_signal"]
-        pub(self) fn triggeredPrivateSignal(self: Pin<&mut ExternalQObject>);
+        pub(self) fn triggeredPrivateSignal(self: Pin<&mut Self>);
     }
 
     extern "RustQt" {
@@ -36,15 +37,12 @@ pub mod ffi {
 
         #[qinvokable]
         #[cxx_name = "connectToExternal"]
-        unsafe fn connect_to_external(
-            self: Pin<&mut ExternalCxxQtHelper>,
-            external: *mut ExternalQObject,
-        );
+        unsafe fn connect_to_external(self: Pin<&mut Self>, external: *mut ExternalQObject);
 
         #[qinvokable]
         #[cxx_name = "triggerOnExternal"]
         unsafe fn trigger_on_external(
-            self: Pin<&mut ExternalCxxQtHelper>,
+            self: Pin<&mut Self>,
             external: *mut ExternalQObject,
             amount: u32,
         );

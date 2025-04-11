@@ -23,19 +23,16 @@ use syn::{
 };
 
 pub struct ParsedCxxQtData {
-    /// Map of the QObjects defined in the module that will be used for code generation
-    //
-    // We have to use a BTreeMap here, instead of a HashMap, to keep the order of QObjects stable.
-    // Otherwise, the output order would be different, depending on the environment, which makes it hard to test/debug.
-    pub qobjects: Vec<ParsedQObject>,
+    /// List of QObjects defined in the module, separated by block
+    pub qobjects: Vec<Vec<ParsedQObject>>,
     /// List of QEnums defined in the module, that aren't associated with a QObject
     pub qenums: Vec<ParsedQEnum>,
-    /// List of methods and Q_INVOKABLES found
-    pub methods: Vec<ParsedMethod>,
-    /// List of the Q_SIGNALS found
-    pub signals: Vec<ParsedSignal>,
-    /// List of the inherited methods found
-    pub inherited_methods: Vec<ParsedInheritedMethod>,
+    /// List of methods and Q_INVOKABLES found, separated by block
+    pub methods: Vec<Vec<ParsedMethod>>,
+    /// List of the Q_SIGNALS found, separated by block
+    pub signals: Vec<Vec<ParsedSignal>>,
+    /// List of the inherited methods found, separated by block
+    pub inherited_methods: Vec<Vec<ParsedInheritedMethod>>,
     /// List of QNamespace declarations
     pub qnamespaces: Vec<ParsedQNamespace>,
     /// Blocks of extern "C++Qt"
@@ -46,6 +43,11 @@ pub struct ParsedCxxQtData {
     pub trait_impls: Vec<TraitImpl>,
     /// The ident of the module, used for mappings
     pub module_ident: Ident,
+}
+
+/// Used to get a flat iterator view into a 2D Vector
+fn flat_view<T>(v: &[Vec<T>]) -> impl Iterator<Item = &T> {
+    v.iter().flat_map(|v| v.iter())
 }
 
 impl ParsedCxxQtData {
@@ -63,6 +65,26 @@ impl ParsedCxxQtData {
             module_ident,
             namespace,
         }
+    }
+
+    /// Iterator wrapper for methods
+    pub fn methods(&self) -> impl Iterator<Item = &ParsedMethod> {
+        flat_view(&self.methods)
+    }
+
+    /// Iterator wrapper for signals
+    pub fn signals(&self) -> impl Iterator<Item = &ParsedSignal> {
+        flat_view(&self.signals)
+    }
+
+    /// Iterator wrapper for inherited methods
+    pub fn inherited_methods(&self) -> impl Iterator<Item = &ParsedInheritedMethod> {
+        flat_view(&self.inherited_methods)
+    }
+
+    /// Iterator wrapper for QObjects
+    pub fn qobjects(&self) -> impl Iterator<Item = &ParsedQObject> {
+        flat_view(&self.qobjects)
     }
 
     /// Determine if the given [syn::Item] is a CXX-Qt related item
@@ -139,6 +161,12 @@ impl ParsedCxxQtData {
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
 
+        let mut qobjects = vec![];
+
+        let mut methods = vec![];
+        let mut signals = vec![];
+        let mut inherited = vec![];
+
         let namespace = attrs
             .get("namespace")
             .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
@@ -159,7 +187,7 @@ impl ParsedCxxQtData {
                             return Err(Error::new(foreign_fn.span(), "block must be declared `unsafe extern \"RustQt\"` if it contains any safe-to-call #[inherit] qsignals"));
                         }
 
-                        self.signals.push(parsed_signal_method);
+                        signals.push(parsed_signal_method);
 
                         // Test if the function is an inheritance method
                         //
@@ -175,7 +203,7 @@ impl ParsedCxxQtData {
                         let parsed_inherited_method =
                             ParsedInheritedMethod::parse(foreign_fn, auto_case)?;
 
-                        self.inherited_methods.push(parsed_inherited_method);
+                        inherited.push(parsed_inherited_method);
                         // Remaining methods are either C++ methods or invokables
                     } else {
                         let parsed_method = ParsedMethod::parse(
@@ -183,7 +211,7 @@ impl ParsedCxxQtData {
                             auto_case,
                             foreign_mod.unsafety.is_some(),
                         )?;
-                        self.methods.push(parsed_method);
+                        methods.push(parsed_method);
                     }
                 }
                 ForeignItem::Verbatim(tokens) => {
@@ -199,12 +227,18 @@ impl ParsedCxxQtData {
 
                     // Note that we assume a compiler error will occur later
                     // if you had two structs with the same name
-                    self.qobjects.push(qobject);
+                    qobjects.push(qobject);
                 }
-                // Const Macro, Type are unsupported in extern "RustQt" for now
+                // Const, Macro, Type are unsupported in extern "RustQt" for now
                 _ => return Err(err_unsupported_item(&item)),
             }
         }
+
+        self.qobjects.push(qobjects);
+        self.methods.push(methods);
+        self.signals.push(signals);
+        self.inherited_methods.push(inherited);
+
         Ok(())
     }
 
@@ -223,8 +257,7 @@ impl ParsedCxxQtData {
 
     #[cfg(test)]
     fn find_object(&self, id: &Ident) -> Option<&ParsedQObject> {
-        self.qobjects
-            .iter()
+        self.qobjects()
             .find(|obj| obj.name.rust_unqualified() == id)
     }
 }
@@ -241,8 +274,9 @@ mod tests {
     /// Creates a ParsedCxxQtData with a QObject definition already found
     pub fn create_parsed_cxx_qt_data() -> ParsedCxxQtData {
         let mut cxx_qt_data = ParsedCxxQtData::new(format_ident!("ffi"), None);
-        cxx_qt_data.qobjects.push(create_parsed_qobject());
-        cxx_qt_data.qobjects.push(create_parsed_qobject());
+        cxx_qt_data
+            .qobjects
+            .push(vec![create_parsed_qobject(), create_parsed_qobject()]);
         cxx_qt_data
     }
 
@@ -352,9 +386,9 @@ mod tests {
         let result = cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert!(result.is_none());
 
-        assert_eq!(cxx_qt_data.methods.len(), 2);
-        assert!(cxx_qt_data.methods[0].is_qinvokable);
-        assert!(!cxx_qt_data.methods[1].is_qinvokable)
+        assert_eq!(cxx_qt_data.methods().collect::<Vec<_>>().len(), 2);
+        assert!(cxx_qt_data.methods[0][0].is_qinvokable);
+        assert!(!cxx_qt_data.methods[0][1].is_qinvokable)
     }
 
     #[test]
@@ -382,7 +416,7 @@ mod tests {
         };
         cxx_qt_data.parse_cxx_qt_item(item).unwrap();
         assert_eq!(cxx_qt_data.methods.len(), 1);
-        assert_eq!(cxx_qt_data.methods[0].name.cxx_unqualified(), "fooBar");
+        assert_eq!(cxx_qt_data.methods[0][0].name.cxx_unqualified(), "fooBar");
     }
 
     #[test]
@@ -397,9 +431,10 @@ mod tests {
             }
         };
         cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert_eq!(cxx_qt_data.methods.len(), 1);
-        assert_eq!(cxx_qt_data.methods[0].name.cxx_unqualified(), "foo_bar");
-        assert_eq!(cxx_qt_data.methods[0].name.rust_unqualified(), "foo_bar");
+        let methods = &cxx_qt_data.methods[0];
+        assert_eq!(methods.len(), 1);
+        assert_eq!(methods[0].name.cxx_unqualified(), "foo_bar");
+        assert_eq!(methods[0].name.rust_unqualified(), "foo_bar");
     }
 
     #[test]
@@ -414,8 +449,8 @@ mod tests {
             }
         };
         cxx_qt_data.parse_cxx_qt_item(item).unwrap();
-        assert_eq!(cxx_qt_data.methods.len(), 1);
-        assert_eq!(cxx_qt_data.methods[0].name.cxx_unqualified(), "renamed");
+        assert_eq!(cxx_qt_data.methods[0].len(), 1);
+        assert_eq!(cxx_qt_data.methods[0][0].name.cxx_unqualified(), "renamed");
     }
 
     #[test]
@@ -587,7 +622,7 @@ mod tests {
             }
         };
         cxxqtdata.parse_cxx_qt_item(block).unwrap();
-        let signals = &cxxqtdata.signals;
+        let signals = &cxxqtdata.signals().collect::<Vec<_>>();
         assert_eq!(signals.len(), 2);
         assert!(signals[0].mutable);
         assert!(signals[1].mutable);
@@ -617,7 +652,7 @@ mod tests {
         };
         cxxqtdata.parse_cxx_qt_item(block).unwrap();
 
-        let signals = &cxxqtdata.signals;
+        let signals = &cxxqtdata.signals().collect::<Vec<_>>();
         assert_eq!(signals.len(), 1);
         assert!(signals[0].mutable);
         assert!(!signals[0].safe);
@@ -692,7 +727,7 @@ mod tests {
         };
 
         parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
-        assert_eq!(parsed_cxxqtdata.qobjects.len(), 2);
+        assert_eq!(parsed_cxxqtdata.qobjects().collect::<Vec<_>>().len(), 2);
 
         assert!(parsed_cxxqtdata
             .find_object(&format_ident!("MyObject"))
@@ -717,7 +752,7 @@ mod tests {
         };
 
         parsed_cxxqtdata.parse_cxx_qt_item(extern_rust_qt).unwrap();
-        assert_eq!(parsed_cxxqtdata.qobjects.len(), 2);
+        assert_eq!(parsed_cxxqtdata.qobjects().collect::<Vec<_>>().len(), 2);
         assert_eq!(
             parsed_cxxqtdata
                 .find_object(&format_ident!("MyObject"))

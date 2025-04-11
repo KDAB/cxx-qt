@@ -15,13 +15,12 @@ pub mod qobject {
         #[cxx_name = "RenamedObject"]
         #[namespace = "my_namespace"]
         type NamedObject = super::NamedObjectRust;
-    }
 
-    extern "RustQt" {
         #[qinvokable]
         #[cxx_name = "increment"]
         #[rust_name = "plus_one"]
-        fn increment_number(self: Pin<&mut NamedObject>);
+        fn increment_number(self: Pin<&mut Self>);
+
     }
 
     #[auto_cxx_name]

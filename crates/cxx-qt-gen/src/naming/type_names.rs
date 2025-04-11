@@ -161,7 +161,7 @@ impl TypeNames {
         module_ident: &Ident,
     ) -> Result<()> {
         // Find and register the QObjects in the bridge
-        for qobject in cxx_qt_data.qobjects.iter() {
+        for qobject in cxx_qt_data.qobjects() {
             self.populate_qobject(qobject)?;
         }
 
