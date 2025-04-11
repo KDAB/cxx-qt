@@ -285,6 +285,7 @@ jobs:
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
+            build_type: Release
           - name: Ubuntu 24.04 (gcc) Qt6
             os: ubuntu-24.04
             qt_version: 6
@@ -301,6 +302,7 @@ jobs:
             clang_format_path: /home/runner/.local/bin/clang-format
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
+            build_type: Release
             packages-extra: >-
                 libgl1-mesa-dev
                 libvulkan-dev
@@ -327,6 +329,7 @@ jobs:
             cc: clang
             cxx: clang++
             rustc_wrapper: sccache
+            build_type: Release
           - name: macOS 14 (clang) Qt6
             os: macos-14
             qt_version: 6
@@ -348,6 +351,7 @@ jobs:
             cc: clang
             cxx: clang++
             rustc_wrapper: sccache
+            build_type: Release
 
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
@@ -366,6 +370,7 @@ jobs:
             cc: cl
             cxx: cl
             rustc_wrapper: sccache
+            build_type: Release
           - name: Windows 2022 (MSVC2019) Qt6
             os: windows-2022
             qt_version: 6
@@ -383,7 +388,9 @@ jobs:
             cc: cl
             cxx: cl
             rustc_wrapper: sccache
-          - name: Windows 2022 (MSVC2022) Qt6
+            build_type: Release
+            # Use a Debug build to ensure we can build and run tests in Debug mode with MSVC
+          - name: Windows 2022 (MSVC2022) Qt6 Debug
             os: windows-2022
             qt_version: 6
             aqt_version: '6.8.0'
@@ -400,6 +407,7 @@ jobs:
             cc: cl
             cxx: cl
             rustc_wrapper: sccache
+            build_type: Debug
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -536,7 +544,7 @@ jobs:
       run: >-
         cmake ${{ matrix.cmake_args }}
         -D USE_QT5=${{ matrix.qt_version == 5 }}
-        -D CMAKE_BUILD_TYPE=Release
+        -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -G Ninja
         -S . -B build
       env:
@@ -544,7 +552,7 @@ jobs:
         CC: ${{ matrix.cc }}
         CXX: ${{ matrix.cxx }}
     - name: "Build"
-      run: cmake --build build --config Release --parallel ${{ matrix.cores }}
+      run: cmake --build build --config ${{ matrix.build_type }} --parallel ${{ matrix.cores }}
       env:
         RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
 
@@ -552,7 +560,7 @@ jobs:
       run: sccache --show-stats
 
     - name: "Test"
-      run: ctest ${{ matrix.ctest_args }} -C Release -T test --output-on-failure --parallel ${{ matrix.cores }}
+      run: ctest ${{ matrix.ctest_args }} -C ${{ matrix.build_type }} -T test --output-on-failure --parallel ${{ matrix.cores }}
       working-directory: ./build
       env:
         # Use the version of clang-format from pip

@@ -7,14 +7,6 @@ cmake_minimum_required(VERSION 3.24)
 
 project(example_qml_multi_crates)
 
-# Rust always links against non-debug Windows runtime on *-msvc targets
-# Note it is best to set this on the command line to ensure all targets are consistent
-# https://github.com/corrosion-rs/corrosion/blob/master/doc/src/common_issues.md#linking-debug-cc-libraries-into-rust-fails-on-windows-msvc-targets
-# https://github.com/rust-lang/rust/issues/39016
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
-endif()
-
 if(BUILD_WASM)
     # Ensure Rust build for the correct target
     set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
