@@ -106,6 +106,13 @@ impl<'a> From<&'a str> for QAnyStringView<'a> {
     }
 }
 
+impl<'a> From<&'a String> for QAnyStringView<'a> {
+    /// Constructs a QAnyStringView from a Rust string
+    fn from(string: &'a String) -> Self {
+        ffi::QAnyStringView_init_from_rust_string(string.as_str())
+    }
+}
+
 impl<'a> From<&'a QByteArray> for QAnyStringView<'a> {
     /// Constructs a QAnyStringView from a QByteArray
     fn from(bytes: &'a QByteArray) -> Self {

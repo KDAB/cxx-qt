@@ -3,6 +3,8 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#[cfg(cxxqt_qt_version_at_least_6_8)]
+use crate::QAnyStringView;
 use cxx::{type_id, ExternType};
 use std::cmp::Ordering;
 use std::fmt;
@@ -18,6 +20,11 @@ mod ffi {
     }
 
     unsafe extern "C++" {
+        #[cfg(cxxqt_qt_version_major = "6")]
+        include!("cxx-qt-lib/qanystringview.h");
+        #[cfg(cxxqt_qt_version_major = "6")]
+        type QAnyStringView<'a> = crate::QAnyStringView<'a>;
+
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qstring.h");
@@ -133,8 +140,14 @@ mod ffi {
         fn qstringToRustString(string: &QString) -> String;
 
         #[doc(hidden)]
+        #[cfg(cxxqt_qt_version_major = "5")]
         #[rust_name = "qstring_arg"]
         fn qstringArg(string: &QString, a: &QString) -> QString;
+        #[doc(hidden)]
+        #[cfg(cxxqt_qt_version_major = "6")]
+        #[rust_name = "qstring_arg_view"]
+        fn qstringArg(string: &QString, a: QAnyStringView) -> QString;
+
         #[doc(hidden)]
         #[rust_name = "qstring_index_of"]
         fn qstringIndexOf(
@@ -322,8 +335,18 @@ impl From<QString> for String {
 
 impl QString {
     /// Returns a copy of this string with the lowest numbered place marker replaced by string a, i.e., %1, %2, ..., %99.
+    #[cfg(cxxqt_qt_version_major = "5")]
     pub fn arg(&self, a: &QString) -> Self {
         ffi::qstring_arg(self, a)
+    }
+
+    /// Returns a copy of this string with the lowest numbered place marker replaced by string a, i.e., %1, %2, ..., %99.
+    #[cfg(cxxqt_qt_version_major = "6")]
+    pub fn arg<'a, S>(&self, a: S) -> Self
+    where
+        S: Into<QAnyStringView<'a>>,
+    {
+        ffi::qstring_arg_view(self, a.into())
     }
 
     /// Lexically compares this string with the other string and

@@ -30,8 +30,14 @@ qstringInitFromRustString(::rust::Str string);
 ::rust::String
 qstringToRustString(const QString& string);
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+QString
+qstringArg(const QString& string, QAnyStringView a);
+#else
 QString
 qstringArg(const QString& string, const QString& a);
+#endif
+
 ::rust::isize
 qstringIndexOf(const QString& string,
                const QString& str,

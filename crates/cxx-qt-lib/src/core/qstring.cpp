@@ -54,12 +54,25 @@ qstringToRustString(const QString& string)
   return ::rust::String(byteArray.constData(), byteArray.size());
 }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 9, 0))
+QString
+qstringArg(const QString& string, QAnyStringView a)
+{
+  return string.arg(a);
+}
+#elif (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+QString
+qstringArg(const QString& string, QAnyStringView a)
+{
+  return string.arg(a.toString());
+}
+#else
 QString
 qstringArg(const QString& string, const QString& a)
 {
-  // CXX can't choose between arg overloads so use C++
   return string.arg(a);
 }
+#endif
 
 ::rust::isize
 qstringIndexOf(const QString& string,
