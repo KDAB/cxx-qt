@@ -3,7 +3,7 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#[cfg(cxxqt_qt_version_at_least_6_8)]
+#[cfg(cxxqt_qt_version_major = "6")]
 use crate::QAnyStringView;
 use cxx::{type_id, ExternType};
 use std::cmp::Ordering;
@@ -19,12 +19,13 @@ mod ffi {
         type SplitBehaviorFlags = crate::SplitBehaviorFlags;
     }
 
-    unsafe extern "C++" {
-        #[cfg(cxxqt_qt_version_major = "6")]
+    #[cfg(cxxqt_qt_version_major = "6")]
+    extern "C++" {
         include!("cxx-qt-lib/qanystringview.h");
-        #[cfg(cxxqt_qt_version_major = "6")]
         type QAnyStringView<'a> = crate::QAnyStringView<'a>;
+    }
 
+    unsafe extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qstring.h");
