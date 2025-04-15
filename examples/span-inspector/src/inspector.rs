@@ -3,6 +3,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use cxx_qt_gen::{write_rust, Parser};
+use proc_macro2::TokenStream;
+use std::str::FromStr;
+use syn::{parse2, ItemMod};
+
 #[cxx_qt::bridge]
 mod qobject {
     unsafe extern "C++" {
@@ -87,8 +92,8 @@ impl qobject::SpanInspector {
                 let qt_thread = qt_thread.clone();
                 let text = document.to_plain_text().to_string();
                 std::thread::spawn(move || {
-                    let Ok(file) =
-                        syn::parse_file(&text).map_err(|err| eprintln!("Parsing error: {err}"))
+                    let Ok(file) = syn::parse_file(Self::expand(&text).as_str())
+                        .map_err(|err| eprintln!("Parsing error: {err}"))
                     else {
                         return;
                     };
@@ -101,5 +106,29 @@ impl qobject::SpanInspector {
                 });
             })
             .release();
+    }
+
+    // Expand this code as #[cxxqt_qt::bridge] would do
+    fn expand(input: &str) -> String {
+        println!("{}", &input);
+        let stream: TokenStream = TokenStream::from_str(input).unwrap();
+
+        let mut module: ItemMod = parse2(stream).expect("could not generate ItemMod");
+
+        let args = TokenStream::default();
+        let args_input = format!("#[cxx_qt::bridge({args})] mod dummy;");
+        let attrs = syn::parse_str::<ItemMod>(&args_input).unwrap().attrs;
+        module.attrs = attrs.into_iter().chain(module.attrs).collect();
+
+        format!("{}", Self::extract_and_generate(module))
+    }
+
+    // Take the module and C++ namespace and generate the rust code
+    fn extract_and_generate(module: ItemMod) -> TokenStream {
+        Parser::from(module)
+            .and_then(|parser| cxx_qt_gen::GeneratedRustBlocks::from(&parser))
+            .map(|generated_rust| write_rust(&generated_rust, None))
+            .unwrap_or_else(|err| err.to_compile_error())
+            .into()
     }
 }
