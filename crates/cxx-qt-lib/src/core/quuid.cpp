@@ -79,5 +79,18 @@ quuidFromRfc4122(const QByteArray& bytes)
 {
   return QUuid::fromRfc4122(bytes);
 }
+
+QUuid::Variant
+quuidVariant(const QUuid& uuid)
+{
+  return uuid.variant();
+}
+
+QUuid::Version
+quuidVersion(const QUuid& uuid)
+{
+  return uuid.version();
+}
+
 }
 }
