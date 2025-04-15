@@ -58,15 +58,6 @@ mod ffi {
         type QUuidVariant;
         type QUuidVersion;
 
-        /// Returns the value in the variant field of the UUID. If the return value is
-        /// `QUuidVariant::DCE`, call `version()` to see which layout it uses. The null UUID is
-        /// considered to be of an unknown variant.
-        fn variant(self: &QUuid) -> QUuidVariant;
-
-        /// Returns the version field of the UUID, if the UUID's variant field is `QUuidVariant::DCE`.
-        /// Otherwise it returns `QUuidVariant::VerUnknown`.
-        fn version(self: &QUuid) -> QUuidVersion;
-
         /// Returns the binary representation of this UUID. The byte array is in big endian format,
         /// and formatted according to RFC 4122, section 4.1.2 - "Layout and byte order".
         #[rust_name = "to_rfc_4122"]
@@ -96,6 +87,17 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "quuid_from_rfc_4122"]
         fn quuidFromRfc4122(bytes: &QByteArray) -> QUuid;
+
+        // Starting with Qt 6.9, Qt added an overload for QUuid::variant and QUuid::version.
+        // This breaks the signature expected by CXX.
+        // We therefore need to use these wrapper functions.
+        #[doc(hidden)]
+        #[rust_name = "quuid_variant"]
+        fn quuidVariant(quuid: &QUuid) -> QUuidVariant;
+        #[doc(hidden)]
+        #[rust_name = "quuid_version"]
+        fn quuidVersion(quuid: &QUuid) -> QUuidVersion;
+
     }
 }
 
@@ -240,6 +242,19 @@ impl QUuid {
                 data4: self.data4,
             }
         }
+    }
+
+    /// Returns the value in the variant field of the UUID. If the return value is
+    /// `QUuidVariant::DCE`, call `version()` to see which layout it uses. The null UUID is
+    /// considered to be of an unknown variant.
+    pub fn variant(&self) -> QUuidVariant {
+        ffi::quuid_variant(self)
+    }
+
+    /// Returns the version field of the UUID, if the UUID's variant field is `QUuidVariant::DCE`.
+    /// Otherwise it returns `QUuidVariant::VerUnknown`.
+    pub fn version(&self) -> QUuidVersion {
+        ffi::quuid_version(self)
     }
 }
 

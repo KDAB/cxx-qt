@@ -36,5 +36,11 @@ quuidFromStr(rust::Str string);
 QUuid
 quuidFromRfc4122(const QByteArray& bytes);
 
+QUuid::Variant
+quuidVariant(const QUuid& uuid);
+
+QUuid::Version
+quuidVersion(const QUuid& uuid);
+
 }
 }
