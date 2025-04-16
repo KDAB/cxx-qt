@@ -18,10 +18,6 @@ project(cxx_qt)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(MSVC)
-    set(CMAKE_MAP_IMPORTED_CONFIG_DEBUG "RELEASE")
-endif()
-
 include(CompilerCaching)
 
 # Enable extra Qt definitions for all projects
