@@ -43,7 +43,21 @@ impl NameState {
         };
         Ok(match state {
             FlagState::Auto => Self::Auto(auto_fn()),
-            FlagState::Custom(ident) => Self::Custom(lookup_fn(structured_qobject, ident)?),
+            FlagState::Custom(ident) => {
+                // Performs a lookup for a user defined method first, and then checks pending.
+                // Pending methods are those which will be auto generated for a property.
+                let lookup = lookup_fn(structured_qobject, ident);
+                let name = if let Ok(name) = lookup {
+                    name
+                } else if let Some(name) = structured_qobject.pending_lookup(ident) {
+                    // If a bridge method isn't found, it may be pending generation
+                    name
+                } else {
+                    // return the not found error if the method wasn't pending either
+                    lookup?
+                };
+                Self::Custom(name)
+            }
         })
     }
 }
@@ -126,20 +140,20 @@ fn capitalise_first(str: String) -> String {
 }
 
 /// For a given property name generate the getter name
-fn getter_name_from_property(name: &Name) -> Name {
+pub fn getter_name_from_property(name: &Name) -> Name {
     name.clone()
         .with_cxx_name(format!("get{}", capitalise_first(name.cxx_unqualified())))
 }
 
 /// For a given property name generate the setter name
-fn setter_name_from_property(name: &Name) -> Name {
+pub fn setter_name_from_property(name: &Name) -> Name {
     name.clone()
         .with_rust_name(format_ident!("set_{}", name.rust_unqualified()))
         .with_cxx_name(format!("set{}", capitalise_first(name.cxx_unqualified())))
 }
 
 /// For a given property name generate the notify signal name
-fn notify_name_from_property(name: &Name) -> Name {
+pub fn notify_name_from_property(name: &Name) -> Name {
     name.clone()
         .with_rust_name(format_ident!("{}_changed", name.rust_unqualified()))
         .with_cxx_name(format!("{}Changed", name.cxx_unqualified()))
@@ -147,11 +161,11 @@ fn notify_name_from_property(name: &Name) -> Name {
 
 #[cfg(test)]
 pub mod tests {
-    use syn::parse_quote;
-
     use super::*;
     use crate::parser::property::QPropertyFlags;
     use crate::parser::qobject::ParsedQObject;
+    use crate::parser::CaseConversion;
+    use syn::{parse_quote, ItemStruct};
 
     pub fn create_i32_qpropertyname() -> QPropertyNames {
         let property = ParsedQProperty {
@@ -165,6 +179,21 @@ pub mod tests {
         let structured_qobject = StructuredQObject::mock(&obj);
         QPropertyNames::try_from_property(&property, &structured_qobject)
             .expect("Failed to create QPropertyNames")
+    }
+
+    #[test]
+    fn test_invalid_custom_signal() {
+        let input: ItemStruct = parse_quote! {
+            #[qproperty(T, reused_prop, READ, WRITE, NOTIFY = unknown_signal)]
+            struct MyStruct;
+        };
+        let property = ParsedQProperty::parse(&input.attrs[0], CaseConversion::none()).unwrap();
+
+        let obj = ParsedQObject::mock();
+
+        let structured_qobject = StructuredQObject::mock(&obj);
+        let qproperty_names = QPropertyNames::try_from_property(&property, &structured_qobject);
+        assert!(qproperty_names.is_err());
     }
 
     #[test]
