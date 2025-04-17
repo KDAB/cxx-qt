@@ -46,7 +46,7 @@ if(MSVC)
     # Note: The Qt:: targets are ALIAS targets that do not support setting properties directly.
     # We therefore need to resolve the target names to either Qt5 or Qt6 directly.
     set_property(
-        TARGET ${Qt}::Core ${Qt}::Gui ${Qt}::Qml ${Qt}::QuickControls2 ${Qt}::QuickTest ${Qt}::Test
+        TARGET ${Qt}::Core ${Qt}::Gui ${Qt}::Qml ${Qt}::QuickControls2 ${Qt}::QuickTest ${Qt}::Test ${Qt}::Network
         PROPERTY MAP_IMPORTED_CONFIG_DEBUG "RELEASE")
 endif()
 
