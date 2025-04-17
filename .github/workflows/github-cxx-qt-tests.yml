@@ -216,6 +216,7 @@ jobs:
           arch: 'wasm_32'
           tools: 'tools_cmake'
           cache: true
+          extra: "-b https://mirrors.dotsrc.org/qtproject"
       - name: "Configure"
         # FIXME: ninja is not being found?
         env:
@@ -507,6 +508,7 @@ jobs:
         arch: ${{ matrix.aqt_arch }}
         tools: 'tools_cmake'
         cache: true
+        extra: "-b https://mirrors.dotsrc.org/qtproject"
 
     - name: "[Ubuntu] Install dependencies"
       if: runner.os == 'Linux'
