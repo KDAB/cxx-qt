@@ -534,11 +534,6 @@ jobs:
       if: runner.os == 'Windows'
       uses: seanmiddleditch/gha-setup-vsdevenv@v5
 
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.tmate_debugging }}
-      uses: mxschmitt/action-tmate@v3
-
     # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
     - name: "Configure"
       run: >-
@@ -555,6 +550,11 @@ jobs:
       run: cmake --build build --config ${{ matrix.build_type }} --parallel ${{ matrix.cores }}
       env:
         RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
+
+    # Enable tmate debugging of manually-triggered workflows if the input option was provided
+    - name: Setup tmate session
+      if: ${{ github.event_name == 'workflow_dispatch' && inputs.tmate_debugging }}
+      uses: mxschmitt/action-tmate@v3
 
     - name: "Print compiler cache statistics"
       run: sccache --show-stats
