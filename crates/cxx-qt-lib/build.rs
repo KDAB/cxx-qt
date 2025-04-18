@@ -46,6 +46,21 @@ fn write_headers_in(subfolder: &str) {
     }
 }
 
+fn clear_include_directory() {
+    if !header_dir().exists() {
+        return;
+    }
+    for entry in std::fs::read_dir(header_dir().as_path()).expect("Failed to read header directory")
+    {
+        let path = entry.expect("Failed to read path").path();
+        if path.is_dir() {
+            std::fs::remove_dir_all(path).expect("Failed to delete directory");
+        } else {
+            std::fs::remove_file(path).expect("Failed to delete file");
+        }
+    }
+}
+
 fn write_definitions_header() {
     // We cannot ensure that downstream dependencies set the same compile-time definitions.
     // So we generate a header file that adds those definitions, which will be passed along
@@ -102,6 +117,7 @@ fn main() {
     let qtbuild = qt_build_utils::QtBuild::new(vec!["Core".to_owned()])
         .expect("Could not find Qt installation");
 
+    clear_include_directory();
     write_headers();
 
     let emscripten_targeted = match std::env::var("CARGO_CFG_TARGET_OS") {
