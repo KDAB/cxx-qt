@@ -121,6 +121,10 @@ pub(crate) fn header_root() -> PathBuf {
     crate_target().join("include")
 }
 
+pub(crate) fn header_root_interface() -> PathBuf {
+    target().join("crates-include")
+}
+
 /// The OUT_DIR, converted into a PathBuf
 pub(crate) fn out() -> PathBuf {
     env::var("OUT_DIR").unwrap().into()
@@ -161,8 +165,8 @@ pub(crate) fn symlink_or_copy_directory(
     deep_copy_directory(source.as_ref(), dest.as_ref())
 }
 
-#[cfg(not(unix))]
-fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
+// #[cfg(not(unix))]
+pub(crate) fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
     fs::create_dir_all(dest)?;
     for entry in fs::read_dir(source)? {
         let entry = entry?;
@@ -183,7 +187,7 @@ fn deep_copy_directory(source: &Path, dest: &Path) -> Result<bool> {
     Ok(true)
 }
 
-#[cfg(not(unix))]
+// #[cfg(not(unix))]
 fn files_conflict(source: &Path, dest: &Path) -> Result<bool> {
     use fs::File;
     use std::io::{BufRead, BufReader};

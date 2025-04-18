@@ -20,8 +20,10 @@ pub mod dir;
 use dir::INCLUDE_VERB;
 
 mod dependencies;
-pub use dependencies::Interface;
 use dependencies::{Dependency, Manifest};
+
+mod interface;
+pub use interface::Interface;
 
 mod opts;
 pub use opts::CxxQtBuildersOpts;
@@ -368,7 +370,6 @@ pub struct CxxQtBuilder {
     qt_modules: HashSet<String>,
     qml_modules: Vec<OwningQmlModule>,
     cc_builder: cc::Build,
-    public_interface: Option<Interface>,
     include_prefix: String,
 }
 
@@ -408,7 +409,6 @@ impl CxxQtBuilder {
             qt_modules,
             qml_modules: vec![],
             cc_builder: cc::Build::new(),
-            public_interface: None,
             include_prefix: crate_name(),
         }
     }
@@ -417,15 +417,12 @@ impl CxxQtBuilder {
     /// included by later dependencies.
     ///
     /// The headers generated for this crate will be specified
-    pub fn library(interface_definition: Interface) -> Self {
-        let mut this = Self::new();
-        this.public_interface = Some(interface_definition);
-
+    pub fn library() -> Self {
         if link_name().is_none() {
             panic!("Building a Cxx-Qt based library requires setting a `links` field in the Cargo.toml file.\nConsider adding:\n\tlinks = \"{}\"\nto your Cargo.toml\n", crate_name());
         }
 
-        this
+        Self::new()
     }
 
     /// Specify rust file paths to parse through the cxx-qt marco
@@ -656,11 +653,19 @@ impl CxxQtBuilder {
     // or deep copy the files if the platform does not support symlinks.
     fn include_dependency(&mut self, dependency: &Dependency) {
         let header_root = dir::header_root();
-        let dependency_root = dependency.path.join("include");
+        let dependency_root = dependency.path.join("crates-include");
         for include_prefix in &dependency.manifest.exported_include_prefixes {
             // setup include directory
             let source = dependency_root.join(include_prefix);
             let dest = header_root.join(include_prefix);
+
+            // TODO: for now skip, this seems possible that not all crates have exports
+            if !Path::new(&source).is_dir() {
+                println!(
+                    "cargo::warning=Skipping {source:?} no exported includes found for dependency"
+                );
+                continue;
+            }
 
             match dir::symlink_or_copy_directory(source, dest) {
                 Ok(true) => (),
@@ -1037,42 +1042,6 @@ extern "C" bool {init_fun}() {{
             .collect()
     }
 
-    fn write_manifest(
-        &self,
-        dependencies: &[Dependency],
-        qt_modules: HashSet<String>,
-        initializers: Vec<qt_build_utils::Initializer>,
-    ) {
-        if let Some(interface) = &self.public_interface {
-            // We automatically reexport all qt_modules and downstream dependencies
-            // as they will always need to be enabled in the final binary.
-            // However, we only reexport the headers of libraries that
-            // are marked as re-export.
-            let dependencies = dependencies::reexported_dependencies(interface, dependencies);
-
-            let exported_include_prefixes =
-                dependencies::all_include_prefixes(interface, &dependencies);
-
-            let manifest = Manifest {
-                name: crate_name(),
-                link_name: link_name()
-                    .expect("The links key must be set when creating a library with CXX-Qt-build!"),
-                initializers,
-                qt_modules: qt_modules.into_iter().collect(),
-                exported_include_prefixes,
-            };
-
-            let manifest_path = dir::crate_target().join("manifest.json");
-            let manifest_json = serde_json::to_string_pretty(&manifest)
-                .expect("Failed to convert Manifest to JSON!");
-            std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
-            println!(
-                "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
-                manifest_path.to_string_lossy()
-            );
-        }
-    }
-
     fn qt_modules(&self, dependencies: &[Dependency]) -> HashSet<String> {
         let mut qt_modules = self.qt_modules.clone();
         for dependency in dependencies {
@@ -1081,25 +1050,9 @@ extern "C" bool {init_fun}() {{
         qt_modules
     }
 
-    fn write_interface_include_dirs(&self) {
-        let Some(interface) = &self.public_interface else {
-            return;
-        };
-        let header_root = dir::header_root();
-        for (header_dir, dest) in &interface.exported_include_directories {
-            let dest_dir = header_root.join(dest);
-            if let Err(e) = dir::symlink_or_copy_directory(header_dir, dest_dir) {
-                panic!(
-                        "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
-                        dir_name = header_dir.to_string_lossy()
-                    )
-            };
-        }
-    }
-
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
-    pub fn build(mut self) {
+    pub fn build(mut self) -> Interface {
         dir::clean(dir::crate_target()).expect("Failed to clean crate export directory!");
 
         // We will do these two steps first, as setting up the dependencies can modify flags we
@@ -1107,7 +1060,6 @@ extern "C" bool {init_fun}() {{
         // Also write the common headers first, to make sure they don't conflict with any
         // dependencies
         Self::write_common_headers();
-        self.write_interface_include_dirs();
         let dependencies = Dependency::find_all();
         for dependency in &dependencies {
             self.include_dependency(dependency);
@@ -1176,10 +1128,16 @@ extern "C" bool {init_fun}() {{
             self.cc_builder.compile(&static_lib_name());
         }
 
-        self.write_manifest(
-            &dependencies,
-            qt_modules,
-            vec![public_initializer.strip_file()],
-        );
+        Interface {
+            manifest: Manifest {
+                name: crate_name(),
+                link_name: link_name().unwrap_or_default(),
+                initializers: vec![public_initializer.strip_file()],
+                qt_modules: qt_modules.into_iter().collect(),
+                exported_include_prefixes: vec![],
+            },
+            dependencies,
+            ..Default::default()
+        }
     }
 }
