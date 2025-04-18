@@ -41,32 +41,30 @@ mod qobject {
 
         #[cxx_override]
         #[rust_name = "row_count"]
-        fn rowCount(self: &TodoList, parent: &QModelIndex) -> i32;
+        fn rowCount(&self, parent: &QModelIndex) -> i32;
 
         #[cxx_override]
-        fn data(self: &TodoList, index: &QModelIndex, role: i32) -> QVariant;
+        fn data(&self, index: &QModelIndex, role: i32) -> QVariant;
 
         #[cxx_override]
         #[rust_name = "role_names"]
-        fn roleNames(self: &TodoList) -> QHash_i32_QByteArray;
-    }
+        fn roleNames(&self) -> QHash_i32_QByteArray;
 
-    unsafe extern "RustQt" {
         #[qinvokable]
         #[rust_name = "set_checked"]
-        fn setChecked(self: Pin<&mut TodoList>, row: i32, checked: bool);
+        fn setChecked(self: Pin<&mut Self>, row: i32, checked: bool);
 
         #[inherit]
         #[rust_name = "begin_reset_model"]
-        fn beginResetModel(self: Pin<&mut TodoList>);
+        fn beginResetModel(self: Pin<&mut Self>);
 
         #[inherit]
         #[rust_name = "end_reset_model"]
-        fn endResetModel(self: Pin<&mut TodoList>);
+        fn endResetModel(self: Pin<&mut Self>);
 
         #[qinvokable]
         #[rust_name = "add_todo"]
-        fn addTodo(self: Pin<&mut TodoList>, todo: &QString);
+        fn addTodo(self: Pin<&mut Self>, todo: &QString);
     }
 }
 
