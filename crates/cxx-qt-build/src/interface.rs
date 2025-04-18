@@ -133,7 +133,8 @@ impl Interface {
     }
 
     fn write_exported_include_directories(&self) {
-        let header_root = dir::header_root();
+        let header_root = dir::header_root_interface();
+        std::fs::create_dir_all(&header_root).expect("Failed to create header root for interface");
         for (header_dir, dest) in &self.exported_include_directories {
             let dest_dir = header_root.join(dest);
             match dir::symlink_or_copy_directory(header_dir, &dest_dir) {
@@ -149,6 +150,21 @@ impl Interface {
                 Err(e) => panic!(
                         "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
                         dir_name = header_dir.to_string_lossy()
+                    )
+            };
+        }
+
+        // TODO: needs tidying but add an reexport links to the exported include dir
+        let header_root_includes = dir::header_root();
+        for reexport in &self.reexport_links {
+            let source_dir = header_root_includes.join(reexport);
+            let dest_dir = header_root.join(reexport);
+            match dir::symlink_or_copy_directory(&source_dir, &dest_dir) {
+                Ok(true) => {},
+                Ok(false) => panic!("Failed to create symlink folder already exists!"),
+                Err(e) => panic!(
+                        "Failed to {INCLUDE_VERB} `{reexport}` for export_include_directory `{dir_name}`: {e:?}",
+                        dir_name = source_dir.to_string_lossy()
                     )
             };
         }

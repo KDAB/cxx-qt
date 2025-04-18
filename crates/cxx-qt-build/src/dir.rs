@@ -121,6 +121,10 @@ pub(crate) fn header_root() -> PathBuf {
     crate_target().join("include")
 }
 
+pub(crate) fn header_root_interface() -> PathBuf {
+    target().join("crates-include")
+}
+
 /// The OUT_DIR, converted into a PathBuf
 pub(crate) fn out() -> PathBuf {
     env::var("OUT_DIR").unwrap().into()

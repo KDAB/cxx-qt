@@ -653,11 +653,19 @@ impl CxxQtBuilder {
     // or deep copy the files if the platform does not support symlinks.
     fn include_dependency(&mut self, dependency: &Dependency) {
         let header_root = dir::header_root();
-        let dependency_root = dependency.path.join("include");
+        let dependency_root = dependency.path.join("crates-include");
         for include_prefix in &dependency.manifest.exported_include_prefixes {
             // setup include directory
             let source = dependency_root.join(include_prefix);
             let dest = header_root.join(include_prefix);
+
+            // TODO: for now skip, this seems possible that not all crates have exports
+            if !Path::new(&source).is_dir() {
+                println!(
+                    "cargo::warning=Skipping {source:?} no exported includes found for dependency"
+                );
+                continue;
+            }
 
             match dir::symlink_or_copy_directory(source, dest) {
                 Ok(true) => (),
