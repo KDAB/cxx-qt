@@ -653,11 +653,17 @@ impl CxxQtBuilder {
     // or deep copy the files if the platform does not support symlinks.
     fn include_dependency(&mut self, dependency: &Dependency) {
         let header_root = dir::header_root();
-        let dependency_root = dependency.path.join("include");
+        // Note must be kept in sync with dir.rs
+        let dependency_root = dependency.path.join("include-interface");
         for include_prefix in &dependency.manifest.exported_include_prefixes {
             // setup include directory
             let source = dependency_root.join(include_prefix);
             let dest = header_root.join(include_prefix);
+
+            // Not all crates have include interface, skip it this does not exist
+            if !Path::new(&source).is_dir() {
+                continue;
+            }
 
             match dir::symlink_or_copy_directory(source, dest) {
                 Ok(true) => (),
