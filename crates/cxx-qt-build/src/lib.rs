@@ -415,18 +415,6 @@ impl CxxQtBuilder {
         }
     }
 
-    /// Create a new builder that is set up to create a library crate that is meant to be
-    /// included by later dependencies.
-    ///
-    /// The headers generated for this crate will be specified
-    pub fn library() -> Self {
-        if link_name().is_none() {
-            panic!("Building a Cxx-Qt based library requires setting a `links` field in the Cargo.toml file.\nConsider adding:\n\tlinks = \"{}\"\nto your Cargo.toml\n", crate_name());
-        }
-
-        Self::new()
-    }
-
     /// Specify rust file paths to parse through the cxx-qt marco
     /// Relative paths are treated as relative to the path of your crate's Cargo.toml file
     pub fn file(mut self, rust_source: impl AsRef<Path>) -> Self {
@@ -480,7 +468,7 @@ impl CxxQtBuilder {
     /// The `Core` module and any modules from dependencies are linked automatically; there is no need to specify them.
     ///
     /// Note that any qt_module you specify here will be enabled for all downstream
-    /// dependencies as well if this crate is built as a library with [CxxQtBuilder::library].
+    /// dependencies as well if this crate is exported.
     /// It is therefore best practice to specify features on your crate that allow downstream users
     /// to disable any qt modules that are optional.
     pub fn qt_module(mut self, module: &str) -> Self {
