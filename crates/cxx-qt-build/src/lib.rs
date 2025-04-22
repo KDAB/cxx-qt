@@ -1122,8 +1122,10 @@ extern "C" bool {init_fun}() {{
 
         let header_root = dir::header_root();
 
-        let mut qtbuild = qt_build_utils::QtBuild::new(qt_modules.iter().cloned().collect())
-            .expect("Could not find Qt installation");
+        let mut qtbuild = qt_build_utils::QtBuild::new_with_default_installation(
+            qt_modules.iter().cloned().collect(),
+        )
+        .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
         Self::define_qt_version_cfg_variables(qtbuild.version());
 
