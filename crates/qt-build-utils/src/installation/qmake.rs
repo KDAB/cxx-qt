@@ -101,8 +101,30 @@ impl TryFrom<PathBuf> for QtInstallationQMake {
 }
 
 impl QtInstallation for QtInstallationQMake {
-    fn include_paths(&self, _qt_modules: &[String]) -> Vec<PathBuf> {
-        todo!()
+    fn include_paths(&self, qt_modules: &[String]) -> Vec<PathBuf> {
+        let root_path = self.qmake_query("QT_INSTALL_HEADERS");
+        let lib_path = self.qmake_query("QT_INSTALL_LIBS");
+        let mut paths = Vec::new();
+        for qt_module in qt_modules {
+            // Add the usual location for the Qt module
+            paths.push(format!("{root_path}/Qt{qt_module}"));
+
+            // Ensure that we add any framework's headers path
+            let header_path = format!("{lib_path}/Qt{qt_module}.framework/Headers");
+            if utils::is_apple_target() && Path::new(&header_path).exists() {
+                paths.push(header_path);
+            }
+        }
+
+        // Add the QT_INSTALL_HEADERS itself
+        paths.push(root_path);
+
+        paths
+            .iter()
+            .map(PathBuf::from)
+            // Only add paths if they exist
+            .filter(|path| path.exists())
+            .collect()
     }
 
     fn link_modules(&self, builder: &mut cc::Build, qt_modules: &[String]) {
