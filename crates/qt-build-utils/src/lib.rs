@@ -237,10 +237,6 @@ pub struct QmlModuleRegistrationFiles {
 pub struct QtBuild {
     qt_installation: Box<dyn QtInstallation>,
     qmake_executable: String,
-    moc_executable: Option<String>,
-    qmltyperegistrar_executable: Option<String>,
-    qmlcachegen_executable: Option<String>,
-    rcc_executable: Option<String>,
     qt_modules: Vec<String>,
 }
 
@@ -348,10 +344,6 @@ impl QtBuild {
                     return Ok(Self {
                         qt_installation,
                         qmake_executable: executable_name.to_string(),
-                        moc_executable: None,
-                        qmltyperegistrar_executable: None,
-                        qmlcachegen_executable: None,
-                        rcc_executable: None,
                         qt_modules,
                     });
                 }
@@ -373,10 +365,6 @@ impl QtBuild {
                     return Ok(Self {
                         qt_installation,
                         qmake_executable: executable_name.to_string(),
-                        moc_executable: None,
-                        qmltyperegistrar_executable: None,
-                        qmlcachegen_executable: None,
-                        rcc_executable: None,
                         qt_modules,
                     });
                 }
@@ -638,70 +626,15 @@ impl QtBuild {
         self.qt_installation.version()
     }
 
-    /// Lazy load the path of a Qt executable tool
-    /// Skip doing this in the constructor because not every user of this crate will use each tool
-    fn get_qt_tool(&self, tool_name: &str) -> Result<String, ()> {
-        // "qmake -query" exposes a list of paths that describe where Qt executables and libraries
-        // are located, as well as where new executables & libraries should be installed to.
-        // We can use these variables to find any Qt tool.
-        //
-        // The order is important here.
-        // First, we check the _HOST_ variables.
-        // In cross-compilation contexts, these variables should point to the host toolchain used
-        // for building. The _INSTALL_ directories describe where to install new binaries to
-        // (i.e. the target directories).
-        // We still use the _INSTALL_ paths as fallback.
-        //
-        // The _LIBEXECS variables point to the executable Qt-internal tools (i.e. moc and
-        // friends), whilst _BINS point to the developer-facing executables (qdoc, qmake, etc.).
-        // As we mostly use the Qt-internal tools in this library, check _LIBEXECS first.
-        //
-        // Furthermore, in some contexts these variables include a `/get` variant.
-        // This is important for contexts where qmake and the Qt build tools do not have a static
-        // location, but are moved around during building.
-        // This notably happens with yocto builds.
-        // For each package, yocto builds a `sysroot` folder for both the host machine, as well
-        // as the target. This is done to keep package builds reproducable & separate.
-        // As a result the qmake executable is copied into each host sysroot for building.
-        //
-        // In this case the variables compiled into qmake still point to the paths relative
-        // from the host sysroot (e.g. /usr/bin).
-        // The /get variant in comparison will "get" the right full path from the current environment.
-        // Therefore prefer to use the `/get` variant when available.
-        // See: https://github.com/KDAB/cxx-qt/pull/430
-        //
-        // To check & debug all variables available on your system, simply run:
-        //
-        //              qmake -query
-        //
-        for qmake_query_var in [
-            "QT_HOST_LIBEXECS/get",
-            "QT_HOST_LIBEXECS",
-            "QT_HOST_BINS/get",
-            "QT_HOST_BINS",
-            "QT_INSTALL_LIBEXECS/get",
-            "QT_INSTALL_LIBEXECS",
-            "QT_INSTALL_BINS/get",
-            "QT_INSTALL_BINS",
-        ] {
-            let executable_path = format!("{}/{tool_name}", self.qmake_query(qmake_query_var));
-            match Command::new(&executable_path).args(["-help"]).output() {
-                Ok(_) => return Ok(executable_path),
-                Err(_) => continue,
-            }
-        }
-        Err(())
-    }
-
     /// Run moc on a C++ header file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
     /// The return value contains the path to the generated C++ file, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file),
     /// as well as the path to the generated metatypes.json file, which can be passed to [register_qml_module](Self::register_qml_module).
     ///
     pub fn moc(&mut self, input_file: impl AsRef<Path>, arguments: MocArguments) -> MocProducts {
-        if self.moc_executable.is_none() {
-            self.moc_executable = Some(self.get_qt_tool("moc").expect("Could not find moc"));
-        }
-
+        let moc_executable = self
+            .qt_installation
+            .try_find_tool(QtTool::Moc)
+            .expect("Could not find moc");
         let input_path = input_file.as_ref();
 
         // Put all the moc files into one place, this can then be added to the include path
@@ -727,7 +660,7 @@ impl QtBuild {
             include_args.push(format!("-I{}", include_path.display()));
         }
 
-        let mut cmd = Command::new(self.moc_executable.as_ref().unwrap());
+        let mut cmd = Command::new(moc_executable);
 
         if let Some(uri) = arguments.uri {
             cmd.arg(format!("-Muri={uri}"));
@@ -773,18 +706,20 @@ impl QtBuild {
         qml_files: &[impl AsRef<Path>],
         qrc_files: &[impl AsRef<Path>],
     ) -> QmlModuleRegistrationFiles {
-        if self.qmltyperegistrar_executable.is_none() {
-            self.qmltyperegistrar_executable = Some(
-                self.get_qt_tool("qmltyperegistrar")
-                    .expect("Could not find qmltyperegistrar"),
-            );
-        }
+        let qmltyperegistrar_executable = self
+            .qt_installation
+            .try_find_tool(QtTool::QmlTypeRegistrar)
+            .expect("Could not find qmltyperegistrar");
         // qmlcachegen has a different CLI in Qt 5, so only support Qt >= 6
-        if self.qmlcachegen_executable.is_none() && self.qt_installation.version().major >= 6 {
-            if let Ok(qmlcachegen_executable) = self.get_qt_tool("qmlcachegen") {
-                self.qmlcachegen_executable = Some(qmlcachegen_executable);
-            }
-        }
+        let qmlcachegen_executable = if self.qt_installation.version().major >= 6 {
+            Some(
+                self.qt_installation
+                    .try_find_tool(QtTool::QmlCacheGen)
+                    .expect("Could not find qmlcachegen"),
+            )
+        } else {
+            None
+        };
 
         let qml_uri_dirs = uri.replace('.', "/");
 
@@ -860,7 +795,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
         // qmlcachegen needs to be run once for each .qml file with --resource-path,
         // then once for the module with --resource-name.
         let mut qmlcachegen_file_paths = Vec::new();
-        if let Some(qmlcachegen_executable) = &self.qmlcachegen_executable {
+        if let Some(qmlcachegen_executable) = &qmlcachegen_executable {
             let qmlcachegen_dir = qt_build_utils_dir.join("qmlcachegen").join(&qml_uri_dirs);
             std::fs::create_dir_all(&qmlcachegen_dir)
                 .expect("Could not create qmlcachegen directory for QML module");
@@ -978,7 +913,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
                 qmltyperegistrar_output_path.to_string_lossy().to_string(),
             ];
             args.extend(metatypes_json);
-            let cmd = Command::new(self.qmltyperegistrar_executable.as_ref().unwrap())
+            let cmd = Command::new(qmltyperegistrar_executable)
                 .args(args)
                 .output()
                 .unwrap_or_else(|_| panic!("qmltyperegistrar failed for {uri}"));
@@ -1009,7 +944,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
                 &format!("qInitResources_qml_module_resources_{qml_uri_underscores}_qrc"),
             );
 
-            if !qml_files.is_empty() && self.qmlcachegen_executable.is_some() {
+            if !qml_files.is_empty() && qmlcachegen_executable.is_some() {
                 generate_usage(
                     "int",
                     &format!("qInitResources_qmlcache_{qml_uri_underscores}"),
@@ -1088,10 +1023,10 @@ Q_IMPORT_PLUGIN({plugin_class_name});
     /// the `+whole-archive` flag is used, or the initializer function is called by the
     /// application.
     pub fn qrc(&mut self, input_file: &impl AsRef<Path>) -> Initializer {
-        if self.rcc_executable.is_none() {
-            self.rcc_executable = Some(self.get_qt_tool("rcc").expect("Could not find rcc"));
-        }
-
+        let rcc_executable = self
+            .qt_installation
+            .try_find_tool(QtTool::Rcc)
+            .expect("Could not find rcc");
         let input_path = input_file.as_ref();
         let output_folder = PathBuf::from(&format!(
             "{}/qt-build-utils/qrc",
@@ -1108,7 +1043,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             .to_string_lossy()
             .replace('.', "_");
 
-        let cmd = Command::new(self.rcc_executable.as_ref().unwrap())
+        let cmd = Command::new(rcc_executable)
             .args([
                 input_path.to_str().unwrap(),
                 "-o",
@@ -1143,13 +1078,14 @@ Q_IMPORT_PLUGIN({plugin_class_name});
 
     /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and return the paths of the sources
     pub fn qrc_list(&mut self, input_file: &impl AsRef<Path>) -> Vec<PathBuf> {
-        if self.rcc_executable.is_none() {
-            self.rcc_executable = Some(self.get_qt_tool("rcc").expect("Could not find rcc"));
-        }
+        let rcc_executable = self
+            .qt_installation
+            .try_find_tool(QtTool::Rcc)
+            .expect("Could not find rcc");
 
         // Add the qrc file contents to the cargo rerun list
         let input_path = input_file.as_ref();
-        let cmd_list = Command::new(self.rcc_executable.as_ref().unwrap())
+        let cmd_list = Command::new(rcc_executable)
             .args(["--list", input_path.to_str().unwrap()])
             .output()
             .unwrap_or_else(|_| panic!("rcc --list failed for {}", input_path.display()));
