@@ -347,7 +347,7 @@ fn main() {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
-    let mut builder = CxxQtBuilder::library()
+    let mut builder = CxxQtBuilder::new()
         // Use a short name due to the Windows file path limit!
         // We don't re-export these headers anyway
         .include_prefix("private")

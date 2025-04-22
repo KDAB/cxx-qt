@@ -34,7 +34,7 @@ fn write_headers() {
 fn main() {
     write_headers();
 
-    let mut builder = CxxQtBuilder::library();
+    let mut builder = CxxQtBuilder::new();
 
     let cpp_files = ["src/connection.cpp"];
     let rust_bridges = ["src/connection.rs", "src/qobject.rs"];

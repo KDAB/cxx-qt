@@ -6,7 +6,7 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::library()
+    CxxQtBuilder::new()
         .qml_module(QmlModule::<_, &str> {
             uri: "com.kdab.cxx_qt.demo.sub2",
             rust_files: &["src/sub2_object.rs"],

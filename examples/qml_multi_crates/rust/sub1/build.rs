@@ -6,7 +6,7 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::library()
+    CxxQtBuilder::new()
         .qt_module("Network")
         .qml_module(QmlModule::<_, &str> {
             uri: "com.kdab.cxx_qt.demo.sub1",
