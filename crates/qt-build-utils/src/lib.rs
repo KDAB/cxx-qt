@@ -17,6 +17,9 @@
 
 mod parse_cflags;
 
+mod tool;
+pub use tool::QtTool;
+
 use std::{
     env,
     fs::File,
