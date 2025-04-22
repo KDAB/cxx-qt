@@ -21,6 +21,7 @@ pub use installation::QtInstallation;
 #[cfg(feature = "qmake")]
 pub use installation::qmake::QtInstallationQMake;
 
+#[cfg(feature = "qmake")]
 mod parse_cflags;
 
 mod tool;
