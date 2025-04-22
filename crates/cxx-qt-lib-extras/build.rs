@@ -6,9 +6,7 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    let mut builder = CxxQtBuilder::library()
-        .qt_module("Gui")
-        .qt_module("Widgets");
+    let mut builder = CxxQtBuilder::new().qt_module("Gui").qt_module("Widgets");
 
     let rust_bridges = vec![
         "core/qelapsedtimer",

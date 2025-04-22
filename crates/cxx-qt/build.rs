@@ -6,7 +6,7 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    let mut builder = CxxQtBuilder::library();
+    let mut builder = CxxQtBuilder::new();
 
     let cpp_files = ["src/connection.cpp"];
     let rust_bridges = ["src/connection.rs", "src/qobject.rs"];
