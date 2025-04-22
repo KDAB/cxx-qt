@@ -26,6 +26,8 @@ mod parse_cflags;
 mod tool;
 pub use tool::QtTool;
 
+mod utils;
+
 use std::{
     env,
     fs::File,
@@ -74,13 +76,6 @@ pub enum QtBuildError {
 
 fn command_help_output(command: &str) -> std::io::Result<std::process::Output> {
     Command::new(command).args(["--help"]).output()
-}
-
-/// Whether apple is the current target
-fn is_apple_target() -> bool {
-    env::var("TARGET")
-        .map(|target| target.contains("apple"))
-        .unwrap_or_else(|_| false)
 }
 
 /// Linking executables (including tests) with Cargo that link to Qt fails to link with GNU ld.bfd,
@@ -496,7 +491,7 @@ impl QtBuild {
         //
         // Note that this adds the framework path which allows for
         // includes such as <QtCore/QObject> to be resolved correctly
-        if is_apple_target() {
+        if utils::is_apple_target() {
             println!("cargo::rustc-link-search=framework={lib_path}");
 
             // Ensure that any framework paths are set to -F
@@ -522,7 +517,7 @@ impl QtBuild {
         };
 
         for qt_module in &self.qt_modules {
-            let framework = if is_apple_target() {
+            let framework = if utils::is_apple_target() {
                 Path::new(&format!("{lib_path}/Qt{qt_module}.framework")).exists()
             } else {
                 false
@@ -555,11 +550,7 @@ impl QtBuild {
             );
         }
 
-        let emscripten_targeted = match env::var("CARGO_CFG_TARGET_OS") {
-            Ok(val) => val == "emscripten",
-            Err(_) => false,
-        };
-        if emscripten_targeted {
+        if utils::is_emscripten_target() {
             let platforms_path = format!("{}/platforms", self.qmake_query("QT_INSTALL_PLUGINS"));
             println!("cargo::rustc-link-search={platforms_path}");
             self.cargo_link_qt_library(
@@ -605,7 +596,7 @@ impl QtBuild {
 
             // Ensure that we add any framework's headers path
             let header_path = format!("{lib_path}/Qt{qt_module}.framework/Headers");
-            if is_apple_target() && Path::new(&header_path).exists() {
+            if utils::is_apple_target() && Path::new(&header_path).exists() {
                 paths.push(header_path);
             }
         }
