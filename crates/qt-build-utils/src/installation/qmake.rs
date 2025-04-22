@@ -13,14 +13,46 @@ use std::{
 
 use crate::{parse_cflags, utils, QtBuildError, QtInstallation, QtTool};
 
-/// TODO
+/// A implementation of [QtInstallation] using qmake
 pub struct QtInstallationQMake {
     qmake_path: PathBuf,
     qmake_version: Version,
 }
 
 impl QtInstallationQMake {
-    /// TODO
+    /// The directories specified by the `PATH` environment variable are where qmake is
+    /// searched for. Alternatively, the `QMAKE` environment variable may be set to specify
+    /// an explicit path to qmake.
+    ///
+    /// If multiple major versions (for example, `5` and `6`) of Qt could be installed, set
+    /// the `QT_VERSION_MAJOR` environment variable to force which one to use. When using Cargo
+    /// as the build system for the whole build, prefer using `QT_VERSION_MAJOR` over the `QMAKE`
+    /// environment variable because it will account for different names for the qmake executable
+    /// that some Linux distributions use.
+    ///
+    /// However, when building a Rust staticlib that gets linked to C++ code by a C++ build
+    /// system, it is best to use the `QMAKE` environment variable to ensure that the Rust
+    /// staticlib is linked to the same installation of Qt that the C++ build system has
+    /// detected.
+    /// With CMake, this will automatically be set up for you when using cxxqt_import_crate.
+    ///
+    /// Alternatively, you can get this from the `Qt::qmake` target's `IMPORTED_LOCATION`
+    /// property, for example:
+    /// ```cmake
+    /// find_package(Qt6 COMPONENTS Core)
+    /// if(NOT Qt6_FOUND)
+    ///     find_package(Qt5 5.15 COMPONENTS Core REQUIRED)
+    /// endif()
+    /// get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
+    ///
+    /// execute_process(
+    ///     COMMAND cmake -E env
+    ///         "CARGO_TARGET_DIR=${CMAKE_CURRENT_BINARY_DIR}/cargo"
+    ///         "QMAKE=${QMAKE}"
+    ///         cargo build
+    ///     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+    /// )
+    /// ```
     pub fn new() -> anyhow::Result<Self> {
         // Try the QMAKE variable first
         println!("cargo::rerun-if-env-changed=QMAKE");

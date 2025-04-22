@@ -228,7 +228,7 @@ pub struct QmlModuleRegistrationFiles {
 ///     .iter()
 ///     .map(|m| String::from(*m))
 ///     .collect();
-/// let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
+/// let qtbuild = qt_build_utils::QtBuild::new_with_default_installation(qt_modules).expect("Could not find Qt installation");
 /// ```
 pub struct QtBuild {
     qt_installation: Box<dyn QtInstallation>,
@@ -236,58 +236,31 @@ pub struct QtBuild {
 }
 
 impl QtBuild {
-    /// Search for where Qt is installed using qmake. Specify the Qt modules you are
-    /// linking with the `qt_modules` parameter, ommitting the `Qt` prefix (`"Core"`
-    /// rather than `"QtCore"`). After construction, use the [QtBuild::qmake_query]
-    /// method to get information about the Qt installation.
-    ///
-    /// The directories specified by the `PATH` environment variable are where qmake is
-    /// searched for. Alternatively, the `QMAKE` environment variable may be set to specify
-    /// an explicit path to qmake.
-    ///
-    /// If multiple major versions (for example, `5` and `6`) of Qt could be installed, set
-    /// the `QT_VERSION_MAJOR` environment variable to force which one to use. When using Cargo
-    /// as the build system for the whole build, prefer using `QT_VERSION_MAJOR` over the `QMAKE`
-    /// environment variable because it will account for different names for the qmake executable
-    /// that some Linux distributions use.
-    ///
-    /// However, when building a Rust staticlib that gets linked to C++ code by a C++ build
-    /// system, it is best to use the `QMAKE` environment variable to ensure that the Rust
-    /// staticlib is linked to the same installation of Qt that the C++ build system has
-    /// detected.
-    /// With CMake, this will automatically be set up for you when using cxxqt_import_crate.
-    ///
-    /// Alternatively, you can get this from the `Qt::qmake` target's `IMPORTED_LOCATION`
-    /// property, for example:
-    /// ```cmake
-    /// find_package(Qt6 COMPONENTS Core)
-    /// if(NOT Qt6_FOUND)
-    ///     find_package(Qt5 5.15 COMPONENTS Core REQUIRED)
-    /// endif()
-    /// get_target_property(QMAKE Qt::qmake IMPORTED_LOCATION)
-    ///
-    /// execute_process(
-    ///     COMMAND cmake -E env
-    ///         "CARGO_TARGET_DIR=${CMAKE_CURRENT_BINARY_DIR}/cargo"
-    ///         "QMAKE=${QMAKE}"
-    ///         cargo build
-    ///     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
-    /// )
-    /// ```
-    pub fn new(mut qt_modules: Vec<String>) -> anyhow::Result<Self> {
-        if qt_modules.is_empty() {
-            qt_modules.push("Core".to_string());
-        }
-
+    /// Create a [QtBuild] using the default [QtInstallation] (currently uses [QtInstallationQMake])
+    /// and specify which Qt modules you are linking, ommitting the `Qt` prefix (`"Core"`
+    /// rather than `"QtCore"`).
+    //
+    // TODO: is there a better name for this method or a sane way to create a default QtInstallation?
+    pub fn new_with_default_installation(qt_modules: Vec<String>) -> anyhow::Result<Self> {
         #[cfg(feature = "qmake")]
         let qt_installation = Box::new(QtInstallationQMake::new()?);
         #[cfg(not(feature = "qmake"))]
         unsupported!("Only qmake feature is supported");
 
-        Ok(Self {
+        Ok(Self::new(qt_installation, qt_modules))
+    }
+
+    /// Create a [QtBuild] using the given [QtInstallation] and specify which
+    /// Qt modules you are linking, ommitting the `Qt` prefix (`"Core"` rather than `"QtCore"`).
+    pub fn new(qt_installation: Box<dyn QtInstallation>, mut qt_modules: Vec<String>) -> Self {
+        if qt_modules.is_empty() {
+            qt_modules.push("Core".to_string());
+        }
+
+        Self {
             qt_installation,
             qt_modules,
-        })
+        }
     }
 
     /// Tell Cargo to link each Qt module.
