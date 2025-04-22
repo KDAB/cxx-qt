@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use crate::{dir, dir::INCLUDE_VERB, Dependency, Manifest};
 
 /// When generating a library with cxx-qt-build, the library may need to export certain flags or headers.
-/// These are all specified by this Interface struct, which should be passed to the [crate::CxxQtBuilder::library] function.
+/// These are all specified by this Interface struct.
 pub struct Interface {
     // The name of the links keys, whose CXX-Qt dependencies to reexport
     pub(crate) reexport_links: HashSet<String>,
