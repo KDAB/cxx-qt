@@ -32,8 +32,8 @@ use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
 pub use qt_build_utils::MocArguments;
-use qt_build_utils::SemVer;
 use quote::ToTokens;
+use semver::Version;
 use std::{
     collections::HashSet,
     env,
@@ -600,7 +600,7 @@ impl CxxQtBuilder {
         }
     }
 
-    fn define_qt_version_cfg_variables(version: &SemVer) {
+    fn define_qt_version_cfg_variables(version: Version) {
         // Allow for Qt 5 or Qt 6 as valid values
         CxxQtBuilder::define_cfg_check_variable(
             "cxxqt_qt_version_major".to_owned(),

@@ -34,8 +34,7 @@ use std::{
     process::Command,
 };
 
-pub use versions::SemVer;
-
+use semver::Version;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -237,7 +236,6 @@ pub struct QmlModuleRegistrationFiles {
 /// ```
 pub struct QtBuild {
     qt_installation: Box<dyn QtInstallation>,
-    version: SemVer,
     qmake_executable: String,
     moc_executable: Option<String>,
     qmltyperegistrar_executable: Option<String>,
@@ -297,7 +295,7 @@ impl QtBuild {
 
         println!("cargo::rerun-if-env-changed=QMAKE");
         println!("cargo::rerun-if-env-changed=QT_VERSION_MAJOR");
-        fn verify_candidate(candidate: &str) -> Result<(&str, versions::SemVer), QtBuildError> {
+        fn verify_candidate(candidate: &str) -> Result<&str, QtBuildError> {
             match Command::new(candidate)
                 .args(["-query", "QT_VERSION"])
                 .output()
@@ -310,14 +308,14 @@ impl QtBuild {
                             .unwrap()
                             .trim()
                             .to_string();
-                        let qmake_version = versions::SemVer::new(version_string).unwrap();
+                        let qmake_version = Version::parse(&version_string).unwrap();
                         if let Ok(env_version) = env::var("QT_VERSION_MAJOR") {
                             let env_version = match env_version.trim().parse::<u64>() {
                                 Err(e) if *e.kind() == std::num::IntErrorKind::Empty => {
                                     println!(
                                         "cargo::warning=QT_VERSION_MAJOR environment variable defined but empty"
                                     );
-                                    return Ok((candidate, qmake_version));
+                                    return Ok(candidate);
                                 }
                                 Err(e) => {
                                     return Err(QtBuildError::QtVersionMajorInvalid {
@@ -328,7 +326,7 @@ impl QtBuild {
                                 Ok(int) => int,
                             };
                             if env_version == qmake_version.major as u64 {
-                                return Ok((candidate, qmake_version));
+                                return Ok(candidate);
                             } else {
                                 return Err(QtBuildError::QtVersionMajorDoesNotMatch {
                                     qmake_version: qmake_version.major as u64,
@@ -336,7 +334,7 @@ impl QtBuild {
                                 });
                             }
                         }
-                        Ok((candidate, qmake_version))
+                        Ok(candidate)
                     } else {
                         Err(QtBuildError::QtMissing)
                     }
@@ -346,7 +344,7 @@ impl QtBuild {
 
         if let Ok(qmake_env_var) = env::var("QMAKE") {
             match verify_candidate(qmake_env_var.trim()) {
-                Ok((executable_name, version)) => {
+                Ok(executable_name) => {
                     return Ok(Self {
                         qt_installation,
                         qmake_executable: executable_name.to_string(),
@@ -354,7 +352,6 @@ impl QtBuild {
                         qmltyperegistrar_executable: None,
                         qmlcachegen_executable: None,
                         rcc_executable: None,
-                        version,
                         qt_modules,
                     });
                 }
@@ -372,7 +369,7 @@ impl QtBuild {
         let candidate_executable_names = ["qmake6", "qmake-qt5", "qmake"];
         for (index, executable_name) in candidate_executable_names.iter().enumerate() {
             match verify_candidate(executable_name) {
-                Ok((executable_name, version)) => {
+                Ok(executable_name) => {
                     return Ok(Self {
                         qt_installation,
                         qmake_executable: executable_name.to_string(),
@@ -380,7 +377,6 @@ impl QtBuild {
                         qmltyperegistrar_executable: None,
                         qmlcachegen_executable: None,
                         rcc_executable: None,
-                        version,
                         qt_modules,
                     });
                 }
@@ -464,7 +460,7 @@ impl QtBuild {
         &self,
         lib_path: &str,
         prefix: &str,
-        version_major: u32,
+        version_major: u64,
         qt_module: &str,
     ) -> String {
         for arch in ["", "_arm64-v8a", "_armeabi-v7a", "_x86", "_x86_64"] {
@@ -551,13 +547,18 @@ impl QtBuild {
                 )
             } else {
                 (
-                    format!("Qt{}{qt_module}", self.version.major),
-                    self.find_qt_module_prl(&lib_path, prefix, self.version.major, qt_module),
+                    format!("Qt{}{qt_module}", self.qt_installation.version().major),
+                    self.find_qt_module_prl(
+                        &lib_path,
+                        prefix,
+                        self.qt_installation.version().major,
+                        qt_module,
+                    ),
                 )
             };
 
             self.cargo_link_qt_library(
-                &format!("Qt{}{qt_module}", self.version.major),
+                &format!("Qt{}{qt_module}", self.qt_installation.version().major),
                 &prefix_path,
                 &lib_path,
                 &link_lib,
@@ -633,9 +634,8 @@ impl QtBuild {
     }
 
     /// Version of the detected Qt installation
-    pub fn version(&self) -> &SemVer {
-        let _ = self.qt_installation.version();
-        &self.version
+    pub fn version(&self) -> Version {
+        self.qt_installation.version()
     }
 
     /// Lazy load the path of a Qt executable tool
@@ -780,7 +780,7 @@ impl QtBuild {
             );
         }
         // qmlcachegen has a different CLI in Qt 5, so only support Qt >= 6
-        if self.qmlcachegen_executable.is_none() && self.version.major >= 6 {
+        if self.qmlcachegen_executable.is_none() && self.qt_installation.version().major >= 6 {
             if let Ok(qmlcachegen_executable) = self.get_qt_tool("qmlcachegen") {
                 self.qmlcachegen_executable = Some(qmlcachegen_executable);
             }
@@ -1127,12 +1127,8 @@ Q_IMPORT_PLUGIN({plugin_class_name});
             );
         }
 
-        let qt_6_5 = SemVer {
-            major: 6,
-            minor: 5,
-            ..SemVer::default()
-        };
-        let init_header = if self.version >= qt_6_5 {
+        let qt_6_5 = Version::new(6, 5, 0);
+        let init_header = if self.qt_installation.version() >= qt_6_5 {
             // With Qt6.5 the Q_INIT_RESOURCE macro is in the QtResource header
             "QtCore/QtResource"
         } else {
