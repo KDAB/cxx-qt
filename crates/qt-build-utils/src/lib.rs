@@ -231,7 +231,6 @@ pub struct QmlModuleRegistrationFiles {
 /// ```
 pub struct QtBuild {
     qt_installation: Box<dyn QtInstallation>,
-    qmake_executable: String,
     qt_modules: Vec<String>,
 }
 
@@ -284,123 +283,10 @@ impl QtBuild {
         #[cfg(not(feature = "qmake"))]
         unsupported!("Only qmake feature is supported");
 
-        println!("cargo::rerun-if-env-changed=QMAKE");
-        println!("cargo::rerun-if-env-changed=QT_VERSION_MAJOR");
-        fn verify_candidate(candidate: &str) -> Result<&str, QtBuildError> {
-            match Command::new(candidate)
-                .args(["-query", "QT_VERSION"])
-                .output()
-            {
-                Err(e) if e.kind() == std::io::ErrorKind::NotFound => Err(QtBuildError::QtMissing),
-                Err(e) => Err(QtBuildError::QmakeFailed(e)),
-                Ok(output) => {
-                    if output.status.success() {
-                        let version_string = std::str::from_utf8(&output.stdout)
-                            .unwrap()
-                            .trim()
-                            .to_string();
-                        let qmake_version = Version::parse(&version_string).unwrap();
-                        if let Ok(env_version) = env::var("QT_VERSION_MAJOR") {
-                            let env_version = match env_version.trim().parse::<u64>() {
-                                Err(e) if *e.kind() == std::num::IntErrorKind::Empty => {
-                                    println!(
-                                        "cargo::warning=QT_VERSION_MAJOR environment variable defined but empty"
-                                    );
-                                    return Ok(candidate);
-                                }
-                                Err(e) => {
-                                    return Err(QtBuildError::QtVersionMajorInvalid {
-                                        qt_version_major_env_var: env_version,
-                                        source: e,
-                                    })
-                                }
-                                Ok(int) => int,
-                            };
-                            if env_version == qmake_version.major as u64 {
-                                return Ok(candidate);
-                            } else {
-                                return Err(QtBuildError::QtVersionMajorDoesNotMatch {
-                                    qmake_version: qmake_version.major as u64,
-                                    qt_version_major: env_version,
-                                });
-                            }
-                        }
-                        Ok(candidate)
-                    } else {
-                        Err(QtBuildError::QtMissing)
-                    }
-                }
-            }
-        }
-
-        if let Ok(qmake_env_var) = env::var("QMAKE") {
-            match verify_candidate(qmake_env_var.trim()) {
-                Ok(executable_name) => {
-                    return Ok(Self {
-                        qt_installation,
-                        qmake_executable: executable_name.to_string(),
-                        qt_modules,
-                    });
-                }
-                Err(e) => {
-                    return Err(QtBuildError::QMakeSetQtMissing {
-                        qmake_env_var,
-                        error: Box::new(e.into()),
-                    }
-                    .into())
-                }
-            }
-        }
-
-        // Fedora 36 renames Qt5's qmake to qmake-qt5
-        let candidate_executable_names = ["qmake6", "qmake-qt5", "qmake"];
-        for (index, executable_name) in candidate_executable_names.iter().enumerate() {
-            match verify_candidate(executable_name) {
-                Ok(executable_name) => {
-                    return Ok(Self {
-                        qt_installation,
-                        qmake_executable: executable_name.to_string(),
-                        qt_modules,
-                    });
-                }
-                // If QT_VERSION_MAJOR is specified, it is expected that one of the versioned
-                // executable names will not match, so the unversioned `qmake` needs to be
-                // attempted last and QtVersionMajorDoesNotMatch should only be returned if
-                // none of the candidate executable names match.
-                Err(QtBuildError::QtVersionMajorDoesNotMatch {
-                    qmake_version,
-                    qt_version_major,
-                }) => {
-                    if index == candidate_executable_names.len() - 1 {
-                        return Err(QtBuildError::QtVersionMajorDoesNotMatch {
-                            qmake_version,
-                            qt_version_major,
-                        }
-                        .into());
-                    }
-                    eprintln!("Candidate qmake executable `{executable_name}` is for Qt{qmake_version} but QT_VERSION_MAJOR environment variable specified as {qt_version_major}. Trying next candidate executable name `{}`...", candidate_executable_names[index + 1]);
-                    continue;
-                }
-                Err(QtBuildError::QtMissing) => continue,
-                Err(e) => return Err(e.into()),
-            }
-        }
-
-        Err(QtBuildError::QtMissing.into())
-    }
-
-    /// Get the output of running `qmake -query var_name`
-    pub fn qmake_query(&self, var_name: &str) -> String {
-        std::str::from_utf8(
-            &Command::new(&self.qmake_executable)
-                .args(["-query", var_name])
-                .output()
-                .unwrap()
-                .stdout,
-        )
-        .unwrap()
-        .trim()
-        .to_string()
+        Ok(Self {
+            qt_installation,
+            qt_modules,
+        })
     }
 
     /// Tell Cargo to link each Qt module.
