@@ -5,6 +5,8 @@
 
 use semver::Version;
 use std::{
+    cell::RefCell,
+    collections::HashMap,
     env,
     io::ErrorKind,
     path::{Path, PathBuf},
@@ -17,6 +19,8 @@ use crate::{parse_cflags, utils, QtBuildError, QtInstallation, QtTool};
 pub struct QtInstallationQMake {
     qmake_path: PathBuf,
     qmake_version: Version,
+    // Internal cache of paths for tools
+    tool_cache: RefCell<HashMap<QtTool, Option<PathBuf>>>,
 }
 
 impl QtInstallationQMake {
@@ -128,6 +132,7 @@ impl TryFrom<PathBuf> for QtInstallationQMake {
         Ok(Self {
             qmake_path,
             qmake_version,
+            tool_cache: HashMap::default().into(),
         })
     }
 }
@@ -246,7 +251,18 @@ impl QtInstallation for QtInstallationQMake {
     }
 
     fn try_find_tool(&self, tool: QtTool) -> Option<PathBuf> {
-        self.try_qmake_find_tool(tool.binary_name())
+        let find_tool_closure = |tool: &QtTool| self.try_qmake_find_tool(tool.binary_name());
+
+        // Attempt to use the cache
+        if let Ok(mut tool_cache) = self.tool_cache.try_borrow_mut() {
+            // Read the tool from the cache or insert
+            tool_cache
+                .entry(tool)
+                .or_insert_with_key(find_tool_closure)
+                .to_owned()
+        } else {
+            find_tool_closure(&tool)
+        }
     }
 
     fn version(&self) -> semver::Version {
