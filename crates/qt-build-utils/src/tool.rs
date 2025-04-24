@@ -5,6 +5,7 @@
 
 /// An enum representing known Qt tools
 #[non_exhaustive]
+#[derive(Eq, Hash, PartialEq)]
 pub enum QtTool {
     /// Moc
     Moc,
