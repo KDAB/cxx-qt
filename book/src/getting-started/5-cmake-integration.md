@@ -207,6 +207,31 @@ You should now see the two Labels that display the state of our `MyObject`, as w
 
 ### Windows with MSVC
 
-If you're building CXX-Qt on Windows using MSVC generator, you need to ensure that `set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")` is set in CMake (or use the `-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL` flag) when building with the `Debug` configuration. This flag is necessary to ensure that the correct C Runtime Library is used. Then you can build using `cmake --build build --config Debug`.
+MSVC provides multiple versions of its runtime library.
+Unfortunately the Debug and Release versions are not binary compatible.
+The recommendation by Microsoft is to not mix different runtimes.
 
-This issue is caused by a bug in the [cc](https://docs.rs/cc/latest/cc/index.html) crate (as described in [this pull request](https://github.com/rust-lang/cc-rs/pull/717)), which has not been merged yet. Specifically, the problem is that cc generated code always links to the MultiThreaded runtime, even when building in Debug mode. We hope that this step won't be necessary in the future, once the cc crate fix is merged and released.
+See also: <https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170>
+
+Currently, Rust by default [links to the Multi-Threaded **Release** DLL runtime](https://github.com/rust-lang/rust/issues/39016).
+This is a mismatch with the default CMake MSVC Debug configurations, which uses the Multi-Threaded **Debug** DLLs.
+
+To resolve this mismatch, we currently recommend to stick with the Multi-Threaded Release DLL runtime (`/MD`) **for the entire program**!
+
+For CMake, make sure to call `set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")` (or use the `-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL` flag) when building with the `Debug` configuration.
+See also the [Corrosion documentation](https://corrosion-rs.github.io/corrosion/common_issues.html#linking-debug-cc-libraries-into-rust-fails-on-windows-msvc-targets).
+
+Additionally, the Qt Debug DLLs also use the Debug runtime.
+We can force Qt to use the Release DLLs instead in the Debug configuration by setting the `MAP_IMPORTED_CONFIG_DEBUG` property to `"RELEASE"` on **all Qt components** that are linked into the final binary.
+
+```cmake
+# Note: The Qt:: targets are ALIAS targets that do not support setting properties directly.
+# We therefore need to resolve the target names to either Qt5 or Qt6 directly.
+set_property(
+    TARGET Qt6::Core Qt6::Gui Qt6::Qml Qt6::Test Qt6::QuickControls2
+    PROPERTY MAP_IMPORTED_CONFIG_DEBUG "RELEASE")
+```
+
+We hope that in the future the Rust ecosystem can be configured to use the Debug runtime, so that these additional configurations are not necessary.
+
+Note: These issues do not apply to Cargo-only builds, as these always use the Release runtime and Release Qt DLLs.
