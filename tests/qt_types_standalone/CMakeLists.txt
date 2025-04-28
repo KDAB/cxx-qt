@@ -24,10 +24,21 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(NOT USE_QT5)
-    find_package(Qt6 COMPONENTS Core Gui Qml Test)
+    find_package(Qt6 COMPONENTS Core Gui Qml Test QuickControls2)
+    set(Qt "Qt6")
 endif()
 if(NOT Qt6_FOUND)
     find_package(Qt5 5.15 COMPONENTS Core Gui Qml Test QuickControls2 REQUIRED)
+    set(Qt "Qt5")
+endif()
+
+if(MSVC)
+    # Qt also needs to link against the non-debug version of the MSVC Runtime libraries, see the previous comment.
+    # Note: The Qt:: targets are ALIAS targets that do not support setting properties directly.
+    # We therefore need to resolve the target names to either Qt5 or Qt6 directly.
+    set_property(
+        TARGET ${Qt}::Core ${Qt}::Gui ${Qt}::Qml ${Qt}::Test ${Qt}::QuickControls2
+        PROPERTY MAP_IMPORTED_CONFIG_DEBUG "RELEASE")
 endif()
 
 find_package(CxxQt QUIET)

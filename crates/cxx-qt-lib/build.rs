@@ -352,7 +352,9 @@ fn main() {
         .reexport_dependency("cxx-qt");
 
     let mut builder = CxxQtBuilder::library(interface)
-        .include_prefix("cxx-qt-lib-internals")
+        // Use a short name due to the Windows file path limit!
+        // We don't re-export these headers anyway
+        .include_prefix("private")
         .initializer(qt_build_utils::Initializer {
             file: Some("src/core/init.cpp".into()),
             ..qt_build_utils::Initializer::default_signature("init_cxx_qt_lib_core")
