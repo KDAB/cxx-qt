@@ -882,4 +882,25 @@ mod tests {
 
         common_asserts(&generated.cxx_mod_contents, &generated.cxx_qt_mod_contents);
     }
+
+    #[test]
+    fn test_invalid_type_name() {
+        let method: ForeignItemFn = parse_quote! {
+            fn ready(self: Pin<&mut MyObject>, param: &DoesNotExist);
+        };
+        let mock = ParsedSignal::mock(&method);
+        let qsignal = ParsedSignal {
+            method_fields: MethodFields {
+                name: Name::new(format_ident!("ready")),
+                ..mock.method_fields
+            },
+            ..mock
+        };
+        let type_names = TypeNames::mock();
+
+        let qobject_names = create_qobjectname();
+        let generated = generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names);
+
+        assert!(generated.is_err());
+    }
 }
