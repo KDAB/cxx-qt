@@ -93,7 +93,7 @@ pub use ffi::QQmlApplicationEngine;
 
 impl QQmlApplicationEngine {
     /// Convert the existing [QQmlApplicationEngine] to a [QQmlEngine]
-    pub fn as_qqmlengine<'a>(self: Pin<&'a mut Self>) -> Pin<&'a mut QQmlEngine> {
+    pub fn as_qqmlengine(self: Pin<&mut Self>) -> Pin<&mut QQmlEngine> {
         ffi::qqmlapplicationengine_as_qqmlengine(self)
     }
 
