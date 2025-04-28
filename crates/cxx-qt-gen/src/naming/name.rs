@@ -17,7 +17,7 @@ use syn::{spanned::Spanned, Attribute, Error, Ident, Path, Result};
 /// Naming in CXX can be rather complex.
 /// The following Rules apply:
 /// - If only a cxx_name **or** a rust_name is given, the identifier of the type/function will be
-///     used for part that wasn't specified explicitly.
+///   used for part that wasn't specified explicitly.
 /// - If **both** attributes are present, the identifier itself is not used!
 /// - The `rust_name` is always used to refer to the type within the bridge!.
 #[derive(Clone, Debug, PartialEq, Eq)]
