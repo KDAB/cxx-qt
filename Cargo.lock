@@ -442,8 +442,6 @@ dependencies = [
 name = "cxx-qt-macro"
 version = "0.7.1"
 dependencies = [
- "cxx",
- "cxx-qt",
  "cxx-qt-gen",
  "proc-macro2",
  "quote",
