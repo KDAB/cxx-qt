@@ -24,9 +24,5 @@ proc-macro2.workspace = true
 syn.workspace = true
 quote.workspace = true
 
-[dev-dependencies]
-cxx.workspace = true
-cxx-qt.workspace = true
-
 [lints]
 workspace = true

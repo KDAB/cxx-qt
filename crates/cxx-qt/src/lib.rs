@@ -20,9 +20,98 @@ mod qobject;
 pub mod signalhandler;
 mod threading;
 
+/// A procedural macro which generates a QObject for a struct inside a module.
+///
+/// # Example
+///
+/// ```rust
+/// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
+/// mod qobject {
+///     extern "RustQt" {
+///         #[qobject]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyObject = super::MyObjectRust;
+///
+///         #[qinvokable]
+///         fn invokable(self: &MyObject, a: i32, b: i32) -> i32;
+///     }
+/// }
+///
+/// #[derive(Default)]
+/// pub struct MyObjectRust;
+///
+/// impl qobject::MyObject {
+///     fn invokable(&self, a: i32, b: i32) -> i32 {
+///         a + b
+///     }
+/// }
+///
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
+/// ```
 pub use cxx_qt_macro::bridge;
+
+/// Force a crate to be initialized
 pub use cxx_qt_macro::init_crate;
+
+/// Force a QML module with the given URI to be initialized
 pub use cxx_qt_macro::init_qml_module;
+
+/// A macro which describes that a struct should be made into a QObject.
+///
+/// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
+///
+/// # Example
+///
+/// ```rust
+/// #[cxx_qt::bridge]
+/// mod my_object {
+///     extern "RustQt" {
+///         #[qobject]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyObject = super::MyObjectRust;
+///     }
+/// }
+///
+/// #[derive(Default)]
+/// pub struct MyObjectRust;
+///
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
+/// ```
+///
+/// You can also specify a custom base class by using `#[base = QStringListModel]`, you must then use CXX to add any includes needed.
+///
+/// # Example
+///
+/// ```rust
+/// #[cxx_qt::bridge]
+/// mod my_object {
+///     extern "RustQt" {
+///         #[qobject]
+///         #[base = QStringListModel]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyModel = super::MyModelRust;
+///     }
+///
+///     unsafe extern "C++" {
+///         include!(<QtCore/QStringListModel>);
+///         type QStringListModel;
+///     }
+/// }
+///
+/// #[derive(Default)]
+/// pub struct MyModelRust;
+///
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
+/// ```
 pub use cxx_qt_macro::qobject;
 pub use qobject::QObject;
 

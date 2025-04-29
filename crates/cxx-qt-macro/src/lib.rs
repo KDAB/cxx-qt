@@ -4,45 +4,19 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#![deny(missing_docs)]
+// We explicitly allow missing docs for the macros in this crate, as they should be documented in
+// cxx-qt itself.
+#![allow(missing_docs)]
 //! The cxx-qt-macro crate provides the procedural attribute macros which are used with cxx-qt.
+//!
+//! See the [cxx-qt crate docs](https://docs.rs/cxx-qt/latest/) for documentation of the macros
+//! inside this crate.
 
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, ItemMod};
 
 use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
 
-/// A procedural macro which generates a QObject for a struct inside a module.
-///
-/// # Example
-///
-/// ```rust
-/// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
-/// mod qobject {
-///     extern "RustQt" {
-///         #[qobject]
-///         # // Note that we can't use properties as this confuses the linker on Windows
-///         type MyObject = super::MyObjectRust;
-///
-///         #[qinvokable]
-///         fn invokable(self: &MyObject, a: i32, b: i32) -> i32;
-///     }
-/// }
-///
-/// #[derive(Default)]
-/// pub struct MyObjectRust;
-///
-/// impl qobject::MyObject {
-///     fn invokable(&self, a: i32, b: i32) -> i32 {
-///         a + b
-///     }
-/// }
-///
-/// # // Note that we need a fake main for doc tests to build
-/// # fn main() {
-/// #   cxx_qt::init_crate!(cxx_qt);
-/// # }
-/// ```
 #[proc_macro_attribute]
 pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
     // Parse the TokenStream of a macro
@@ -65,65 +39,11 @@ pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
     extract_and_generate(module)
 }
 
-/// A macro which describes that a struct should be made into a QObject.
-///
-/// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
-///
-/// # Example
-///
-/// ```rust
-/// #[cxx_qt::bridge]
-/// mod my_object {
-///     extern "RustQt" {
-///         #[qobject]
-///         # // Note that we can't use properties as this confuses the linker on Windows
-///         type MyObject = super::MyObjectRust;
-///     }
-/// }
-///
-/// #[derive(Default)]
-/// pub struct MyObjectRust;
-///
-/// # // Note that we need a fake main for doc tests to build
-/// # fn main() {
-/// #   cxx_qt::init_crate!(cxx_qt);
-/// # }
-/// ```
-///
-/// You can also specify a custom base class by using `#[base = QStringListModel]`, you must then use CXX to add any includes needed.
-///
-/// # Example
-///
-/// ```rust
-/// #[cxx_qt::bridge]
-/// mod my_object {
-///     extern "RustQt" {
-///         #[qobject]
-///         #[base = QStringListModel]
-///         # // Note that we can't use properties as this confuses the linker on Windows
-///         type MyModel = super::MyModelRust;
-///     }
-///
-///     unsafe extern "C++" {
-///         include!(<QtCore/QStringListModel>);
-///         type QStringListModel;
-///     }
-/// }
-///
-/// #[derive(Default)]
-/// pub struct MyModelRust;
-///
-/// # // Note that we need a fake main for doc tests to build
-/// # fn main() {
-/// #   cxx_qt::init_crate!(cxx_qt);
-/// # }
-/// ```
 #[proc_macro_attribute]
 pub fn qobject(_args: TokenStream, _input: TokenStream) -> TokenStream {
     unreachable!("qobject should not be used as a macro by itself. Instead it should be used within a cxx_qt::bridge definition")
 }
 
-/// Force a crate to be initialized
 #[proc_macro]
 pub fn init_crate(args: TokenStream) -> TokenStream {
     let crate_name = syn::parse_macro_input!(args as syn::Ident);
@@ -137,7 +57,6 @@ pub fn init_crate(args: TokenStream) -> TokenStream {
     .into()
 }
 
-/// Force a QML module with the given URI to be initialized
 #[proc_macro]
 pub fn init_qml_module(args: TokenStream) -> TokenStream {
     let module_uri = syn::parse_macro_input!(args as syn::LitStr);
