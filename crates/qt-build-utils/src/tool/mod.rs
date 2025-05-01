@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+mod rcc;
+pub use rcc::QtToolRcc;
+
 /// An enum representing known Qt tools
 #[non_exhaustive]
 #[derive(Eq, Hash, PartialEq)]
