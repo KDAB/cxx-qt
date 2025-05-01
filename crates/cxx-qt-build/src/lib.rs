@@ -1030,12 +1030,12 @@ extern "C" bool {init_fun}() {{
             .iter()
             .map(|qrc_file| {
                 // Also ensure that each of the files in the qrc can cause a change
-                for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
+                for qrc_inner_file in qtbuild.qrc_list(qrc_file) {
                     println!("cargo::rerun-if-changed={}", qrc_inner_file.display());
                 }
                 // We need to link this using an object file or +whole-achive, the static initializer of
                 // the qrc file isn't lost.
-                qtbuild.qrc(&qrc_file)
+                qtbuild.qrc(qrc_file)
             })
             .collect()
     }
