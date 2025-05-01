@@ -6,7 +6,6 @@
 use crate::{QtInstallation, QtTool};
 
 use std::{
-    env,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -73,10 +72,7 @@ impl QtToolMoc {
     pub fn compile(&self, input_file: impl AsRef<Path>, arguments: MocArguments) -> MocProducts {
         let input_path = input_file.as_ref();
         // Put all the moc files into one place, this can then be added to the include path
-        let moc_dir = PathBuf::from(format!(
-            "{}/qt-build-utils/moc",
-            env::var("OUT_DIR").unwrap()
-        ));
+        let moc_dir = QtTool::Moc.writable_path();
         std::fs::create_dir_all(&moc_dir).expect("Could not create moc dir");
         let output_path = moc_dir.join(format!(
             "moc_{}.cpp",
