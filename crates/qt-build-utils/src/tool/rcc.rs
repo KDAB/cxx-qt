@@ -7,7 +7,6 @@ use crate::{Initializer, QtInstallation, QtTool};
 
 use semver::Version;
 use std::{
-    env,
     path::{Path, PathBuf},
     process::Command,
 };
@@ -41,10 +40,7 @@ impl QtToolRcc {
     /// application.
     pub fn compile(&self, input_file: impl AsRef<Path>) -> Initializer {
         let input_path = input_file.as_ref();
-        let output_folder = PathBuf::from(&format!(
-            "{}/qt-build-utils/qrc",
-            env::var("OUT_DIR").unwrap()
-        ));
+        let output_folder = QtTool::Rcc.writable_path();
         std::fs::create_dir_all(&output_folder).expect("Could not create qrc dir");
         let output_path = output_folder.join(format!(
             "{}.cpp",

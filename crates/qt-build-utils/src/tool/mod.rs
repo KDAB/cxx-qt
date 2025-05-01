@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::{env, path::PathBuf};
+
 mod moc;
 pub use moc::{MocArguments, MocProducts, QtToolMoc};
 
@@ -32,5 +34,12 @@ impl QtTool {
             Self::QmlCacheGen => "qmlcachegen",
             Self::QmlTypeRegistrar => "qmltyperegistrar",
         }
+    }
+
+    /// Return a directory where files can be written by this tool
+    ///
+    /// Note the location might not exist yet
+    pub(crate) fn writable_path(&self) -> PathBuf {
+        PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR was not set")).join(self.binary_name())
     }
 }
