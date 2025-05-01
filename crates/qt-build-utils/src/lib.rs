@@ -31,7 +31,7 @@ pub use installation::qmake::QtInstallationQMake;
 mod parse_cflags;
 
 mod tool;
-pub use tool::QtTool;
+pub use tool::{QtTool, QtToolRcc};
 
 mod utils;
 
@@ -609,6 +609,13 @@ Q_IMPORT_PLUGIN({plugin_class_name});
         }
     }
 
+    /// Create a [QtToolRcc] for this [QtBuild]
+    ///
+    /// This allows for using [rcc](https://doc.qt.io/qt-6/resources.html)
+    pub fn rcc(&self) -> QtToolRcc {
+        QtToolRcc::new(self.qt_installation.as_ref())
+    }
+
     /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
     /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
     /// This function also returns a String that contains the name of the resource initializer
@@ -616,85 +623,16 @@ Q_IMPORT_PLUGIN({plugin_class_name});
     /// The build system must ensure that if the .cpp file is built into a static library, either
     /// the `+whole-archive` flag is used, or the initializer function is called by the
     /// application.
-    pub fn qrc(&mut self, input_file: &impl AsRef<Path>) -> Initializer {
-        let rcc_executable = self
-            .qt_installation
-            .try_find_tool(QtTool::Rcc)
-            .expect("Could not find rcc");
-        let input_path = input_file.as_ref();
-        let output_folder = PathBuf::from(&format!(
-            "{}/qt-build-utils/qrc",
-            env::var("OUT_DIR").unwrap()
-        ));
-        std::fs::create_dir_all(&output_folder).expect("Could not create qrc dir");
-        let output_path = output_folder.join(format!(
-            "{}.cpp",
-            input_path.file_name().unwrap().to_string_lossy(),
-        ));
-        let name = input_path
-            .file_name()
-            .unwrap()
-            .to_string_lossy()
-            .replace('.', "_");
-
-        let cmd = Command::new(rcc_executable)
-            .args([
-                input_path.to_str().unwrap(),
-                "-o",
-                output_path.to_str().unwrap(),
-                "--name",
-                &name,
-            ])
-            .output()
-            .unwrap_or_else(|_| panic!("rcc failed for {}", input_path.display()));
-
-        if !cmd.status.success() {
-            panic!(
-                "rcc failed for {}:\n{}",
-                input_path.display(),
-                String::from_utf8_lossy(&cmd.stderr)
-            );
-        }
-
-        let qt_6_5 = Version::new(6, 5, 0);
-        let init_header = if self.qt_installation.version() >= qt_6_5 {
-            // With Qt6.5 the Q_INIT_RESOURCE macro is in the QtResource header
-            "QtCore/QtResource"
-        } else {
-            "QtCore/QDir"
-        };
-        Initializer {
-            file: Some(output_path),
-            init_call: Some(format!("Q_INIT_RESOURCE({name});")),
-            init_declaration: Some(format!("#include <{init_header}>")),
-        }
+    pub fn qrc(&mut self, input_file: impl AsRef<Path>) -> Initializer {
+        // TODO: later change to just have a rcc() -> QtToolRcc
+        // but keep this for compat for now
+        QtToolRcc::new(self.qt_installation.as_ref()).compile(input_file)
     }
 
     /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and return the paths of the sources
-    pub fn qrc_list(&mut self, input_file: &impl AsRef<Path>) -> Vec<PathBuf> {
-        let rcc_executable = self
-            .qt_installation
-            .try_find_tool(QtTool::Rcc)
-            .expect("Could not find rcc");
-
-        // Add the qrc file contents to the cargo rerun list
-        let input_path = input_file.as_ref();
-        let cmd_list = Command::new(rcc_executable)
-            .args(["--list", input_path.to_str().unwrap()])
-            .output()
-            .unwrap_or_else(|_| panic!("rcc --list failed for {}", input_path.display()));
-
-        if !cmd_list.status.success() {
-            panic!(
-                "rcc --list failed for {}:\n{}",
-                input_path.display(),
-                String::from_utf8_lossy(&cmd_list.stderr)
-            );
-        }
-
-        String::from_utf8_lossy(&cmd_list.stdout)
-            .split('\n')
-            .map(PathBuf::from)
-            .collect()
+    pub fn qrc_list(&mut self, input_file: impl AsRef<Path>) -> Vec<PathBuf> {
+        // TODO: later change to just have a rcc() -> QtToolRcc
+        // but keep this for compat for now
+        QtToolRcc::new(self.qt_installation.as_ref()).list(input_file)
     }
 }
