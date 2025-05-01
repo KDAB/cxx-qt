@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+mod moc;
+pub use moc::{MocArguments, MocProducts, QtToolMoc};
+
 mod rcc;
 pub use rcc::QtToolRcc;
 
