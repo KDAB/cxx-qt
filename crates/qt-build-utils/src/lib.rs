@@ -18,6 +18,9 @@
 mod error;
 pub use error::QtBuildError;
 
+mod initializer;
+pub use initializer::Initializer;
+
 mod installation;
 pub use installation::QtInstallation;
 
@@ -103,35 +106,6 @@ pub fn setup_linker() {
         } else {
             println!("cargo::warning=Neither mold, lld, nor gold linkers were found. Linking with GNU ld.bfd will likely fail.");
         }
-    }
-}
-
-#[doc(hidden)]
-#[derive(Clone)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-pub struct Initializer {
-    pub file: Option<PathBuf>,
-    pub init_call: Option<String>,
-    pub init_declaration: Option<String>,
-}
-
-impl Initializer {
-    #[doc(hidden)]
-    pub fn default_signature(name: &str) -> Self {
-        Self {
-            file: None,
-            init_call: Some(format!("{name}();")),
-            init_declaration: Some(format!("extern \"C\" bool {name}();")),
-        }
-    }
-
-    #[doc(hidden)]
-    // Strip the init files from the public initializers
-    // For downstream dependencies, it's often enough to just declare the init function and
-    // call it.
-    pub fn strip_file(mut self) -> Self {
-        self.file = None;
-        self
     }
 }
 
