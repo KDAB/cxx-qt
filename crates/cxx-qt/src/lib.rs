@@ -267,6 +267,28 @@ pub trait Upcast<T> {
     }
 }
 
+impl<T> Upcast<T> for T {
+    unsafe fn upcast_ptr(this: *const Self) -> *const Self {
+        this
+    }
+
+    unsafe fn from_base_ptr(base: *const T) -> *const Self {
+        base
+    }
+
+    fn upcast(&self) -> &Self {
+        self
+    }
+
+    fn upcast_mut(&mut self) -> &mut Self {
+        self
+    }
+
+    fn upcast_pin(self: Pin<&mut Self>) -> Pin<&mut Self> {
+        self
+    }
+}
+
 /// This trait is automatically implemented by CXX-Qt and you most likely do not need to manually implement it.
 /// Trait for downcasting to a subclass, provided the subclass implements [Upcast] to this type.
 /// Returns `None` in cases where `Sub` isn't a child class of `Self`.
