@@ -35,6 +35,9 @@ pub mod ffi {
 
         #[rust_name = "set_parent"]
         pub unsafe fn setParent(self: Pin<&mut Self>, parent: *mut QObjectExternal);
+
+        #[rust_name = "dump_object_info"]
+        fn dumpObjectInfo(&self);
     }
 }
 
@@ -64,12 +67,10 @@ pub trait QObjectExt {
     fn object_name(&self) -> QString;
 
     /// Returns a mutable pointer to the parent object.
-    fn parent(&self) -> *mut Self;
+    fn parent(&self) -> *mut QObjectExternal;
 
     /// Makes the object a child of `parent`.
-    fn set_parent<T>(self: Pin<&mut Self>, parent: Pin<&mut T>)
-    where
-        T: Upcast<QObject>;
+    fn set_parent(self: Pin<&mut Self>, parent: &Self);
 
     /// Makes the object parentless.
     fn unset_parent(self: Pin<&mut Self>);
@@ -85,38 +86,38 @@ fn cast(obj: &QObject) -> &QObjectExternal {
     unsafe { &*(ptr::from_ref(obj).cast()) }
 }
 
-impl QObjectExt for QObject {
+impl<T> QObjectExt for T
+where
+    T: Upcast<QObject>,
+{
     fn block_signals(self: Pin<&mut Self>, block: bool) -> bool {
-        cast_pin(self).block_signals(block)
+        cast_pin(self.upcast_pin()).block_signals(block)
     }
 
     fn signals_blocked(&self) -> bool {
-        cast(self).signals_blocked()
+        cast(self.upcast()).signals_blocked()
     }
 
     fn set_object_name(self: Pin<&mut Self>, name: &QString) {
-        cast_pin(self).set_object_name(name)
+        cast_pin(self.upcast_pin()).set_object_name(name)
     }
 
     fn object_name(&self) -> QString {
-        cast(self).object_name()
+        cast(self.upcast()).object_name()
     }
 
-    fn parent(&self) -> *mut Self {
-        cast(self).parent() as *mut Self
+    fn parent(&self) -> *mut QObjectExternal {
+        cast(self.upcast()).parent()
     }
 
-    fn set_parent<T>(self: Pin<&mut Self>, parent: Pin<&mut T>)
-    where
-        T: Upcast<QObject>,
-    {
+    fn set_parent(self: Pin<&mut Self>, parent: &Self) {
+        let s = cast_pin(self.upcast_pin());
         unsafe {
-            let parent = ptr::from_mut(parent.get_unchecked_mut().upcast_mut()).cast();
-            cast_pin(self).set_parent(parent)
+            s.set_parent(cast(parent.upcast()) as *const QObjectExternal as *mut QObjectExternal)
         }
     }
 
     fn unset_parent(self: Pin<&mut Self>) {
-        unsafe { cast_pin(self).set_parent(ptr::null_mut()) }
+        unsafe { cast_pin(self.upcast_pin()).set_parent(ptr::null_mut()) }
     }
 }
