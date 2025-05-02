@@ -6,7 +6,7 @@ use crate::core::qstringlist::ffi::QList_QString;
 use crate::{QList, QString};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
-use cxx_qt::Upcast;
+use cxx_qt::casting::Upcast;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
@@ -207,7 +207,7 @@ impl DerefMut for QStringList {
     }
 }
 
-impl Upcast<QList_QString> for QStringList {
+unsafe impl Upcast<QList_QString> for QStringList {
     unsafe fn upcast_ptr(this: *const Self) -> *const QList_QString {
         ffi::upcast_qstringlist(this)
     }
