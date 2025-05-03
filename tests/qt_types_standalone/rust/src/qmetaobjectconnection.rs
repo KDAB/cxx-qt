@@ -30,7 +30,7 @@ mod qmetaobjectconnection_cxx {
 
 // CXX doesn't support Rust alias so we need to have a new type
 struct QMetaObjectConnectionGuardWrapper {
-    guard: Option<QMetaObjectConnectionGuard>,
+    guard: Option<QMetaObjectConnectionGuard<'static>>,
 }
 
 fn create_qmetaobjectconnectionguard(

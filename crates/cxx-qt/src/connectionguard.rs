@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::marker::PhantomData;
+
 use crate::QMetaObjectConnection;
 
 /// Represents a guard to a signal-slot (or signal-functor) connection.
@@ -13,24 +15,28 @@ use crate::QMetaObjectConnection;
 /// So to keep a connection active either hold onto the struct for the duration
 /// that the connection should be active or call `release`, hence the `#[must_use]`.
 #[must_use]
-pub struct QMetaObjectConnectionGuard {
+pub struct QMetaObjectConnectionGuard<'a> {
     connection: QMetaObjectConnection,
+    _phantom: PhantomData<&'a ()>,
 }
 
-impl From<QMetaObjectConnection> for QMetaObjectConnectionGuard {
+impl From<QMetaObjectConnection> for QMetaObjectConnectionGuard<'static> {
     fn from(connection: QMetaObjectConnection) -> Self {
-        Self { connection }
+        Self {
+            connection,
+            _phantom: PhantomData,
+        }
     }
 }
 
-impl Drop for QMetaObjectConnectionGuard {
+impl Drop for QMetaObjectConnectionGuard<'_> {
     /// Disconnect and deconstruct the connection
     fn drop(&mut self) {
         self.connection.disconnect();
     }
 }
 
-impl QMetaObjectConnectionGuard {
+impl QMetaObjectConnectionGuard<'static> {
     /// Release the connection without disconnecting
     pub fn release(mut self) -> QMetaObjectConnection {
         // Take the connection as our Drop implementation disconnects automatically

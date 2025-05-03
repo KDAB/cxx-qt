@@ -71,7 +71,7 @@ use cxx_qt_lib::{ConnectionType, QMetaObjectConnectionGuard, QString, QUrl};
 /// A QObject which has Q_SIGNALs
 #[derive(Default)]
 pub struct RustSignalsRust {
-    pub(crate) connections: Option<[QMetaObjectConnectionGuard; 3]>,
+    pub(crate) connections: Option<[QMetaObjectConnectionGuard<'static>; 3]>,
 
     logging_enabled: bool,
 }
