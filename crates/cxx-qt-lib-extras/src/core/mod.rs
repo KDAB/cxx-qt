@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod qeventloop;
-pub use qeventloop::QEventLoop;
+pub use qeventloop::{QEventLoop, QEventLoopProcessEventsFlag, QEventLoopProcessEventsFlags};
 
 mod qelapsedtimer;
 pub use qelapsedtimer::QElapsedTimer;
