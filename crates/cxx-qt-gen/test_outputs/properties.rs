@@ -609,12 +609,13 @@ impl ffi::MyObject {
     #[doc = "primitiveChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_primitive_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::MyObject_connect_primitive_changed(
                 self,
@@ -632,10 +633,10 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_primitive_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
+    pub fn on_primitive_changed<'a, F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::MyObject_connect_primitive_changed(
                 self,
@@ -655,7 +656,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type Id = cxx::type_id!(
         "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerprimitiveChanged"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_primitiveChanged;
 fn call_MyObject_signal_handler_primitiveChanged(
@@ -678,13 +679,11 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "trivialChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_trivial_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
-    >(
+    pub fn connect_trivial_changed<'a, F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_trivial_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuretrivialChanged > :: new (Box :: new (closure)) , conn_type ,))
     }
 }
@@ -694,10 +693,10 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_trivial_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
+    pub fn on_trivial_changed<'a, F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_trivial_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuretrivialChanged > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
 }
@@ -707,7 +706,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type Id = cxx::type_id!(
         "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlertrivialChanged"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_trivialChanged;
 fn call_MyObject_signal_handler_trivialChanged(
@@ -731,12 +730,13 @@ impl ffi::MyObject {
     #[doc = "propAutoCxxNameChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_prop_auto_cxx_name_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_prop_auto_cxx_name_changed(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -753,11 +753,12 @@ impl ffi::MyObject {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_prop_auto_cxx_name_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_prop_auto_cxx_name_changed(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -775,7 +776,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type Id = cxx::type_id!(
         "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_propAutoCxxNameChanged;
 fn call_MyObject_signal_handler_propAutoCxxNameChanged(
@@ -799,12 +800,13 @@ impl ffi::MyObject {
     #[doc = "customFunctionPropChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_custom_function_prop_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::MyObject_connect_custom_function_prop_changed(
                 self,
@@ -823,11 +825,12 @@ impl ffi::MyObject {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_custom_function_prop_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::MyObject_connect_custom_function_prop_changed(
                 self,
@@ -847,7 +850,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type Id = cxx::type_id!(
         "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlercustomFunctionPropChanged"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_customFunctionPropChanged;
 fn call_MyObject_signal_handler_customFunctionPropChanged(
@@ -871,12 +874,13 @@ impl ffi::MyObject {
     #[doc = "renamedPropertyChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_renamed_property_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_changed(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -893,11 +897,12 @@ impl ffi::MyObject {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_renamed_property_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_changed(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -915,7 +920,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type Id = cxx::type_id!(
         "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerrenamedPropertyChanged"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_renamedPropertyChanged;
 fn call_MyObject_signal_handler_renamedPropertyChanged(
@@ -939,12 +944,13 @@ impl ffi::MyObject {
     #[doc = "named_prop_2Changed"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_renamed_property_2_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_2_changed(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -961,11 +967,12 @@ impl ffi::MyObject {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_renamed_property_2_changed<
-        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
+        'a,
+        F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_renamed_property_2_changed(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -983,7 +990,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type Id = cxx::type_id!(
         "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlernamed_prop_2Changed"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_named_prop_2Changed;
 fn call_MyObject_signal_handler_named_prop_2Changed(
@@ -1006,11 +1013,11 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "my_on_changed"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_my_on_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
+    pub fn connect_my_on_changed<'a, F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_my_on_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuremy_on_changed > :: new (Box :: new (closure)) , conn_type ,))
     }
 }
@@ -1020,10 +1027,10 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_my_on_changed<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
+    pub fn on_my_on_changed<'a, F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
+    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
         cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_my_on_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuremy_on_changed > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
 }
@@ -1033,7 +1040,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type Id = cxx::type_id!(
         "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermy_on_changed"
     );
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_my_on_changed;
 fn call_MyObject_signal_handler_my_on_changed(
