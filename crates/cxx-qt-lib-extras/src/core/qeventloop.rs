@@ -3,8 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::any::Any;
-use std::panic::{self, UnwindSafe};
 use std::pin::Pin;
 use std::time::Duration;
 
@@ -34,7 +32,6 @@ mod ffi {
 
     extern "Rust" {
         type EventLoopClosure<'a>;
-        type UnwindEventLoopClosure<'a>;
     }
 
     unsafe extern "C++Qt" {
@@ -100,15 +97,6 @@ mod ffi {
             context: &mut EventLoopClosure<'a>,
             functor: fn(&mut EventLoopClosure<'a>),
         ) -> i32;
-
-        #[allow(clippy::needless_lifetimes)]
-        #[doc(hidden)]
-        #[rust_name = "qeventloop_try_exec_with"]
-        fn qeventloopExecWith<'a>(
-            event_loop: Pin<&mut QEventLoop>,
-            context: &mut UnwindEventLoopClosure<'a>,
-            functor: fn(&mut UnwindEventLoopClosure<'a>),
-        ) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -155,8 +143,6 @@ impl QEventLoop {
 
     /// Enters an event loop, runs a `closure`, and exits the event loop when the closure completes.
     ///
-    /// For an alternative that catches panics, see [`QEventLoop::try_exec_with`].
-    ///
     /// As with `QEventLoop`'s other methods, a [`QApplication`](crate::QApplication), [`QGuiApplication`](cxx_qt_lib::QGuiApplication), or [`QCoreApplication`](cxx_qt_lib::QCoreApplication) must be running.
     pub fn exec_with<F>(self: Pin<&mut QEventLoop>, closure: F)
     where
@@ -198,26 +184,6 @@ impl QEventLoop {
     pub fn process_all_events_until<T>(self: Pin<&mut QEventLoop>, deadline: Duration) {
         self.process_events_until(QEventLoopProcessEventsFlag::AllEvents.into(), deadline);
     }
-
-    /// Enters an event loop, runs a `closure`, and exits the event loop when the closure completes.
-    ///
-    /// Returns an error if the closure panics, which can be handled with [`std::panic::resume_unwind`].
-    ///
-    /// As with `QEventLoop`'s other methods, a [`QApplication`](crate::QApplication), [`QGuiApplication`](cxx_qt_lib::QGuiApplication), or [`QCoreApplication`](cxx_qt_lib::QCoreApplication) must be running.
-    pub fn try_exec_with<F>(
-        self: Pin<&mut QEventLoop>,
-        closure: F,
-    ) -> Result<(), Box<dyn Any + Send>>
-    where
-        F: FnOnce() + UnwindSafe,
-    {
-        let mut closure = UnwindEventLoopClosure {
-            closure: Some(Box::new(closure)),
-            result: Ok(()),
-        };
-        ffi::qeventloop_try_exec_with(self, &mut closure, UnwindEventLoopClosure::run);
-        closure.result
-    }
 }
 
 struct EventLoopClosure<'a> {
@@ -230,53 +196,19 @@ impl<'a> EventLoopClosure<'a> {
     }
 }
 
-struct UnwindEventLoopClosure<'a> {
-    closure: Option<Box<dyn FnOnce() + 'a + UnwindSafe>>,
-    result: Result<(), Box<dyn Any + Send>>,
-}
-
-impl<'a> UnwindEventLoopClosure<'a> {
-    pub fn run(&mut self) {
-        self.result = panic::catch_unwind(self.closure.take().unwrap());
-    }
-}
-
 #[cfg(test)]
 mod tests {
-    use std::panic;
-
     use cxx_qt_lib::QCoreApplication;
 
     use super::QEventLoop;
 
     #[test]
     fn qeventloop_exec_with() {
-        let _app = QCoreApplication::new();
+        QCoreApplication::new().into_raw(); // cargo test may randomly segfault if app is dropped
         let mut succeeded = false;
         QEventLoop::new().pin_mut().exec_with(|| {
             succeeded = true;
         });
         assert!(succeeded);
-    }
-
-    #[test]
-    fn qeventloop_try_exec_with_ok() {
-        let _app = QCoreApplication::new();
-        let result = QEventLoop::new().pin_mut().try_exec_with(|| {});
-        if let Err(error) = result {
-            panic::resume_unwind(error);
-        }
-    }
-
-    #[test]
-    fn qeventloop_try_exec_with_err() {
-        let _app = QCoreApplication::new();
-        let result = QEventLoop::new().pin_mut().try_exec_with(|| {
-            panic!("intentional panic");
-        });
-        let Err(error) = result else {
-            panic!("QEventLoop::try_exec_with failed to catch a panic");
-        };
-        assert_eq!(error.downcast_ref::<&str>(), Some(&"intentional panic"));
     }
 }
