@@ -146,9 +146,11 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlerprimitiveChanged = cxx_qt::signalhandler::CxxQtSignalHandler<
-            super::MyObjectCxxQtSignalClosureprimitiveChanged,
-        >;
+        type MyObjectCxxQtSignalHandlerprimitiveChanged<'a> =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
+                super::MyObjectCxxQtSignalClosureprimitiveChanged,
+            >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[cxx_name = "MyObject_primitiveChangedConnect"]
@@ -179,9 +181,11 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlertrivialChanged = cxx_qt::signalhandler::CxxQtSignalHandler<
-            super::MyObjectCxxQtSignalClosuretrivialChanged,
-        >;
+        type MyObjectCxxQtSignalHandlertrivialChanged<'a> =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
+                super::MyObjectCxxQtSignalClosuretrivialChanged,
+            >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[cxx_name = "MyObject_trivialChangedConnect"]
@@ -212,8 +216,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged =
+        type MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::MyObjectCxxQtSignalClosurepropAutoCxxNameChanged,
             >;
         #[doc(hidden)]
@@ -246,8 +251,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlercustomFunctionPropChanged =
+        type MyObjectCxxQtSignalHandlercustomFunctionPropChanged<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::MyObjectCxxQtSignalClosurecustomFunctionPropChanged,
             >;
         #[doc(hidden)]
@@ -280,8 +286,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlerrenamedPropertyChanged =
+        type MyObjectCxxQtSignalHandlerrenamedPropertyChanged<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::MyObjectCxxQtSignalClosurerenamedPropertyChanged,
             >;
         #[doc(hidden)]
@@ -314,8 +321,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlernamed_prop_2Changed =
+        type MyObjectCxxQtSignalHandlernamed_prop_2Changed<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::MyObjectCxxQtSignalClosurenamed_prop_2Changed,
             >;
         #[doc(hidden)]
@@ -365,9 +373,11 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlermy_on_changed = cxx_qt::signalhandler::CxxQtSignalHandler<
-            super::MyObjectCxxQtSignalClosuremy_on_changed,
-        >;
+        type MyObjectCxxQtSignalHandlermy_on_changed<'a> =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
+                super::MyObjectCxxQtSignalClosuremy_on_changed,
+            >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[cxx_name = "MyObject_my_on_changedConnect"]

@@ -616,7 +616,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    type MyObjectCxxQtSignalHandlerunsafeSignal<'s> = cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::MyObjectCxxQtSignalClosureunsafeSignal>;
+                    type MyObjectCxxQtSignalHandlerunsafeSignal<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::MyObjectCxxQtSignalClosureunsafeSignal>;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]

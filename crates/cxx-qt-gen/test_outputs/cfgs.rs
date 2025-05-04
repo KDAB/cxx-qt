@@ -99,8 +99,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectEnabledCxxQtSignalHandlersignal_disabled =
+        type QObjectEnabledCxxQtSignalHandlersignal_disabled<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::QObjectEnabledCxxQtSignalClosuresignal_disabled,
             >;
         #[doc(hidden)]
@@ -134,8 +135,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectEnabledCxxQtSignalHandlersignal_enabled =
+        type QObjectEnabledCxxQtSignalHandlersignal_enabled<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::QObjectEnabledCxxQtSignalClosuresignal_enabled,
             >;
         #[doc(hidden)]
@@ -241,8 +243,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectDisabledCxxQtSignalHandlersignal_disabled =
+        type QObjectDisabledCxxQtSignalHandlersignal_disabled<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::QObjectDisabledCxxQtSignalClosuresignal_disabled,
             >;
         #[doc(hidden)]
@@ -276,8 +279,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectDisabledCxxQtSignalHandlersignal_enabled =
+        type QObjectDisabledCxxQtSignalHandlersignal_enabled<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::QObjectDisabledCxxQtSignalClosuresignal_enabled,
             >;
         #[doc(hidden)]
@@ -365,8 +369,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectExternEnabledCxxQtSignalHandlersignal_disabled1 =
+        type QObjectExternEnabledCxxQtSignalHandlersignal_disabled1<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::QObjectExternEnabledCxxQtSignalClosuresignal_disabled1,
             >;
         #[doc(hidden)]
@@ -400,8 +405,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectExternEnabledCxxQtSignalHandlersignal_enabled1 =
+        type QObjectExternEnabledCxxQtSignalHandlersignal_enabled1<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
             >;
         #[doc(hidden)]
@@ -453,8 +459,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectExternDisabledCxxQtSignalHandlersignal_disabled2 =
+        type QObjectExternDisabledCxxQtSignalHandlersignal_disabled2<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::QObjectExternDisabledCxxQtSignalClosuresignal_disabled2,
             >;
         #[doc(hidden)]
@@ -488,8 +495,9 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectExternDisabledCxxQtSignalHandlersignal_enabled2 =
+        type QObjectExternDisabledCxxQtSignalHandlersignal_enabled2<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::QObjectExternDisabledCxxQtSignalClosuresignal_enabled2,
             >;
         #[doc(hidden)]

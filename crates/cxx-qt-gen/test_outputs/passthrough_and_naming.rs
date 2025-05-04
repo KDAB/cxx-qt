@@ -105,8 +105,9 @@ pub mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlerpropertyNameChanged =
+        type MyObjectCxxQtSignalHandlerpropertyNameChanged<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::MyObjectCxxQtSignalClosurepropertyNameChanged,
             >;
         #[doc(hidden)]
@@ -226,8 +227,9 @@ pub mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "second_object::rust::cxxqtgen1"]
-        type SecondObjectCxxQtSignalHandlerpropertyNameChanged =
+        type SecondObjectCxxQtSignalHandlerpropertyNameChanged<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::SecondObjectCxxQtSignalClosurepropertyNameChanged,
             >;
         #[doc(hidden)]
@@ -271,8 +273,10 @@ pub mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "second_object::rust::cxxqtgen1"]
-        type SecondObjectCxxQtSignalHandlerready<'a> =
-            cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::SecondObjectCxxQtSignalClosureready>;
+        type SecondObjectCxxQtSignalHandlerready<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<
+            'a,
+            super::SecondObjectCxxQtSignalClosureready,
+        >;
         #[doc(hidden)]
         #[namespace = "second_object::rust::cxxqtgen1"]
         #[cxx_name = "SecondObject_readyConnect"]
@@ -409,8 +413,10 @@ pub mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
-        type QPushButtonCxxQtSignalHandlerclicked<'a> =
-            cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::QPushButtonCxxQtSignalClosureclicked>;
+        type QPushButtonCxxQtSignalHandlerclicked<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<
+            'a,
+            super::QPushButtonCxxQtSignalClosureclicked,
+        >;
         #[doc(hidden)]
         #[namespace = "cxx_qt::multi_object::rust::cxxqtgen1"]
         #[cxx_name = "QPushButton_clickedConnect"]
@@ -439,9 +445,11 @@ pub mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "mynamespace::rust::cxxqtgen1"]
-        type ExternObjectCxxQtSignalHandlerdataReady = cxx_qt::signalhandler::CxxQtSignalHandler<
-            super::ExternObjectCxxQtSignalClosuredataReady,
-        >;
+        type ExternObjectCxxQtSignalHandlerdataReady<'a> =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
+                super::ExternObjectCxxQtSignalClosuredataReady,
+            >;
         #[doc(hidden)]
         #[namespace = "mynamespace::rust::cxxqtgen1"]
         #[cxx_name = "ExternObjectCpp_dataReadyConnect"]
@@ -471,8 +479,9 @@ pub mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "mynamespace::rust::cxxqtgen1"]
-        type ExternObjectCxxQtSignalHandlererrorOccurred =
+        type ExternObjectCxxQtSignalHandlererrorOccurred<'a> =
             cxx_qt::signalhandler::CxxQtSignalHandler<
+                'a,
                 super::ExternObjectCxxQtSignalClosureerrorOccurred,
             >;
         #[doc(hidden)]

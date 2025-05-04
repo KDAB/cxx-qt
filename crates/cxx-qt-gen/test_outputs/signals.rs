@@ -87,7 +87,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlerdata_changed = cxx_qt::signalhandler::CxxQtSignalHandler<
+        type MyObjectCxxQtSignalHandlerdata_changed<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<
+            'a,
             super::MyObjectCxxQtSignalClosuredata_changed,
         >;
         #[doc(hidden)]
@@ -347,7 +348,9 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
             cxx::UniquePtr<ffi::Opaque>,
             ffi::QPoint,
             &ffi::QPoint,
-        ) + 'a + Send;
+        )
+        + 'a
+        + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_data_changed;
 fn call_MyObject_signal_handler_data_changed(
@@ -438,7 +441,9 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
             cxx::UniquePtr<ffi::Opaque>,
             ffi::QPoint,
             &'a ffi::QPoint,
-        ) + 'a + Send;
+        )
+        + 'a
+        + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_newData;
 fn call_MyObject_signal_handler_newData(
