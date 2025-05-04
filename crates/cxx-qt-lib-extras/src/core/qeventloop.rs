@@ -93,6 +93,7 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[allow(clippy::needless_lifetimes)]
+        #[doc(hidden)]
         #[rust_name = "qeventloop_exec_with"]
         fn qeventloopExecWith<'a>(
             event_loop: Pin<&mut QEventLoop>,
@@ -101,6 +102,7 @@ mod ffi {
         ) -> i32;
 
         #[allow(clippy::needless_lifetimes)]
+        #[doc(hidden)]
         #[rust_name = "qeventloop_try_exec_with"]
         fn qeventloopExecWith<'a>(
             event_loop: Pin<&mut QEventLoop>,
@@ -113,6 +115,7 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
+        #[doc(hidden)]
         #[rust_name = "qeventloop_init_default"]
         fn make_unique() -> UniquePtr<QEventLoop>;
     }
