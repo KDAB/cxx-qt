@@ -9,6 +9,7 @@
 #include <QtCore/QCoreApplication>
 #include <QtCore/QEvent>
 #include <QtCore/QEventLoop>
+#include <climits>
 
 #include "rust/cxx.h"
 
