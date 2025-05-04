@@ -35,6 +35,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 - Serde support for further types: `QByteArray`, `QSet`, `QStringList`, `QVector`, `QUrl`
 
+### Changed
+
+- Add lifetime parameter to `QMetaObjectConnectionGuard`.
+
 ### Removed
 
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)
