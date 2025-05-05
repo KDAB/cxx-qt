@@ -718,13 +718,15 @@ impl ffi::SecondObject {
         closure: F,
         conn_type: cxx_qt::ConnectionType,
     ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::SecondObject_connect_property_name_changed(
-            self,
-            cxx_qt::signalhandler::CxxQtSignalHandler::<
-                SecondObjectCxxQtSignalClosurepropertyNameChanged,
-            >::new(Box::new(closure)),
-            conn_type,
-        ))
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+            ffi::SecondObject_connect_property_name_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    SecondObjectCxxQtSignalClosurepropertyNameChanged,
+                >::new(Box::new(closure)),
+                conn_type,
+            ),
+        )
     }
 }
 impl ffi::SecondObject {
@@ -740,13 +742,15 @@ impl ffi::SecondObject {
         self: core::pin::Pin<&mut ffi::SecondObject>,
         closure: F,
     ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::SecondObject_connect_property_name_changed(
-            self,
-            cxx_qt::signalhandler::CxxQtSignalHandler::<
-                SecondObjectCxxQtSignalClosurepropertyNameChanged,
-            >::new(Box::new(closure)),
-            cxx_qt::ConnectionType::AutoConnection,
-        ))
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+            ffi::SecondObject_connect_property_name_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    SecondObjectCxxQtSignalClosurepropertyNameChanged,
+                >::new(Box::new(closure)),
+                cxx_qt::ConnectionType::AutoConnection,
+            ),
+        )
     }
 }
 #[doc(hidden)]
