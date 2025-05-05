@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use core::pin::Pin;
+
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
@@ -374,7 +376,7 @@ mod ffi {
         fn setOpacity(self: Pin<&mut QPainter>, opacity: f64);
 
         /// Sets the painter's pen to be the given pen.
-        #[rust_name = "set_pen"]
+        #[rust_name = "set_pen_from_pen"]
         fn setPen(self: Pin<&mut QPainter>, pen: &QPen);
 
         /// Sets the given render hint on the painter if on is true; otherwise clears the render hint.
@@ -444,5 +446,9 @@ impl QPainter {
         } else {
             None
         }
+    }
+
+    pub fn set_pen(self: Pin<&mut ffi::QPainter>, pen: &impl AsRef<ffi::QPen>) {
+        self.set_pen_from_pen(pen.as_ref());
     }
 }
