@@ -42,7 +42,9 @@ mod qmarginsf;
 pub use qmarginsf::QMarginsF;
 
 // Reexport QMetaObjectConnection and guard from cxx-qt
-pub use cxx_qt::{QMetaObjectConnection, QMetaObjectConnectionGuard};
+pub use cxx_qt::{
+    QMetaObjectConnection, QMetaObjectConnectionGuard, QScopedMetaObjectConnectionGuard,
+};
 
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;

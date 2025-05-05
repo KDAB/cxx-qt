@@ -540,8 +540,8 @@ impl ffi::QObjectEnabled {
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectEnabledCxxQtSignalClosuresignal_disabled,
@@ -563,8 +563,8 @@ impl ffi::QObjectEnabled {
     >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectEnabledCxxQtSignalClosuresignal_disabled,
@@ -616,8 +616,8 @@ impl ffi::QObjectEnabled {
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectEnabledCxxQtSignalClosuresignal_enabled,
@@ -636,8 +636,8 @@ impl ffi::QObjectEnabled {
     pub fn on_signal_enabled<'a, F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectEnabledCxxQtSignalClosuresignal_enabled,
@@ -720,14 +720,16 @@ impl ffi::QObjectDisabled {
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_disabled(
-            self,
-            cxx_qt::signalhandler::CxxQtSignalHandler::<
-                QObjectDisabledCxxQtSignalClosuresignal_disabled,
-            >::new(Box::new(closure)),
-            conn_type,
-        ))
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+            ffi::QObjectDisabled_connect_signal_disabled(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    QObjectDisabledCxxQtSignalClosuresignal_disabled,
+                >::new(Box::new(closure)),
+                conn_type,
+            ),
+        )
     }
 }
 #[cfg(not(enabled))]
@@ -743,14 +745,16 @@ impl ffi::QObjectDisabled {
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_disabled(
-            self,
-            cxx_qt::signalhandler::CxxQtSignalHandler::<
-                QObjectDisabledCxxQtSignalClosuresignal_disabled,
-            >::new(Box::new(closure)),
-            cxx_qt::ConnectionType::AutoConnection,
-        ))
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+            ffi::QObjectDisabled_connect_signal_disabled(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    QObjectDisabledCxxQtSignalClosuresignal_disabled,
+                >::new(Box::new(closure)),
+                cxx_qt::ConnectionType::AutoConnection,
+            ),
+        )
     }
 }
 #[cfg(not(enabled))]
@@ -796,8 +800,8 @@ impl ffi::QObjectDisabled {
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectDisabledCxxQtSignalClosuresignal_enabled,
@@ -819,8 +823,8 @@ impl ffi::QObjectDisabled {
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectDisabledCxxQtSignalClosuresignal_enabled,
@@ -911,8 +915,8 @@ impl ffi::QObjectExternEnabled {
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
             ffi::QObjectExternEnabled_connect_signal_disabled1(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -936,8 +940,8 @@ impl ffi::QObjectExternEnabled {
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
             ffi::QObjectExternEnabled_connect_signal_disabled1(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -996,14 +1000,16 @@ impl ffi::QObjectExternEnabled {
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectExternEnabled_connect_signal_enabled1(
-            self,
-            cxx_qt::signalhandler::CxxQtSignalHandler::<
-                QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
-            >::new(Box::new(closure)),
-            conn_type,
-        ))
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+            ffi::QObjectExternEnabled_connect_signal_enabled1(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
+                >::new(Box::new(closure)),
+                conn_type,
+            ),
+        )
     }
 }
 #[cfg(enabled)]
@@ -1019,14 +1025,16 @@ impl ffi::QObjectExternEnabled {
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectExternEnabled_connect_signal_enabled1(
-            self,
-            cxx_qt::signalhandler::CxxQtSignalHandler::<
-                QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
-            >::new(Box::new(closure)),
-            cxx_qt::ConnectionType::AutoConnection,
-        ))
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+            ffi::QObjectExternEnabled_connect_signal_enabled1(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
+                >::new(Box::new(closure)),
+                cxx_qt::ConnectionType::AutoConnection,
+            ),
+        )
     }
 }
 #[cfg(enabled)]
@@ -1085,8 +1093,8 @@ impl ffi::QObjectExternDisabled {
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_disabled2(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -1110,8 +1118,8 @@ impl ffi::QObjectExternDisabled {
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_disabled2(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -1170,8 +1178,8 @@ impl ffi::QObjectExternDisabled {
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_enabled2(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -1195,8 +1203,8 @@ impl ffi::QObjectExternDisabled {
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_enabled2(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<

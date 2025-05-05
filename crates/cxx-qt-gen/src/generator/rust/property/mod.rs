@@ -310,9 +310,9 @@ mod tests {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "trivialPropertyChanged"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-                    pub fn connect_trivial_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard<'a>
+                    pub fn connect_trivial_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_trivial_property_changed(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_trivial_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuretrivialPropertyChanged>::new(Box::new(closure)),
                             conn_type,
@@ -330,9 +330,9 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
-                    pub fn on_trivial_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QMetaObjectConnectionGuard<'a>
+                    pub fn on_trivial_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_trivial_property_changed(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_trivial_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuretrivialPropertyChanged>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -435,9 +435,9 @@ mod tests {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "opaquePropertyChanged"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-                    pub fn connect_opaque_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard<'a>
+                    pub fn connect_opaque_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_opaque_property_changed(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_opaque_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureopaquePropertyChanged>::new(Box::new(closure)),
                             conn_type,
@@ -455,9 +455,9 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
-                    pub fn on_opaque_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QMetaObjectConnectionGuard<'a>
+                    pub fn on_opaque_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_opaque_property_changed(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_opaque_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureopaquePropertyChanged>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -560,9 +560,9 @@ mod tests {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "unsafePropertyChanged"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-                    pub fn connect_unsafe_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard<'a>
+                    pub fn connect_unsafe_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_property_changed(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureunsafePropertyChanged>::new(Box::new(closure)),
                             conn_type,
@@ -580,9 +580,9 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
-                    pub fn on_unsafe_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QMetaObjectConnectionGuard<'a>
+                    pub fn on_unsafe_property_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_property_changed(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_property_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureunsafePropertyChanged>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,

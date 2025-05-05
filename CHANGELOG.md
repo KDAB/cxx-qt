@@ -34,10 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Casting is automatically implemented for qobjects or types which have `#[base = T]` in `"RustQt"` or `"C++Qt"` blocks
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 - Serde support for further types: `QByteArray`, `QSet`, `QStringList`, `QVector`, `QUrl`
-
-### Changed
-
-- Add lifetime parameter to `QMetaObjectConnectionGuard`.
+- Add `QScopedMetaObjectConnectionGuard`, which is `QMetaObjectConnectionGuard` with a scoped lifetime. `QMetaObjectConnectionGuard` is now a type alias for `QScopedMetaObjectConnectionGuard<'static>`.
 
 ### Removed
 

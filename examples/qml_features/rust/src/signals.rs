@@ -65,13 +65,13 @@ pub mod qobject {
 }
 
 use core::pin::Pin;
-use cxx_qt::CxxQtType;
-use cxx_qt_lib::{ConnectionType, QMetaObjectConnectionGuard, QString, QUrl};
+use cxx_qt::{CxxQtType, QMetaObjectConnectionGuard};
+use cxx_qt_lib::{ConnectionType, QString, QUrl};
 
 /// A QObject which has Q_SIGNALs
 #[derive(Default)]
 pub struct RustSignalsRust {
-    pub(crate) connections: Option<[QMetaObjectConnectionGuard<'static>; 3]>,
+    pub(crate) connections: Option<[QMetaObjectConnectionGuard; 3]>,
 
     logging_enabled: bool,
 }

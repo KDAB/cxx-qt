@@ -238,8 +238,8 @@ impl ffi::MyObject {
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(
                 Box::new(closure),
@@ -257,8 +257,8 @@ impl ffi::MyObject {
     pub fn on_ready<'a, F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(
                 Box::new(closure),
@@ -308,8 +308,8 @@ impl ffi::MyObject {
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_data_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuredata_changed > :: new (Box :: new (closure)) , conn_type ,))
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt :: QScopedMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_data_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuredata_changed > :: new (Box :: new (closure)) , conn_type ,))
     }
 }
 impl ffi::MyObject {
@@ -332,8 +332,8 @@ impl ffi::MyObject {
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_data_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuredata_changed > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt :: QScopedMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_data_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuredata_changed > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
 }
 #[doc(hidden)]
@@ -390,8 +390,8 @@ impl ffi::MyObject {
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurenewData>::new(
                 Box::new(closure),
@@ -420,8 +420,8 @@ impl ffi::MyObject {
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurenewData>::new(
                 Box::new(closure),
@@ -508,8 +508,8 @@ impl ffi::QTimer {
         self: core::pin::Pin<&mut ffi::QTimer>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosuretimeout>::new(
                 Box::new(closure),
@@ -527,8 +527,8 @@ impl ffi::QTimer {
     pub fn on_timeout<'a, F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::QTimer>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard<'a> {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosuretimeout>::new(
                 Box::new(closure),
