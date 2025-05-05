@@ -852,8 +852,10 @@ impl CxxQtBuilder {
                 &qml_module.qml_files,
                 &qml_module.qrc_files,
             );
+            if let Some(qmltyperegistrar) = qml_module_registration_files.qmltyperegistrar {
+                cc_builder.file(qmltyperegistrar);
+            }
             cc_builder
-                .file(qml_module_registration_files.qmltyperegistrar)
                 .file(qml_module_registration_files.plugin)
                 // In comparison to the other RCC files, we don't need to link this with whole-archive or
                 // anything like that.
