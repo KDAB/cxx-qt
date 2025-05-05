@@ -204,11 +204,11 @@ mod tests {
 
     #[test]
     fn qeventloop_exec_with() {
-        QCoreApplication::new().into_raw(); // cargo test may randomly segfault if app is dropped
-        let mut succeeded = false;
+        std::mem::forget(QCoreApplication::new()); // cargo test may randomly segfault if app is dropped
+        let mut increment_count = 0;
         QEventLoop::new().pin_mut().exec_with(|| {
-            succeeded = true;
+            increment_count += 1;
         });
-        assert!(succeeded);
+        assert_eq!(increment_count, 1);
     }
 }
