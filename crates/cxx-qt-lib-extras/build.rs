@@ -54,6 +54,7 @@ fn main() {
 
     let rust_bridges = vec![
         "core/qelapsedtimer",
+        "core/qeventloop",
         "core/qcommandlineoption",
         "core/qcommandlineparser",
         "gui/qapplication",
