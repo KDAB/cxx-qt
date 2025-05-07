@@ -96,7 +96,7 @@ pub fn generate_cpp_signal(
     // Add the include we need
     generated
         .includes
-        .insert("#include <cxx-qt/signalhandler.h>".to_owned());
+        .insert("#include <cxx-qt/include/signalhandler.h>".to_owned());
 
     // Build a namespace that includes any namespace for the T
     let qobject_ident_namespaced = qobject_name.cxx_qualified();

@@ -15,7 +15,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         include ! (< QtCore / QObject >);
-        include!("cxx-qt/connection.h");
+        include!("cxx-qt/include/connection.h");
         #[doc(hidden)]
         #[namespace = "Qt"]
         #[rust_name = "CxxQtConnectionType"]
@@ -125,7 +125,7 @@ mod ffi {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object"]
         type MyObjectCxxQtThread = cxx_qt::CxxQtThread<MyObject>;
-        include!("cxx-qt/thread.h");
+        include!("cxx-qt/include/thread.h");
         #[doc(hidden)]
         #[cxx_name = "qtThread"]
         #[namespace = "rust::cxxqt1"]

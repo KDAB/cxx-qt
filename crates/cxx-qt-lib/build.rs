@@ -346,12 +346,7 @@ fn main() {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
-    let interface = cxx_qt_build::Interface::default()
-        .export_include_prefixes([])
-        .export_include_directory(header_dir(), "cxx-qt-lib")
-        .reexport_dependency("cxx-qt");
-
-    let mut builder = CxxQtBuilder::library(interface)
+    let mut builder = CxxQtBuilder::new()
         // Use a short name due to the Windows file path limit!
         // We don't re-export these headers anyway
         .include_prefix("private")
@@ -388,6 +383,16 @@ fn main() {
         }
         cc.file("src/qt_types.cpp");
         println!("cargo::rerun-if-changed=src/qt_types.cpp");
+
+        // With cxx-qt-lib we need to have generated headers in the include folder
+        // so we copy them into the OUT_DIR and construct a folder
+        cc.include(header_dir().parent().expect("header_dir has a parent"));
     });
-    builder.build();
+
+    let interface = builder.build();
+    interface
+        .export_include_prefixes([])
+        .export_include_directory(header_dir(), "cxx-qt-lib")
+        .reexport_dependency("cxx-qt")
+        .export();
 }
