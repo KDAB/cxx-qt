@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
+use cxx_qt::Upcast;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
@@ -69,6 +70,19 @@ mod ffi {
         fn united(self: &QPolygonF, r: &QPolygonF) -> QPolygonF;
     }
 
+    #[namespace = "rust::cxxqt1"]
+    unsafe extern "C++" {
+        include!("cxx-qt/casting.h");
+
+        #[doc(hidden)]
+        #[rust_name = "upcast_qpolygonf"]
+        unsafe fn upcastPtr(thiz: *const QPolygonF) -> *const QVector_QPointF;
+
+        #[doc(hidden)]
+        #[rust_name = "downcast_qvector_qpointf"]
+        unsafe fn downcastPtrStatic(base: *const QVector_QPointF) -> *const QPolygonF;
+    }
+
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
@@ -92,15 +106,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpolygonf_to_debug_qstring"]
         fn toDebugQString(value: &QPolygonF) -> QString;
-    }
-
-    #[namespace = "rust::cxxqtlib1"]
-    unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "qpolygonf_as_qvector_qpointf_ref"]
-        fn qpolygonfAsQVectorQPointFRef(shape: &QPolygonF) -> &QVector_QPointF;
-        #[rust_name = "qpolygonf_as_qvector_qpointf_ref_mut"]
-        fn qpolygonfAsQVectorQPointFRef(shape: &mut QPolygonF) -> &mut QVector_QPointF;
     }
 }
 
@@ -160,13 +165,23 @@ impl Deref for QPolygonF {
     type Target = QVector<QPointF>;
 
     fn deref(&self) -> &Self::Target {
-        ffi::qpolygonf_as_qvector_qpointf_ref(self)
+        self.upcast()
     }
 }
 
 impl DerefMut for QPolygonF {
     fn deref_mut(&mut self) -> &mut Self::Target {
-        ffi::qpolygonf_as_qvector_qpointf_ref_mut(self)
+        self.upcast_mut()
+    }
+}
+
+impl Upcast<QVector<QPointF>> for QPolygonF {
+    unsafe fn upcast_ptr(this: *const Self) -> *const QVector<QPointF> {
+        ffi::upcast_qpolygonf(this)
+    }
+
+    unsafe fn from_base_ptr(base: *const QVector<QPointF>) -> *const Self {
+        ffi::downcast_qvector_qpointf(base)
     }
 }
 
