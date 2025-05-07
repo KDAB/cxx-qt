@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
+use std::ffi::c_void;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -64,7 +65,7 @@ mod ffi {
 /// that the connection should be active or call `release`.
 #[repr(C)]
 pub struct QMetaObjectConnection {
-    _space: MaybeUninit<usize>,
+    _space: MaybeUninit<*const c_void>,
 }
 
 impl Default for QMetaObjectConnection {
