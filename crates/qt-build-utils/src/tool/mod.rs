@@ -8,6 +8,9 @@ use std::{env, path::PathBuf};
 mod moc;
 pub use moc::{MocArguments, MocProducts, QtToolMoc};
 
+mod qmlcachegen;
+pub use qmlcachegen::{QmlCacheArguments, QmlCacheProducts, QtToolQmlCacheGen};
+
 mod qmltyperegistrar;
 pub use qmltyperegistrar::QtToolQmlTypeRegistrar;
 
