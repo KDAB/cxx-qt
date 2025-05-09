@@ -15,7 +15,7 @@
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, ItemMod};
 
-use cxx_qt_gen::{write_rust, GeneratedRustBlocks, Parser};
+use cxx_qt_gen::{qualify_self_types, write_rust, GeneratedRustBlocks, Parser};
 
 #[proc_macro_attribute]
 pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {
@@ -75,6 +75,10 @@ pub fn init_qml_module(args: TokenStream) -> TokenStream {
 // Take the module and C++ namespace and generate the rust code
 fn extract_and_generate(module: ItemMod) -> TokenStream {
     Parser::from(module)
+        .and_then(|mut parser| {
+            qualify_self_types(&mut parser)?;
+            Ok(parser)
+        })
         .and_then(|parser| GeneratedRustBlocks::from(&parser))
         .map(|generated_rust| write_rust(&generated_rust, None))
         .unwrap_or_else(|err| err.to_compile_error())

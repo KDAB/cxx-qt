@@ -174,14 +174,7 @@ pub fn self_type_from_foreign_fn(signature: &Signature) -> Result<Receiver> {
             ));
         }
 
-        if receiver.reference.is_some() {
-            return Err(Error::new(
-                receiver.span(),
-                "Reference on self (i.e. `&self`) are not supported! Use `self: &T` instead",
-            ));
-        }
-
-        if receiver.colon_token.is_none() {
+        if receiver.colon_token.is_none() && receiver.reference.is_none() {
             return Err(Error::new(
                 receiver.span(),
                 "`self` is not supported as receiver! Use `self: T` to indicate a type.",
@@ -254,8 +247,6 @@ mod tests {
             { fn foo(self); }
             // self with mut
             { fn foo(mut self: T); }
-            // self reference
-            { fn foo(&self); }
             // self reference with mut
             { fn foo(&mut self); }
             // attribute on self type

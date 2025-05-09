@@ -31,7 +31,7 @@ mod qobject {
         type Greeter = super::GreeterRust;
 
         #[qinvokable]
-        fn greet(self: &Greeter) -> QString;
+        fn greet(&self) -> QString;
     }
 }
 
