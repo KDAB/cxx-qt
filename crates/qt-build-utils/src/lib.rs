@@ -31,7 +31,10 @@ pub use installation::qmake::QtInstallationQMake;
 mod parse_cflags;
 
 mod tool;
-pub use tool::{MocArguments, MocProducts, QtTool, QtToolMoc, QtToolQmlTypeRegistrar, QtToolRcc};
+pub use tool::{
+    MocArguments, MocProducts, QmlCacheArguments, QmlCacheProducts, QtTool, QtToolMoc,
+    QtToolQmlCacheGen, QtToolQmlTypeRegistrar, QtToolRcc,
+};
 
 mod utils;
 
@@ -210,17 +213,6 @@ impl QtBuild {
         qml_files: &[impl AsRef<Path>],
         qrc_files: &[impl AsRef<Path>],
     ) -> QmlModuleRegistrationFiles {
-        // qmlcachegen has a different CLI in Qt 5, so only support Qt >= 6
-        let qmlcachegen_executable = if self.qt_installation.version().major >= 6 {
-            Some(
-                self.qt_installation
-                    .try_find_tool(QtTool::QmlCacheGen)
-                    .expect("Could not find qmlcachegen"),
-            )
-        } else {
-            None
-        };
-
         let qml_uri_dirs = uri.replace('.', "/");
 
         let out_dir = env::var("OUT_DIR").unwrap();
@@ -295,85 +287,28 @@ prefer :/qt/qml/{qml_uri_dirs}/
         // qmlcachegen needs to be run once for each .qml file with --resource-path,
         // then once for the module with --resource-name.
         let mut qmlcachegen_file_paths = Vec::new();
-        if let Some(qmlcachegen_executable) = &qmlcachegen_executable {
-            let qmlcachegen_dir = qt_build_utils_dir.join("qmlcachegen").join(&qml_uri_dirs);
-            std::fs::create_dir_all(&qmlcachegen_dir)
-                .expect("Could not create qmlcachegen directory for QML module");
 
-            let common_args = [
-                "-i".to_string(),
-                qmldir_file_path.to_string_lossy().to_string(),
-                "--resource".to_string(),
-                qrc_path.to_string_lossy().to_string(),
-            ];
-
-            let mut qml_file_qrc_paths = Vec::new();
+        // qmlcachegen has a different CLI in Qt 5, so only support Qt >= 6
+        if self.qt_installation.version().major >= 6 {
+            let qml_cache_args = QmlCacheArguments {
+                uri: uri.to_string(),
+                qmldir_path: qmldir_file_path,
+                qmldir_qrc_path: qrc_path.clone(),
+            };
+            let mut qml_resource_paths = Vec::new();
             for file in qml_files {
-                let qrc_resource_path =
-                    format!("/qt/qml/{qml_uri_dirs}/{}", file.as_ref().display());
-
-                let qml_compiled_file = qmlcachegen_dir.join(format!(
-                    "{}.cpp",
-                    file.as_ref().file_name().unwrap().to_string_lossy()
-                ));
-                qmlcachegen_file_paths.push(PathBuf::from(&qml_compiled_file));
-
-                let specific_args = vec![
-                    "--resource-path".to_string(),
-                    qrc_resource_path.clone(),
-                    "-o".to_string(),
-                    qml_compiled_file.to_string_lossy().to_string(),
-                    std::fs::canonicalize(file)
-                        .unwrap()
-                        .to_string_lossy()
-                        .to_string(),
-                ];
-
-                let cmd = Command::new(qmlcachegen_executable)
-                    .args(common_args.iter().chain(&specific_args))
-                    .output()
-                    .unwrap_or_else(|_| {
-                        panic!(
-                            "qmlcachegen failed for {} in QML module {uri}",
-                            file.as_ref().display()
-                        )
-                    });
-                if !cmd.status.success() {
-                    panic!(
-                        "qmlcachegen failed for {} in QML module {uri}:\n{}",
-                        file.as_ref().display(),
-                        String::from_utf8_lossy(&cmd.stderr)
-                    );
-                }
-                qml_file_qrc_paths.push(qrc_resource_path);
+                let result = QtToolQmlCacheGen::new(self.qt_installation.as_ref())
+                    .compile(qml_cache_args.clone(), file);
+                qmlcachegen_file_paths.push(result.qml_cache_path);
+                qml_resource_paths.push(result.qml_resource_path);
             }
-
-            let qmlcachegen_loader = qmlcachegen_dir.join("qmlcache_loader.cpp");
-            let specific_args = vec![
-                "--resource-name".to_string(),
-                format!("qmlcache_{qml_uri_underscores}"),
-                "-o".to_string(),
-                qmlcachegen_loader.to_string_lossy().to_string(),
-            ];
 
             // If there are no QML files there is nothing for qmlcachegen to run with
             if !qml_files.is_empty() {
-                let cmd = Command::new(qmlcachegen_executable)
-                    .args(
-                        common_args
-                            .iter()
-                            .chain(&specific_args)
-                            .chain(&qml_file_qrc_paths),
-                    )
-                    .output()
-                    .unwrap_or_else(|_| panic!("qmlcachegen failed for QML module {uri}"));
-                if !cmd.status.success() {
-                    panic!(
-                        "qmlcachegen failed for QML module {uri}:\n{}",
-                        String::from_utf8_lossy(&cmd.stderr)
-                    );
-                }
-                qmlcachegen_file_paths.push(PathBuf::from(&qmlcachegen_loader));
+                qmlcachegen_file_paths.push(
+                    QtToolQmlCacheGen::new(self.qt_installation.as_ref())
+                        .compile_loader(qml_cache_args.clone(), &qml_resource_paths),
+                );
             }
         }
 
@@ -407,7 +342,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
                 &format!("qInitResources_qml_module_resources_{qml_uri_underscores}_qrc"),
             );
 
-            if !qml_files.is_empty() && qmlcachegen_executable.is_some() {
+            if !qml_files.is_empty() && !qmlcachegen_file_paths.is_empty() {
                 generate_usage(
                     "int",
                     &format!("qInitResources_qmlcache_{qml_uri_underscores}"),
