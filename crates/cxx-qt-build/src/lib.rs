@@ -32,8 +32,8 @@ use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
 pub use qt_build_utils::MocArguments;
-use qt_build_utils::SemVer;
 use quote::ToTokens;
+use semver::Version;
 use std::{
     collections::HashSet,
     env,
@@ -597,7 +597,7 @@ impl CxxQtBuilder {
         }
     }
 
-    fn define_qt_version_cfg_variables(version: &SemVer) {
+    fn define_qt_version_cfg_variables(version: Version) {
         // Allow for Qt 5 or Qt 6 as valid values
         CxxQtBuilder::define_cfg_check_variable(
             "cxxqt_qt_version_major".to_owned(),
@@ -849,8 +849,10 @@ impl CxxQtBuilder {
                 &qml_module.qml_files,
                 &qml_module.qrc_files,
             );
+            if let Some(qmltyperegistrar) = qml_module_registration_files.qmltyperegistrar {
+                cc_builder.file(qmltyperegistrar);
+            }
             cc_builder
-                .file(qml_module_registration_files.qmltyperegistrar)
                 .file(qml_module_registration_files.plugin)
                 // In comparison to the other RCC files, we don't need to link this with whole-archive or
                 // anything like that.
@@ -1119,8 +1121,10 @@ extern "C" bool {init_fun}() {{
 
         let header_root = dir::header_root();
 
-        let mut qtbuild = qt_build_utils::QtBuild::new(qt_modules.iter().cloned().collect())
-            .expect("Could not find Qt installation");
+        let mut qtbuild = qt_build_utils::QtBuild::new_with_default_installation(
+            qt_modules.iter().cloned().collect(),
+        )
+        .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
         Self::define_qt_version_cfg_variables(qtbuild.version());
 
