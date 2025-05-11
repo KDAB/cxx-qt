@@ -107,7 +107,7 @@ In our case that means:
 - `#[qproperty(i32, number)]` ⇾ `Q_PROPERTY(::std::int32_t number ...)`
 - `#[qproperty(QString, string)` ⇾ `Q_PROPERTY(QString string ...)`
 
-For `i32`, CXX-Qt already knows how to translate it.
+For `i32`, CXX already knows how to translate it.
 A `QString` however is unknown to CXX.
 Luckily, the [`cxx_qt_lib`](https://docs.rs/cxx-qt-lib/latest/cxx_qt_lib/) crate already wraps many Qt types for us.
 We can just include them in the bridge like any other CXX type:
