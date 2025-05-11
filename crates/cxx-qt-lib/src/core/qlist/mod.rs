@@ -163,6 +163,21 @@ where
     }
 }
 
+impl<T> QList<T>
+where
+    T: QListElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    /// Inserts value at the end of the list.
+    pub fn append(&mut self, value: T) {
+        T::append(self, value);
+    }
+
+    /// Inserts item value into the list at the given position.
+    pub fn insert(&mut self, pos: isize, value: T) {
+        T::insert(self, pos, value);
+    }
+}
+
 impl<T> From<&QList<T>> for Vec<T>
 where
     T: QListElement + Clone,
@@ -196,18 +211,57 @@ where
     }
 }
 
-impl<T> QList<T>
+impl<'a, T> Extend<&'a T> for QList<T>
+where
+    T: QListElement,
+{
+    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        let size_hint = iter.size_hint().0.try_into().unwrap_or_default();
+        if size_hint > 0 {
+            self.reserve(size_hint);
+        }
+        for element in iter {
+            self.append_clone(element);
+        }
+    }
+}
+
+impl<T> Extend<T> for QList<T>
 where
     T: QListElement + ExternType<Kind = cxx::kind::Trivial>,
 {
-    /// Inserts value at the end of the list.
-    pub fn append(&mut self, value: T) {
-        T::append(self, value);
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        let size_hint = iter.size_hint().0.try_into().unwrap_or_default();
+        if size_hint > 0 {
+            self.reserve(size_hint);
+        }
+        for element in iter {
+            self.append(element);
+        }
     }
+}
 
-    /// Inserts item value into the list at the given position.
-    pub fn insert(&mut self, pos: isize, value: T) {
-        T::insert(self, pos, value);
+impl<'a, T> FromIterator<&'a T> for QList<T>
+where
+    T: QListElement,
+{
+    fn from_iter<I: IntoIterator<Item = &'a T>>(iter: I) -> Self {
+        let mut qlist = Self::default();
+        qlist.extend(iter);
+        qlist
+    }
+}
+
+impl<T> FromIterator<T> for QList<T>
+where
+    T: QListElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut qlist = Self::default();
+        qlist.extend(iter);
+        qlist
     }
 }
 
