@@ -140,6 +140,60 @@ where
     }
 }
 
+impl<'a, T> Extend<&'a T> for QSet<T>
+where
+    T: QSetElement,
+{
+    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        let size_hint = iter.size_hint().0.try_into().unwrap_or_default();
+        if size_hint > 0 {
+            self.reserve(size_hint);
+        }
+        for element in iter {
+            self.insert_clone(element);
+        }
+    }
+}
+
+impl<T> Extend<T> for QSet<T>
+where
+    T: QSetElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        let size_hint = iter.size_hint().0.try_into().unwrap_or_default();
+        if size_hint > 0 {
+            self.reserve(size_hint);
+        }
+        for element in iter {
+            self.insert(element);
+        }
+    }
+}
+
+impl<'a, T> FromIterator<&'a T> for QSet<T>
+where
+    T: QSetElement,
+{
+    fn from_iter<I: IntoIterator<Item = &'a T>>(iter: I) -> Self {
+        let mut qset = Self::default();
+        qset.extend(iter);
+        qset
+    }
+}
+
+impl<T> FromIterator<T> for QSet<T>
+where
+    T: QSetElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut qset = Self::default();
+        qset.extend(iter);
+        qset
+    }
+}
+
 unsafe impl<T> ExternType for QSet<T>
 where
     T: ExternType + QSetElement,
