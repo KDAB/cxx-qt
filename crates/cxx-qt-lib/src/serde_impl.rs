@@ -8,17 +8,6 @@ use serde::de::{SeqAccess, Visitor};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::fmt::{self, Formatter};
 use std::marker::PhantomData;
-use std::num::NonZeroIsize;
-
-/// Serde deserializers provide an `Option<usize>` size hint, but Qt containers use signed types
-/// for size. This helper function converts between the two.
-/// It also returns `None` if the size hint is 0, because there's no need to reserve capacity of 0.
-const fn get_size_hint(size_hint: Option<usize>) -> Option<NonZeroIsize> {
-    match size_hint {
-        Some(n) if n <= isize::MAX as usize => NonZeroIsize::new(n as isize),
-        _ => None,
-    }
-}
 
 /// Serializes and deserializes a list-like container by iterating over values.
 macro_rules! seq_impl {
@@ -57,8 +46,8 @@ macro_rules! seq_impl {
                         A: SeqAccess<'de>,
                     {
                         let mut values = Self::Value::default();
-                        if let Some(size_hint) = get_size_hint(seq.size_hint()) {
-                            values.reserve(size_hint.get());
+                        if let Some(size_hint) = seq.size_hint() {
+                            values.reserve_usize(size_hint);
                         }
                         while let Some(value) = seq.next_element()? {
                             $insert(&mut values, value);
@@ -107,8 +96,8 @@ macro_rules! deref_impl {
                     {
                         let mut list = Self::Value::default();
                         let values = &mut *list;
-                        if let Some(size_hint) = get_size_hint(seq.size_hint()) {
-                            values.reserve(size_hint.get());
+                        if let Some(size_hint) = seq.size_hint() {
+                            values.reserve_usize(size_hint);
                         }
                         while let Some(value) = seq.next_element()? {
                             values.append(value);

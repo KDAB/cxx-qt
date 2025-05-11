@@ -151,15 +151,22 @@ where
         T::len(self)
     }
 
+    /// Removes the element at index position.
+    pub fn remove(&mut self, pos: isize) {
+        T::remove(self, pos);
+    }
+
     /// Reserve the specified capacity to prevent repeated allocations
     /// when the maximum size is known.
     pub fn reserve(&mut self, size: isize) {
         T::reserve(self, size);
     }
 
-    /// Removes the element at index position.
-    pub fn remove(&mut self, pos: isize) {
-        T::remove(self, pos);
+    /// Helper function for handling Rust values.
+    pub(crate) fn reserve_usize(&mut self, size: usize) {
+        if size != 0 && size <= isize::MAX as usize {
+            T::reserve(self, size as isize);
+        }
     }
 }
 
@@ -203,7 +210,7 @@ where
     /// The original slice can still be used after constructing the QVector.
     fn from(vec: S) -> Self {
         let mut qvec = Self::default();
-        qvec.reserve(vec.as_ref().len().try_into().unwrap());
+        qvec.reserve_usize(vec.as_ref().len());
         for element in vec.as_ref() {
             qvec.append_clone(element);
         }
@@ -216,10 +223,7 @@ where
 {
     fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
         let iter = iter.into_iter();
-        let size_hint = iter.size_hint().0.try_into().unwrap_or_default();
-        if size_hint > 0 {
-            self.reserve(size_hint);
-        }
+        self.reserve_usize(iter.size_hint().0);
         for element in iter {
             self.append_clone(element);
         }
@@ -232,10 +236,7 @@ where
 {
     fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
         let iter = iter.into_iter();
-        let size_hint = iter.size_hint().0.try_into().unwrap_or_default();
-        if size_hint > 0 {
-            self.reserve(size_hint);
-        }
+        self.reserve_usize(iter.size_hint().0);
         for element in iter {
             self.append(element);
         }
