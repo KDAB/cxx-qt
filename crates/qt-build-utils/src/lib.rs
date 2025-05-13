@@ -399,7 +399,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
                 )),
             };
 
-            let rcc = self.qrc(&qrc_path);
+            let rcc = self.rcc().compile(&qrc_path);
             QmlModuleRegistrationFiles {
                 // The rcc file is automatically initialized when importing the plugin.
                 // so we don't need to treat it like an initializer here.
@@ -423,25 +423,5 @@ Q_IMPORT_PLUGIN({plugin_class_name});
     /// Create a [QtToolQmlTypeRegistrar] for this [QtBuild]
     pub fn qmltyperegistrar(&self) -> QtToolQmlTypeRegistrar {
         QtToolQmlTypeRegistrar::new(self.qt_installation.as_ref())
-    }
-
-    /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
-    /// The path to the generated C++ file is returned, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file).
-    /// This function also returns a String that contains the name of the resource initializer
-    /// function.
-    /// The build system must ensure that if the .cpp file is built into a static library, either
-    /// the `+whole-archive` flag is used, or the initializer function is called by the
-    /// application.
-    pub fn qrc(&mut self, input_file: impl AsRef<Path>) -> Initializer {
-        // TODO: later change to just have a rcc() -> QtToolRcc
-        // but keep this for compat for now
-        QtToolRcc::new(self.qt_installation.as_ref()).compile(input_file)
-    }
-
-    /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and return the paths of the sources
-    pub fn qrc_list(&mut self, input_file: impl AsRef<Path>) -> Vec<PathBuf> {
-        // TODO: later change to just have a rcc() -> QtToolRcc
-        // but keep this for compat for now
-        QtToolRcc::new(self.qt_installation.as_ref()).list(input_file)
     }
 }
