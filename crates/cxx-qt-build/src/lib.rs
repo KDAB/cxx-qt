@@ -702,7 +702,7 @@ impl CxxQtBuilder {
             moc_arguments,
         } in &self.qobject_headers
         {
-            let moc_products = qtbuild.moc(path, moc_arguments.clone());
+            let moc_products = qtbuild.moc().compile(path, moc_arguments.clone());
             // Include the moc folder
             if let Some(dir) = moc_products.cpp.parent() {
                 self.cc_builder.include(dir);
@@ -827,7 +827,7 @@ impl CxxQtBuilder {
                     }
 
                     cc_builder.file(&qobject);
-                    let moc_products = qtbuild.moc(
+                    let moc_products = qtbuild.moc().compile(
                         qobject_header,
                         MocArguments::default().uri(qml_module.uri.clone()),
                     );

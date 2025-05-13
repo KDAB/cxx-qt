@@ -187,13 +187,11 @@ impl QtBuild {
         self.qt_installation.version()
     }
 
-    /// Run moc on a C++ header file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
-    /// The return value contains the path to the generated C++ file, which can then be passed to [cc::Build::files](https://docs.rs/cc/latest/cc/struct.Build.html#method.file),
-    /// as well as the path to the generated metatypes.json file, which can be passed to [register_qml_module](Self::register_qml_module).
-    pub fn moc(&mut self, input_file: impl AsRef<Path>, arguments: MocArguments) -> MocProducts {
-        // TODO: do we change this API to just be moc() -> QtToolMoc ?
+    /// Create a [QtToolMoc] for this [QtBuild]
+    ///
+    /// This allows for using [moc](https://doc.qt.io/qt-6/moc.html)
+    pub fn moc(&mut self) -> QtToolMoc {
         QtToolMoc::new(self.qt_installation.as_ref(), &self.qt_modules)
-            .compile(input_file, arguments)
     }
 
     /// Generate C++ files to automatically register a QML module at build time using the JSON output from [moc](Self::moc).
@@ -380,7 +378,7 @@ public:
             )
             .expect("Failed to write plugin definition");
 
-            let moc_product = self.moc(
+            let moc_product = self.moc().compile(
                 &qml_plugin_cpp_path,
                 MocArguments::default().uri(uri.to_owned()),
             );
