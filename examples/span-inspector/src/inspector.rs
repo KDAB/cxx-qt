@@ -5,7 +5,7 @@
 
 use cxx_qt_gen::{write_rust, Parser};
 use proc_macro2::{Span, TokenStream, TokenTree};
-use std::{str::FromStr, usize};
+use std::{str::FromStr, sync::{Arc, Mutex}, usize};
 use syn::{parse2, ItemMod};
 
 #[cxx_qt::bridge]
@@ -50,6 +50,10 @@ mod qobject {
         type SpanInspector = super::SpanInspectorRust;
 
         unsafe fn set_input(self: Pin<&mut SpanInspector>, input: *mut QQuickTextDocument);
+
+        #[qinvokable]
+        #[cxx_name = "updateCursorPosition"]
+        fn update_cursor_position(self: Pin<&mut SpanInspector>, pos: i32);
     }
 
     impl UniquePtr<QTextDocument> {}
@@ -61,6 +65,7 @@ use qobject::{QQuickTextDocument, QString, QTextDocument};
 use std::{pin::Pin, ptr};
 
 pub struct SpanInspectorRust {
+    cursor_position: Arc<Mutex<i32>>,
     input: *mut QQuickTextDocument,
     output: *mut QQuickTextDocument,
 }
@@ -68,6 +73,7 @@ pub struct SpanInspectorRust {
 impl Default for SpanInspectorRust {
     fn default() -> Self {
         Self {
+            cursor_position: Arc::new(Mutex::new(3)),
             input: ptr::null_mut(),
             output: ptr::null_mut(),
         }
@@ -90,18 +96,26 @@ impl qobject::SpanInspector {
         let input = unsafe { Pin::new_unchecked(&mut *input) };
         let document = unsafe { Pin::new_unchecked(&mut *input.text_document()) };
         let qt_thread = self.qt_thread();
+        let cursor_position = self.cursor_position.clone();
         document
             .on_contents_changed(move |document| {
                 let qt_thread = qt_thread.clone();
                 let text = document.to_plain_text().to_string();
+                println!("{}", text);
+                let cursor_position = cursor_position.clone();
                 std::thread::spawn(move || {
-                    let (expanded, span_data) = Self::expand(&text);
+                    let cursor_position = match cursor_position.lock() {
+                        Ok(mutex) => mutex,
+                        Err(poison_error) => poison_error.into_inner()
+                    };
+                    let (expanded, span_data) = Self::expand(&text, *cursor_position as usize);
                     let Ok(file) = syn::parse_file(expanded.as_str())
                         .map_err(|err| eprintln!("Parsing error: {err}"))
                     else {
                         return;
                     };
                     let output = QString::from(Self::build_html(prettyplease::unparse(&file), span_data));
+                    println!("thomas: {}", *cursor_position);
                     qt_thread
                         .queue(move |this| {
                             unsafe { this.output_document() }.set_html(&QString::from(output))
@@ -112,9 +126,16 @@ impl qobject::SpanInspector {
             .release();
     }
 
+    fn update_cursor_position(self: Pin<&mut Self>, pos: i32){
+        let mut cursor_position = match self.cursor_position.lock() {
+            Ok(mutex) => mutex,
+            Err(poison_error) => poison_error.into_inner()
+        };
+        *cursor_position = pos;
+    }
+
     // Expand input code as #[cxxqt_qt::bridge] would do
-    fn expand(input: &str) -> (String, Vec<bool>){
-        let target: usize = 1;
+    fn expand(input: &str, cursor_position: usize) -> (String, Vec<bool>){
         let input_stream: TokenStream = TokenStream::from_str(input).unwrap();
         
         let mut module: ItemMod = parse2(input_stream.clone()).expect("could not generate ItemMod");
@@ -125,7 +146,10 @@ impl qobject::SpanInspector {
         module.attrs = attrs.into_iter().chain(module.attrs).collect();
 
         let output_stream = Self::extract_and_generate(module);
-        let target_span : Span = input_stream.into_iter().nth(target).map(|token| token.span()).unwrap();
+        let target_span= input_stream.into_iter().find( |token| {
+            let range = token.span().byte_range();
+            range.start <= cursor_position && range.end >= cursor_position
+        }).map(|token| token.span()).unwrap();
         let span_data = Self::get_span_data(output_stream.clone(), target_span);
         
         (format!("{}", output_stream), span_data)
@@ -141,7 +165,6 @@ impl qobject::SpanInspector {
     }
 
     fn build_html(input: String, span_data: Vec<bool>) -> String{
-
         fn highlight(token_stream: TokenStream, mut text: String, span_data: &Vec<bool>, mut token_position: usize) -> (String, usize) {
             let token_vec: Vec<TokenTree> = token_stream.into_iter().collect();
             for token in token_vec.into_iter().rev() {
@@ -151,6 +174,7 @@ impl qobject::SpanInspector {
                     },
                     _ => {
                         token_position = token_position - 1;
+                        println!("debug: token: {} , token_position: {} , is_highlighted: {}", token, token_position, *span_data.get(token_position).unwrap());
                         if *span_data.get(token_position).unwrap() {
                             text.replace_range(token.span().byte_range(), format!("<span class=\"highlight\">{}</span>", token).as_str());
                         }
@@ -183,6 +207,7 @@ impl qobject::SpanInspector {
                     vec.extend(Self::get_span_data(group.stream(), target_span));
                 }
                 _ => {
+                    println!("vergleich: {} ,input: {:?} , output: {:?} , token: {} ", target_span.byte_range().eq(token.span().byte_range()), target_span.byte_range(), token.span().byte_range(), token);
                     vec.push(target_span.byte_range().eq(token.span().byte_range()));
                 }
             }

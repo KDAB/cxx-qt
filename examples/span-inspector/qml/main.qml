@@ -25,7 +25,14 @@ ApplicationWindow {
         anchors.fill: parent
         TextEdit {
             SplitView.preferredWidth: parent.width / 2
-            Component.onCompleted: inspector.input = textDocument
+            Component.onCompleted: {
+                inspector.input = textDocument
+                inspector.updateCursorPosition(cursorPosition)
+            }
+
+            onCursorPositionChanged: {
+                inspector.updateCursorPosition(cursorPosition)
+            }
         }
         TextEdit {
             SplitView.preferredWidth: parent.width / 2
