@@ -25,21 +25,21 @@ We want to make the generated headers available, not just to CMake, but also wit
 
 For this we need to export them to a stable directory so that both CMake and Cargo can find them.
 
-# (Optional) Integration with CMake
+### (Optional) Integration with CMake
 
 Somehow, all of this should be compatible with both CMake, and Cargo-only builds.
 
-# The plan (for now)
+## The plan (for now)
 
 After many rounds of refactoring this, we believe that we need to be able to share data between build scripts for this to work halfway ergonomically.
 
-We want to use a similar approach to CXX, which uses Cargos `links` key to ensure a correct build order (see the documentation [here](https://doc.rust-lang.org/cargo/reference/build-scripts.html#the-links-manifest-key)).
+We want to use a similar approach to CXX, which uses Cargos `links` key to ensure a correct build order (see the [links key documentation](https://doc.rust-lang.org/cargo/reference/build-scripts.html#the-links-manifest-key)).
 When building with cxx-qt-build, you may simply specify that your code depends on another crate.
 Cargo will then make sure that the build scripts of the dependencies have run **before** the build script of this crate.
 
 We can additionally pass metadata between build scripts, which we use to find the `manifest.json` of each crate and the path to their "target" directory.
 
-## The "target" directory
+### The "target" directory
 
 Each build script can export artifacts into a folder with a well-known layout.
 It is also required to export a `manifest.json` file that tells downstream dependencies which of these artifacts to include and how to configure their own build.
@@ -68,7 +68,7 @@ Next to the crates directory, there should be a `qml_modules` directory, which c
 
 Each module should include a `plugin_init.o`, `.qmltypes`, `qmldir`, and any other necessary files.
 
-## Initializers with Cargo and CMake
+### Initializers with Cargo and CMake
 
 There are multiple ways to solve the issues presented by static initializers:
 
@@ -99,7 +99,7 @@ In CMake we mirror Qts behavior, which is to build the static initializer as an 
 The initializer functions themselves are still built into the Rust static library and the `OBJECT` library must therefore link to it.
 This is taken care of by the `cxx_qt_import_crate`/`_import_qml_module` functions.
 
-## Integration with CMake
+### Integration with CMake
 
 Via the `CXXQT_EXPORT_DIR` environment variable CMake should be able to change the location of the "target" directory.
 CMake can then expect required artifacts to exist at pre-defined locations, which can be added as dependency, include directories, objects, etc. to the Crate target.

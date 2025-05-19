@@ -155,7 +155,7 @@ The following CMake source files are available under the BSD-3-Clause
 
 * [cmake/CompilerCaching.cmake](./cmake/CompilerCaching.cmake) - a helper for using sccache
 
-# About KDAB
+## About KDAB
 
 CXX-Qt is supported and maintained by Klarälvdalens Datakonsult AB (KDAB).
 

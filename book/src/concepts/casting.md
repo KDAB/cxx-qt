@@ -10,7 +10,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 With the [base](../bridge/attributes.md) attribute, it is possible to inherit from another type.
 In order to access this parent class, we provide an API to cast up or down.
 Currently, this is supported for objects in both `extern "RustQt"` *and* `extern "C++Qt"` blocks, which have either a `#[qobject]` attribute,
-or a `#[base = T]` attribute. see [here](../bridge/attributes.md) for more details on these attributes.
+or a `#[base = T]` attribute. See the [attributes documentation](../bridge/attributes.md) for more details on these attributes.
 > Note: Types in "C++Qt" blocks are **required** to have the `#[qobject]` attribute
 
 ## Accessing the base class

@@ -11,7 +11,7 @@ CXX-Qt and applications written with it can be compiled for WebAssembly, with a 
 
 You will need to have Qt for WebAssembly installed. The next section shows versions that have been tested.
 
-Additionally, if you haven't already, clone the `emsdk` git repo from [here](https://github.com/emscripten-core/emsdk).
+Additionally, if you haven't already, clone the [`emsdk` git repo from Github](https://github.com/emscripten-core/emsdk).
 
 ## Using Correct Versions
 
@@ -200,4 +200,4 @@ error[E0433]: failed to resolve: use of undeclared type `IovLen`
 
 `socket2` is a dependency of `async-io`, which is a dependency of `async-std`.
 
-There is discussion around supporting wasm in the GitHub repository for `async-std`, and the progress is being tracked [here](https://github.com/async-rs/async-std/issues/220).
+There is discussion around supporting wasm in the GitHub repository for `async-std`, and the progress is being tracked [in this issue](https://github.com/async-rs/async-std/issues/220).
