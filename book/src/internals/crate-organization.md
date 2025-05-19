@@ -20,7 +20,7 @@ This page lays out the goal of each crate and how it is differentiated from the 
 - [🦾 `qt-build-utils` - Building with Qt](#qt-build-utils)
 - [🤝 `cxx-qt-cmake` - Handoff to CMake](#cxx-qt-cmake)
 
-# <a name="cxx-qt"></a>⭐ `cxx-qt` - The Star of the Show
+## <a name="cxx-qt"></a>⭐ `cxx-qt` - The Star of the Show
 
 The main crate of CXX-Qt.
 
@@ -39,7 +39,7 @@ Apart from a few extremely basic types that are needed for this goal, wrapping t
 
 This should also allow `cxx-qt-lib` and `cxx-qt-lib-extras` to be used without the user needing to use the `cxx-qt` crate itself, which is why they're explicitly seperated.
 
-# <a name="cxx-qt-build"></a> 👷 `cxx-qt-build` - The Construction Worker
+## <a name="cxx-qt-build"></a> 👷 `cxx-qt-build` - The Construction Worker
 
 `cxx-qt-build` provides the user-accessible API for building applications with CXX-Qt.
 
@@ -51,7 +51,7 @@ For CMake, it exposes the required artifacts into a well-known directory and str
 
 The access to Qts build tooling has actually been made available as a separate crate: `qt-build-utils`, which `cxx-qt-build` uses internally
 
-# <a name="cxx-qt-gen"></a> 💚 `cxx-qt-gen` - The Heart of CXX-Qt
+## <a name="cxx-qt-gen"></a> 💚 `cxx-qt-gen` - The Heart of CXX-Qt
 
 This crate contains the "main functionality" of CXX-Qt.
 
@@ -68,7 +68,7 @@ This transpiler is then used by the `#[cxx_qt::bridge]` macro via `cxx-qt-macro`
 
 > TODO: Add a documentation of the cxx-qt-gen stages and architecture in a separate page
 
-# <a name="cxx-qt-lib"></a> 📖 `cxx-qt-lib` - The "standard" Library
+## <a name="cxx-qt-lib"></a> 📖 `cxx-qt-lib` - The "standard" Library
 
 `cxx-qt-lib` is to `cxx-qt`, what Rusts `std` library is to `rustc`.
 
@@ -92,7 +92,7 @@ Additional types can be added into a separate, less maintained, crate (namely: `
 
 This leads us to the concrete policy for including types in `cxx-qt-lib`:
 
-## `cxx-qt-lib` inclusion policy
+### `cxx-qt-lib` inclusion policy
 
 - Default to adding anything you think may be useful to `cxx-qt-lib-extras`
 - Only add types to `cxx-qt-lib` directly, if they're either:
@@ -101,7 +101,7 @@ This leads us to the concrete policy for including types in `cxx-qt-lib`:
 
 We can then always promote types from -lib-extras to -lib, if/when it turns out this type is used regularly.
 
-# <a name="cxx-qt-lib-extras"></a> 📚 `cxx-qt-lib-extras` - The Bookshelf
+## <a name="cxx-qt-lib-extras"></a> 📚 `cxx-qt-lib-extras` - The Bookshelf
 
 As mentioned in the `cxx-qt-lib` library, we do not aim to maintain wrappers for the entire Qt API.
 However, it would still be useful to have a place where the community can share and collect bindings for whatever they have wrapped of the Qt API.
@@ -137,19 +137,19 @@ Simply copying individual files out of the crate into your own crate is also a r
 
 We only ask that you contribute your own wrappers and fixes back to -lib-extras so the wider ecosystem can benefit.
 
-# <a name="cxx-qt-macro"></a> 💻 `cxx-qt-macro` - Frontend for cxx-qt-gen
+## <a name="cxx-qt-macro"></a> 💻 `cxx-qt-macro` - Frontend for cxx-qt-gen
 
 For technical reasons within Cargo, procedural macros need to be a special type of crate.
 
 `cxx-qt-macro` wraps the bridge macro, which is then re-exported by the `cxx-qt` crate.
 
-# <a name="qt-build-utils"></a> 🦾 `qt-build-utils` - Building with Qt
+## <a name="qt-build-utils"></a> 🦾 `qt-build-utils` - Building with Qt
 
 This crate wraps Qts custom build tooling like moc.
 
 It is mostly used by `cxx-qt-build`. But because it may be useful to other crates in the Qt ecosystem as well, we have decided to split it into its own crate.
 
-# <a name="cxx-qt-cmake"></a> 🤝 [`cxx-qt-cmake`](https://github.com/kdab/cxx-qt-cmake) - Handoff to CMake
+## <a name="cxx-qt-cmake"></a> 🤝 [`cxx-qt-cmake`](https://github.com/kdab/cxx-qt-cmake) - Handoff to CMake
 
 Whilst this is not a crate, it's a separate "project", as it lives in another repository.
 `cxx-qt-cmake` simply contains the bits of CMake code that encapsulate the integration of `cxx-qt-build` artifacts into CMake.
