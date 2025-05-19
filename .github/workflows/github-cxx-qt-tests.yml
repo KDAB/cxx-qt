@@ -11,6 +11,7 @@ on:
       - 'main'
       - '[0-9]+\.[0-9]+\.x'
   pull_request:
+  merge_group:
   schedule:
     # Run daily at 01:01
     # This ensures CI still works and ensures the cache remains active
