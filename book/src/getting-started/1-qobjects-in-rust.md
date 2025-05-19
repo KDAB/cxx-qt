@@ -71,7 +71,7 @@ In comparison to a normal opaque CXX class, the mapping between the `QObject` su
 The `QObject` subclass is its own type in Rust, as well as in C++.
 When such a `QObject` is instantiated, it will always also construct an instance of the Rust `struct`.
 The `QObject`s Rust struct can also be directly constructed via a `UniquePtr<YourObject>` in Rust, but this is a less common use case,
-see [here](../concepts/instantiating_in_rust.md) for more information.
+see [Instantiating in Rust](../concepts/instantiating_in_rust.md) for more information.
 The `QObject` can then refer to the underlying Rust `struct` for property access.
 Any behavior of this `QObject` subclass will also be defined in Rust, e.g. using the [`#[qinvokable]`](../bridge/extern_rustqt.html#invokables) attribute.
 The Rust implementation also has access to the underlying Rust `struct` to modify any Rust data.
