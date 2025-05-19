@@ -164,8 +164,8 @@ where
 
     /// Helper function for handling Rust values.
     pub(crate) fn reserve_usize(&mut self, size: usize) {
-        if size != 0 && size <= isize::MAX as usize {
-            T::reserve(self, size as isize);
+        if size != 0 {
+            T::reserve(self, isize::try_from(size).unwrap_or(isize::MAX));
         }
     }
 }
