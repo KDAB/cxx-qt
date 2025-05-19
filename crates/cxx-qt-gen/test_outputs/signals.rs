@@ -52,8 +52,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlerready =
-            cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureready>;
+        type MyObjectCxxQtSignalHandlerready<'a> =
+            cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::MyObjectCxxQtSignalClosureready>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[cxx_name = "MyObject_readyConnect"]
@@ -87,7 +87,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlerdata_changed = cxx_qt::signalhandler::CxxQtSignalHandler<
+        type MyObjectCxxQtSignalHandlerdata_changed<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<
+            'a,
             super::MyObjectCxxQtSignalClosuredata_changed,
         >;
         #[doc(hidden)]
@@ -129,8 +130,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type MyObjectCxxQtSignalHandlernewData =
-            cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosurenewData>;
+        type MyObjectCxxQtSignalHandlernewData<'a> =
+            cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::MyObjectCxxQtSignalClosurenewData>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[cxx_name = "MyObject_newDataConnect"]
@@ -202,8 +203,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type QTimerCxxQtSignalHandlertimeout =
-            cxx_qt::signalhandler::CxxQtSignalHandler<super::QTimerCxxQtSignalClosuretimeout>;
+        type QTimerCxxQtSignalHandlertimeout<'a> =
+            cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::QTimerCxxQtSignalClosuretimeout>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[cxx_name = "QTimer_timeoutConnect"]
@@ -233,12 +234,12 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "ready"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
+    pub fn connect_ready<'a, F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(
                 Box::new(closure),
@@ -253,11 +254,11 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
+    pub fn on_ready<'a, F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_ready(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(
                 Box::new(closure),
@@ -271,7 +272,7 @@ pub struct MyObjectCxxQtSignalClosureready {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosureready {
     type Id =
         cxx::type_id!("::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerready");
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'a + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_ready;
 fn call_MyObject_signal_handler_ready(
@@ -293,6 +294,7 @@ impl ffi::MyObject {
     #[doc = "data_changed"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_data_changed<
+        'a,
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
                 i32,
@@ -300,14 +302,14 @@ impl ffi::MyObject {
                 ffi::QPoint,
                 &ffi::QPoint,
             )
-            + 'static
+            + 'a
             + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_data_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuredata_changed > :: new (Box :: new (closure)) , conn_type ,))
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt :: QScopedMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_data_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuredata_changed > :: new (Box :: new (closure)) , conn_type ,))
     }
 }
 impl ffi::MyObject {
@@ -317,6 +319,7 @@ impl ffi::MyObject {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_data_changed<
+        'a,
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
                 i32,
@@ -324,13 +327,13 @@ impl ffi::MyObject {
                 ffi::QPoint,
                 &ffi::QPoint,
             )
-            + 'static
+            + 'a
             + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt :: QMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_data_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuredata_changed > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt :: QScopedMetaObjectConnectionGuard :: from (ffi :: MyObject_connect_data_changed (self , cxx_qt :: signalhandler :: CxxQtSignalHandler :: < MyObjectCxxQtSignalClosuredata_changed > :: new (Box :: new (closure)) , cxx_qt :: ConnectionType :: AutoConnection ,))
     }
 }
 #[doc(hidden)]
@@ -339,13 +342,15 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type Id = cxx::type_id!(
         "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdata_changed"
     );
-    type FnType = dyn FnMut(
+    type FnType<'a> = dyn FnMut(
             core::pin::Pin<&mut ffi::MyObject>,
             i32,
             cxx::UniquePtr<ffi::Opaque>,
             ffi::QPoint,
             &ffi::QPoint,
-        ) + Send;
+        )
+        + 'a
+        + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_data_changed;
 fn call_MyObject_signal_handler_data_changed(
@@ -371,6 +376,7 @@ impl ffi::MyObject {
     #[doc = "newData"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_base_class_new_data<
+        'a,
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
                 i32,
@@ -378,14 +384,14 @@ impl ffi::MyObject {
                 ffi::QPoint,
                 &'a ffi::QPoint,
             )
-            + 'static
+            + 'a
             + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurenewData>::new(
                 Box::new(closure),
@@ -401,6 +407,7 @@ impl ffi::MyObject {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_base_class_new_data<
+        'a,
         F: FnMut(
                 core::pin::Pin<&mut ffi::MyObject>,
                 i32,
@@ -408,13 +415,13 @@ impl ffi::MyObject {
                 ffi::QPoint,
                 &'a ffi::QPoint,
             )
-            + 'static
+            + 'a
             + Send,
     >(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_base_class_new_data(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurenewData>::new(
                 Box::new(closure),
@@ -428,13 +435,15 @@ pub struct MyObjectCxxQtSignalClosurenewData {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosurenewData {
     type Id =
         cxx::type_id!("::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlernewData");
-    type FnType = dyn FnMut(
+    type FnType<'a> = dyn FnMut(
             core::pin::Pin<&mut ffi::MyObject>,
             i32,
             cxx::UniquePtr<ffi::Opaque>,
             ffi::QPoint,
             &'a ffi::QPoint,
-        ) + Send;
+        )
+        + 'a
+        + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_newData;
 fn call_MyObject_signal_handler_newData(
@@ -495,12 +504,12 @@ impl ffi::QTimer {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "timeout"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_timeout<F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'static + Send>(
+    pub fn connect_timeout<'a, F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::QTimer>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosuretimeout>::new(
                 Box::new(closure),
@@ -515,11 +524,11 @@ impl ffi::QTimer {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_timeout<F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'static + Send>(
+    pub fn on_timeout<'a, F: FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'a + Send>(
         self: core::pin::Pin<&mut ffi::QTimer>,
         closure: F,
-    ) -> cxx_qt::QMetaObjectConnectionGuard {
-        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QTimer_connect_timeout(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosuretimeout>::new(
                 Box::new(closure),
@@ -533,7 +542,7 @@ pub struct QTimerCxxQtSignalClosuretimeout {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QTimerCxxQtSignalClosuretimeout {
     type Id =
         cxx::type_id!("::cxx_qt::my_object::rust::cxxqtgen1::QTimerCxxQtSignalHandlertimeout");
-    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QTimer>) + Send;
+    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QTimer>) + 'a + Send;
 }
 use core::mem::drop as drop_QTimer_signal_handler_timeout;
 fn call_QTimer_signal_handler_timeout(

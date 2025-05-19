@@ -144,7 +144,7 @@ pub fn generate_rust_signal(
             unsafe extern "C++" {
                 #[doc(hidden)]
                 #[namespace = #namespace_str]
-                type #signal_handler_alias = cxx_qt::signalhandler::CxxQtSignalHandler<super::#closure_struct>;
+                type #signal_handler_alias<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::#closure_struct>;
 
                 #[doc(hidden)]
                 #[namespace = #namespace_str]
@@ -175,9 +175,9 @@ pub fn generate_rust_signal(
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = #signal_name_cpp]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-                    pub fn #connect_ident_rust<F: FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + 'static + Send>(self: #self_type_qualified, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn #connect_ident_rust<'a, F: FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + 'a + Send>(self: #self_type_qualified, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(#module_ident::#free_connect_ident_rust(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(#module_ident::#free_connect_ident_rust(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<#closure_struct>::new(Box::new(closure)),
                             conn_type,
@@ -194,9 +194,9 @@ pub fn generate_rust_signal(
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
-                    pub fn #on_ident_rust<F: FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + 'static + Send>(self: #self_type_qualified, closure: F) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn #on_ident_rust<'a, F: FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + 'a + Send>(self: #self_type_qualified, closure: F) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(#module_ident::#free_connect_ident_rust(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(#module_ident::#free_connect_ident_rust(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<#closure_struct>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -215,7 +215,7 @@ pub fn generate_rust_signal(
                 #(#cfgs)*
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for #closure_struct {
                     type Id = cxx::type_id!(#signal_handler_alias_namespaced_str);
-                    type FnType = dyn FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + Send;
+                    type FnType<'a> = dyn FnMut(#self_type_qualified, #(#parameters_qualified_type),*) + 'a + Send;
                 }
             },
             parse_quote_spanned! {
@@ -294,7 +294,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    type MyObjectCxxQtSignalHandlerready = cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureready>;
+                    type MyObjectCxxQtSignalHandlerready<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::MyObjectCxxQtSignalClosureready>;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
@@ -324,9 +324,9 @@ mod tests {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "ready"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-                    pub fn connect_ready<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn connect_ready<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_ready(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_ready(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(Box::new(closure)),
                             conn_type,
@@ -344,9 +344,9 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
-                    pub fn on_ready<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn on_ready<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_ready(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_ready(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureready>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -367,7 +367,7 @@ mod tests {
             quote! {
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosureready {
                     type Id = cxx::type_id!("::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerready");
-                    type FnType = dyn FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + Send;
+                    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send;
                 }
             },
         );
@@ -474,7 +474,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    type MyObjectCxxQtSignalHandlerdataChanged = cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosuredataChanged>;
+                    type MyObjectCxxQtSignalHandlerdataChanged<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::MyObjectCxxQtSignalClosuredataChanged>;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
@@ -504,9 +504,9 @@ mod tests {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "dataChanged"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-                    pub fn connect_data_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, i32, cxx::UniquePtr<QColor>) + 'static + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn connect_data_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, i32, cxx::UniquePtr<QColor>) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_data_changed(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_data_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuredataChanged>::new(Box::new(closure)),
                             conn_type,
@@ -524,9 +524,9 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
-                    pub fn on_data_changed<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, i32, cxx::UniquePtr<QColor>) + 'static + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn on_data_changed<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, i32, cxx::UniquePtr<QColor>) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_data_changed(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_data_changed(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosuredataChanged>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -547,7 +547,7 @@ mod tests {
             quote! {
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosuredataChanged {
                     type Id = cxx::type_id!("::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdataChanged");
-                    type FnType = dyn FnMut(core::pin::Pin<&mut qobject::MyObject>, i32, cxx::UniquePtr<QColor>) + Send;
+                    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut qobject::MyObject>, i32, cxx::UniquePtr<QColor>) + 'a + Send;
                 }
             },
         );
@@ -616,7 +616,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    type MyObjectCxxQtSignalHandlerunsafeSignal = cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosureunsafeSignal>;
+                    type MyObjectCxxQtSignalHandlerunsafeSignal<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::MyObjectCxxQtSignalClosureunsafeSignal>;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
@@ -646,9 +646,9 @@ mod tests {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "unsafeSignal"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-                    pub fn connect_unsafe_signal<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, *mut T) + 'static +Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn connect_unsafe_signal<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, *mut T) + 'a +Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_signal(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_signal(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureunsafeSignal>::new(Box::new(closure)),
                             conn_type,
@@ -666,9 +666,9 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
-                    pub fn on_unsafe_signal<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, *mut T) + 'static + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn on_unsafe_signal<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, *mut T) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_signal(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_unsafe_signal(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureunsafeSignal>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -689,7 +689,7 @@ mod tests {
             quote! {
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosureunsafeSignal {
                     type Id = cxx::type_id!("::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerunsafeSignal");
-                    type FnType = dyn FnMut(core::pin::Pin<&mut qobject::MyObject>, *mut T) + Send;
+                    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut qobject::MyObject>, *mut T) + 'a + Send;
                 }
             },
         );
@@ -759,7 +759,7 @@ mod tests {
                 unsafe extern "C++" {
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
-                    type MyObjectCxxQtSignalHandlerbaseName = cxx_qt::signalhandler::CxxQtSignalHandler<super::MyObjectCxxQtSignalClosurebaseName>;
+                    type MyObjectCxxQtSignalHandlerbaseName<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<'a, super::MyObjectCxxQtSignalClosurebaseName>;
 
                     #[doc(hidden)]
                     #[namespace = "rust::cxxqtgen1"]
@@ -789,9 +789,9 @@ mod tests {
                     #[doc = "Connect the given function pointer to the signal "]
                     #[doc = "baseName"]
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-                    pub fn connect_existing_signal<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn connect_existing_signal<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F, conn_type: cxx_qt::ConnectionType) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_existing_signal(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_existing_signal(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurebaseName>::new(Box::new(closure)),
                             conn_type,
@@ -809,9 +809,9 @@ mod tests {
                     #[doc = ", so that when the signal is emitted the function pointer is executed."]
                     #[doc = "\n"]
                     #[doc = "Note that this method uses a AutoConnection connection type."]
-                    pub fn on_existing_signal<F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'static + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QMetaObjectConnectionGuard
+                    pub fn on_existing_signal<'a, F: FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send>(self: core::pin::Pin<&mut qobject::MyObject>, closure: F) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a>
                     {
-                        cxx_qt::QMetaObjectConnectionGuard::from(qobject::MyObject_connect_existing_signal(
+                        cxx_qt::QScopedMetaObjectConnectionGuard::from(qobject::MyObject_connect_existing_signal(
                             self,
                             cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosurebaseName>::new(Box::new(closure)),
                             cxx_qt::ConnectionType::AutoConnection,
@@ -832,7 +832,7 @@ mod tests {
             quote! {
                 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosurebaseName {
                     type Id = cxx::type_id!("::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerbaseName");
-                    type FnType = dyn FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + Send;
+                    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut qobject::MyObject>, ) + 'a + Send;
                 }
             },
         );
