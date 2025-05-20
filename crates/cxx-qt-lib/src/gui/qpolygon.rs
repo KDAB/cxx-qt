@@ -5,7 +5,7 @@
 use crate::{QPoint, QRect, QVector};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
-use cxx_qt::Upcast;
+use cxx_qt::casting::Upcast;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
@@ -193,7 +193,7 @@ impl DerefMut for QPolygon {
     }
 }
 
-impl Upcast<QVector<QPoint>> for QPolygon {
+unsafe impl Upcast<QVector<QPoint>> for QPolygon {
     unsafe fn upcast_ptr(this: *const Self) -> *const QVector<QPoint> {
         ffi::upcast_qpolygon(this)
     }

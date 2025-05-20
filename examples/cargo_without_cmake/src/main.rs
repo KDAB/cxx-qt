@@ -15,8 +15,8 @@
 pub mod cxxqt_object;
 
 use cxx_qt::casting::Upcast;
+use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QQmlEngine, QUrl};
 use std::pin::Pin;
-use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
 // ANCHOR_END: book_cargo_imports
 
 // ANCHOR: book_cargo_rust_main

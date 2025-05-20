@@ -106,10 +106,37 @@ pub trait Downcast: Sized {
 /// Automatic implementation of Downcast for any applicable types
 impl<T: Sized> Downcast for T {}
 
-/// Implements transitive casting between a type and its grandparent
+unsafe impl<T> Upcast<T> for T {
+    unsafe fn upcast_ptr(this: *const Self) -> *const Self {
+        this
+    }
+
+    unsafe fn from_base_ptr(base: *const T) -> *const Self {
+        base
+    }
+
+    fn upcast(&self) -> &Self {
+        self
+    }
+
+    fn upcast_mut(&mut self) -> &mut Self {
+        self
+    }
+
+    fn upcast_pin(self: Pin<&mut Self>) -> Pin<&mut Self> {
+        self
+    }
+}
+/// Implements transitive casting in a chain for a type and all its ancestors
 ///
 /// Suppose you have 3 types, A, B and C where A -> B and B -> C casting relationships exist,
-/// `impl_transitive_cast!(A, B, C)` will implement the relationship A -> C.
+/// `impl_transitive_cast!(A, B, C)` will implement the relationship A -> C
+///
+/// `impl_transitive_cast!` will implement casting between the first type and ***all*** its ancestors.
+/// For example, impl_transitive_cast!(A, B, C, D, E) will implement the following casts
+/// - A -> C
+/// - A -> D
+/// - A -> E
 ///
 /// # Example
 ///
@@ -119,16 +146,21 @@ impl<T: Sized> Downcast for T {}
 ///
 /// #[derive(Debug)]
 /// struct A {
-///     value: i32
+///     parent: B
 /// }
 ///
 /// #[derive(Debug)]
 /// struct B {
-///     value: i32
+///     parent: C
 /// }
 ///
 /// #[derive(Debug)]
 /// struct C {
+///     parent: D
+/// }
+///
+/// #[derive(Debug)]
+/// struct D {
 ///     value: i32
 /// }
 ///
@@ -136,51 +168,59 @@ impl<T: Sized> Downcast for T {}
 ///
 /// unsafe impl Upcast<B> for A {
 ///     unsafe fn upcast_ptr(this: *const Self) -> *const B {
-///         let b = B {
-///             value: unsafe { (*this).value }
-///         };
-///         &b as *const B
+///         unsafe { &(*this).parent }
 ///     }
 ///
 ///     unsafe fn from_base_ptr(base: *const B) -> *const Self {
-///         let this = A {
-///             value: unsafe { (*base).value }
-///         };
-///         &this as *const Self
+///         std::ptr::null() // Not needed for this example
 ///     }
 ///
 /// }
 ///
 /// unsafe impl Upcast<C> for B {
 ///     unsafe fn upcast_ptr(this: *const Self) -> *const C {
-///         let c = C {
-///             value: unsafe { (*this).value }
-///         };
-///         &c as *const C
+///         unsafe { &(*this).parent }
 ///     }
 ///
 ///     unsafe fn from_base_ptr(base: *const C) -> *const Self {
-///         let this = B {
-///             value: unsafe { (*base).value }
-///         };
-///         &this as *const Self
+///         std::ptr::null()
 ///     }
 ///
 /// }
 ///
-/// impl_transitive_cast!(A, B, C);
+/// unsafe impl Upcast<D> for C {
+///     unsafe fn upcast_ptr(this: *const Self) -> *const D {
+///         unsafe { &(*this).parent }
+///     }
+///
+///     unsafe fn from_base_ptr(base: *const D) -> *const Self {
+///         std::ptr::null()
+///     }
+///
+/// }
+///
+/// impl_transitive_cast!(A, B, C, D);
 ///
 /// # // Note that we need a fake main function for doc tests to build.
 /// # fn main() {
 /// #    cxx_qt::init_crate!(cxx_qt);
-/// #    let a = A { value: 25 };
-/// #    assert_eq!(Upcast::<B>::upcast(&a).value, 25);
-/// #    assert_eq!(Upcast::<C>::upcast(&a).value, 25);
+/// #
+/// #    let a = A {
+/// #           parent: B {
+/// #               parent: C {
+/// #                   parent: D {
+/// #                       value: 25
+/// #                   }
+/// #               }
+/// #           }
+/// #       };
+/// #    assert_eq!(Upcast::<D>::upcast(&a).value, 25);
 /// # }
 /// ```
 #[macro_export]
 macro_rules! impl_transitive_cast {
     ($first:ty, $second:ty, $third:ty) => {
+        // $crate::impl_transitive_cast!($first, $second, $third);
         unsafe impl ::cxx_qt::casting::Upcast<$third> for $first {
             unsafe fn upcast_ptr(this: *const Self) -> *const $third {
                 let base = <Self as Upcast<$second>>::upcast_ptr(this);
@@ -197,118 +237,9 @@ macro_rules! impl_transitive_cast {
             }
         }
     };
-}
-
-/// Implements transitive casting in a chain for a type and all its ancestors
-///
-/// Suppose you have 3 types, A, B and C where A -> B and B -> C casting relationships exist,
-/// `chain_cast!(A, B, C)` will implement the relationship A -> C just like `impl_transitive_cast!`
-///
-/// Where these 2 macros differ is in longer chains as for a longer chain,
-/// `chain_cast!` will implement casting between the first type and all its ancestors.
-/// For example, chain_cast!(A, B, C, D, E) will implement the following casts
-/// - A -> C
-/// - A -> D
-/// - A -> E
-///
-/// # Example
-///
-/// ```
-/// use cxx_qt::chain_cast;
-///
-///
-/// #[derive(Debug)]
-/// struct A {
-///     value: i32
-/// }
-///
-/// #[derive(Debug)]
-/// struct B {
-///     value: i32
-/// }
-///
-/// #[derive(Debug)]
-/// struct C {
-///     value: i32
-/// }
-///
-/// #[derive(Debug)]
-/// struct D {
-///     value: i32
-/// }
-///
-/// use cxx_qt::casting::Upcast;
-///
-/// unsafe impl Upcast<B> for A {
-///     unsafe fn upcast_ptr(this: *const Self) -> *const B {
-///         let b = B {
-///             value: unsafe { (*this).value }
-///         };
-///         &b as *const B
-///     }
-///
-///     unsafe fn from_base_ptr(base: *const B) -> *const Self {
-///         let this = A {
-///             value: unsafe { (*base).value }
-///         };
-///         &this as *const Self
-///     }
-///
-/// }
-///
-/// unsafe impl Upcast<C> for B {
-///     unsafe fn upcast_ptr(this: *const Self) -> *const C {
-///         let c = C {
-///             value: unsafe { (*this).value }
-///         };
-///         &c as *const C
-///     }
-///
-///     unsafe fn from_base_ptr(base: *const C) -> *const Self {
-///         let this = B {
-///             value: unsafe { (*base).value }
-///         };
-///         &this as *const Self
-///     }
-///
-/// }
-///
-/// unsafe impl Upcast<D> for C {
-///     unsafe fn upcast_ptr(this: *const Self) -> *const D {
-///         let d = D {
-///             value: unsafe { (*this).value }
-///         };
-///         &d as *const D
-///     }
-///
-///     unsafe fn from_base_ptr(base: *const D) -> *const Self {
-///         let this = C {
-///             value: unsafe { (*base).value }
-///         };
-///         &this as *const Self
-///     }
-///
-/// }
-///
-/// chain_cast!(A, B, C, D);
-///
-/// # // Note that we need a fake main function for doc tests to build.
-/// # fn main() {
-/// #    cxx_qt::init_crate!(cxx_qt);
-/// #    let a = A { value: 25 };
-/// #    assert_eq!(Upcast::<B>::upcast(&a).value, 25);
-/// #    assert_eq!(Upcast::<C>::upcast(&a).value, 25);
-/// #    assert_eq!(Upcast::<D>::upcast(&a).value, 25);
-/// # }
-/// ```
-#[macro_export]
-macro_rules! chain_cast {
-    ($first:ty, $second:ty, $third:ty) => {
-        $crate::impl_transitive_cast!($first, $second, $third);
-    };
 
     ($first:ty, $second:ty, $third:ty, $($rest:ty),*) => {
-        $crate::impl_transitive_cast!($first, $second, $third);
-        chain_cast!($first, $third, $($rest),*);
+        impl_transitive_cast!($first, $second, $third);
+        impl_transitive_cast!($first, $third, $($rest),*);
     };
 }

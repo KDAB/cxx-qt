@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
-use cxx_qt::Upcast;
+use cxx_qt::casting::Upcast;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
@@ -175,7 +175,7 @@ impl DerefMut for QPolygonF {
     }
 }
 
-impl Upcast<QVector<QPointF>> for QPolygonF {
+unsafe impl Upcast<QVector<QPointF>> for QPolygonF {
     unsafe fn upcast_ptr(this: *const Self) -> *const QVector<QPointF> {
         ffi::upcast_qpolygonf(this)
     }

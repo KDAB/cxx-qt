@@ -277,10 +277,10 @@ use crate::custom_base_class::qobject::{
     AbstractBaseClass, CustomBaseClass, QAbstractListModel, QObject,
 };
 use core::pin::Pin;
-use cxx_qt::{casting::Upcast, chain_cast, CxxQtType, Threading};
+use cxx_qt::{casting::Upcast, impl_transitive_cast, CxxQtType, Threading};
 use cxx_qt_lib::{QByteArray, QHash, QHashPair_i32_QByteArray, QModelIndex, QVariant, QVector};
 
-chain_cast!(
+impl_transitive_cast!(
     CustomBaseClass,
     AbstractBaseClass,
     QAbstractListModel,
