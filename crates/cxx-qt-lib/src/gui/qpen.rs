@@ -173,13 +173,13 @@ impl From<&ffi::PenStyle> for QPen {
 
 impl fmt::Display for QPen {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self:?}")
+        ffi::qpen_to_debug_qstring(self).fmt(f)
     }
 }
 
 impl fmt::Debug for QPen {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qpen_to_debug_qstring(self))
+        ffi::qpen_to_debug_qstring(self).fmt(f)
     }
 }
 

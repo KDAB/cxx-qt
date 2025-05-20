@@ -392,13 +392,13 @@ impl Clone for QFont {
 
 impl fmt::Display for QFont {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_qstring())
+        self.to_qstring().fmt(f)
     }
 }
 
 impl fmt::Debug for QFont {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_qstring())
+        self.to_qstring().fmt(f)
     }
 }
 

@@ -122,7 +122,7 @@ impl Default for QLine {
 
 impl fmt::Display for QLine {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qline_to_debug_qstring(self))
+        ffi::qline_to_debug_qstring(self).fmt(f)
     }
 }
 

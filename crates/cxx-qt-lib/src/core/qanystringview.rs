@@ -129,13 +129,13 @@ impl QAnyStringView<'_> {
 
 impl fmt::Display for QAnyStringView<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.to_qstring())
+        self.to_qstring().fmt(f)
     }
 }
 
 impl fmt::Debug for QAnyStringView<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        self.to_qstring().fmt(f)
     }
 }
 

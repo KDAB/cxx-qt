@@ -139,7 +139,7 @@ impl std::cmp::PartialEq for QVariant {
 
 impl fmt::Debug for QVariant {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qvariant_to_debug_qstring(self))
+        ffi::qvariant_to_debug_qstring(self).fmt(f)
     }
 }
 

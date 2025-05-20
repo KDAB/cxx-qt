@@ -116,7 +116,7 @@ impl Default for QPointF {
 
 impl fmt::Display for QPointF {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qpointf_to_debug_qstring(self))
+        ffi::qpointf_to_debug_qstring(self).fmt(f)
     }
 }
 

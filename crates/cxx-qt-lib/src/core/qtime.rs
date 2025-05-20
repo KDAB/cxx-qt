@@ -178,13 +178,13 @@ impl Default for QTime {
 
 impl fmt::Display for QTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.format_enum(ffi::DateFormat::TextDate))
+        self.format_enum(ffi::DateFormat::TextDate).fmt(f)
     }
 }
 
 impl fmt::Debug for QTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qtime_to_debug_qstring(self))
+        ffi::qtime_to_debug_qstring(self).fmt(f)
     }
 }
 

@@ -5,6 +5,7 @@
 use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
+use std::str;
 
 #[cxx::bridge]
 mod ffi {
@@ -155,17 +156,18 @@ impl std::cmp::Eq for QByteArray {}
 impl fmt::Display for QByteArray {
     /// Convert the QByteArray to a Rust string
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if let Ok(string) = String::from_utf8(self.into()) {
-            write!(f, "{string}")
+        let slice = self.as_slice();
+        if let Ok(string) = str::from_utf8(slice) {
+            string.fmt(f)
         } else {
-            write!(f, "{:?}", self.as_slice())
+            fmt::Debug::fmt(slice, f)
         }
     }
 }
 
 impl fmt::Debug for QByteArray {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        self.as_slice().fmt(f)
     }
 }
 
@@ -379,7 +381,6 @@ unsafe impl ExternType for QByteArray {
 
 #[cfg(test)]
 mod tests {
-    #[cfg(feature = "bytes")]
     use super::*;
 
     #[cfg(feature = "serde")]
@@ -398,5 +399,11 @@ mod tests {
 
         let bytes_bytes = bytes::Bytes::from(&qbytearray);
         assert_eq!(bytes, bytes_bytes)
+    }
+
+    #[test]
+    fn test_display_fmt() {
+        let qbytearray = QByteArray::from("KDAB");
+        assert_eq!(format!("{:-<8}", qbytearray), "KDAB----")
     }
 }

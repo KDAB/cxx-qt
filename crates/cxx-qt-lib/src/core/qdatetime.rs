@@ -368,13 +368,13 @@ impl Ord for QDateTime {
 
 impl fmt::Display for QDateTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.format_enum(ffi::DateFormat::TextDate))
+        self.format_enum(ffi::DateFormat::TextDate).fmt(f)
     }
 }
 
 impl fmt::Debug for QDateTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qdatetime_to_debug_qstring(self))
+        ffi::qdatetime_to_debug_qstring(self).fmt(f)
     }
 }
 

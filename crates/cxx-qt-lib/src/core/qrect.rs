@@ -295,7 +295,7 @@ impl Default for QRect {
 
 impl fmt::Display for QRect {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qrect_to_debug_qstring(self))
+        ffi::qrect_to_debug_qstring(self).fmt(f)
     }
 }
 

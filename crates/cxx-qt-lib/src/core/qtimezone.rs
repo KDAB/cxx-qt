@@ -232,16 +232,16 @@ impl std::cmp::Eq for QTimeZone {}
 
 impl fmt::Display for QTimeZone {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = self.display_name(
+        self.display_name(
             QTimeZoneTimeType::GenericTime,
             QTimeZoneNameType::DefaultName,
-        );
-        write!(f, "{name}")
+        )
+        .fmt(f)
     }
 }
 
 impl fmt::Debug for QTimeZone {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qtimezone_to_debug_qstring(self))
+        ffi::qtimezone_to_debug_qstring(self).fmt(f)
     }
 }

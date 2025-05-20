@@ -122,13 +122,13 @@ impl Default for QUuid {
 
 impl fmt::Display for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::quuid_to_string(self))
+        ffi::quuid_to_string(self).fmt(f)
     }
 }
 
 impl fmt::Debug for QUuid {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self}")
+        ffi::quuid_to_string(self).fmt(f)
     }
 }
 
