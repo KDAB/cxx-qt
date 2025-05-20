@@ -3,11 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::cxxqtdata::ParsedCxxQtData;
-use crate::parser::inherit::ParsedInheritedMethod;
-use crate::parser::method::{MethodFields, ParsedMethod};
-use crate::parser::qobject::ParsedQObject;
-use crate::parser::signals::ParsedSignal;
+//! This module contains functions which can inline a Self type to the appropriate `QObject`.
+//!
+//! If ***exactly one*** `QObject` exists in a particular extern block, the self shorthand can be used,
+//! and this modules functions will replace this `Self` type with the appropriate name.
+//! `qualify_self_types` is called at the highest level, on an already built parser
+
+use crate::parser::method::MethodFields;
 use crate::Parser;
 use proc_macro2::Ident;
 use quote::format_ident;
@@ -21,25 +23,17 @@ use syn::{Error, Result};
 /// as the self inlining is only available if there is exactly one `QObject` in the block,
 /// and this indicates that no inlining can be done, but some `Self` types were present.
 pub fn try_inline_self_invokables(
-    inline: bool,
     type_to_inline: &Option<Ident>,
     invokables: &mut [impl DerefMut<Target = MethodFields>],
-) -> syn::Result<()> {
+) -> Result<()> {
     for method in invokables.iter_mut() {
-        if method.self_unresolved {
-            if inline {
-                if let Some(inline_type) = type_to_inline.clone() {
-                    method.qobject_ident = inline_type;
-                } else {
-                    return Err(Error::new(
-                        method.method.span(),
-                        "Expected a type to inline, no `qobject` typename was passed!",
-                    ));
-                }
+        if method.self_unresolved() {
+            if let Some(inline_type) = type_to_inline.clone() {
+                method.qobject_ident = inline_type;
             } else {
                 return Err(Error::new(
                     method.method.span(),
-                    "`Self` type can only be inferred if the extern block contains only one `qobject`.",
+                    "`Self` type can only be inferred if the extern block contains exactly one `qobject`.",
                 ));
             }
         }
@@ -47,38 +41,36 @@ pub fn try_inline_self_invokables(
     Ok(())
 }
 
-/// A collection of items found in an extern block when parsing
-type BlockComponents<'a> = (
-    &'a mut Vec<ParsedQObject>,
-    &'a mut Vec<ParsedMethod>,
-    &'a mut Vec<ParsedInheritedMethod>,
-    &'a mut Vec<ParsedSignal>,
-);
-
-// Separates the parsed data by block and returns tuples of the components
-fn separate_blocks(data: &mut ParsedCxxQtData) -> Vec<BlockComponents> {
-    data.qobjects
-        .iter_mut()
-        .zip(data.methods.iter_mut())
-        .zip(data.inherited_methods.iter_mut())
-        .zip(data.signals.iter_mut())
-        .map(|(((qobject, method), inherited_method), signal)| {
-            (qobject, method, inherited_method, signal)
-        })
-        .collect()
-}
-
 /// For a given parser, attempt to inline the `Self` type used in any of the blocks with that blocks unique QObject
 pub fn qualify_self_types(parser: &mut Parser) -> Result<()> {
-    for (qobjects, methods, inherited, signals) in separate_blocks(&mut parser.cxx_qt_data) {
-        let inline_self = qobjects.len() == 1;
-        let inline_ident = qobjects
-            .last()
+    // Inlining `extern "RustQt"` blocks
+    for rust_block in &mut parser.cxx_qt_data.extern_rustqt_blocks {
+        let mut iter = rust_block.qobjects.iter();
+        let mut inline_ident = iter
+            .next()
             .map(|obj| format_ident!("{}", obj.declaration.ident_left));
 
-        try_inline_self_invokables(inline_self, &inline_ident, methods)?;
-        try_inline_self_invokables(inline_self, &inline_ident, signals)?;
-        try_inline_self_invokables(inline_self, &inline_ident, inherited)?;
+        if iter.next().is_some() {
+            inline_ident = None;
+        }
+
+        try_inline_self_invokables(&inline_ident, &mut rust_block.methods)?;
+        try_inline_self_invokables(&inline_ident, &mut rust_block.signals)?;
+        try_inline_self_invokables(&inline_ident, &mut rust_block.inherited_methods)?;
+    }
+
+    // Inlining `extern "C++Qt"` blocks
+    for cpp_block in &mut parser.cxx_qt_data.extern_cxxqt_blocks {
+        let mut iter = cpp_block.qobjects.iter();
+        let mut inline_ident = iter
+            .next()
+            .map(|obj| format_ident!("{}", obj.declaration.ident));
+
+        if iter.next().is_some() {
+            inline_ident = None;
+        }
+
+        try_inline_self_invokables(&inline_ident, &mut cpp_block.signals)?;
     }
 
     Ok(())
@@ -87,7 +79,6 @@ pub fn qualify_self_types(parser: &mut Parser) -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::parser::method::ParsedMethod;
     use crate::tests::assert_parse_errors;
     use syn::parse_quote;
 
@@ -163,29 +154,34 @@ mod tests {
             {
                 #[cxx_qt::bridge]
                 mod ffi {
+                    unsafe extern "C++Qt" {
+                        #[qobject]
+                        type MyObject = super::T;
+
+                        #[qobject]
+                        type SecondObject = super::S;
+
+                        #[qsignal]
+                        fn my_method(self: Pin<&mut Self>);
+                    }
+                }
+            }
+
+            // More than one qobject, in RustQt
+            {
+                #[cxx_qt::bridge]
+                mod ffi {
                     extern "RustQt" {
                         #[qobject]
                         type MyObject = super::T;
 
                         #[qobject]
-                        type MyOtherObject = super::S;
+                        type SecondObject = super::S;
 
                         fn my_method(&self);
                     }
                 }
             }
         }
-    }
-
-    #[test]
-    fn test_invalid_inline_call() {
-        let method_sig = parse_quote! {
-            fn test(&self);
-        };
-        let mut methods = vec![ParsedMethod::mock_qinvokable(&method_sig)];
-
-        // If inlining is set to take place, an Ident is required to inline, here it is `None`
-        let data = try_inline_self_invokables(true, &None, &mut methods);
-        assert!(data.is_err());
     }
 }

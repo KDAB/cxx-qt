@@ -15,7 +15,7 @@
 use proc_macro::TokenStream;
 use syn::{parse_macro_input, ItemMod};
 
-use cxx_qt_gen::{qualify_self_types, write_rust, GeneratedRustBlocks, Parser};
+use cxx_qt_gen::{self_inlining::qualify_self_types, write_rust, GeneratedRustBlocks, Parser};
 
 #[proc_macro_attribute]
 pub fn bridge(args: TokenStream, input: TokenStream) -> TokenStream {

@@ -11,7 +11,7 @@
 mod generator;
 mod naming;
 mod parser;
-mod preprocessor;
+mod shorthand;
 mod syntax;
 mod writer;
 
@@ -21,7 +21,7 @@ pub use generator::{
     GeneratedOpt,
 };
 pub use parser::Parser;
-pub use preprocessor::self_inlining::qualify_self_types;
+pub use shorthand::self_inlining;
 pub use syntax::{parse_qt_file, CxxQtFile, CxxQtItem};
 pub use writer::{cpp::write_cpp, rust::write_rust};
 
@@ -88,6 +88,7 @@ mod tests {
             $(assert!($parse_fn(syn::parse_quote! $input).is_err());)*
         }
     }
+    use crate::self_inlining::qualify_self_types;
     pub(crate) use assert_parse_errors;
 
     /// Helper for formating C++ code

@@ -164,7 +164,6 @@ pub struct MethodFields {
     pub parameters: Vec<ParsedFunctionParameter>,
     pub safe: bool,
     pub name: Name,
-    pub self_unresolved: bool,
 }
 
 impl MethodFields {
@@ -172,8 +171,6 @@ impl MethodFields {
         let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
         let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
         let mutable = mutability.is_some();
-
-        let self_unresolved = qobject_ident == format_ident!("Self");
 
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
         let safe = method.sig.unsafety.is_none();
@@ -187,7 +184,10 @@ impl MethodFields {
             parameters,
             safe,
             name,
-            self_unresolved,
         })
+    }
+
+    pub(crate) fn self_unresolved(&self) -> bool {
+        self.qobject_ident == format_ident!("Self")
     }
 }

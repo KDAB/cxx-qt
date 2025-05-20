@@ -3,4 +3,5 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+// TODO! Add our other shorthands into this module?
 pub mod self_inlining;

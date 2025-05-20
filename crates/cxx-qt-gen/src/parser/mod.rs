@@ -7,6 +7,7 @@ pub mod constructor;
 pub mod cxxqtdata;
 pub mod externcxxqt;
 pub mod externqobject;
+mod externrustqt;
 pub mod inherit;
 pub mod method;
 pub mod parameter;
@@ -327,7 +328,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.module_ident, "ffi");
         assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, None);
-        assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
+        assert_eq!(parser.cxx_qt_data.qobjects().len(), 0);
     }
 
     #[test]
@@ -369,7 +370,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.module_ident, "ffi");
         assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, None);
-        assert_eq!(parser.cxx_qt_data.qobjects.len(), 0);
+        assert_eq!(parser.cxx_qt_data.qobjects().len(), 0);
     }
 
     #[test]
@@ -395,7 +396,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.module_ident, "ffi");
         assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, Some("cxx_qt".to_owned()));
-        assert_eq!(parser.cxx_qt_data.qobjects().collect::<Vec<_>>().len(), 1);
+        assert_eq!(parser.cxx_qt_data.qobjects().len(), 1);
         assert_eq!(parser.type_names.num_types(), 19);
         assert_eq!(
             parser
@@ -441,7 +442,7 @@ mod tests {
         assert_eq!(parser.passthrough_module.module_ident, "ffi");
         assert_eq!(parser.passthrough_module.vis, Visibility::Inherited);
         assert_eq!(parser.cxx_qt_data.namespace, None);
-        assert_eq!(parser.cxx_qt_data.qobjects().collect::<Vec<_>>().len(), 1);
+        assert_eq!(parser.cxx_qt_data.qobjects().len(), 1);
     }
 
     #[test]

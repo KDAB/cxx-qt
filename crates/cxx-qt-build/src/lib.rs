@@ -43,8 +43,8 @@ use std::{
 };
 
 use cxx_qt_gen::{
-    parse_qt_file, qualify_self_types, write_cpp, write_rust, CppFragment, CxxQtItem,
-    GeneratedCppBlocks, GeneratedOpt, GeneratedRustBlocks, Parser,
+    parse_qt_file, self_inlining::qualify_self_types, write_cpp, write_rust, CppFragment,
+    CxxQtItem, GeneratedCppBlocks, GeneratedOpt, GeneratedRustBlocks, Parser,
 };
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
