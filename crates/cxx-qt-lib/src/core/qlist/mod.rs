@@ -161,6 +161,28 @@ where
     pub fn reserve(&mut self, size: isize) {
         T::reserve(self, size);
     }
+
+    /// Helper function for handling Rust values.
+    pub(crate) fn reserve_usize(&mut self, size: usize) {
+        if size != 0 {
+            T::reserve(self, isize::try_from(size).unwrap_or(isize::MAX));
+        }
+    }
+}
+
+impl<T> QList<T>
+where
+    T: QListElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    /// Inserts value at the end of the list.
+    pub fn append(&mut self, value: T) {
+        T::append(self, value);
+    }
+
+    /// Inserts item value into the list at the given position.
+    pub fn insert(&mut self, pos: isize, value: T) {
+        T::insert(self, pos, value);
+    }
 }
 
 impl<T> From<&QList<T>> for Vec<T>
@@ -188,7 +210,7 @@ where
     /// The original slice can still be used after constructing the QList.
     fn from(vec: S) -> Self {
         let mut qlist = Self::default();
-        qlist.reserve(vec.as_ref().len().try_into().unwrap());
+        qlist.reserve_usize(vec.as_ref().len());
         for element in vec.as_ref() {
             qlist.append_clone(element);
         }
@@ -196,18 +218,51 @@ where
     }
 }
 
-impl<T> QList<T>
+impl<'a, T> Extend<&'a T> for QList<T>
+where
+    T: QListElement,
+{
+    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        self.reserve_usize(iter.size_hint().0);
+        for element in iter {
+            self.append_clone(element);
+        }
+    }
+}
+
+impl<T> Extend<T> for QList<T>
 where
     T: QListElement + ExternType<Kind = cxx::kind::Trivial>,
 {
-    /// Inserts value at the end of the list.
-    pub fn append(&mut self, value: T) {
-        T::append(self, value);
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        self.reserve_usize(iter.size_hint().0);
+        for element in iter {
+            self.append(element);
+        }
     }
+}
 
-    /// Inserts item value into the list at the given position.
-    pub fn insert(&mut self, pos: isize, value: T) {
-        T::insert(self, pos, value);
+impl<'a, T> FromIterator<&'a T> for QList<T>
+where
+    T: QListElement,
+{
+    fn from_iter<I: IntoIterator<Item = &'a T>>(iter: I) -> Self {
+        let mut qlist = Self::default();
+        qlist.extend(iter);
+        qlist
+    }
+}
+
+impl<T> FromIterator<T> for QList<T>
+where
+    T: QListElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut qlist = Self::default();
+        qlist.extend(iter);
+        qlist
     }
 }
 
