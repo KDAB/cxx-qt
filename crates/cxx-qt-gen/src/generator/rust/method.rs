@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::generator::rust::get_params_tokens;
+use crate::generator::rust::{get_call_params_tokens, get_params_tokens};
 use crate::{
     generator::{naming::qobject::QObjectNames, rust::fragment::GeneratedRustFragment},
     parser::method::ParsedMethod,
@@ -31,6 +31,8 @@ pub fn generate_rust_methods(
                 cpp_class_name_rust,
             );
 
+            let call_parameters = get_call_params_tokens(&invokable.parameters);
+
             let return_type = &invokable.method.sig.output;
 
             let cfgs = &invokable.cfgs;
@@ -54,24 +56,38 @@ pub fn generate_rust_methods(
                 Some(quote! { unsafe })
             };
 
-            GeneratedRustFragment::from_cxx_item(parse_quote_spanned! {
-                invokable.method.span() =>
-                // Note: extern "Rust" block does not need to be unsafe
-                #block_safety extern #block_type {
-                    // Note that we are exposing a Rust method on the C++ type to C++
-                    //
-                    // CXX ends up generating the source, then we generate the matching header.
-                    #[cxx_name = #invokable_ident_cpp]
-                    // Needed for QObjects to have a namespace on their type or extern block
-                    //
-                    // A Namespace from cxx_qt::bridge would be automatically applied to all children
-                    // but to apply it to only certain types, it is needed here too
-                    #cxx_namespace
-                    #(#cfgs)*
-                    #[doc(hidden)]
-                    #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
-                }
-            })
+            let wrapper_fn = if invokable.wrap {
+                vec![parse_quote_spanned! {
+                    invokable.method.span() =>
+                    #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type {
+                        self.rust().#invokable_ident_rust(#call_parameters)
+                    }
+                }]
+            } else {
+                vec![]
+            };
+
+            GeneratedRustFragment {
+                cxx_mod_contents: vec![parse_quote_spanned! {
+                    invokable.method.span() =>
+                    // Note: extern "Rust" block does not need to be unsafe
+                    #block_safety extern #block_type {
+                        // Note that we are exposing a Rust method on the C++ type to C++
+                        //
+                        // CXX ends up generating the source, then we generate the matching header.
+                        #[cxx_name = #invokable_ident_cpp]
+                        // Needed for QObjects to have a namespace on their type or extern block
+                        //
+                        // A Namespace from cxx_qt::bridge would be automatically applied to all children
+                        // but to apply it to only certain types, it is needed here too
+                        #cxx_namespace
+                        #(#cfgs)*
+                        #[doc(hidden)]
+                        #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
+                    }
+                }],
+                cxx_qt_mod_contents: wrapper_fn,
+            }
         })
         .collect::<Vec<_>>();
 
@@ -98,10 +114,12 @@ mod tests {
         };
         let method3: ForeignItemFn = parse_quote! {
             #[cxx_name = "opaqueInvokable"]
+            #[auto_wrap]
             fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor>;
         };
         let method4: ForeignItemFn = parse_quote! {
             #[cxx_name = "unsafeInvokable"]
+            #[auto_wrap]
             unsafe fn unsafe_invokable(self: &MyObject, param: *mut T) -> *mut T;
         };
         let invokables = vec![
@@ -116,7 +134,7 @@ mod tests {
             generate_rust_methods(&invokables.iter().collect::<Vec<_>>(), &qobject_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
-        assert_eq!(generated.cxx_qt_mod_contents.len(), 0);
+        assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
 
         // void_invokable
         assert_tokens_eq(
@@ -154,6 +172,15 @@ mod tests {
             },
         );
 
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[0],
+            quote! {
+                fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor> {
+                    self.rust().opaque_invokable(param)
+                }
+            },
+        );
+
         // unsafe_invokable
         assert_tokens_eq(
             &generated.cxx_mod_contents[3],
@@ -162,6 +189,15 @@ mod tests {
                     #[cxx_name = "unsafeInvokable"]
                     #[doc(hidden)]
                     unsafe fn unsafe_invokable(self:&MyObject, param: *mut T) -> *mut T;
+                }
+            },
+        );
+
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[1],
+            quote! {
+                unsafe fn unsafe_invokable(self:&MyObject, param: *mut T) -> *mut T {
+                    self.rust().unsafe_invokable(param)
                 }
             },
         );

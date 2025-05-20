@@ -148,6 +148,22 @@ pub fn get_params_tokens(
     }
 }
 
+/// Return the [TokenStream] of the parsed parameters, which would be used to call the fn, for use in generation
+pub fn get_call_params_tokens(parameters: &[ParsedFunctionParameter]) -> TokenStream {
+    if parameters.is_empty() {
+        quote! {}
+    } else {
+        let parameters = parameters
+            .iter()
+            .map(|parameter| {
+                let ident = &parameter.ident;
+                quote! { #ident }
+            })
+            .collect::<Vec<TokenStream>>();
+        quote! { #(#parameters),* }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
