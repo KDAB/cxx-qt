@@ -13,11 +13,11 @@ use syn::{Attribute, Item, ItemMod, Result, Token, Visibility};
 /// Representation of either a Syn Item, a CXX module, or a CXX-Qt module
 pub enum CxxQtItem {
     /// A normal syntax item that we pass through
-    Item(Item),
+    Item(Box<Item>),
     /// A CXX module that we need to generate code for
-    Cxx(ItemMod),
+    Cxx(Box<ItemMod>),
     /// A CxxQt module block that we need to parse and later generate code for
-    CxxQt(ItemMod),
+    CxxQt(Box<ItemMod>),
 }
 
 impl std::fmt::Debug for CxxQtItem {

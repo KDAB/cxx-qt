@@ -11,7 +11,7 @@ use crate::{parser::constructor::Constructor, syntax::path::path_compare_str};
 #[derive(Debug, PartialEq, Eq)]
 pub enum TraitKind {
     Threading,
-    Constructor(Constructor),
+    Constructor(Box<Constructor>),
 }
 
 impl TraitKind {
@@ -33,7 +33,7 @@ impl TraitKind {
 
     fn parse_constructor(imp: &ItemImpl) -> Result<Self> {
         let constructor = Constructor::parse(imp.clone())?;
-        Ok(Self::Constructor(constructor))
+        Ok(Self::Constructor(Box::new(constructor)))
     }
 
     fn parse(imp: &ItemImpl) -> Result<Self> {
