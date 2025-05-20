@@ -167,7 +167,7 @@ impl fmt::Display for QByteArray {
 
 impl fmt::Debug for QByteArray {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.as_slice().fmt(f)
+        fmt::Display::fmt(self, f)
     }
 }
 
