@@ -12,7 +12,7 @@ import com.kdab.cxx_qt.demo 1.0
 
 ApplicationWindow {
     height: 480
-    title: qsTr("Hello World")
+    title: qsTr("Span Inspector")
     visible: true
     width: 640
     color: palette.window
@@ -37,6 +37,8 @@ ApplicationWindow {
         TextEdit {
             SplitView.preferredWidth: parent.width / 2
             text: "Hello World"
+            readOnly: true;
+            wrapMode: TextEdit.wrap;
             Component.onCompleted: inspector.output = textDocument
         }
     }

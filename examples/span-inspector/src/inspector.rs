@@ -6,7 +6,7 @@
 use cxx_qt_gen::{write_rust, Parser};
 use proc_macro2::{Span, TokenStream, TokenTree};
 use std::{str::FromStr, sync::{Arc, Mutex}, usize};
-use syn::{parse2, ItemMod};
+use syn::{parse2, token::Mut, ItemMod};
 
 #[cxx_qt::bridge]
 mod qobject {
@@ -68,6 +68,7 @@ pub struct SpanInspectorRust {
     cursor_position: Arc<Mutex<i32>>,
     input: *mut QQuickTextDocument,
     output: *mut QQuickTextDocument,
+    rust_output: Arc<Mutex<String>>,
 }
 
 impl Default for SpanInspectorRust {
@@ -76,6 +77,7 @@ impl Default for SpanInspectorRust {
             cursor_position: Arc::new(Mutex::new(3)),
             input: ptr::null_mut(),
             output: ptr::null_mut(),
+            rust_output: Arc::new(Mutex::new(String::new())),
         }
     }
 }
@@ -101,21 +103,25 @@ impl qobject::SpanInspector {
             .on_contents_changed(move |document| {
                 let qt_thread = qt_thread.clone();
                 let text = document.to_plain_text().to_string();
-                println!("{}", text);
                 let cursor_position = cursor_position.clone();
                 std::thread::spawn(move || {
                     let cursor_position = match cursor_position.lock() {
                         Ok(mutex) => mutex,
                         Err(poison_error) => poison_error.into_inner()
                     };
-                    let (expanded, span_data) = Self::expand(&text, *cursor_position as usize);
-                    let Ok(file) = syn::parse_file(expanded.as_str())
-                        .map_err(|err| eprintln!("Parsing error: {err}"))
-                    else {
-                        return;
+                    let output = match Self::expand(&text, *cursor_position as usize){
+                        Ok((expanded, span_data)) => {
+                            let Ok(file) = syn::parse_file(expanded.as_str())
+                                .map_err(|err| eprintln!("Parsing error: {err}"))
+                            else {
+                                return;
+                            };
+                            Self::build_html(prettyplease::unparse(&file), span_data)
+                        },
+                        Err(error) => {
+                            Self::build_error_html(error)
+                        }
                     };
-                    let output = QString::from(Self::build_html(prettyplease::unparse(&file), span_data));
-                    println!("thomas: {}", *cursor_position);
                     qt_thread
                         .queue(move |this| {
                             unsafe { this.output_document() }.set_html(&QString::from(output))
@@ -135,14 +141,14 @@ impl qobject::SpanInspector {
     }
 
     // Expand input code as #[cxxqt_qt::bridge] would do
-    fn expand(input: &str, cursor_position: usize) -> (String, Vec<bool>){
-        let input_stream: TokenStream = TokenStream::from_str(input).unwrap();
+    fn expand(input: &str, cursor_position: usize) -> Result<(String, Vec<bool>), String> {
+        let input_stream: TokenStream = TokenStream::from_str(input).map_err(|e|e.to_string())?;
         
-        let mut module: ItemMod = parse2(input_stream.clone()).expect("could not generate ItemMod");
+        let mut module: ItemMod = parse2(input_stream.clone()).map_err(|e| e.to_string())?;
 
         let args = TokenStream::default();
         let args_input = format!("#[cxx_qt::bridge({args})] mod dummy;");
-        let attrs = syn::parse_str::<ItemMod>(&args_input).unwrap().attrs;
+        let attrs = syn::parse_str::<ItemMod>(&args_input).map_err(|e| e.to_string())?.attrs;
         module.attrs = attrs.into_iter().chain(module.attrs).collect();
 
         let output_stream = Self::extract_and_generate(module);
@@ -152,7 +158,7 @@ impl qobject::SpanInspector {
         }).map(|token| token.span()).unwrap();
         let span_data = Self::get_span_data(output_stream.clone(), target_span);
         
-        (format!("{}", output_stream), span_data)
+        Ok((format!("{}", output_stream), span_data))
     }
 
     // Take the module and C++ namespace and generate the rust code
@@ -162,6 +168,18 @@ impl qobject::SpanInspector {
             .map(|generated_rust| write_rust(&generated_rust, None))
             .unwrap_or_else(|err| err.to_compile_error())
             .into()
+    }
+
+    fn build_error_html(input: String) -> String{
+        let style = String::from("
+            <style>
+                .error {
+                    whitespace = normal;
+                    color: red;
+                }
+            </style> 
+        ");
+        format!("<!DOCTYPE html><html><head>{}</head><body><p class=\"error\">{}</p></body></html>", style, input)
     }
 
     fn build_html(input: String, span_data: Vec<bool>) -> String{
@@ -186,7 +204,7 @@ impl qobject::SpanInspector {
 
         let token_stream: TokenStream = TokenStream::from_str(input.as_str()).unwrap();
         let (highlighted_string, _) = highlight(token_stream, input, &span_data, span_data.len());
-        let style: String = String::from("
+        let style = String::from("
             <style> 
                 .highlight {
                     background-color: #ff00ff;
