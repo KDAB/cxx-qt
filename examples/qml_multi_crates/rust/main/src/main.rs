@@ -5,10 +5,9 @@
 
 extern crate qml_multi_crates;
 
-use std::pin::Pin;
-
-use cxx_qt::Upcast;
+use cxx_qt::casting::Upcast;
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QQmlEngine, QUrl};
+use std::pin::Pin;
 
 fn main() {
     cxx_qt::init_crate!(qml_multi_crates);

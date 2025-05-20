@@ -10,9 +10,10 @@
 #[cxx_qt::bridge]
 pub mod qobject {
     // ANCHOR: book_base_include
-    unsafe extern "C++" {
+    unsafe extern "C++Qt" {
         include!(<QtCore/QAbstractListModel>);
         /// Base for Qt type
+        #[qobject]
         type QAbstractListModel;
     }
     // ANCHOR_END: book_base_include
@@ -272,10 +273,19 @@ pub mod qobject {
     }
 }
 
-use crate::custom_base_class::qobject::CustomBaseClass;
+use crate::custom_base_class::qobject::{
+    AbstractBaseClass, CustomBaseClass, QAbstractListModel, QObject,
+};
 use core::pin::Pin;
-use cxx_qt::{CxxQtType, Threading};
+use cxx_qt::{casting::Upcast, impl_transitive_cast, CxxQtType, Threading};
 use cxx_qt_lib::{QByteArray, QHash, QHashPair_i32_QByteArray, QModelIndex, QVariant, QVector};
+
+impl_transitive_cast!(
+    CustomBaseClass,
+    AbstractBaseClass,
+    QAbstractListModel,
+    QObject
+);
 
 impl Default for qobject::State {
     fn default() -> Self {

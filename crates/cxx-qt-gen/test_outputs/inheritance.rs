@@ -130,7 +130,7 @@ mod inheritance {
         type QObject = cxx_qt::QObject;
     }
 }
-impl ::cxx_qt::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {
+unsafe impl ::cxx_qt::casting::Upcast<inheritance::QAbstractItemModel> for inheritance::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const inheritance::QAbstractItemModel {
         inheritance::cxx_qt_ffi_MyObject_upcastPtr(this)
     }
@@ -158,7 +158,7 @@ impl ::cxx_qt::CxxQtType for inheritance::MyObject {
         inheritance::cxx_qt_ffi_MyObject_unsafeRustMut(self)
     }
 }
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for inheritance::QPushButton {
+unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for inheritance::QPushButton {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         inheritance::cxx_qt_ffi_QPushButton_upcastPtr(this)
     }
@@ -166,7 +166,7 @@ impl ::cxx_qt::Upcast<::cxx_qt::QObject> for inheritance::QPushButton {
         inheritance::cxx_qt_ffi_QPushButton_downcastPtr(base)
     }
 }
-impl ::cxx_qt::Upcast<inheritance::QPushButton> for inheritance::QPushButtonChild {
+unsafe impl ::cxx_qt::casting::Upcast<inheritance::QPushButton> for inheritance::QPushButtonChild {
     unsafe fn upcast_ptr(this: *const Self) -> *const inheritance::QPushButton {
         inheritance::cxx_qt_ffi_QPushButtonChild_upcastPtr(this)
     }

@@ -1110,7 +1110,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuremy_on_changed>,
     [usize; 2]
 );
-impl ::cxx_qt::Upcast<::cxx_qt::QObject> for ffi::MyObject {
+unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::MyObject {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_MyObject_upcastPtr(this)
     }

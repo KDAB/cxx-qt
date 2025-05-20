@@ -9,10 +9,10 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
-use std::ops::Deref;
-use std::pin::Pin;
 use std::{fs::File, io::Write, path::Path};
 
+#[doc(hidden)]
+pub mod casting;
 mod connection;
 mod connectionguard;
 mod qobject;
@@ -215,124 +215,6 @@ pub trait Threading: Sized {
     #[doc(hidden)]
     fn threading_drop(cxx_qt_thread: &mut CxxQtThread<Self>);
 }
-
-/// This trait is automatically implemented by CXX-Qt and you most likely do not need to manually implement it.
-/// Allows upcasting to either [QObject] or the provided base class of a type.
-/// Will not be implemented if no types inherit from [QObject] or have the `#[base = T]` attribute.
-pub trait Upcast<T> {
-    #[doc(hidden)]
-    /// # Safety
-    ///
-    /// Internal function, Should probably not be implemented manually unless you're absolutely sure you need it.
-    /// Automatically available for types in RustQt blocks in [cxx_qt::bridge](bridge)s.
-    /// Upcasts a pointer to `Self` to a pointer to the base class `T`.
-    /// > Note: Internal implementation uses `static_cast`.
-    unsafe fn upcast_ptr(this: *const Self) -> *const T;
-
-    #[doc(hidden)]
-    /// # Safety
-    ///
-    /// Internal function, Should probably not be implemented manually unless you're absolutely sure you need it.
-    /// Automatically available for types in RustQt blocks in [cxx_qt::bridge](bridge)s.
-    /// Downcasts a pointer to base class `T` to a pointer to `Self`.
-    /// Return a null pointer if `Self` is not actually a child of base.
-    /// > Note: Internal implementation uses `qobject_cast`.
-    unsafe fn from_base_ptr(base: *const T) -> *const Self;
-
-    /// Upcast a reference to self to a reference to the base class
-    fn upcast(&self) -> &T {
-        let ptr = self as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(ptr);
-            &*base
-        }
-    }
-
-    /// Upcast a mutable reference to sell to a mutable reference to the base class
-    fn upcast_mut(&mut self) -> &mut T {
-        let ptr = self as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(ptr) as *mut T;
-            &mut *base
-        }
-    }
-
-    /// Upcast a pinned mutable reference to self to a pinned mutable reference to the base class
-    fn upcast_pin(self: Pin<&mut Self>) -> Pin<&mut T> {
-        let this = self.deref() as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(this) as *mut T;
-            Pin::new_unchecked(&mut *base)
-        }
-    }
-}
-
-impl<T> Upcast<T> for T {
-    unsafe fn upcast_ptr(this: *const Self) -> *const Self {
-        this
-    }
-
-    unsafe fn from_base_ptr(base: *const T) -> *const Self {
-        base
-    }
-
-    fn upcast(&self) -> &Self {
-        self
-    }
-
-    fn upcast_mut(&mut self) -> &mut Self {
-        self
-    }
-
-    fn upcast_pin(self: Pin<&mut Self>) -> Pin<&mut Self> {
-        self
-    }
-}
-
-/// This trait is automatically implemented by CXX-Qt and you most likely do not need to manually implement it.
-/// Trait for downcasting to a subclass, provided the subclass implements [Upcast] to this type.
-/// Returns `None` in cases where `Sub` isn't a child class of `Self`.
-pub trait Downcast: Sized {
-    /// Try to downcast to a subclass of this type, given that the subclass upcasts to this type
-    fn downcast<Sub: Upcast<Self>>(&self) -> Option<&Sub> {
-        unsafe {
-            let ptr = Sub::from_base_ptr(self as *const Self);
-            if ptr.is_null() {
-                None
-            } else {
-                Some(&*ptr)
-            }
-        }
-    }
-
-    /// Try to downcast mutably to a subclass of this, given that the subclass upcasts to this type
-    fn downcast_mut<Sub: Upcast<Self>>(&mut self) -> Option<&mut Sub> {
-        unsafe {
-            let ptr = Sub::from_base_ptr(self as *const Self) as *mut Sub;
-            if ptr.is_null() {
-                None
-            } else {
-                Some(&mut *ptr)
-            }
-        }
-    }
-
-    /// Try to downcast a pin to a pinned subclass of this, given that the subclass upcasts to this type
-    fn downcast_pin<Sub: Upcast<Self>>(self: Pin<&mut Self>) -> Option<Pin<&mut Sub>> {
-        let this = self.deref() as *const Self;
-        unsafe {
-            let ptr = Sub::from_base_ptr(this) as *mut Sub;
-            if ptr.is_null() {
-                None
-            } else {
-                Some(Pin::new_unchecked(&mut *ptr))
-            }
-        }
-    }
-}
-
-/// Automatic implementation of Downcast for any applicable types
-impl<T: Sized> Downcast for T {}
 
 /// This trait can be implemented on any [CxxQtType] to define a
 /// custom constructor in C++ for the QObject.
