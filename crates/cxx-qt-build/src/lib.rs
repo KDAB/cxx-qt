@@ -132,7 +132,7 @@ impl GeneratedCpp {
                     }
                     found_bridge = true;
 
-                    let parser = Parser::from(m.clone())
+                    let parser = Parser::from(*m.clone())
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
                     let generated_cpp = GeneratedCppBlocks::from(&parser, &cxx_qt_opt)
