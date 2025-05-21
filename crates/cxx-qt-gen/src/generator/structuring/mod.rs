@@ -79,8 +79,8 @@ impl<'a> Structures<'a> {
     /// Returns an error, if any references could not be resolved.
     pub fn new(cxxqtdata: &'a ParsedCxxQtData) -> Result<Self> {
         let mut qobjects: Vec<_> = cxxqtdata
-            .qobjects
-            .iter()
+            .qobjects()
+            .into_iter()
             .map(StructuredQObject::from_qobject)
             .collect();
 
@@ -92,19 +92,19 @@ impl<'a> Structures<'a> {
         }
 
         // Associate each method parsed with its appropriate qobject
-        for method in &cxxqtdata.methods {
+        for method in cxxqtdata.methods() {
             let qobject = find_qobject(&mut qobjects, &method.qobject_ident)?;
             qobject.methods.push(method);
         }
 
         // Associate each inherited method parsed with its appropriate qobject
-        for inherited_method in &cxxqtdata.inherited_methods {
+        for inherited_method in cxxqtdata.inherited_methods() {
             let qobject = find_qobject(&mut qobjects, &inherited_method.qobject_ident)?;
             qobject.inherited_methods.push(inherited_method);
         }
 
         // Associate each signal parsed with its appropriate qobject
-        for signal in &cxxqtdata.signals {
+        for signal in cxxqtdata.signals() {
             let qobject = find_qobject(&mut qobjects, &signal.qobject_ident)?;
             qobject.signals.push(signal);
         }

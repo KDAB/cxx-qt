@@ -103,7 +103,7 @@ impl GeneratedRustBlocks {
 // Generate a type declaration for `QObject` if necessary
 fn add_qobject_import(cxx_qt_data: &ParsedCxxQtData) -> Option<GeneratedRustFragment> {
     let includes = cxx_qt_data
-        .qobjects
+        .qobjects()
         .iter()
         .any(|obj| obj.has_qobject_macro && obj.base_class.is_none());
     if includes

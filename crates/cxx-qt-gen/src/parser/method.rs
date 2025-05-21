@@ -9,7 +9,9 @@ use crate::{
     syntax::{foreignmod, types},
 };
 use core::ops::Deref;
+use quote::format_ident;
 use std::collections::{BTreeMap, HashSet};
+use std::ops::DerefMut;
 use syn::{Attribute, ForeignItemFn, Ident, Result};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
@@ -146,6 +148,12 @@ impl Deref for ParsedMethod {
     }
 }
 
+impl DerefMut for ParsedMethod {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        &mut self.method_fields
+    }
+}
+
 /// Struct with common fields between Invokable types.
 /// These types are ParsedSignal, ParsedMethod and ParsedInheritedMethod
 #[derive(Clone)]
@@ -177,5 +185,9 @@ impl MethodFields {
             safe,
             name,
         })
+    }
+
+    pub(crate) fn self_unresolved(&self) -> bool {
+        self.qobject_ident == format_ident!("Self")
     }
 }
