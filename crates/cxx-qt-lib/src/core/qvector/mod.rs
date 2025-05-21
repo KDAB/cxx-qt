@@ -312,6 +312,19 @@ where
     }
 }
 
+impl<'a, T> IntoIterator for &'a QVector<T>
+where
+    T: QVectorElement,
+{
+    type Item = &'a T;
+
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 /// Trait implementation for an element in a [`QVector`].
 pub trait QVectorElement: Sized {
     type TypeId;

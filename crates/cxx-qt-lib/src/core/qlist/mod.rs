@@ -313,6 +313,19 @@ where
     }
 }
 
+impl<'a, T> IntoIterator for &'a QList<T>
+where
+    T: QListElement,
+{
+    type Item = &'a T;
+
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 /// Trait implementation for an element in a [`QList`].
 pub trait QListElement: Sized {
     type TypeId;
