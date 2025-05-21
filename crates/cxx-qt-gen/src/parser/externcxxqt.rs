@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::extract_docs;
 use crate::{
     parser::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
@@ -11,7 +12,8 @@ use crate::{
     syntax::{attribute::attribute_get_path, expr::expr_to_string},
 };
 use syn::{
-    spanned::Spanned, Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, Result, Token,
+    spanned::Spanned, Attribute, Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, Result,
+    Token,
 };
 
 /// Representation of an extern "C++Qt" block
@@ -19,6 +21,8 @@ use syn::{
 pub struct ParsedExternCxxQt {
     /// The namespace of the type in C++.
     pub namespace: Option<String>,
+    /// The Top level docs on the module
+    pub docs: Vec<Attribute>,
     /// Whether this block has an unsafe token
     pub unsafety: Option<Token![unsafe]>,
     /// Items which can be passed into the extern "C++Qt" block
@@ -38,8 +42,10 @@ impl ParsedExternCxxQt {
         // TODO: support cfg on foreign mod blocks
         let attrs = require_attributes(
             &foreign_mod.attrs,
-            &["namespace", "auto_cxx_name", "auto_rust_name"],
+            &["namespace", "doc", "auto_cxx_name", "auto_rust_name"],
         )?;
+
+        let docs = extract_docs(&foreign_mod.attrs);
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
 
@@ -52,6 +58,7 @@ impl ParsedExternCxxQt {
 
         let mut extern_cxx_block = ParsedExternCxxQt {
             namespace,
+            docs,
             unsafety: foreign_mod.unsafety,
             ..Default::default()
         };
