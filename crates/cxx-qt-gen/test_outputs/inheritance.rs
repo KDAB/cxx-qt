@@ -103,8 +103,6 @@ mod inheritance {
     }
     extern "C++" {
         type QPushButton;
-    }
-    extern "C++" {
         include ! (< QtWidgets / QPushButton >);
     }
     extern "C++" {

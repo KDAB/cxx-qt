@@ -201,11 +201,14 @@ pub mod ffi {
         #[doc = "Use this type when referring to the QObject as a pointer"]
         #[doc = "\n"]
         #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/concepts/generated_qobject.html>"]
+        #[doc = "\n"]
+        #[doc = " The second QObject with some different docs on it"]
         #[namespace = "second_object"]
         type SecondObject;
     }
     extern "Rust" {
         #[namespace = "second_object"]
+        #[doc = " The second QObject with some different docs on it"]
         type SecondObjectRust;
     }
     extern "Rust" {
@@ -381,11 +384,6 @@ pub mod ffi {
         #[namespace = "rust::cxxqt1"]
         unsafe fn cxx_qt_ffi_QPushButton_downcastPtr(base: *const QObject) -> *const QPushButton;
     }
-    #[namespace = ""]
-    unsafe extern "C++" {
-        #[namespace = "cxx_qt::multi_object"]
-        type QPushButton;
-    }
     extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "upcastPtr"]
@@ -400,9 +398,13 @@ pub mod ffi {
         ) -> *const ExternObject;
     }
     #[namespace = ""]
+    #[doc = " Top level docs for a module"]
     unsafe extern "C++" {
+        #[namespace = "cxx_qt::multi_object"]
+        type QPushButton;
         #[namespace = "mynamespace"]
         #[cxx_name = "ExternObjectCpp"]
+        #[doc = " An external object with some docs on it"]
         type ExternObject;
     }
     unsafe extern "C++" {

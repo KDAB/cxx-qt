@@ -28,7 +28,7 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
 
         let mut generated = vec![
-            generate_qobject_definitions(&qobject_names, &qobject.cfgs)?,
+            generate_qobject_definitions(&qobject_names, &qobject.cfgs, &qobject.docs)?,
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
@@ -88,6 +88,7 @@ impl GeneratedRustFragment {
 fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
     cfgs: &[Attribute],
+    docs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
@@ -106,6 +107,15 @@ fn generate_qobject_definitions(
         }
     };
 
+    let maybe_docs = if docs.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+            #[doc = "\n"]
+            #(#docs)*
+        }
+    };
+
     Ok(GeneratedRustFragment {
         cxx_mod_contents: vec![
             parse_quote! {
@@ -116,6 +126,7 @@ fn generate_qobject_definitions(
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/concepts/generated_qobject.html>"]
+                    #maybe_docs
                     #namespace
                     #cxx_name
                     #(#cfgs)*
@@ -130,6 +141,7 @@ fn generate_qobject_definitions(
                     // but to apply it to only certain types, it is needed here too
                     #namespace
                     #(#cfgs)*
+                    #(#docs)*
                     type #rust_struct_name_rust;
                 }
             },
