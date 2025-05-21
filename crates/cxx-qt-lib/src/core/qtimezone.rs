@@ -187,12 +187,12 @@ impl QTimeZone {
     }
 
     /// Creates an instance of a time zone with the requested Offset from UTC of offsetSeconds.
-    pub fn from_offset_seconds(offset_seconds: i32) -> cxx::UniquePtr<Self> {
+    pub fn owned_from_offset_seconds(offset_seconds: i32) -> cxx::UniquePtr<Self> {
         ffi::qtimezone_from_offset_seconds(offset_seconds)
     }
 
     /// Creates an instance of the requested time zone ianaId.
-    pub fn from_iana(iana_id: &ffi::QByteArray) -> cxx::UniquePtr<Self> {
+    pub fn owned_from_iana(iana_id: &ffi::QByteArray) -> cxx::UniquePtr<Self> {
         ffi::qtimezone_from_iana(iana_id)
     }
 
