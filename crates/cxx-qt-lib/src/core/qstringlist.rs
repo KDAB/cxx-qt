@@ -152,13 +152,13 @@ impl std::cmp::Eq for QStringList {}
 
 impl fmt::Display for QStringList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qstringlist_to_debug_qstring(self))
+        ffi::qstringlist_to_debug_qstring(self).fmt(f)
     }
 }
 
 impl fmt::Debug for QStringList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", **self)
+        (**self).fmt(f)
     }
 }
 

@@ -138,7 +138,7 @@ impl Default for QSize {
 
 impl fmt::Display for QSize {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qsize_to_debug_qstring(self))
+        ffi::qsize_to_debug_qstring(self).fmt(f)
     }
 }
 

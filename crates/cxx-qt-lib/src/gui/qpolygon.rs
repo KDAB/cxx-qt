@@ -167,13 +167,13 @@ impl PartialEq for QPolygon {
 
 impl fmt::Display for QPolygon {
     fn fmt(&self, f: &mut fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qpolygon_to_debug_qstring(self))
+        ffi::qpolygon_to_debug_qstring(self).fmt(f)
     }
 }
 
 impl fmt::Debug for QPolygon {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", **self)
+        (**self).fmt(f)
     }
 }
 

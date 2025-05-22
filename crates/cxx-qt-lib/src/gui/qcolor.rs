@@ -552,6 +552,10 @@ impl std::cmp::Eq for QColor {}
 
 impl fmt::Display for QColor {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if f.width().is_some() || f.precision().is_some() {
+            #[allow(clippy::recursive_format_impl)]
+            return f.pad(&self.to_string());
+        }
         // TODO: consider the different color spec
         let r = self.red();
         let g = self.green();
@@ -667,5 +671,11 @@ mod tests {
 
         let rgba_color = rgb::RGBA8::from(&qcolor);
         assert_eq!(color, rgba_color);
+    }
+
+    #[test]
+    fn test_display_fmt() {
+        let qcolor = QColor::from_rgba(50, 100, 150, 200);
+        assert_eq!(format!("{:-<30}", qcolor), "RGBA(50, 100, 150, 200)-------");
     }
 }

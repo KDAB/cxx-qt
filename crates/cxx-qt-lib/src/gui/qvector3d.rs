@@ -185,7 +185,7 @@ impl Default for QVector3D {
 
 impl fmt::Display for QVector3D {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qvector3d_to_debug_qstring(self))
+        ffi::qvector3d_to_debug_qstring(self).fmt(f)
     }
 }
 
