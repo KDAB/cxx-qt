@@ -20,7 +20,13 @@ pub struct QtInstallationQMake {
     qmake_path: PathBuf,
     qmake_version: Version,
     // Internal cache of paths for tools
-    tool_cache: RefCell<HashMap<QtTool, Option<PathBuf>>>,
+    //
+    // Note that this only stores valid resolved paths.
+    // If we failed to find the tool, we will not cache the failure and instead retry if called
+    // again.
+    // This is partially because anyhow::Error is not Clone, and partially because retrying gives
+    // the caller the ability to change the environment and try again.
+    tool_cache: RefCell<HashMap<QtTool, PathBuf>>,
 }
 
 impl QtInstallationQMake {
@@ -250,18 +256,24 @@ impl QtInstallation for QtInstallationQMake {
         }
     }
 
-    fn try_find_tool(&self, tool: QtTool) -> Option<PathBuf> {
-        let find_tool_closure = |tool: &QtTool| self.try_qmake_find_tool(tool.binary_name());
+    fn try_find_tool(&self, tool: QtTool) -> anyhow::Result<PathBuf> {
+        let find_tool = || self.try_qmake_find_tool(tool.binary_name());
 
         // Attempt to use the cache
         if let Ok(mut tool_cache) = self.tool_cache.try_borrow_mut() {
             // Read the tool from the cache or insert
-            tool_cache
-                .entry(tool)
-                .or_insert_with_key(find_tool_closure)
-                .to_owned()
+            let path = tool_cache.get(&tool);
+            let path = match path {
+                Some(path) => path.clone(),
+                None => {
+                    let path = find_tool()?;
+                    tool_cache.insert(tool, path.clone());
+                    path
+                }
+            };
+            Ok(path)
         } else {
-            find_tool_closure(&tool)
+            find_tool()
         }
     }
 
@@ -372,7 +384,7 @@ impl QtInstallationQMake {
         .to_string()
     }
 
-    fn try_qmake_find_tool(&self, tool_name: &str) -> Option<PathBuf> {
+    fn try_qmake_find_tool(&self, tool_name: &str) -> anyhow::Result<PathBuf> {
         // "qmake -query" exposes a list of paths that describe where Qt executables and libraries
         // are located, as well as where new executables & libraries should be installed to.
         // We can use these variables to find any Qt tool.
@@ -405,6 +417,7 @@ impl QtInstallationQMake {
         // To check & debug all variables available on your system, simply run:
         //
         //              qmake -query
+        let mut failed_paths = vec![];
         [
             "QT_HOST_LIBEXECS/get",
             "QT_HOST_LIBEXECS",
@@ -419,11 +432,15 @@ impl QtInstallationQMake {
         // Find the first valid executable path
         .find_map(|qmake_query_var| {
             let executable_path = PathBuf::from(self.qmake_query(qmake_query_var)).join(tool_name);
-            Command::new(&executable_path)
-                .args(["-help"])
-                .output()
-                .map(|_| executable_path)
-                .ok()
+            let test_output = Command::new(&executable_path).args(["-help"]).output();
+            match test_output {
+                Err(_err) => {
+                    failed_paths.push(executable_path);
+                    None
+                }
+                Ok(_) => Some(executable_path),
+            }
         })
+        .ok_or_else(|| anyhow::anyhow!("Failed to find {tool_name}, tried: {failed_paths:?}"))
     }
 }

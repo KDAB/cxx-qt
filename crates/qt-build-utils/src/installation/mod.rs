@@ -36,7 +36,7 @@ pub trait QtInstallation {
     // }
     fn link_modules(&self, builder: &mut cc::Build, qt_modules: &[String]);
     /// Find the path to a given Qt tool for the Qt installation
-    fn try_find_tool(&self, tool: QtTool) -> Option<PathBuf>;
+    fn try_find_tool(&self, tool: QtTool) -> anyhow::Result<PathBuf>;
     /// Version of the detected Qt installation
     fn version(&self) -> Version;
 }
