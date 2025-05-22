@@ -11,7 +11,7 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 
-use crate::parser::{parse_base_type, CaseConversion};
+use crate::parser::{extract_docs, parse_base_type, CaseConversion};
 use syn::{Attribute, Error, Ident, Meta, Result};
 
 /// Metadata for registering QML element
@@ -44,6 +44,8 @@ pub struct ParsedQObject {
     pub declaration: ForeignTypeIdentAlias,
     /// Cfgs for the object
     pub cfgs: Vec<Attribute>,
+    /// Docs for the object
+    pub docs: Vec<Attribute>,
 }
 
 impl ParsedQObject {
@@ -75,6 +77,7 @@ impl ParsedQObject {
                 ident_right: format_ident!("MyObjectRust"),
             },
             cfgs: vec![],
+            docs: vec![],
         }
     }
 
@@ -86,8 +89,8 @@ impl ParsedQObject {
         auto_case: CaseConversion,
     ) -> Result<Self> {
         let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
-        // TODO: handle docs through to generation
         let cfgs = extract_cfgs(&declaration.attrs);
+        let docs = extract_docs(&declaration.attrs);
 
         let has_qobject_macro = attributes.contains_key("qobject");
 
@@ -126,6 +129,7 @@ impl ParsedQObject {
             qml_metadata,
             has_qobject_macro,
             cfgs,
+            docs,
         })
     }
 

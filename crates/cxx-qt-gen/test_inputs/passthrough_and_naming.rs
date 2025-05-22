@@ -92,6 +92,7 @@ pub mod ffi {
     }
 
     #[namespace = ""]
+    /// Top level docs for a module
     unsafe extern "C++Qt" {
         #[qobject]
         type QPushButton;
@@ -102,6 +103,7 @@ pub mod ffi {
         #[namespace = "mynamespace"]
         #[cxx_name = "ExternObjectCpp"]
         #[qobject]
+        /// An external object with some docs on it
         type ExternObject;
 
         #[qsignal]
@@ -130,6 +132,7 @@ pub mod ffi {
         #[qobject]
         #[namespace = "second_object"]
         #[qproperty(i32, property_name, cxx_name = "propertyName")]
+        /// The second QObject with some different docs on it
         type SecondObject = super::SecondObjectRust;
     }
 
