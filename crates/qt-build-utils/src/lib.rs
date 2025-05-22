@@ -136,7 +136,7 @@ pub struct QmlModuleRegistrationFiles {
 ///     .iter()
 ///     .map(|m| String::from(*m))
 ///     .collect();
-/// let qtbuild = qt_build_utils::QtBuild::new_with_default_installation(qt_modules).expect("Could not find Qt installation");
+/// let qtbuild = qt_build_utils::QtBuild::new(qt_modules).expect("Could not find Qt installation");
 /// ```
 pub struct QtBuild {
     qt_installation: Box<dyn QtInstallation>,
@@ -147,20 +147,21 @@ impl QtBuild {
     /// Create a [QtBuild] using the default [QtInstallation] (currently uses [QtInstallationQMake])
     /// and specify which Qt modules you are linking, ommitting the `Qt` prefix (`"Core"`
     /// rather than `"QtCore"`).
-    //
-    // TODO: is there a better name for this method or a sane way to create a default QtInstallation?
-    pub fn new_with_default_installation(qt_modules: Vec<String>) -> anyhow::Result<Self> {
-        #[cfg(feature = "qmake")]
+    ///
+    /// Currently this function is only available when the `qmake` feature is enabled.
+    /// Use [Self::with_installation] to create a [QtBuild] with a custom [QtInstallation].
+    #[cfg(feature = "qmake")]
+    pub fn new(qt_modules: Vec<String>) -> anyhow::Result<Self> {
         let qt_installation = Box::new(QtInstallationQMake::new()?);
-        #[cfg(not(feature = "qmake"))]
-        unsupported!("Only qmake feature is supported");
-
-        Ok(Self::new(qt_installation, qt_modules))
+        Ok(Self::with_installation(qt_installation, qt_modules))
     }
 
     /// Create a [QtBuild] using the given [QtInstallation] and specify which
     /// Qt modules you are linking, ommitting the `Qt` prefix (`"Core"` rather than `"QtCore"`).
-    pub fn new(qt_installation: Box<dyn QtInstallation>, mut qt_modules: Vec<String>) -> Self {
+    pub fn with_installation(
+        qt_installation: Box<dyn QtInstallation>,
+        mut qt_modules: Vec<String>,
+    ) -> Self {
         if qt_modules.is_empty() {
             qt_modules.push("Core".to_string());
         }

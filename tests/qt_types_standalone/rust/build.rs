@@ -6,7 +6,7 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    let qtbuild = qt_build_utils::QtBuild::new_with_default_installation(vec!["Core".to_owned()])
+    let qtbuild = qt_build_utils::QtBuild::new(vec!["Core".to_owned()])
         .expect("Could not find Qt installation");
 
     let mut builder = CxxQtBuilder::new()
