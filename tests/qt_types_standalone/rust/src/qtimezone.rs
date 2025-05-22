@@ -20,7 +20,7 @@ mod qtimezone_cxx {
 }
 
 fn construct_qtimezone() -> cxx::UniquePtr<QTimeZone> {
-    QTimeZone::from_iana(&QByteArray::from("Europe/London"))
+    QTimeZone::owned_from_iana(&QByteArray::from("Europe/London"))
 }
 
 fn read_qtimezone(t: &QTimeZone) -> bool {

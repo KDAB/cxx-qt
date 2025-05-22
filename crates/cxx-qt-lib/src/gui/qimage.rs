@@ -385,6 +385,14 @@ impl QImage {
         }
     }
 
+    /// Convert raw image data to a [`QImage`].
+    ///
+    /// If no `format` is provided, the format will be quessed from the image header,
+    /// and if the format still cannot be guessed, the invalid QImage will be returned
+    pub fn from_data_or_default(data: &[u8], format: Option<&str>) -> Self {
+        ffi::qimage_init_from_data(data, format.unwrap_or(""))
+    }
+
     /// Constructs a QImage from an existing memory buffer.
     ///
     /// # Safety

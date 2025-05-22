@@ -64,7 +64,7 @@ fn construct_qvariant(test: VariantTest) -> QVariant {
         VariantTest::QDateTime => QVariant::from(&QDateTime::from_date_and_time_time_zone(
             &QDate::new(2022, 1, 1),
             &QTime::new(1, 2, 3, 4),
-            &QTimeZone::from_offset_seconds(0),
+            &QTimeZone::owned_from_offset_seconds(0),
         )),
         VariantTest::QPoint => QVariant::from(&QPoint::new(1, 3)),
         VariantTest::QPointF => QVariant::from(&QPointF::new(1.0, 3.0)),
