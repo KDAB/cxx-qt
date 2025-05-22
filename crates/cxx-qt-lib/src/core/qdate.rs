@@ -26,10 +26,8 @@ mod ffi {
         include!("cxx-qt-lib/qdate.h");
         type QDate = super::QDate;
 
-        /// Returns a QDate object containing a date ndays later than the date of this object (or earlier if ndays is negative).
-        ///
-        /// Returns a null date if the current date is invalid or the new date is out of range.
-        #[rust_name = "add_days"]
+        #[doc(hidden)]
+        #[rust_name = "add_days_qint64"]
         fn addDays(self: &QDate, ndays: qint64) -> QDate;
 
         /// Returns a QDate object containing a date nmonths later than the date of this object (or earlier if nmonths is negative).
@@ -154,6 +152,13 @@ impl fmt::Debug for QDate {
 }
 
 impl QDate {
+    /// Returns a QDate object containing a date ndays later than the date of this object (or earlier if ndays is negative).
+    ///
+    /// Returns a null date if the current date is invalid or the new date is out of range.
+    pub fn add_days(self: &QDate, ndays: i64) -> QDate {
+        self.add_days_qint64(ndays.into())
+    }
+
     /// Returns the current date, as reported by the system clock.
     pub fn current_date() -> Self {
         ffi::qdate_current_date()
