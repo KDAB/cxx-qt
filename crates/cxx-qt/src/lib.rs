@@ -9,7 +9,6 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
-
 #[doc(hidden)]
 pub mod casting;
 mod connection;
