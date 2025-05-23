@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
 
-        include!("cxx-qt-lib/qvector_QPointF.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QPointF.h");
         type QVector_QPointF = crate::QVector<QPointF>;
     }
 

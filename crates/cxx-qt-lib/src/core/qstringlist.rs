@@ -21,7 +21,7 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qlist_QString.h");
+        include!("cxx-qt-lib/core/qlist/qlist_QString.h");
         type QList_QString = crate::QList<QString>;
 
         include!("cxx-qt-lib/qstringlist.h");

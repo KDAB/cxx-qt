@@ -6,7 +6,7 @@
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qset_i32.h");
+        include!("cxx-qt-lib/core/qset/qset_i32.h");
         type QSet_i32 = crate::QSet<i32>;
     }
 

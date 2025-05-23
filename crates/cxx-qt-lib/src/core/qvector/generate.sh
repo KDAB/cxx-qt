@@ -42,7 +42,7 @@ function generate_bridge_primitive() {
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qvector_$1.h");
+        include!("cxx-qt-lib/core/qvector/qvector_$1.h");
         type QVector_$1 = crate::QVector<$1>;
     }
 
@@ -143,7 +143,7 @@ pub mod ffi {
         include!("cxx-qt-lib/$2.h");
         type $1 = crate::$1;
 
-        include!("cxx-qt-lib/qvector_$1.h");
+        include!("cxx-qt-lib/core/qvector/qvector_$1.h");
         type QVector_$1 = crate::QVector<$1>;
     }
 

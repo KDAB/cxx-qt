@@ -136,6 +136,10 @@ pub(crate) fn initializers(key: &str) -> PathBuf {
     path
 }
 
+pub(crate) fn manifest() -> Option<PathBuf> {
+    std::env::var("CARGO_MANIFEST_DIR").ok().map(PathBuf::from)
+}
+
 #[cfg(unix)]
 pub(crate) fn symlink_or_copy_directory(
     source: impl AsRef<Path>,
