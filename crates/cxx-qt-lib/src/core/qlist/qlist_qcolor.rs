@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
 
-        include!("cxx-qt-lib/qlist_QColor.h");
+        include!("cxx-qt-lib/core/qlist/qlist_QColor.h");
         type QList_QColor = crate::QList<QColor>;
     }
 

@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qset_QString.h");
+        include!("cxx-qt-lib/core/qset/qset_QString.h");
         type QSet_QString = crate::QSet<QString>;
     }
 

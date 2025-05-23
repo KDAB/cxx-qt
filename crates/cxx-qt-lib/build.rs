@@ -23,29 +23,6 @@ fn header_dir() -> PathBuf {
         .join("cxx-qt-lib")
 }
 
-fn write_headers_in(subfolder: &str) {
-    println!("cargo::rerun-if-changed=include/{subfolder}");
-
-    for entry in
-        std::fs::read_dir(format!("include/{subfolder}")).expect("Failed to read include directory")
-    {
-        let entry = entry.expect("Failed to read header file!");
-        let file_name = entry.file_name();
-        let path = entry.path();
-        println!(
-            "cargo::rerun-if-changed=include/{subfolder}/{header_name}",
-            header_name = file_name.to_string_lossy()
-        );
-
-        // TODO: Do we want to add the headers into a subdirectory?
-        if path.is_dir() {
-            write_headers_in(&format!("{}/{}", subfolder, file_name.to_str().expect("")));
-        } else {
-            std::fs::copy(path, header_dir().join(file_name)).expect("Failed to copy header file!");
-        }
-    }
-}
-
 fn write_definitions_header() {
     // We cannot ensure that downstream dependencies set the same compile-time definitions.
     // So we generate a header file that adds those definitions, which will be passed along
@@ -67,42 +44,16 @@ fn write_definitions_header() {
         definitions.push_str("#define CXX_QT_QUICKCONTROLS_FEATURE\n");
     }
 
+    std::fs::create_dir_all(header_dir()).expect("Failed to create cxx-qt-lib include directory");
     std::fs::write(header_dir().join("definitions.h"), definitions)
         .expect("Failed to write cxx-qt-lib/definitions.h");
 }
 
-fn write_headers() {
-    println!("cargo::rerun-if-changed=include/");
-    std::fs::create_dir_all(header_dir()).expect("Failed to create include directory");
-    println!("cargo::rerun-if-changed=include/common.h");
-    std::fs::copy("include/common.h", header_dir().join("common.h"))
-        .expect("Failed to copy header file!");
-    println!("cargo::rerun-if-changed=include/assertion_utils.h");
-    std::fs::copy(
-        "include/assertion_utils.h",
-        header_dir().join("assertion_utils.h"),
-    )
-    .expect("Failed to copy header file!");
-
-    write_headers_in("core");
-    if qt_gui_enabled() {
-        write_headers_in("gui");
-    }
-    if qt_qml_enabled() {
-        write_headers_in("qml");
-    }
-    if qt_quickcontrols_enabled() {
-        write_headers_in("quickcontrols");
-    }
-
-    write_definitions_header();
-}
-
 fn main() {
+    write_definitions_header();
+
     let qtbuild = qt_build_utils::QtBuild::new(vec!["Core".to_owned()])
         .expect("Could not find Qt installation");
-
-    write_headers();
 
     let emscripten_targeted = match std::env::var("CARGO_CFG_TARGET_OS") {
         Ok(val) => val == "emscripten",
@@ -347,15 +298,12 @@ fn main() {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
 
-    let interface = cxx_qt_build::Interface::default()
-        .export_include_prefixes([])
-        .export_include_directory(header_dir(), "cxx-qt-lib")
-        .reexport_dependency("cxx-qt");
-
-    let mut builder = CxxQtBuilder::library(interface)
+    let mut builder = CxxQtBuilder::new()
         // Use a short name due to the Windows file path limit!
         // We don't re-export these headers anyway
         .include_prefix("private")
+        .crate_include_root(Some("include/".to_owned()))
+        .include_dir(header_dir())
         .initializer(qt_build_utils::Initializer {
             file: Some("src/core/init.cpp".into()),
             ..qt_build_utils::Initializer::default_signature("init_cxx_qt_lib_core")
@@ -390,5 +338,7 @@ fn main() {
         cc.file("src/qt_types.cpp");
         println!("cargo::rerun-if-changed=src/qt_types.cpp");
     });
-    builder.build();
+
+    let interface = builder.build();
+    interface.reexport_dependency("cxx-qt").export();
 }

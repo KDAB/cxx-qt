@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qdate.h");
         type QDate = crate::QDate;
 
-        include!("cxx-qt-lib/qvector_QDate.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QDate.h");
         type QVector_QDate = crate::QVector<QDate>;
     }
 

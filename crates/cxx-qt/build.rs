@@ -3,42 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::path::PathBuf;
-
-use cxx_qt_build::{CxxQtBuilder, Interface};
-
-fn header_dir() -> PathBuf {
-    PathBuf::from(std::env::var("OUT_DIR").unwrap())
-        .join("include")
-        .join("cxx-qt")
-}
-
-fn write_headers() {
-    println!("cargo::rerun-if-changed=include/");
-    std::fs::create_dir_all(header_dir()).expect("Failed to create include directory");
-
-    for file_path in [
-        "connection.h",
-        "casting.h",
-        "signalhandler.h",
-        "thread.h",
-        "threading.h",
-        "type.h",
-    ] {
-        println!("cargo::rerun-if-changed=include/{file_path}");
-        std::fs::copy(format!("include/{file_path}"), header_dir().join(file_path))
-            .expect("Failed to copy header file!");
-    }
-}
+use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    write_headers();
-
-    let interface = Interface::default()
-        .export_include_prefixes([])
-        .export_include_directory(header_dir(), "cxx-qt");
-
-    let mut builder = CxxQtBuilder::library(interface);
+    let mut builder = CxxQtBuilder::new().crate_include_root(Some("include".to_owned()));
 
     let cpp_files = ["src/connection.cpp"];
     let rust_bridges = ["src/connection.rs", "src/qobject.rs"];
@@ -58,5 +26,5 @@ fn main() {
         ..qt_build_utils::Initializer::default_signature("init_cxx_qt_core")
     });
 
-    builder.build();
+    builder.build().export();
 }

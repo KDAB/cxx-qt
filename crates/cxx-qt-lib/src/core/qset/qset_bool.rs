@@ -6,7 +6,7 @@
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qset_bool.h");
+        include!("cxx-qt-lib/core/qset/qset_bool.h");
         type QSet_bool = crate::QSet<bool>;
     }
 
