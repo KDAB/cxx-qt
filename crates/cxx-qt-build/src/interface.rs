@@ -7,9 +7,7 @@
 
 use std::collections::HashSet;
 
-use std::path::{Path, PathBuf};
-
-use crate::{dir, dir::INCLUDE_VERB, Dependency, Manifest};
+use crate::{dir, Dependency, Manifest};
 
 /// When generating a library with cxx-qt-build, the library may need to export certain flags or headers.
 /// These are all specified by this Interface struct.
@@ -17,22 +15,20 @@ pub struct Interface {
     // The name of the links keys, whose CXX-Qt dependencies to reexport
     pub(crate) reexport_links: HashSet<String>,
     pub(crate) exported_include_prefixes: Vec<String>,
-    pub(crate) exported_include_directories: Vec<(PathBuf, String)>,
     pub(crate) manifest: Manifest,
     pub(crate) dependencies: Vec<Dependency>,
-    // TODO: In future, we want to also set up the include paths so that you can include anything
-    // from the crates source directory.
-    // Once this is done, this flag should indicate whether or not to export our own crates source
-    // directory to downstream dependencies?
-    // export_crate_directory: bool,
 }
 
 impl Default for Interface {
     fn default() -> Self {
         Self {
             reexport_links: HashSet::new(),
+            // TODO: This doesn't currently match the include_prefix that is specified by e.g.
+            // cxx-qt-lib build script.
+            // In this case this is a happy accident, as we don't want to actually export the
+            // `include_prefix` in cxx-qt-lib (which is "private/").
+            // But we do need to unify this.
             exported_include_prefixes: vec![super::crate_name()],
-            exported_include_directories: Vec::new(),
             manifest: Manifest::default(),
             dependencies: Vec::new(),
         }
@@ -44,75 +40,35 @@ impl Interface {
     ///
     /// Note: This will overwrite any previously specified header_prefixes, including the default
     /// header_prefix of this crate.
-    ///
-    /// This function will panic if any of the given prefixes are already exported through the
-    /// [Self::export_include_directory] function.
     pub fn export_include_prefixes<'a>(
         mut self,
         prefixes: impl IntoIterator<Item = &'a str>,
     ) -> Self {
         let prefixes = prefixes.into_iter().map(|item| item.to_string()).collect();
 
-        let mut exported_prefixes = self
-            .exported_include_directories
-            .iter()
-            .map(|(_path, prefix)| prefix);
-        for prefix in &prefixes {
-            if let Some(duplicate) =
-                exported_prefixes.find(|exported_prefix| exported_prefix.starts_with(prefix))
-            {
-                panic!("Duplicate export_prefix! Cannot export `{prefix}`, as `{duplicate}` is already exported as an export_include_directory!");
-            }
-        }
-
         self.exported_include_prefixes = prefixes;
-        self
-    }
-
-    /// Add a directory that will be added as an include directory under the given prefix.
-    ///
-    /// The prefix will automatically be exported (see also: [Self::export_include_prefixes])
-    ///
-    /// This function will panic if the given prefix is already exported.
-    pub fn export_include_directory(mut self, directory: impl AsRef<Path>, prefix: &str) -> Self {
-        let mut exported_prefixes = self.exported_include_prefixes.iter().chain(
-            self.exported_include_directories
-                .iter()
-                .map(|(_path, prefix)| prefix),
-        );
-        if let Some(duplicate) =
-            exported_prefixes.find(|exported_prefix| exported_prefix.starts_with(prefix))
-        {
-            panic!("Duplicate export_prefix! Cannot export `{prefix}`, as `{duplicate}` is already exported!");
-        }
-
-        self.exported_include_directories
-            .push((directory.as_ref().into(), prefix.to_owned()));
         self
     }
 
     /// Reexport the dependency with the given link name.
     /// This will make the dependency available to downstream dependencies.
     ///
-    /// Specifically it will reexport all include_prefixes of the given dependency
-    /// as well as any definitions made by that dependency.
+    /// Specifically it will reexport all include_prefixes of the given dependency.
     ///
     /// Note that the link name may differ from the crate name.
-    /// Check your dependencies manifest file for the correct link name.
+    /// Check your dependencies Cargo.toml for the correct link name.
     pub fn reexport_dependency(mut self, link_name: &str) -> Self {
         self.reexport_links.insert(link_name.to_owned());
         self
     }
 
-    /// Export the manifest for this crate so that is can be used by downstream
-    /// crates or CMake
+    /// Export the Interface for this crate so that it can be used by downstream
+    /// crates.
     pub fn export(mut self) {
         // Ensure that a link name has been set
         if self.manifest.link_name.is_empty() {
             panic!("The links key must be set when exporting with CXX-Qt-build");
         }
-
-        self.write_exported_include_directories();
 
         // We automatically reexport all qt_modules and downstream dependencies
         // as they will always need to be enabled in the final binary.
@@ -131,19 +87,6 @@ impl Interface {
             manifest_path.to_string_lossy()
         );
     }
-
-    fn write_exported_include_directories(&self) {
-        let header_root = dir::header_root();
-        for (header_dir, dest) in &self.exported_include_directories {
-            let dest_dir = header_root.join(dest);
-            if let Err(e) = dir::symlink_or_copy_directory(header_dir, dest_dir) {
-                panic!(
-                        "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
-                        dir_name = header_dir.to_string_lossy()
-                    )
-            };
-        }
-    }
 }
 
 fn all_include_prefixes(interface: &Interface, dependencies: &[Dependency]) -> Vec<String> {
@@ -151,12 +94,6 @@ fn all_include_prefixes(interface: &Interface, dependencies: &[Dependency]) -> V
         .exported_include_prefixes
         .iter()
         .cloned()
-        .chain(
-            interface
-                .exported_include_directories
-                .iter()
-                .map(|(_path, prefix)| prefix.clone()),
-        )
         .chain(
             dependencies
                 .iter()

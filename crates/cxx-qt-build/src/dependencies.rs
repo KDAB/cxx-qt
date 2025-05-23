@@ -31,8 +31,8 @@ pub(crate) struct Dependency {
 }
 
 impl Dependency {
-    /// This function will search the environment for all dependencies that have been set up with
-    /// CxxQtBuilder::library.
+    /// This function will search the environment for all direct dependencies that have exported
+    /// their Interface via [crate::Interface::export].
     /// They export their manifest paths as metadata, which will be exposed to us as an environment
     /// variable.
     /// We extract those paths here, parse the manifest and make sure to set it up correctly as a
