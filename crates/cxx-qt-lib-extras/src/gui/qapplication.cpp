@@ -5,7 +5,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#include "cxx-qt-lib-extras/qapplication.h"
+#include "cxx-qt-lib-extras/include/qapplication.h"
 
 #include "cxx-qt-lib/qcoreapplication.h"
 

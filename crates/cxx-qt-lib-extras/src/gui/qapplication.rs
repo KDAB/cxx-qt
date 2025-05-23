@@ -20,7 +20,7 @@ mod ffi {
         include!("cxx-qt-lib/qfont.h");
         type QFont = cxx_qt_lib::QFont;
 
-        include!("cxx-qt-lib-extras/qapplication.h");
+        include!("cxx-qt-lib-extras/include/qapplication.h");
         type QApplication;
     }
 

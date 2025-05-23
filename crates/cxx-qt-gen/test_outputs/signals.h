@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cxx-qt/casting.h>
-#include <cxx-qt/signalhandler.h>
-#include <cxx-qt/type.h>
+#include <cxx-qt/include/casting.h>
+#include <cxx-qt/include/signalhandler.h>
+#include <cxx-qt/include/type.h>
 
 namespace cxx_qt::my_object {
 class MyObject;

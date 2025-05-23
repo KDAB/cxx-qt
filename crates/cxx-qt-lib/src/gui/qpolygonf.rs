@@ -72,7 +72,7 @@ mod ffi {
 
     #[namespace = "rust::cxxqt1"]
     unsafe extern "C++" {
-        include!("cxx-qt/casting.h");
+        include!("cxx-qt/include/casting.h");
 
         #[doc(hidden)]
         #[rust_name = "upcast_qpolygonf"]
