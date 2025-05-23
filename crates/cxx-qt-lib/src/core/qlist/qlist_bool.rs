@@ -6,7 +6,7 @@
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qlist_bool.h");
+        include!("cxx-qt-lib/core/qlist/qlist_bool.h");
         type QList_bool = crate::QList<bool>;
     }
 

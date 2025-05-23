@@ -1,0 +1,1 @@
+#include "gui/qimage.h"

@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = crate::QVariant;
 
-        include!("cxx-qt-lib/qvector_QVariant.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QVariant.h");
         type QVector_QVariant = crate::QVector<QVariant>;
     }
 

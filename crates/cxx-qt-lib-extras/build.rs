@@ -77,12 +77,9 @@ fn main() {
         // Use a short name due to the Windows file path limit!
         // We don't re-export these headers anyway.
         .include_prefix("private")
+        .crate_include_root(Some("include".to_owned()))
         .build();
 
     // Disable exporting the standard include directory, as we are exporting custom header
-    interface
-        .export_include_prefixes([])
-        .export_include_directory(header_dir(), "cxx-qt-lib-extras")
-        .reexport_dependency("cxx-qt-lib")
-        .export();
+    interface.reexport_dependency("cxx-qt-lib").export();
 }

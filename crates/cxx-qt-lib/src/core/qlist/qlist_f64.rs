@@ -6,7 +6,7 @@
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qlist_f64.h");
+        include!("cxx-qt-lib/core/qlist/qlist_f64.h");
         type QList_f64 = crate::QList<f64>;
     }
 
