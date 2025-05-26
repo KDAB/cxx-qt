@@ -157,6 +157,8 @@ mod ffi {
         type QRectF = crate::QRectF;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
+        include!("cxx-qt-lib/qpointf.h");
+        type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qline.h");
         type QLine = crate::QLine;
         include!("cxx-qt-lib/qlinef.h");
@@ -297,6 +299,9 @@ mod ffi {
         /// Draws the given text with the currently defined text direction, beginning at the given position.
         #[rust_name = "draw_text"]
         fn drawText(self: Pin<&mut QPainter>, point: &QPoint, text: &QString);
+
+        #[rust_name = "draw_textf"]
+        fn drawText(self: Pin<&mut QPainter>, point: &QPointF, text: &QString);
 
         /// Erases the area inside the given rectangle.
         #[rust_name = "erase_rect"]
