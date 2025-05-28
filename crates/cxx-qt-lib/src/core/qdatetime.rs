@@ -318,13 +318,18 @@ impl QDateTime {
     }
 
     /// Returns the datetime represented in the string as a QDateTime using the format given, or None if this is not possible.
-    pub fn from_string(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
+    pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
         let date = ffi::qdatetime_from_string(string, format);
         if date.is_valid() {
             Some(date)
         } else {
             None
         }
+    }
+
+    /// Returns the QDateTime represented by the string, using the format given in the enum, or the Qt invalid date if not possible.
+    pub fn from_string_enum_or_default(string: &ffi::QString, format: ffi::DateFormat) -> Self {
+        ffi::qdatetime_from_string(string, format)
     }
 
     /// Sets the date part of this datetime to date. If no time is set yet, it is set to midnight.
@@ -418,7 +423,8 @@ impl<Tz: chrono::TimeZone> TryFrom<chrono::DateTime<Tz>> for QDateTime {
     type Error = &'static str;
 
     fn try_from(value: chrono::DateTime<Tz>) -> Result<Self, Self::Error> {
-        let tz = crate::QTimeZone::from_offset_seconds(value.offset().fix().local_minus_utc());
+        let tz =
+            crate::QTimeZone::owned_from_offset_seconds(value.offset().fix().local_minus_utc());
         Ok(QDateTime::from_date_and_time_time_zone(
             &QDate::from(value.date_naive()),
             &QTime::try_from(value.time())?,
@@ -464,7 +470,7 @@ impl TryFrom<QDateTime> for chrono::DateTime<chrono::Utc> {
 #[cfg(feature = "time")]
 impl From<time::OffsetDateTime> for QDateTime {
     fn from(value: time::OffsetDateTime) -> Self {
-        let tz = crate::QTimeZone::from_offset_seconds(value.offset().whole_seconds());
+        let tz = crate::QTimeZone::owned_from_offset_seconds(value.offset().whole_seconds());
         QDateTime::from_date_and_time_time_zone(
             &QDate::from(value.date()),
             &QTime::from(value.time()),
@@ -564,7 +570,7 @@ mod test_chrono {
             &QDate::new(2023, 1, 1),
             // Chrono adds the offset to the given time, so add the offset here to match Chrono
             &QTime::new(1 + 1 /* plus the offset */, 2, 3, 4),
-            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+            &ffi::QTimeZone::owned_from_offset_seconds(60 * 60),
         );
         assert_eq!(QDateTime::try_from(datetime_east).unwrap(), qdatetime);
     }
@@ -587,7 +593,7 @@ mod test_chrono {
         let qdatetime = QDateTime::from_date_and_time_time_zone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
-            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+            &ffi::QTimeZone::owned_from_offset_seconds(60 * 60),
         );
         assert_eq!(
             chrono::DateTime::<chrono::FixedOffset>::try_from(qdatetime).unwrap(),
@@ -636,7 +642,7 @@ mod test_chrono {
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
             // Should cause one hour offset when in chrono::DateTime
-            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+            &ffi::QTimeZone::owned_from_offset_seconds(60 * 60),
         );
         assert_eq!(
             chrono::DateTime::<chrono::Utc>::try_from(qdatetime).unwrap(),
@@ -661,7 +667,7 @@ mod test_time {
         let qdatetime = QDateTime::from_date_and_time_time_zone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
-            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+            &ffi::QTimeZone::owned_from_offset_seconds(60 * 60),
         );
         assert_eq!(
             time::OffsetDateTime::try_from(qdatetime).unwrap(),
@@ -698,7 +704,7 @@ mod test_time {
         let qdatetime = QDateTime::from_date_and_time_time_zone(
             &QDate::new(2023, 1, 1),
             &QTime::new(1, 2, 3, 4),
-            &ffi::QTimeZone::from_offset_seconds(60 * 60),
+            &ffi::QTimeZone::owned_from_offset_seconds(60 * 60),
         );
         assert_eq!(QDateTime::from(time_offsetdatetime), qdatetime);
     }

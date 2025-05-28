@@ -191,7 +191,12 @@ impl QDate {
         }
     }
 
-    /// Returns the time represented in the string as a QTime using the format given, or None if this is not possible.
+    /// Returns the QTime represented by the string, using the format given, or the Qt invalid date if not possible.
+    pub fn from_string_or_default(string: &ffi::QString, format: &ffi::QString) -> Self {
+        ffi::qdate_from_string(string, format)
+    }
+
+    /// Returns the QTime represented by the string, using the format given in the enum, or None if this is not possible.
     pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Option<Self> {
         let date = ffi::qdate_from_string_enum(string, format);
         if date.is_valid() {
@@ -199,6 +204,11 @@ impl QDate {
         } else {
             None
         }
+    }
+
+    /// Returns the QTime represented by the string, using the format given in the enum, or the Qt invalid date if not possible.
+    pub fn from_string_enum_or_default(string: &ffi::QString, format: ffi::DateFormat) -> Self {
+        ffi::qdate_from_string_enum(string, format)
     }
 
     /// Returns true if the specified year is a leap year in the Gregorian calendar; otherwise returns false.
