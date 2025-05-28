@@ -5,6 +5,7 @@
 
 //! This modules contains utilities for specifying interfaces with cxx-qt-build.
 
+use core::panic;
 use std::collections::HashSet;
 
 use crate::{dir, Dependency, Manifest};
@@ -64,7 +65,21 @@ impl Interface {
 
     /// Export the Interface for this crate so that it can be used by downstream
     /// crates.
+    ///
+    /// # Panics
+    ///
+    /// Currently it is only possible to export a single Interface per crate.
+    /// If you try to call this method multiple times, it will panic.
     pub fn export(mut self) {
+        use std::sync::atomic::{AtomicBool, Ordering};
+        static HAS_EXPORTED: AtomicBool = AtomicBool::new(false);
+        if HAS_EXPORTED
+            .compare_exchange(false, true, Ordering::AcqRel, Ordering::Acquire)
+            .is_err()
+        {
+            panic!("cxx-qt-build can only export a single Interface per crate.\nConsider splitting your project into multiple crates.");
+        }
+
         // Ensure that a link name has been set
         if self.manifest.link_name.is_empty() {
             panic!("The links key must be set when exporting with CXX-Qt-build");
