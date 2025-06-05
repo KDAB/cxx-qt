@@ -152,7 +152,15 @@ impl qobject::SpanInspector {
             range.start <= cursor_position && range.end >= cursor_position
         }).map(|token| token.span());
 
-        let span_data = target_span.map(|span| Self::get_span_data(output_stream.clone(), span));
+        let span_data: Option<Vec<bool>> = target_span.map(|target_span|
+            Self::flatten_tokenstream(output_stream.clone())
+                .into_iter()
+                // prettyplease may insert extra "," tokens.
+                // This filter simply ignores them.
+                .filter(|token| token.to_string() != ",")
+                .map(|token| target_span.byte_range().eq(token.span().byte_range()))
+                .collect()
+        );
         
         println!("expanded; {}", output_stream);
         Ok((format!("{}", output_stream), span_data))
@@ -245,27 +253,5 @@ impl qobject::SpanInspector {
                 _ => char.to_string(),
             }
         ).collect()
-    }
-
-   
-    fn get_span_data(token_stream: TokenStream, target_span: Span) -> Vec<bool> {
-        let mut vec: Vec<bool> = vec![];
-        for token in token_stream {
-            match token {
-                TokenTree::Group(group) => {
-                    vec.extend(Self::get_span_data(group.stream(), target_span));
-                }
-                _ => {
-                    println!("vergleich: {} ,target_span: {:?} , output_span: {:?} , token: {} ", target_span.byte_range().eq(token.span().byte_range()), target_span.byte_range(), token.span().byte_range(), token);
-                    // prettyplease may insert extra "," tokens.
-                    // This `if` statement simply ignores them.
-                    if !token.to_string().eq(",") {
-                        vec.push(target_span.byte_range().eq(token.span().byte_range()));
-                    }
-                }
-            }
-        }
-        println!("{:?}", vec);
-        vec
     }
 }
