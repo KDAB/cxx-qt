@@ -27,11 +27,11 @@ ApplicationWindow {
             SplitView.preferredWidth: parent.width / 2
             Component.onCompleted: {
                 inspector.input = textDocument
-                inspector.updateCursorPosition(cursorPosition)
+                inspector.rebuildOutput(cursorPosition)
             }
 
             onCursorPositionChanged: {
-                inspector.updateCursorPosition(cursorPosition)
+                inspector.rebuildOutput(cursorPosition)
             }
         }
         TextEdit {

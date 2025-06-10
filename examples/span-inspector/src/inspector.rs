@@ -53,8 +53,8 @@ mod qobject {
         unsafe fn set_input(self: Pin<&mut SpanInspector>, input: *mut QQuickTextDocument);
 
         #[qinvokable]
-        #[cxx_name = "updateCursorPosition"]
-        fn update_cursor_position(self: Pin<&mut SpanInspector>, pos: i32);
+        #[cxx_name = "rebuildOutput"]
+        fn rebuild_output(self: Pin<&mut SpanInspector>, pos: i32);
     }
 
     impl UniquePtr<QTextDocument> {}
@@ -95,7 +95,7 @@ impl qobject::SpanInspector {
         self.as_mut().input_changed();
     }
 
-    fn update_cursor_position(self: Pin<&mut Self>, pos: i32){
+    fn rebuild_output(self: Pin<&mut Self>, pos: i32){
         let mut cursor_position = match self.cursor_position.lock() {
             Ok(mutex) => mutex,
             Err(poison_error) => poison_error.into_inner()
@@ -105,6 +105,11 @@ impl qobject::SpanInspector {
         let input = unsafe { Pin::new_unchecked(&mut *self.input) };
         let cursor_position = self.cursor_position.clone();
         let qt_thread = self.qt_thread();
+        qt_thread.queue(|this|{
+            unsafe { this.output_document() }.set_html(&QString::from(String::from("expanding...")))
+        })
+        .ok();
+
         let text = unsafe { Pin::new_unchecked(&mut *input.text_document()) }.to_plain_text().to_string();
 
         std::thread::spawn(move || {
@@ -162,7 +167,6 @@ impl qobject::SpanInspector {
                 .collect()
         );
         
-        println!("expanded; {}", output_stream);
         Ok((format!("{}", output_stream), span_data))
     }
 
@@ -239,7 +243,6 @@ impl qobject::SpanInspector {
             </style>
         ");
 
-        println!("{}", highlighted_string);
         format!("<!DOCTYPE html><html><head>{}</head><body><pre>{}</pre></body></html>", style, highlighted_string)
     }
 
