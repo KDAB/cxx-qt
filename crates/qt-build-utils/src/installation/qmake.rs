@@ -102,10 +102,8 @@ impl TryFrom<PathBuf> for QtInstallationQMake {
 
     fn try_from(qmake_path: PathBuf) -> anyhow::Result<Self> {
         // Attempt to read the QT_VERSION from qmake
-        let qmake_version = match Command::new(&qmake_path)
-            .args(["-query", "QT_VERSION"])
-            .output()
-        {
+        let qmake_command: String = format!("{} -query QT_VERSION", qmake_path.to_string_lossy());
+        let qmake_version = match utils::native_shell_command(&qmake_command).output() {
             Err(e) if e.kind() == ErrorKind::NotFound => Err(QtBuildError::QtMissing),
             Err(e) => Err(QtBuildError::QmakeFailed(e)),
             Ok(output) if !output.status.success() => Err(QtBuildError::QtMissing),
@@ -373,9 +371,9 @@ impl QtInstallationQMake {
     }
 
     fn qmake_query(&self, var_name: &str) -> String {
+        let qmake_command = format!("{} -query {}", self.qmake_path.to_string_lossy(), var_name);
         String::from_utf8_lossy(
-            &Command::new(&self.qmake_path)
-                .args(["-query", var_name])
+            &utils::native_shell_command(&qmake_command)
                 .output()
                 .unwrap()
                 .stdout,
