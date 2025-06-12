@@ -160,9 +160,12 @@ impl qobject::SpanInspector {
         let span_data: Option<Vec<bool>> = target_span.map(|target_span|
             Self::flatten_tokenstream(output_stream.clone())
                 .into_iter()
-                // prettyplease may insert extra "," tokens.
+                // prettyplease may insert extra tokens.
                 // This filter simply ignores them.
-                .filter(|token| token.to_string() != ",")
+                .filter(|token| {
+                    let string = token.to_string();
+                    !matches!(string.as_str(), "," | "}" | "{")
+                }) 
                 .map(|token| target_span.byte_range().eq(token.span().byte_range()))
                 .collect()
         );
@@ -214,9 +217,10 @@ impl qobject::SpanInspector {
             Some(span_data) => {
                 let mut token_position = span_data.len();
                 for token in flat_tokenstream.into_iter().rev() {
-                    // prettyplease may insert extra "," tokens.
+                    // prettyplease may insert extra tokens.
                     // This `if` statement simply ignores them.
-                    if !token.to_string().eq(",") { 
+                    let token_string = token.to_string();
+                    if !matches!(token_string.as_str(), "," | "{" | "}") { 
                         token_position = token_position - 1;
                     }
                     if *span_data.get(token_position).unwrap() {
