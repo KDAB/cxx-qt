@@ -167,6 +167,8 @@ mod ffi {
         type QColor = crate::QColor;
         include!("cxx-qt-lib/qimage.h");
         type QImage = crate::QImage;
+        include!("cxx-qt-lib/qpixmap.h");
+        type QPixmap = crate::QPixmap;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qpainterpath.h");
@@ -241,6 +243,10 @@ mod ffi {
         /// Draws the given image into the given rectangle.
         #[rust_name = "draw_image"]
         fn drawImage(self: Pin<&mut QPainter>, rectangle: &QRect, image: &QImage);
+
+        /// Draws the rectangular portion source of the given pixmap into the given target in the paint device.
+        #[rust_name = "draw_pixmap"]
+        fn drawPixmap(self: Pin<&mut QPainter>,point: &QPointF, pixmap: &QPixmap);
 
         /// Draws a line defined by line.
         #[rust_name = "draw_line"]
@@ -428,6 +434,10 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qpainter_init_default"]
         fn make_unique() -> UniquePtr<QPainter>;
+
+        #[doc(hidden)]
+        #[rust_name = "qpainter_from_qpixmap"]
+        unsafe fn qpainterFromQPixmap(pixmap: *mut QPixmap) -> UniquePtr<QPainter>;
     }
 }
 
@@ -437,6 +447,11 @@ impl QPainter {
     /// Create a QPainter
     pub fn new() -> cxx::UniquePtr<Self> {
         ffi::qpainter_init_default()
+    }
+
+    /// Create a QPainter from a QPixmap
+    pub fn new_from_qpixmap(pixmap: &mut crate::gui::QPixmap) -> cxx::UniquePtr<Self> {
+        unsafe { ffi::qpainter_from_qpixmap(pixmap as *mut _) }
     }
 
     /// Returns the bounding rectangle of the current clip if there is a clip;

@@ -4,20 +4,17 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#pragma once
 
-#include <cinttypes>
-#include <memory>
-
-#include <QtGui/QPainter>
+#include "cxx-qt-lib/qpixmap.h"
 
 namespace rust {
 namespace cxxqtlib1 {
-using QPainterCompositionMode = QPainter::CompositionMode;
-using QPainterRenderHint = QPainter::RenderHint;
 
-::std::unique_ptr<QPainter>
-qpainterFromQPixmap(QPixmap* pixmap);
+::std::unique_ptr<QPixmap>
+qpixmapNew(int width, int height)
+{
+    return ::std::make_unique<QPixmap>(width, height);
+}
 
 } // namespace cxxqtlib1
 } // namespace rust
