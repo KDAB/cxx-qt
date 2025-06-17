@@ -142,7 +142,8 @@ pub mod ffi {
         fn invokable_name(self: Pin<&mut SecondObject>);
 
         #[cxx_name = "myRenamedFunction"]
-        fn my_function(self: &SecondObject);
+        #[auto_wrap]
+        fn my_function(self: &SecondObject, param: i32);
     }
 
     extern "RustQt" {

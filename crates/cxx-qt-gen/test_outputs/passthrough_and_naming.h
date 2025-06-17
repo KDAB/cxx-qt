@@ -165,7 +165,7 @@ public:
   Q_SLOT void setPropertyName(::std::int32_t value) noexcept;
   Q_SIGNAL void propertyNameChanged();
   Q_INVOKABLE void invokableName() noexcept;
-  void myRenamedFunction() const noexcept;
+  void myRenamedFunction(::std::int32_t param) const noexcept;
   Q_SIGNAL void ready();
   explicit SecondObject(QObject* parent = nullptr);
 };
