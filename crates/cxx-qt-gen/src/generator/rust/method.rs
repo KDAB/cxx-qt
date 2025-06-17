@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::rust::{get_call_params_tokens, get_params_tokens};
+use crate::naming::TypeNames;
 use crate::{
     generator::{naming::qobject::QObjectNames, rust::fragment::GeneratedRustFragment},
     parser::method::ParsedMethod,
@@ -14,6 +15,7 @@ use syn::{parse_quote_spanned, spanned::Spanned, Result};
 pub fn generate_rust_methods(
     invokables: &[&ParsedMethod],
     qobject_names: &QObjectNames,
+    type_names: &TypeNames,
 ) -> Result<GeneratedRustFragment> {
     let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
@@ -56,18 +58,35 @@ pub fn generate_rust_methods(
                 Some(quote! { unsafe })
             };
 
+            let method_safety = if invokable.safe {
+                None
+            } else {
+                Some(quote! { unsafe })
+            };
+
+            let qualified_impl = type_names.rust_qualified(&invokable.qobject_ident)?;
+
+            let inner_fn = if invokable.mutable {
+                quote! { rust_mut() }
+            } else {
+                quote! { rust() }
+            };
+
             let wrapper_fn = if invokable.wrap {
                 vec![parse_quote_spanned! {
                     invokable.method.span() =>
-                    #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type {
-                        self.rust().#invokable_ident_rust(#call_parameters)
+                    #(#cfgs)*
+                    impl #qualified_impl {
+                        pub #method_safety fn #invokable_ident_rust(#parameter_signatures) #return_type {
+                            self.#inner_fn.#invokable_ident_rust(#call_parameters)
+                        }
                     }
                 }]
             } else {
                 vec![]
             };
 
-            GeneratedRustFragment {
+            Ok(GeneratedRustFragment {
                 cxx_mod_contents: vec![parse_quote_spanned! {
                     invokable.method.span() =>
                     // Note: extern "Rust" block does not need to be unsafe
@@ -87,9 +106,9 @@ pub fn generate_rust_methods(
                     }
                 }],
                 cxx_qt_mod_contents: wrapper_fn,
-            }
+            })
         })
-        .collect::<Vec<_>>();
+        .collect::<Result<Vec<_>>>()?;
 
     Ok(GeneratedRustFragment::flatten(generated))
 }
@@ -130,8 +149,12 @@ mod tests {
         ];
         let qobject_names = create_qobjectname();
 
-        let generated =
-            generate_rust_methods(&invokables.iter().collect::<Vec<_>>(), &qobject_names).unwrap();
+        let generated = generate_rust_methods(
+            &invokables.iter().collect::<Vec<_>>(),
+            &qobject_names,
+            &TypeNames::mock(),
+        )
+        .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);
@@ -175,8 +198,10 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[0],
             quote! {
-                fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor> {
-                    self.rust().opaque_invokable(param)
+                impl qobject::MyObject {
+                    fn opaque_invokable(self: Pin<&mut MyObject>, param: &QColor) -> UniquePtr<QColor> {
+                        self.rust_mut().opaque_invokable(param)
+                    }
                 }
             },
         );
@@ -196,8 +221,10 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[1],
             quote! {
-                unsafe fn unsafe_invokable(self:&MyObject, param: *mut T) -> *mut T {
-                    self.rust().unsafe_invokable(param)
+                impl qobject::MyObject {
+                    unsafe fn unsafe_invokable(self:&MyObject, param: *mut T) -> *mut T {
+                        self.rust().unsafe_invokable(param)
+                    }
                 }
             },
         );

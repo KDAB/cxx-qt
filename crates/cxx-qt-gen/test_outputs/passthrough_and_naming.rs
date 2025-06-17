@@ -780,8 +780,10 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<SecondObjectCxxQtSignalClosurepropertyNameChanged>,
     [usize; 2]
 );
-unsafe fn my_function(self: &SecondObject, param: i32) {
-    self.rust().my_function(param)
+impl ffi::SecondObject {
+    fn my_function(self: &SecondObject, param: i32) {
+        self.rust().my_function(param)
+    }
 }
 impl ffi::SecondObject {
     #[doc = "Connect the given function pointer to the signal "]
