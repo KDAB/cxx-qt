@@ -334,6 +334,7 @@ unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::MyObject {
         ffi::cxx_qt_ffi_MyObject_downcastPtr(base)
     }
 }
+impl ::cxx_qt::ConstructorDeclared for ffi::MyObject {}
 #[doc(hidden)]
 pub fn route_arguments_MyObject_0<'a>(
     arg0: i32,
