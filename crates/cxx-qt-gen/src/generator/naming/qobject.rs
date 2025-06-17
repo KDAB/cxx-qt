@@ -112,6 +112,14 @@ pub mod tests {
         QObjectNames::from_qobject(&create_parsed_qobject(), &TypeNames::mock()).unwrap()
     }
 
+    /// Used for opaqure objects mocking, adding the QColor type
+    pub fn create_qobjectname_with_qcolor() -> QObjectNames {
+        let mut type_names = TypeNames::mock();
+        type_names.mock_insert("QColor", Some(format_ident!("qobject")), None, None);
+
+        QObjectNames::from_qobject(&create_parsed_qobject(), &type_names).unwrap()
+    }
+
     #[test]
     fn test_parsed_property() {
         let names =

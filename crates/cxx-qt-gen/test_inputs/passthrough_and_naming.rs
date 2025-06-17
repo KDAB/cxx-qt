@@ -139,6 +139,7 @@ pub mod ffi {
         fn ready(self: Pin<&mut SecondObject>);
 
         #[qinvokable]
+        #[auto_wrap]
         fn invokable_name(self: Pin<&mut SecondObject>);
 
         #[cxx_name = "myRenamedFunction"]

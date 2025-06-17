@@ -16,11 +16,13 @@ pub mod signals;
 pub mod threading;
 
 use crate::generator::{rust::fragment::GeneratedRustFragment, structuring};
+use crate::naming::rust::syn_type_cxx_bridge_to_qualified;
+use crate::naming::TypeNames;
 use crate::parser::cxxqtdata::ParsedCxxQtData;
 use crate::parser::{parameter::ParsedFunctionParameter, Parser};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
-use syn::{parse_quote, ItemMod, Result};
+use syn::{parse_quote, ItemMod, Path, Result};
 
 /// Representation of the generated Rust code for a QObject
 pub struct GeneratedRustBlocks {
@@ -145,6 +147,33 @@ pub fn get_params_tokens(
             })
             .collect::<Vec<TokenStream>>();
         quote! { self: #struct_sig, #(#parameters),* }
+    }
+}
+
+/// Return the [TokenStream] of the parsed parameters, with self type qualified for use in generation
+pub fn get_params_tokens_qualified(
+    mutable: bool,
+    parameters: &[ParsedFunctionParameter],
+    class_name_path: &Path,
+    type_names: &TypeNames,
+) -> Result<TokenStream> {
+    let struct_sig = if mutable {
+        quote! { Pin<&mut #class_name_path> }
+    } else {
+        quote! { &#class_name_path }
+    };
+    if parameters.is_empty() {
+        Ok(quote! { self: #struct_sig })
+    } else {
+        let parameters = parameters
+            .iter()
+            .map(|parameter| {
+                let ident = &parameter.ident;
+                let qualified_ty = &syn_type_cxx_bridge_to_qualified(&parameter.ty, type_names)?;
+                Ok(quote! { #ident: #qualified_ty })
+            })
+            .collect::<Result<Vec<TokenStream>>>()?;
+        Ok(quote! { self: #struct_sig, #(#parameters),* })
     }
 }
 
