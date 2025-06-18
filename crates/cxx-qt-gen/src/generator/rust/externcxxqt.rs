@@ -22,7 +22,7 @@ impl GeneratedRustFragment {
         } else {
             quote! {}
         };
-        let extern_block_docs = &extern_cxxqt_block.docs;
+        let extern_block_docs = &extern_cxxqt_block.common_attrs.docs;
 
         // Add the pass through blocks
         let unsafety = &extern_cxxqt_block.unsafety;
@@ -60,6 +60,7 @@ impl GeneratedRustFragment {
                     #[cxx_name = #cxx_name]
                 }
             };
+            // TODO! Can we make extract_docs return references, and then use here?
             let cfgs: Vec<&Attribute> = obj
                 .declaration
                 .attrs

@@ -8,7 +8,8 @@ use crate::{
 };
 use core::ops::Deref;
 use std::ops::DerefMut;
-use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
+use syn::{spanned::Spanned, Error, ForeignItemFn, Result, Visibility};
+use crate::parser::CommonAttrs;
 
 #[derive(Clone)]
 /// Describes an individual Signal
@@ -19,10 +20,8 @@ pub struct ParsedSignal {
     pub inherit: bool,
     /// Whether the signal is private
     pub private: bool,
-    /// All the doc attributes (each line) of the signal
-    pub docs: Vec<Attribute>,
-    /// Cfgs for signal
-    pub cfgs: Vec<Attribute>,
+    /// All the universal attributes for the signal
+    pub common_attrs: CommonAttrs,
 }
 
 impl ParsedSignal {
@@ -58,8 +57,7 @@ impl ParsedSignal {
             method_fields: fields,
             inherit,
             private,
-            docs: common_attrs.docs,
-            cfgs: common_attrs.cfgs,
+            common_attrs,
         })
     }
 }

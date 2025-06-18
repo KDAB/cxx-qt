@@ -72,7 +72,7 @@ impl GeneratedCppBlocks {
                 .iter()
                 .filter_map(|qobject| {
                     // Skip if the cfg attributes are not resolved to true
-                    match try_eval_attributes(opt.cfg_evaluator.as_ref(), &qobject.declaration.cfgs)
+                    match try_eval_attributes(opt.cfg_evaluator.as_ref(), &qobject.declaration.common_attrs.cfgs)
                     {
                         Ok(true) => {
                             Some(GeneratedCppQObject::from(qobject, &parser.type_names, opt))

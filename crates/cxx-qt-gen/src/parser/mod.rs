@@ -87,22 +87,24 @@ impl CaseConversion {
     }
 }
 
-/// Iterate the attributes of the method to extract cfg attributes
-pub fn extract_cfgs(attrs: &[Attribute]) -> Vec<Attribute> {
+/// Helper function to extract all of a particular attribute from the slice
+fn extract_attr(attrs: &[Attribute], target: &str) -> Vec<Attribute> {
     attrs
         .iter()
-        .filter(|attr| path_compare_str(attr.meta.path(), &["cfg"]))
+        .filter(|attr| path_compare_str(attr.meta.path(), &[target]))
         .cloned()
         .collect()
 }
 
+/// Iterate the attributes of the method to extract cfg attributes
+pub fn extract_cfgs(attrs: &[Attribute]) -> Vec<Attribute> {
+    extract_attr(attrs, "cfg")
+}
+
 /// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
 pub fn extract_docs(attrs: &[Attribute]) -> Vec<Attribute> {
-    attrs
-        .iter()
-        .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
-        .cloned()
-        .collect()
+    extract_attr(attrs, "doc")
+
 }
 
 /// Splits a path by :: separators e.g. "cxx_qt::bridge" becomes ["cxx_qt", "bridge"]
@@ -116,9 +118,10 @@ fn split_path(path_str: &str) -> Vec<&str> {
 }
 
 /// Attributes which should be passed through, and are available on most things
+#[derive(Clone, Debug, Default)]
 pub struct CommonAttrs {
-    docs: Vec<Attribute>,
-    cfgs: Vec<Attribute>,
+    pub docs: Vec<Attribute>,
+    pub cfgs: Vec<Attribute>,
 }
 
 /// Collects a Map of all attributes found from the allowed list

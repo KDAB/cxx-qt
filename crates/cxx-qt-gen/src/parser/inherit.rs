@@ -3,20 +3,18 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{method::MethodFields, require_attributes, CaseConversion};
+use crate::parser::{method::MethodFields, require_attributes, CaseConversion, CommonAttrs};
 use core::ops::Deref;
 use quote::format_ident;
 use std::ops::DerefMut;
-use syn::{Attribute, ForeignItemFn, Ident, Result};
+use syn::{ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
     /// The common fields which are available on all callable types
     pub method_fields: MethodFields,
-    /// All the docs (each line) of the inherited method
-    pub docs: Vec<Attribute>,
-    /// Cfgs for the inherited method
-    pub cfgs: Vec<Attribute>,
+    /// All the universal attributes for the inherited method
+    pub common_attrs: CommonAttrs,
 }
 
 impl ParsedInheritedMethod {
@@ -34,8 +32,7 @@ impl ParsedInheritedMethod {
 
         Ok(Self {
             method_fields: MethodFields::parse(method, auto_case)?,
-            docs: common_attrs.docs,
-            cfgs: common_attrs.cfgs,
+            common_attrs
         })
     }
 

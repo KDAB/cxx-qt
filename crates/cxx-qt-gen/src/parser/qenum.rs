@@ -3,10 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::CaseConversion;
+use crate::parser::{CaseConversion, CommonAttrs};
 use crate::{naming::Name, parser::require_attributes, syntax::path::path_compare_str};
 use quote::ToTokens;
-use syn::{Attribute, Ident, ItemEnum, Result, Variant};
+use syn::{Ident, ItemEnum, Result, Variant};
 
 pub struct ParsedQEnum {
     /// The name of the QObject
@@ -17,10 +17,8 @@ pub struct ParsedQEnum {
     pub qobject: Option<Ident>,
     /// The original enum item
     pub item: ItemEnum,
-    /// Docs from the qenum
-    pub docs: Vec<Attribute>,
-    /// Cfgs from the qenum
-    pub cfgs: Vec<Attribute>,
+    /// All the universal attributes for the enum
+    pub common_attrs: CommonAttrs,
 }
 
 impl ParsedQEnum {
@@ -94,8 +92,7 @@ impl ParsedQEnum {
             name,
             qobject,
             variants,
-            docs: common_attrs.docs,
-            cfgs: common_attrs.cfgs,
+            common_attrs,
             item: qenum,
         })
     }

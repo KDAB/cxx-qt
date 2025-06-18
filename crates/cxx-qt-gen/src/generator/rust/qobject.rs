@@ -28,7 +28,7 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
 
         let mut generated = vec![
-            generate_qobject_definitions(&qobject_names, &qobject.cfgs, &qobject.docs)?,
+            generate_qobject_definitions(&qobject_names, &qobject.common_attrs.cfgs, &qobject.common_attrs.docs)?,
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
@@ -57,7 +57,7 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
-                &qobject.cfgs,
+                &qobject.common_attrs.cfgs,
             )?);
         }
 
@@ -75,9 +75,9 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
-                &qobject.cfgs,
+                &qobject.common_attrs.cfgs,
             )?,
-            cxxqttype::generate(&qobject_names, type_names, &qobject.cfgs)?,
+            cxxqttype::generate(&qobject_names, type_names, &qobject.common_attrs.cfgs)?,
         ]);
 
         Ok(GeneratedRustFragment::flatten(generated))

@@ -11,6 +11,7 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 use syn::{Attribute, Error, Ident, Meta, Result};
+use crate::parser::CommonAttrs;
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -40,10 +41,8 @@ pub struct ParsedQObject {
     pub has_qobject_macro: bool,
     /// The original declaration entered by the user, i.e. a type alias with a list of attributes
     pub declaration: ForeignTypeIdentAlias,
-    /// Cfgs for the object
-    pub cfgs: Vec<Attribute>,
-    /// Docs for the object
-    pub docs: Vec<Attribute>,
+    /// All the universal attributes for the object
+    pub common_attrs: CommonAttrs,
 }
 
 impl ParsedQObject {
@@ -74,8 +73,10 @@ impl ParsedQObject {
                 ident_left: format_ident!("MyObject"),
                 ident_right: format_ident!("MyObjectRust"),
             },
-            cfgs: vec![],
-            docs: vec![],
+            common_attrs: CommonAttrs {
+                docs: vec![],
+                cfgs: vec![],
+            }
         }
     }
 
@@ -124,8 +125,7 @@ impl ParsedQObject {
             properties,
             qml_metadata,
             has_qobject_macro,
-            cfgs: common_attrs.cfgs,
-            docs: common_attrs.docs,
+            common_attrs
         })
     }
 

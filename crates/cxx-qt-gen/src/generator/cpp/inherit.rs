@@ -27,7 +27,7 @@ pub fn generate(
 
     for &method in inherited_methods {
         // Skip if the cfg attributes are not resolved to true
-        if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &method.cfgs)? {
+        if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &method.common_attrs.cfgs)? {
             continue;
         }
 

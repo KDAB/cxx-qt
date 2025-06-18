@@ -48,8 +48,8 @@ pub fn generate(
             if method.safe {
                 std::mem::swap(&mut unsafe_call, &mut unsafe_block);
             }
-            let doc_comments = &method.docs;
-            let cfgs = &method.cfgs;
+            let doc_comments = &method.common_attrs.docs;
+            let cfgs = &method.common_attrs.cfgs;
             let namespace = qobject_names.namespace_tokens();
 
             syn::parse2(quote_spanned! {

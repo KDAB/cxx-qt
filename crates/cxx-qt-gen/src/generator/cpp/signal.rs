@@ -89,7 +89,7 @@ pub fn generate_cpp_signal(
     let mut generated = CppSignalFragment::default();
 
     // Skip if the cfg attributes are not resolved to true
-    if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &signal.cfgs)? {
+    if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &signal.common_attrs.cfgs)? {
         return Ok(generated);
     }
 
