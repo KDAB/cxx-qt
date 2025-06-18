@@ -30,12 +30,12 @@ mod ffi {
 
     /// This enum describes the types of connection that can be used with signals.
     ///
-    /// Note that UniqueConnection is not supported.
+    /// Note that [UniqueConnection](https://doc.qt.io/qt/qt.html#ConnectionType-enum) is not supported.
     #[namespace = "Qt"]
     #[repr(i32)]
     enum ConnectionType {
-        /// If the receiver lives in the thread that emits the signal, Qt::DirectConnection is used.
-        /// Otherwise, Qt::QueuedConnection is used. The connection type is determined when the signal is emitted.
+        /// If the receiver lives in the thread that emits the signal, [`DirectConnection`](Self::DirectConnection) is used.
+        /// Otherwise, [`QueuedConnection`](Self::QueuedConnection) is used. The connection type is determined when the signal is emitted.
         AutoConnection,
         /// The slot is invoked immediately when the signal is emitted.
         /// The slot is executed in the signalling thread.
@@ -43,7 +43,7 @@ mod ffi {
         /// The slot is invoked when control returns to the event loop of the receiver's thread.
         /// The slot is executed in the receiver's thread.
         QueuedConnection,
-        /// Same as Qt::QueuedConnection, except that the signalling thread blocks until the slot returns.
+        /// Same as [`QueuedConnection`](Self::QueuedConnection), except that the signalling thread blocks until the slot returns.
         /// This connection must not be used if the receiver lives in the signalling thread, or else the application will deadlock.
         BlockingQueuedConnection,
     }
@@ -62,13 +62,16 @@ mod ffi {
 ///
 /// Note that when this struct is dropped the connection is disconnected.
 /// So so keep a connection active either hold onto the struct for the duration
-/// that the connection should be active or call `release`.
+/// that the connection should be active or call [`QMetaObjectConnectionGuard::release`](crate::QMetaObjectConnectionGuard::release).
+///
+/// Qt Documentation: [QMetaObject::Connection](https://doc.qt.io/qt/qmetaobject-connection.html#details)
 #[repr(C)]
 pub struct QMetaObjectConnection {
     _space: MaybeUninit<*const c_void>,
 }
 
 impl Default for QMetaObjectConnection {
+    /// Creates a Connection instance.
     fn default() -> Self {
         ffi::qmetaobjectconnection_default()
     }
@@ -81,7 +84,9 @@ impl Drop for QMetaObjectConnection {
 }
 
 impl QMetaObjectConnection {
-    /// Disconnect the signal
+    /// Disconnect a connection.
+    ///
+    /// If the connection is invalid or has already been disconnected, do nothing and return `false`.
     pub fn disconnect(&self) -> bool {
         ffi::qmetaobjectconnection_disconnect(self)
     }
