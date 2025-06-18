@@ -16,16 +16,16 @@ mod ffi {
 
         /// Clears the contents of the byte array and makes it null.
         fn clear(self: &mut Self);
-        /// Returns true if the byte array has size 0; otherwise returns false.
+        /// Returns `true` if the byte array has size 0; otherwise returns `false`.
         #[rust_name = "is_empty"]
         fn isEmpty(self: &Self) -> bool;
-        /// Returns true if this byte array is lowercase, that is, if it's identical to its toLower() folding.
+        /// Returns `true` if this byte array is lowercase, that is, if it's identical to its [`to_lower`](Self::to_lower) folding.
         #[rust_name = "is_lower"]
         fn isLower(self: &Self) -> bool;
-        /// Returns true if this byte array is null; otherwise returns false.
+        /// Returns `true` if this byte array is null; otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &Self) -> bool;
-        /// Returns true if this byte array is uppercase, that is, if it's identical to its toUpper() folding.
+        /// Returns `true` if this byte array is uppercase, that is, if it's identical to its [`to_upper`](Self::to_upper) folding.
         #[rust_name = "is_upper"]
         fn isUpper(self: &Self) -> bool;
         /// Releases any memory not required to store the array's data.
@@ -107,7 +107,9 @@ mod ffi {
     }
 }
 
-/// The QByteArray class provides an array of bytes.
+/// The `QByteArray` class provides an array of bytes.
+///
+/// Qt Documentation: [QByteArray](https://doc.qt.io/qt/qbytearray.html#details)
 #[repr(C)]
 pub struct QByteArray {
     /// The layout has changed between Qt 5 and Qt 6
@@ -121,17 +123,17 @@ pub struct QByteArray {
 }
 
 impl AsRef<[u8]> for QByteArray {
-    /// Construct a slice of u8 from a QByteArray
+    /// Construct a slice of `u8` from a `QByteArray`.
     fn as_ref(&self) -> &[u8] {
         self.as_slice()
     }
 }
 
 impl Clone for QByteArray {
-    /// Constructs a copy of other.
+    /// Constructs a copy of `self`.
     ///
-    /// This operation takes constant time, because QByteArray is implicitly shared similar to a [std::borrow::Cow].
-    /// This makes returning a QByteArray from a function very fast.
+    /// This operation takes constant time, because `QByteArray` is implicitly shared similar to a [`Cow`](std::borrow::Cow).
+    /// This makes returning a `QByteArray` from a function very fast.
     /// If a shared instance is modified, it will be copied (copy-on-write), and that takes linear time.
     fn clone(&self) -> Self {
         ffi::qbytearray_clone(self)
@@ -154,7 +156,7 @@ impl std::cmp::PartialEq for QByteArray {
 impl std::cmp::Eq for QByteArray {}
 
 impl fmt::Display for QByteArray {
-    /// Convert the QByteArray to a Rust string
+    /// Convert the `QByteArray` to a Rust string.
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let slice = self.as_slice();
         if let Ok(string) = str::from_utf8(slice) {
@@ -179,28 +181,28 @@ impl Drop for QByteArray {
 }
 
 impl From<&str> for QByteArray {
-    /// Constructs a QByteArray from a Rust string slice. This makes a deep copy of the data.
+    /// Constructs a `QByteArray` from a Rust string slice. This makes a deep copy of the data.
     fn from(str: &str) -> Self {
         ffi::qbytearray_from_slice_u8(str.as_bytes())
     }
 }
 
 impl From<&String> for QByteArray {
-    /// Constructs a QByteArray from a Rust string. This makes a deep copy of the data.
+    /// Constructs a `QByteArray` from a Rust string. This makes a deep copy of the data.
     fn from(str: &String) -> Self {
         ffi::qbytearray_from_slice_u8(str.as_bytes())
     }
 }
 
 impl From<&[u8]> for QByteArray {
-    /// Constructs a QByteArray from a `&[u8]`. This makes a deep copy of the data.
+    /// Constructs a `QByteArray` from a `&[u8]`. This makes a deep copy of the data.
     fn from(bytes: &[u8]) -> Self {
         ffi::qbytearray_from_slice_u8(bytes)
     }
 }
 
 impl From<&QByteArray> for Vec<u8> {
-    /// Convert the QByteArray to a `Vec<u8>`. This makes a deep copy of the data.
+    /// Convert the `QByteArray` to a `Vec<u8>`. This makes a deep copy of the data.
     fn from(bytearray: &QByteArray) -> Self {
         ffi::qbytearray_to_vec_u8(bytearray)
     }
@@ -208,7 +210,7 @@ impl From<&QByteArray> for Vec<u8> {
 
 #[cfg(feature = "bytes")]
 impl From<&bytes::Bytes> for QByteArray {
-    /// Convert `bytes::Bytes` to a QByteArray. This makes a deep copy of the data.
+    /// Convert `bytes::Bytes` to a `QByteArray`. This makes a deep copy of the data.
     fn from(value: &bytes::Bytes) -> Self {
         Self::from(value.as_ref())
     }
@@ -216,93 +218,106 @@ impl From<&bytes::Bytes> for QByteArray {
 
 #[cfg(feature = "bytes")]
 impl From<&QByteArray> for bytes::Bytes {
-    /// Convert QByteArray to a `bytes::Bytes`. This makes a deep copy of the data.
+    /// Convert `QByteArray` to a `bytes::Bytes`. This makes a deep copy of the data.
     fn from(value: &QByteArray) -> Self {
         Self::copy_from_slice(value.as_ref())
     }
 }
 
 impl QByteArray {
-    /// Inserts value at the end of the list.
+    /// Inserts `value` at the end of the list.
     pub fn append(&mut self, ch: u8) {
         ffi::qbytearray_append(self, ch);
     }
 
-    /// Construct a mutable slice of u8 from a QByteArray
+    /// Extracts a mutable slice of the entire vector.
     pub fn as_mut_slice(&mut self) -> &mut [u8] {
         ffi::qbytearray_as_mut_slice(self)
     }
 
-    /// Construct a slice of u8 from a QByteArray
+    /// Extracts a slice containing the entire byte array.
     pub fn as_slice(&self) -> &[u8] {
         ffi::qbytearray_as_slice(self)
     }
 
-    /// Sets every byte in the byte array to ch.
-    /// If size is different from -1 (the default),
-    /// the byte array is resized to size size beforehand.
+    /// Sets every byte in the byte array to `ch`.
+    /// If `size` is different from -1,
+    /// the byte array is resized to size `size` beforehand.
     pub fn fill(&mut self, ch: u8, size: isize) {
         ffi::qbytearray_fill(self, ch, size)
     }
 
-    /// Construct a QByteArray from a `bytes::Bytes` without a deep copy
+    /// Construct a `QByteArray` from a `bytes::Bytes` without a deep copy
     ///
     /// # Safety
     ///
-    /// The caller must ensure that the original `bytes::Bytes` outlives the QByteArray
-    /// and that the QByteArray is not modified
+    /// The caller must ensure that the original `bytes::Bytes` outlives the `QByteArray`
+    /// and that the `QByteArray` is not modified
     #[cfg(feature = "bytes")]
     pub unsafe fn from_raw_bytes(bytes: &bytes::Bytes) -> Self {
         Self::from_raw_data(bytes.as_ref())
     }
 
-    /// Construct a QByteArray from a `&[u8]` without a deep copy
+    /// Construct a `QByteArray` from a `&[u8]` without a deep copy
     ///
     /// # Safety
     ///
-    /// The caller must ensure that the original slice outlives the QByteArray
-    /// and that the QByteArray is not modified
+    /// The caller must ensure that the original slice outlives the `QByteArray`
+    /// and that the `QByteArray` is not modified
     pub unsafe fn from_raw_data(bytes: &[u8]) -> Self {
         ffi::qbytearray_from_raw_data(bytes)
     }
 
-    /// Inserts item value into the list at the given position.
+    /// Inserts byte `ch` at index position `pos` in the byte array.
+    ///
+    /// This array grows to accommodate the insertion. If `pos` is beyond the end of the array, the array is first extended with space characters to reach this `pos`.
     pub fn insert(&mut self, pos: isize, ch: u8) {
         ffi::qbytearray_insert(self, pos, ch);
     }
 
-    /// Returns the number of items in the QByteArray.
+    /// Returns the number of bytes in this byte array.
     pub fn len(&self) -> isize {
         ffi::qbytearray_len(self)
     }
 
-    /// Inserts value at the start of the list.
+    /// Prepends the byte `ch` to this byte array.
     pub fn prepend(&mut self, ch: u8) {
         ffi::qbytearray_prepend(self, ch);
     }
 
-    /// Removes len bytes from the array, starting at index position pos.
+    /// Removes `len` bytes from the array, starting at index position `pos`.
+    ///
+    /// If `pos` is out of range, nothing happens. If `pos` is valid, but `pos + len` is larger than the size of the array, the array is truncated at position `pos`.
     pub fn remove(&mut self, pos: isize, len: isize) {
         ffi::qbytearray_remove(self, pos, len);
     }
 
-    /// Reserve the specified capacity to prevent repeated allocations
-    /// when the maximum size is known.
+    /// Attempts to allocate memory for at least `size` bytes.
+    ///
+    /// If you know in advance how large the byte array will be, you can call this function, and if you call [`resize`](Self::resize) often you are likely to get better performance.
+    ///
+    /// If in doubt about how much space shall be needed, it is usually better to use an upper bound as `size`, or a high estimate of the most likely size, if a strict upper bound would be much bigger than this. If `size` is an underestimate, the array will grow as needed once the reserved size is exceeded, which may lead to a larger allocation than your best overestimate would have and will slow the operation that triggers it.
+    ///
+    /// The sole purpose of this function is to provide a means of fine tuning `QByteArray`'s memory usage. In general, you will rarely ever need to call this function.
     pub fn reserve(&mut self, size: isize) {
         ffi::qbytearray_reserve(self, size);
     }
 
-    /// Sets the size of the byte array to size bytes.
+    /// Sets the size of the byte array to `size` bytes.
     ///
-    /// If size is greater than the current size, the byte array is extended to make it size bytes with the extra bytes added to the end. The new bytes are uninitialized.
+    /// If `size` is greater than the current size, the byte array is extended to make it `size` bytes with the extra bytes added to the end. **The new bytes are uninitialized.**
     ///
-    /// If size is less than the current size, bytes beyond position size are excluded from the byte array.
+    /// If `size` is less than the current size, bytes beyond position `size` are excluded from the byte array.
+    ///
+    /// **Note:** While `resize` will grow the capacity if needed, it never shrinks capacity.
     pub fn resize(&mut self, size: isize) {
         ffi::qbytearray_resize(self, size);
     }
 
     /// Returns a copy of this byte array that has spacing characters removed from the start and end,
     /// and in which each sequence of internal spacing characters is replaced with a single space.
+    ///
+    /// The spacing characters are the ASCII characters tabulation `'\t'`, line feed `'\n'`, carriage return `'\r'`, vertical tabulation `'\x08'` (`'\v'` in C), form feed `'\x0C'` (`'\f'` in C), and space `' '`.
     pub fn simplified(&self) -> Self {
         ffi::qbytearray_simplified(self)
     }
@@ -318,6 +333,8 @@ impl QByteArray {
     }
 
     /// Returns a copy of this byte array with spacing characters removed from the start and end.
+    ///
+    /// The spacing characters are the ASCII characters tabulation `'\t'`, line feed `'\n'`, carriage return `'\r'`, vertical tabulation `'\x08'` (`'\v'` in C), form feed `'\x0C'` (`'\f'` in C), and space `' '`.
     pub fn trimmed(&self) -> Self {
         ffi::qbytearray_trimmed(self)
     }

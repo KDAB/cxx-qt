@@ -16,12 +16,15 @@ mod ffi {
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = super::QVariant;
 
-        /// Convert this variant to type QMetaType::UnknownType and free up any resources used.
+        /// Convert this variant to type `QMetaType::UnknownType` and free up any resources used.
         fn clear(self: &mut QVariant);
-        /// Returns true if this is a null variant, false otherwise.
+        /// Returns `true` if this is a null variant, `false` otherwise.
+        ///
+        /// In Qt 6, a value is considered null if it contains no initialized value or a null pointer.
+        /// In Qt 5, a value is additionally considered null if the variant contains an object of a builtin type with an `is_null` method that returned `true` for that object.
         #[rust_name = "is_null"]
         fn isNull(self: &QVariant) -> bool;
-        /// Returns true if the storage type of this variant is not QMetaType::UnknownType; otherwise returns false.
+        /// Returns `true` if the storage type of this variant is not `QMetaType::UnknownType`; otherwise returns `false`.
         #[rust_name = "is_valid"]
         fn isValid(self: &QVariant) -> bool;
     }
@@ -48,16 +51,18 @@ mod ffi {
     }
 }
 
-/// The QVariant class acts like a union for the most common Qt data types.
+/// The `QVariant` class acts like a union for the most common Qt data types.
+///
+/// Qt Documentation: [QVariant]("https://doc.qt.io/qt/qvariant.html#details")
 #[repr(C)]
 pub struct QVariant {
     /// The layout has changed between Qt 5 and Qt 6
     ///
-    /// Qt5 QVariant has one member, which contains three uints (but they are optimised to a size of 8) and a union
-    /// Qt6 QVariant has one member, which contains three pointers and a union (pointer largest)
+    /// Qt5 `QVariant` has one member, which contains three `uint`s (but they are optimised to a size of 8) and a union
+    /// Qt6 `QVariant` has one member, which contains three pointers and a union (pointer largest)
     _data: MaybeUninit<f64>,
 
-    // Compiler optimisations reduce the size of the uint to a ushort
+    // Compiler optimisations reduce the size of the `uint` to a `ushort`
     #[cfg(cxxqt_qt_version_major = "5")]
     _type: MaybeUninit<u16>,
     #[cfg(cxxqt_qt_version_major = "5")]
@@ -74,7 +79,7 @@ pub struct QVariant {
 }
 
 impl Clone for QVariant {
-    /// Constructs a copy of the variant, p, passed as the argument to this constructor.
+    /// Constructs a copy of the variant passed as the argument to `self`'s constructor.
     fn clone(&self) -> Self {
         ffi::qvariant_clone(self)
     }
@@ -88,7 +93,7 @@ impl Default for QVariant {
 }
 
 impl Drop for QVariant {
-    /// Destroys the QVariant and the contained object.
+    /// Destroys the `QVariant` and the contained object.
     fn drop(&mut self) {
         ffi::qvariant_drop(self)
     }
@@ -98,7 +103,7 @@ impl<T> From<&T> for QVariant
 where
     T: QVariantValue,
 {
-    /// Constructs a QVariant from a value of T
+    /// Constructs a `QVariant` from a value of `T`.
     fn from(value: &T) -> Self {
         T::construct(value)
     }
@@ -110,8 +115,9 @@ where
 // - impl<T, U> TryInto<U> for T
 //   where U: TryFrom<T>;
 impl QVariant {
-    /// Returns the stored value converted to the template type T
-    /// if QVariant::canConvert is true otherwise returns None
+    /// Returns the stored value converted to the template type `T`, or `None` if the type cannot be converted to `T`.
+    ///
+    /// Note that this first calls [`can_convert`](QVariantValue::can_convert).
     pub fn value<T: QVariantValue>(&self) -> Option<T> {
         if T::can_convert(self) {
             Some(T::value_or_default(self))
@@ -120,18 +126,29 @@ impl QVariant {
         }
     }
 
-    /// Returns the stored value converted to the template type T
+    /// Returns the stored value converted to the template type `T`, or a default-constructed value if the type cannot be converted to `T`.
     ///
-    /// If the value cannot be converted, a default-constructed value will be returned.
+    /// For most value types, a default-constructed value simply means that a value is created using the default constructor (e.g. an empty string for [`QString`](crate::QString)). Primitive types like `i32` and `f64` are initialized to 0.
     ///
-    /// Note that this calls the `QVariant::value` method, without performance loss.
-    /// Whereas `value` first calls `QVariant::canConvert`.
+    /// Note that this calls Qt's `QVariant::value` method, without performance loss.
+    /// Whereas `value` first calls [`can_convert`](QVariantValue::can_convert).
     pub fn value_or_default<T: QVariantValue>(&self) -> T {
         T::value_or_default(self)
     }
 }
 
 impl std::cmp::PartialEq for QVariant {
+    /// Returns `true` if `self` and `other` are equal, otherwise returns `false`.
+    ///
+    /// `QVariant` uses the equality operator of the type contained to check for equality.
+    ///
+    /// Variants of different types will always compare as not equal with a few exceptions:
+    ///
+    /// - If both types are numeric types (integers and floatins point numbers) Qt will compare those types using standard C++ type promotion rules.
+    /// - If one type is numeric and the other one a [`QString`](crate::QString), Qt will try to convert the `QString` to a matching numeric type and if successful compare those.
+    /// - If both variants contain pointers to `QObject` derived types, `QVariant` will check whether the types are related and point to the same object.
+    ///
+    /// The result of the function is not affected by the result of [`is_null`](QVariant::is_null), which means that two values can be equal even if one of them is null and another is not.
     fn eq(&self, other: &Self) -> bool {
         ffi::qvariant_eq(self, other)
     }

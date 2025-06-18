@@ -20,7 +20,7 @@ mod ffi {
         /// Returns the bottom margin.
         fn bottom(self: &QMargins) -> i32;
 
-        /// Returns true if all margins are is 0; otherwise returns false.
+        /// Returns `true` if all margins are is 0; otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QMargins) -> bool;
 
@@ -30,24 +30,25 @@ mod ffi {
         /// Returns the right margin.
         fn right(self: &QMargins) -> i32;
 
-        /// Sets the bottom margin to bottom.
+        /// Sets the bottom margin to `bottom`.
         #[rust_name = "set_bottom"]
         fn setBottom(self: &mut QMargins, bottom: i32);
 
-        /// Sets the left margin to left.
+        /// Sets the left margin to `left`.
         #[rust_name = "set_left"]
         fn setLeft(self: &mut QMargins, left: i32);
 
-        /// Sets the right margin to right.
+        /// Sets the right margin to `right`.
         #[rust_name = "set_right"]
         fn setRight(self: &mut QMargins, right: i32);
 
-        /// Sets the Top margin to Top.
+        /// Sets the top margin to `top`.
         #[rust_name = "set_top"]
         fn setTop(self: &mut QMargins, top: i32);
 
         /// Returns these margins as margins with floating point accuracy.
-        /// since Qt6.4
+        ///
+        /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_marginsf"]
         fn toMarginsF(self: &QMargins) -> QMarginsF;
@@ -96,7 +97,9 @@ mod ffi {
     }
 }
 
-/// The QMargins class defines the four margins of a rectangle.
+/// The `QMargins` class defines the four margins of a rectangle.
+///
+/// Qt Documentation: [QMargins](https://doc.qt.io/qt/qmargins.html#details)
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct QMargins {
@@ -107,7 +110,7 @@ pub struct QMargins {
 }
 
 impl QMargins {
-    /// Constructs margins with the given left, top, right, and bottom
+    /// Constructs margins with the given `left`, `top`, `right`, and `bottom`.
     pub fn new(left: i32, top: i32, right: i32, bottom: i32) -> Self {
         ffi::qmargins_new(left, top, right, bottom)
     }

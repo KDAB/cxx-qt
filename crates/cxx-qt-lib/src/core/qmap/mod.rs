@@ -6,9 +6,11 @@ use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 use std::fmt;
 
-/// The QMap class is a template class that provides an associative array.
+/// The `QMap` class is a template class that provides an associative array.
 ///
-/// To use QMap with a custom pair, implement the [`QMapPair`] trait for T.
+/// To use `QMap` with a custom pair, implement the [`QMapPair`] trait for `T`.
+///
+/// Qt Documentation: [QMap]("https://doc.qt.io/qt/qmap.html#details")
 #[repr(C)]
 pub struct QMap<T>
 where
@@ -22,7 +24,7 @@ impl<T> Clone for QMap<T>
 where
     T: QMapPair,
 {
-    /// Constructs a copy of other.
+    /// Constructs a copy of `self`.
     fn clone(&self) -> Self {
         T::clone(self)
     }
@@ -53,7 +55,7 @@ where
     T: QMapPair,
     T::Value: PartialEq,
 {
-    /// Returns true if both maps contain the same key value pairs
+    /// Returns `true` if both maps contain the same (key, value) pairs, otherwise `false`.
     fn eq(&self, other: &Self) -> bool {
         self.len() == other.len() && self.iter().all(|(k, v)| other.get(k).as_ref() == Some(v))
     }
@@ -86,12 +88,12 @@ where
         T::clear(self)
     }
 
-    /// Returns true if the map contains an item with the key; otherwise returns false.
+    /// Returns `true` if the map contains an item with key `key`; otherwise returns `false`.
     pub fn contains(&self, key: &T::Key) -> bool {
         T::contains(self, key)
     }
 
-    /// Returns the value associated with the key if it exists.
+    /// Returns the value associated with the key `key` if it exists, otherwise returns `None`.
     pub fn get(&self, key: &T::Key) -> Option<T::Value> {
         if self.contains(key) {
             Some(T::get_or_default(self, key))
@@ -100,12 +102,14 @@ where
         }
     }
 
-    /// Returns the value associated with the key or a default value.
+    /// Returns the value associated with the key `key`, or a default-constructed value if it does not exist.
+    ///
+    /// For most value types, a default-constructed value simply means that a value is created using the default constructor (e.g. an empty string for [`QString`](crate::QString)). Primitive types like `i32` and `f64` are initialized to 0.
     pub fn get_or_default(&self, key: &T::Key) -> T::Value {
         T::get_or_default(self, key)
     }
 
-    /// Inserts a new item with the key and a value of value.
+    /// Inserts a new item with the key `key` and a value of `value`.
     ///
     /// The key and value are references here so they can be opaque or trivial.
     /// Note that the key and value are cloned before inserting into the map.
@@ -113,13 +117,13 @@ where
         T::insert_clone(self, key, value)
     }
 
-    /// Returns true if the map contains no items; otherwise returns false.
+    /// Returns `true` if the map contains no items; otherwise returns `false`.
     pub fn is_empty(&self) -> bool {
         T::len(self) == 0
     }
 
     /// An iterator visiting all key-value pairs in an arbitrary order.
-    /// The iterator element type is (&T::Key, &T::Value).
+    /// The iterator element type is `(&T::Key, &T::Value)`.
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             map: self,
@@ -127,12 +131,14 @@ where
         }
     }
 
-    /// Returns the number of items in the map.
+    /// Returns the number of (key, value) pairs in the map.
     pub fn len(&self) -> isize {
         T::len(self)
     }
 
-    /// Removes all the items that have the key from the map.
+    /// Removes all the items that have the key `key` from the map.
+    ///
+    /// Returns `true` if the key exists in the map, otherwise `false`.
     pub fn remove(&mut self, key: &T::Key) -> bool {
         T::remove(self, key)
     }
@@ -144,7 +150,7 @@ where
     T::Key: ExternType<Kind = cxx::kind::Trivial>,
     T::Value: ExternType<Kind = cxx::kind::Trivial>,
 {
-    /// Inserts a new item with the key and a value of value.
+    /// Inserts a new item with the key `key` and a value of `value`.
     pub fn insert(&mut self, key: T::Key, value: T::Value) {
         T::insert(self, key, value)
     }

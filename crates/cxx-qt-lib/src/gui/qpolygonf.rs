@@ -38,35 +38,45 @@ mod ffi {
         #[rust_name = "bounding_rect"]
         fn boundingRect(self: &QPolygonF) -> QRectF;
 
-        /// Returns true if the given point is inside the polygon according to the specified fillRule; otherwise returns false.
+        /// Returns `true` if the given point is inside the polygon according to the specified `fill_rule`; otherwise returns `false`.
         #[rust_name = "contains_point"]
-        fn containsPoint(self: &QPolygonF, point: &QPointF, fillRule: FillRule) -> bool;
+        fn containsPoint(self: &QPolygonF, point: &QPointF, fill_rule: FillRule) -> bool;
 
-        /// Returns a polygon which is the intersection of this polygon and r.
+        /// Returns a polygon which is the intersection of this polygon and `r`.
+        ///
+        /// Set operations on polygons will treat the polygons as areas. Non-closed polygons will be treated as implicitly closed.
         fn intersected(self: &QPolygonF, r: &QPolygonF) -> QPolygonF;
 
-        /// Returns true if the current polygon intersects at any point the given polygon p.
-        /// Also returns true if the current polygon contains or is contained by any part of p.
+        /// Returns `true` if the current polygon intersects at any point the given polygon `p`.
+        /// Also returns `true` if the current polygon contains or is contained by any part of `p`.
+        ///
+        /// Set operations on polygons will treat the polygons as areas. Non-closed polygons will be treated as implicitly closed.
         fn intersects(self: &QPolygonF, p: &QPolygonF) -> bool;
 
-        /// Returns true if the polygon is closed; otherwise returns false.
+        /// Returns `true` if the polygon is closed; otherwise returns `false`.
+        ///
+        /// A polygon is said to be closed if its start point and end point are equal.
         #[rust_name = "is_closed"]
         fn isClosed(self: &QPolygonF) -> bool;
 
-        /// Returns a polygon which is r subtracted from this polygon.
+        /// Returns a polygon which is `r` subtracted from this polygon.
+        ///
+        /// Set operations on polygons will treat the polygons as areas. Non-closed polygons will be treated as implicitly closed.
         fn subtracted(self: &QPolygonF, r: &QPolygonF) -> QPolygonF;
 
-        /// Creates and returns a QPolygon by converting each QPointF to a QPoint.
+        /// Creates and returns a `QPolygon` by converting each [`QPointF`](crate::QPointF) to a [`QPoint`](crate::QPoint).
         #[rust_name = "to_polygon"]
         fn toPolygon(self: &QPolygonF) -> QPolygon;
 
-        /// Translates all points in the polygon by (dx, dy).
+        /// Translates all points in the polygon by (`dx`, `dy`).
         fn translate(self: &mut QPolygonF, dx: f64, dy: f64);
 
-        /// Returns a copy of the polygon that is translated by (dx, dy).
+        /// Returns a copy of the polygon that is translated by (`dx`, `dy`).
         fn translated(self: &QPolygonF, dx: f64, dy: f64) -> QPolygonF;
 
-        /// Returns a polygon which is the union of this polygon and r.
+        /// Returns a polygon which is the union of this polygon and `r`.
+        ///
+        /// Set operations on polygons will treat the polygons as areas. Non-closed polygons will be treated as implicitly closed.
         fn united(self: &QPolygonF, r: &QPolygonF) -> QPolygonF;
     }
 
