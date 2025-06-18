@@ -32,7 +32,7 @@ impl ParsedExternQObject {
         module_ident: &Ident,
         parent_namespace: Option<&str>,
     ) -> Result<ParsedExternQObject> {
-        let attributes = require_attributes(&ty.attrs, &Self::ALLOWED_ATTRS)?;
+        let (attributes, _common_attrs) = require_attributes(&ty.attrs, &Self::ALLOWED_ATTRS)?;
 
         let base_class = parse_base_type(&attributes)?;
 

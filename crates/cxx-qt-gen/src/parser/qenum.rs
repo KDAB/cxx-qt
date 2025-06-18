@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{extract_cfgs, extract_docs, CaseConversion};
+use crate::parser::CaseConversion;
 use crate::{naming::Name, parser::require_attributes, syntax::path::path_compare_str};
 use quote::ToTokens;
 use syn::{Attribute, Ident, ItemEnum, Result, Variant};
@@ -60,9 +60,7 @@ impl ParsedQEnum {
         parent_namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
-        require_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
-        let cfgs = extract_cfgs(&qenum.attrs);
-        let docs = extract_docs(&qenum.attrs);
+        let (_attrs, common_attrs) = require_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
 
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
@@ -96,8 +94,8 @@ impl ParsedQEnum {
             name,
             qobject,
             variants,
-            docs,
-            cfgs,
+            docs: common_attrs.docs,
+            cfgs: common_attrs.cfgs,
             item: qenum,
         })
     }

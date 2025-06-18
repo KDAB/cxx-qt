@@ -5,13 +5,11 @@
 
 use crate::{
     naming::Name,
-    parser::{extract_cfgs, property::ParsedQProperty, require_attributes},
+    parser::{property::ParsedQProperty, require_attributes, parse_base_type, CaseConversion},
     syntax::{expr::expr_to_string, foreignmod::ForeignTypeIdentAlias, path::path_compare_str},
 };
 #[cfg(test)]
 use quote::format_ident;
-
-use crate::parser::{extract_docs, parse_base_type, CaseConversion};
 use syn::{Attribute, Error, Ident, Meta, Result};
 
 /// Metadata for registering QML element
@@ -88,9 +86,7 @@ impl ParsedQObject {
         module: &Ident,
         auto_case: CaseConversion,
     ) -> Result<Self> {
-        let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
-        let cfgs = extract_cfgs(&declaration.attrs);
-        let docs = extract_docs(&declaration.attrs);
+        let (attributes, common_attrs) = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
 
         let has_qobject_macro = attributes.contains_key("qobject");
 
@@ -128,13 +124,13 @@ impl ParsedQObject {
             properties,
             qml_metadata,
             has_qobject_macro,
-            cfgs,
-            docs,
+            cfgs: common_attrs.cfgs,
+            docs: common_attrs.docs,
         })
     }
 
     fn parse_qml_metadata(name: &Name, attrs: &[Attribute]) -> Result<Option<QmlElementMetadata>> {
-        let attributes = require_attributes(attrs, &Self::ALLOWED_ATTRS)?;
+        let (attributes, _common_attributes) = require_attributes(attrs, &Self::ALLOWED_ATTRS)?;
         if let Some(attr) = attributes.get("qml_element") {
             // Extract the name of the qml_element from macro, else use the c++ name
             // This will use the name provided by cxx_name if that attr was present

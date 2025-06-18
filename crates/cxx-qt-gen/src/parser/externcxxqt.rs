@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::extract_docs;
 use crate::{
     parser::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
@@ -40,12 +39,10 @@ impl ParsedExternCxxQt {
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
         // TODO: support cfg on foreign mod blocks
-        let attrs = require_attributes(
+        let (attrs, common_attrs) = require_attributes(
             &foreign_mod.attrs,
             &["namespace", "doc", "auto_cxx_name", "auto_rust_name"],
         )?;
-
-        let docs = extract_docs(&foreign_mod.attrs);
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
 
@@ -58,7 +55,7 @@ impl ParsedExternCxxQt {
 
         let mut extern_cxx_block = ParsedExternCxxQt {
             namespace,
-            docs,
+            docs: common_attrs.docs,
             unsafety: foreign_mod.unsafety,
             ..Default::default()
         };

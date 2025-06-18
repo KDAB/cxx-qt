@@ -15,7 +15,7 @@ pub struct ParsedQNamespace {
 
 impl ParsedQNamespace {
     pub fn parse(mac: ItemMacro) -> Result<Self> {
-        let attrs = require_attributes(&mac.attrs, &["qml_element"])?;
+        let (attrs, _common_attrs) = require_attributes(&mac.attrs, &["qml_element"])?;
         let namespace_literal: LitStr = syn::parse2(mac.mac.tokens)?;
         let namespace = namespace_literal.value();
         if namespace.contains(char::is_whitespace) {

@@ -115,12 +115,20 @@ fn split_path(path_str: &str) -> Vec<&str> {
     path
 }
 
+/// Attributes which should be passed through, and are available on most things
+pub struct CommonAttrs {
+    docs: Vec<Attribute>,
+    cfgs: Vec<Attribute>,
+}
+
 /// Collects a Map of all attributes found from the allowed list
 /// Will error if an attribute which is not in the allowed list is found
+///
+/// Has the option to allow a set of common attributes such as doc, cfg, etc...
 pub fn require_attributes<'a>(
     attrs: &'a [Attribute],
     allowed: &'a [&str],
-) -> Result<BTreeMap<&'a str, &'a Attribute>> {
+) -> Result<(BTreeMap<&'a str, &'a Attribute>, CommonAttrs)> {
     let mut output = BTreeMap::default();
     for attr in attrs {
         let index = allowed
@@ -128,7 +136,8 @@ pub fn require_attributes<'a>(
             .position(|string| path_compare_str(attr.meta.path(), &split_path(string)));
         if let Some(index) = index {
             output.insert(allowed[index], attr); // Doesn't error on duplicates
-        } else {
+        }
+        else {
             return Err(Error::new(
                 attr.span(),
                 format!(
@@ -138,7 +147,11 @@ pub fn require_attributes<'a>(
             ));
         }
     }
-    Ok(output)
+    let common = CommonAttrs {
+        docs: extract_docs(attrs),
+        cfgs: extract_cfgs(attrs),
+    };
+    Ok((output, common))
 }
 
 // Extract base identifier from attribute
@@ -196,7 +209,7 @@ pub struct Parser {
 
 impl Parser {
     fn parse_mod_attributes(module: &mut ItemMod) -> Result<Option<String>> {
-        let attrs = require_attributes(&module.attrs, &["doc", "cxx_qt::bridge"])?;
+        let (attrs, _common_attrs) = require_attributes(&module.attrs, &["doc", "cxx_qt::bridge"])?;
         let mut namespace = None;
 
         // Check for the cxx_qt::bridge attribute

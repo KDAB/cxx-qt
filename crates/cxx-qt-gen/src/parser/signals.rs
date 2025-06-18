@@ -2,9 +2,8 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::parser::CaseConversion;
 use crate::{
-    parser::{extract_cfgs, extract_docs, method::MethodFields, require_attributes},
+    parser::{method::MethodFields, require_attributes, CaseConversion},
     syntax::path::path_compare_str,
 };
 use core::ops::Deref;
@@ -37,10 +36,8 @@ impl ParsedSignal {
     }
 
     pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
-        let docs = extract_docs(&method.attrs);
-        let cfgs = extract_cfgs(&method.attrs);
         let fields = MethodFields::parse(method, auto_case)?;
-        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
+        let (attrs, common_attrs) = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         if !fields.mutable {
             return Err(Error::new(
@@ -61,8 +58,8 @@ impl ParsedSignal {
             method_fields: fields,
             inherit,
             private,
-            docs,
-            cfgs,
+            docs: common_attrs.docs,
+            cfgs: common_attrs.cfgs,
         })
     }
 }
