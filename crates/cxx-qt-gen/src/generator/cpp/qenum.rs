@@ -39,7 +39,7 @@ pub fn generate_declaration(
     opt: &GeneratedOpt,
 ) -> Result<String> {
     // Skip if the cfg attributes are not resolved to true
-    if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &qenum.cfgs)? {
+    if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &qenum.common_attrs.cfgs)? {
         return Ok(String::new());
     }
 
@@ -75,7 +75,7 @@ pub fn generate_on_qobject<'a>(
 
     for qenum in qenums {
         // Skip if the cfg attributes are not resolved to true
-        if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &qenum.cfgs)? {
+        if !try_eval_attributes(opt.cfg_evaluator.as_ref(), &qenum.common_attrs.cfgs)? {
             continue;
         }
 

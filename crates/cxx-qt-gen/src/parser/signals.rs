@@ -2,14 +2,14 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::parser::CaseConversion;
 use crate::{
-    parser::{extract_cfgs, extract_docs, method::MethodFields, require_attributes},
+    parser::{method::MethodFields, require_attributes, CaseConversion},
     syntax::path::path_compare_str,
 };
 use core::ops::Deref;
 use std::ops::DerefMut;
-use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
+use syn::{spanned::Spanned, Error, ForeignItemFn, Result, Visibility};
+use crate::parser::CommonAttrs;
 
 #[derive(Clone)]
 /// Describes an individual Signal
@@ -20,10 +20,8 @@ pub struct ParsedSignal {
     pub inherit: bool,
     /// Whether the signal is private
     pub private: bool,
-    /// All the doc attributes (each line) of the signal
-    pub docs: Vec<Attribute>,
-    /// Cfgs for signal
-    pub cfgs: Vec<Attribute>,
+    /// All the universal attributes for the signal
+    pub common_attrs: CommonAttrs,
 }
 
 impl ParsedSignal {
@@ -37,10 +35,8 @@ impl ParsedSignal {
     }
 
     pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
-        let docs = extract_docs(&method.attrs);
-        let cfgs = extract_cfgs(&method.attrs);
         let fields = MethodFields::parse(method, auto_case)?;
-        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
+        let (attrs, common_attrs) = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         if !fields.mutable {
             return Err(Error::new(
@@ -61,8 +57,7 @@ impl ParsedSignal {
             method_fields: fields,
             inherit,
             private,
-            docs,
-            cfgs,
+            common_attrs,
         })
     }
 }
