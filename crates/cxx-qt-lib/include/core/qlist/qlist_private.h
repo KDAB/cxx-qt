@@ -18,7 +18,7 @@
 // In Qt 6 QList and QVector are the same, so we only need IsRelocatable defined
 // once
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-#include "qlist_qvector.h"
+#include <cxx-qt-lib/core/qlist_qvector.h>
 #else
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480

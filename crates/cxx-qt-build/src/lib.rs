@@ -12,6 +12,7 @@
 //! the C++ code into a binary with any cxx-qt-lib code and Qt linked.
 
 mod cfg_evaluator;
+mod utils;
 
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
@@ -20,8 +21,10 @@ pub mod dir;
 use dir::INCLUDE_VERB;
 
 mod dependencies;
-pub use dependencies::Interface;
 use dependencies::{Dependency, Manifest};
+
+mod interface;
+pub use interface::Interface;
 
 mod opts;
 pub use opts::CxxQtBuildersOpts;
@@ -371,8 +374,9 @@ pub struct CxxQtBuilder {
     qt_modules: HashSet<String>,
     qml_modules: Vec<OwningQmlModule>,
     cc_builder: cc::Build,
-    public_interface: Option<Interface>,
     include_prefix: String,
+    crate_include_root: Option<String>,
+    additional_include_dirs: Vec<PathBuf>,
 }
 
 impl CxxQtBuilder {
@@ -411,24 +415,10 @@ impl CxxQtBuilder {
             qt_modules,
             qml_modules: vec![],
             cc_builder: cc::Build::new(),
-            public_interface: None,
             include_prefix: crate_name(),
+            crate_include_root: Some("".to_owned()),
+            additional_include_dirs: vec![],
         }
-    }
-
-    /// Create a new builder that is set up to create a library crate that is meant to be
-    /// included by later dependencies.
-    ///
-    /// The headers generated for this crate will be specified
-    pub fn library(interface_definition: Interface) -> Self {
-        let mut this = Self::new();
-        this.public_interface = Some(interface_definition);
-
-        if link_name().is_none() {
-            panic!("Building a Cxx-Qt based library requires setting a `links` field in the Cargo.toml file.\nConsider adding:\n\tlinks = \"{}\"\nto your Cargo.toml\n", crate_name());
-        }
-
-        this
     }
 
     /// Specify rust file paths to parse through the cxx-qt marco
@@ -459,6 +449,48 @@ impl CxxQtBuilder {
         self
     }
 
+    /// Specify the sub-directory within the crate that should act as the root include directory of
+    /// the crate.
+    /// All header files under this subdirectory will be includable in C++ under this crates name.
+    /// This is useful for crates that export C++ headers to be included by other crates.
+    ///
+    /// For example, if your crate is called `my_crate` and you specify `crate_include_dir(Some("include"))`,
+    /// The file: `include/my_header.h` would become available as:
+    ///
+    /// ```cpp
+    /// #include <my_crate/my_header.h>
+    /// ```
+    ///
+    /// Specify `None` to disable automatic inclusion of your crate as a header directory.
+    ///
+    /// The default is `Some("")` which means that the entire crate directory is used as the include directory.
+    pub fn crate_include_root(mut self, include_dir: Option<String>) -> Self {
+        self.crate_include_root = include_dir;
+        self
+    }
+
+    /// Specify a directory to include additional C++ headers from.
+    ///
+    /// This directory will be namespaced by the crate name!
+    /// So if you call `include_dir("include/")` a header `include/my_header.h` will be available as:
+    /// ```cpp
+    /// #include <crate_name/my_header.h>
+    /// ```
+    ///
+    /// Note that if you are trying to specify an include directory that is inside your own crate,
+    /// prefer using [Self::crate_include_root], which expects a path relative to the crate
+    /// directory.
+    ///
+    /// Also note that unlike the [Self::crate_include_root] method, this does not emit rerun-if-changed
+    /// directives for the directory!
+    /// If you need to rerun the build script when files in this directory change, you must emit
+    /// appropriate rerun-if-changed directives yourself.
+    pub fn include_dir(mut self, dir: impl AsRef<Path>) -> Self {
+        let dir = dir.as_ref().to_owned();
+        self.additional_include_dirs.push(dir);
+        self
+    }
+
     /// Include files listed in a .qrc file into the binary
     /// with [Qt's resource system](https://doc.qt.io/qt-6/resources.html).
     /// ```no_run
@@ -484,7 +516,7 @@ impl CxxQtBuilder {
     /// The `Core` module and any modules from dependencies are linked automatically; there is no need to specify them.
     ///
     /// Note that any qt_module you specify here will be enabled for all downstream
-    /// dependencies as well if this crate is built as a library with [CxxQtBuilder::library].
+    /// dependencies as well if this crate is exported.
     /// It is therefore best practice to specify features on your crate that allow downstream users
     /// to disable any qt modules that are optional.
     pub fn qt_module(mut self, module: &str) -> Self {
@@ -1042,42 +1074,6 @@ extern "C" bool {init_fun}() {{
             .collect()
     }
 
-    fn write_manifest(
-        &self,
-        dependencies: &[Dependency],
-        qt_modules: HashSet<String>,
-        initializers: Vec<qt_build_utils::Initializer>,
-    ) {
-        if let Some(interface) = &self.public_interface {
-            // We automatically reexport all qt_modules and downstream dependencies
-            // as they will always need to be enabled in the final binary.
-            // However, we only reexport the headers of libraries that
-            // are marked as re-export.
-            let dependencies = dependencies::reexported_dependencies(interface, dependencies);
-
-            let exported_include_prefixes =
-                dependencies::all_include_prefixes(interface, &dependencies);
-
-            let manifest = Manifest {
-                name: crate_name(),
-                link_name: link_name()
-                    .expect("The links key must be set when creating a library with CXX-Qt-build!"),
-                initializers,
-                qt_modules: qt_modules.into_iter().collect(),
-                exported_include_prefixes,
-            };
-
-            let manifest_path = dir::crate_target().join("manifest.json");
-            let manifest_json = serde_json::to_string_pretty(&manifest)
-                .expect("Failed to convert Manifest to JSON!");
-            std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
-            println!(
-                "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
-                manifest_path.to_string_lossy()
-            );
-        }
-    }
-
     fn qt_modules(&self, dependencies: &[Dependency]) -> HashSet<String> {
         let mut qt_modules = self.qt_modules.clone();
         for dependency in dependencies {
@@ -1086,25 +1082,9 @@ extern "C" bool {init_fun}() {{
         qt_modules
     }
 
-    fn write_interface_include_dirs(&self) {
-        let Some(interface) = &self.public_interface else {
-            return;
-        };
-        let header_root = dir::header_root();
-        for (header_dir, dest) in &interface.exported_include_directories {
-            let dest_dir = header_root.join(dest);
-            if let Err(e) = dir::symlink_or_copy_directory(header_dir, dest_dir) {
-                panic!(
-                        "Failed to {INCLUDE_VERB} `{dest}` for export_include_directory `{dir_name}`: {e:?}",
-                        dir_name = header_dir.to_string_lossy()
-                    )
-            };
-        }
-    }
-
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
-    pub fn build(mut self) {
+    pub fn build(mut self) -> Interface {
         dir::clean(dir::crate_target()).expect("Failed to clean crate export directory!");
 
         // We will do these two steps first, as setting up the dependencies can modify flags we
@@ -1112,7 +1092,6 @@ extern "C" bool {init_fun}() {{
         // Also write the common headers first, to make sure they don't conflict with any
         // dependencies
         Self::write_common_headers();
-        self.write_interface_include_dirs();
         let dependencies = Dependency::find_all();
         for dependency in &dependencies {
             self.include_dependency(dependency);
@@ -1138,6 +1117,35 @@ extern "C" bool {init_fun}() {{
         // This is not ideal and should be removed in future as it allows user code direct access
         // to the generated files without any namespacing.
         include_paths.push(header_root.join(&self.include_prefix));
+
+        const MAX_INCLUDE_DEPTH: usize = 6;
+        let crate_header_dir = self.crate_include_root.as_ref().map(|subdir| {
+            dir::manifest()
+                .expect("Could not find crate directory!")
+                .join(subdir)
+        });
+        if let Some(crate_header_dir) = crate_header_dir {
+            utils::best_effort_copy_headers(
+                crate_header_dir.as_path(),
+                header_root.join(crate_name()).as_path(),
+                MAX_INCLUDE_DEPTH,
+                // Emit rerun-if-changed for this directory as it is be part of the crate root it
+                // should not contain any generated files which may cause unwanted reruns.
+                true,
+            );
+        }
+        for include_dir in &self.additional_include_dirs {
+            utils::best_effort_copy_headers(
+                include_dir,
+                header_root.join(crate_name()).as_path(),
+                MAX_INCLUDE_DEPTH,
+                // Do not emit rerun-if-changed for this directory as it may not be part of the crate root
+                // and we do not know if these headers are generated or not.
+                // If they are generated by the build script, they should not be marked with
+                // rerun-if-changed, because they would cause unwanted reruns.
+                false,
+            );
+        }
 
         Self::setup_cc_builder(&mut self.cc_builder, &include_paths);
 
@@ -1181,10 +1189,16 @@ extern "C" bool {init_fun}() {{
             self.cc_builder.compile(&static_lib_name());
         }
 
-        self.write_manifest(
-            &dependencies,
-            qt_modules,
-            vec![public_initializer.strip_file()],
-        );
+        Interface {
+            manifest: Manifest {
+                name: crate_name(),
+                link_name: link_name().unwrap_or_default(),
+                initializers: vec![public_initializer.strip_file()],
+                qt_modules: qt_modules.into_iter().collect(),
+                exported_include_prefixes: vec![],
+            },
+            dependencies,
+            ..Default::default()
+        }
     }
 }

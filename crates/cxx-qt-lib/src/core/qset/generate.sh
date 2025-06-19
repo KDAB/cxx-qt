@@ -38,7 +38,7 @@ function generate_bridge_primitive() {
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qset_$1.h");
+        include!("cxx-qt-lib/core/qset/qset_$1.h");
         type QSet_$1 = crate::QSet<$1>;
     }
 
@@ -121,7 +121,7 @@ pub mod ffi {
         include!("cxx-qt-lib/$2.h");
         type $1 = crate::$1;
 
-        include!("cxx-qt-lib/qset_$1.h");
+        include!("cxx-qt-lib/core/qset/qset_$1.h");
         type QSet_$1 = crate::QSet<$1>;
     }
 

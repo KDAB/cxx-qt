@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qpersistentmodelindex.h");
         type QPersistentModelIndex = crate::QPersistentModelIndex;
 
-        include!("cxx-qt-lib/qvector_QPersistentModelIndex.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QPersistentModelIndex.h");
         type QVector_QPersistentModelIndex = crate::QVector<QPersistentModelIndex>;
     }
 

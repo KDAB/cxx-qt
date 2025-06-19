@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qtime.h");
         type QTime = crate::QTime;
 
-        include!("cxx-qt-lib/qvector_QTime.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QTime.h");
         type QVector_QTime = crate::QVector<QTime>;
     }
 
