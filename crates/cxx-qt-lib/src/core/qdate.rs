@@ -167,8 +167,8 @@ impl QDate {
     /// Returns the number of days from this date to d (which is negative if d is earlier than this date).
     ///
     /// Returns 0 if either date is invalid.
-    pub fn days_to(&self, date: Self) -> ffi::qint64 {
-        ffi::qdate_days_to(self, date)
+    pub fn days_to(&self, date: Self) -> i64 {
+        ffi::qdate_days_to(self, date).into()
     }
 
     /// Returns the time as a string. The format parameter determines the format of the result string.
@@ -277,14 +277,14 @@ mod test {
     fn qdate_current_date() {
         let date_a = QDate::current_date();
         let date_b = date_a.add_days(100.into());
-        assert_eq!(i64::from(date_a.days_to(date_b)), 100);
+        assert_eq!(date_a.days_to(date_b), 100);
     }
 
     #[test]
     fn qdate_julian_day() {
         let date_a = QDate::from_julian_day(1000);
         let date_b = QDate::from_julian_day(1010);
-        assert_eq!(i64::from(date_a.days_to(date_b)), 10);
+        assert_eq!(date_a.days_to(date_b), 10);
     }
 
     #[cfg(feature = "chrono")]
