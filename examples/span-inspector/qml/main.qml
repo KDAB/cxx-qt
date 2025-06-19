@@ -11,11 +11,13 @@ import QtQuick.Layouts
 import com.kdab.cxx_qt.demo 1.0
 
 ApplicationWindow {
+    id: appWindow
+    color: palette.window
+    property color textColor: color.lightness < 128 * "black" , "white"
     height: 480
     title: qsTr("Span Inspector")
     visible: true
     width: 640
-    color: palette.window
 
     SpanInspector {
         id: inspector
@@ -23,23 +25,39 @@ ApplicationWindow {
 
     SplitView {
         anchors.fill: parent
-        TextEdit {
+        Item {
             SplitView.preferredWidth: parent.width / 2
-            Component.onCompleted: {
-                inspector.input = textDocument
-                inspector.rebuildOutput(cursorPosition)
-            }
+            TextArea {
+                SplitView.preferredWidth: parent.width / 2
+                wrapMode: TextArea.Wrap
+                id: inputEdit
+                anchors.fill: parent
+                clip: true
+                color: appWindow.textColor
+                Component.onCompleted: {
+                    inspector.input = textDocument
+                    inspector.rebuildOutput(cursorPosition)
+                }
 
-            onCursorPositionChanged: {
-                inspector.rebuildOutput(cursorPosition)
+                onCursorPositionChanged: {
+                    inspector.rebuildOutput(cursorPosition)
+                }
+
+                onTextChanged: {
+                    inspector.rebuildOutput(cursorPosition)
+                }
             }
         }
-        TextEdit {
+
+        ScrollView {
             SplitView.preferredWidth: parent.width / 2
-            text: "Hello World"
-            readOnly: true;
-            wrapMode: TextEdit.wrap;
-            Component.onCompleted: inspector.output = textDocument
+            TextEdit {
+                clip: true
+                color: appWindow.textColor
+                text: "Hello World"
+                readOnly: true;
+                Component.onCompleted: inspector.output = textDocument
+            }
         }
     }
 }
