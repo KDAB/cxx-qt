@@ -47,5 +47,5 @@ fn internal_pointer_qmodelindex(i: &QModelIndex) -> *mut qmodelindex_cxx::c_void
 }
 
 fn internal_id_qmodelindex(i: &QModelIndex) -> cxx_qt_lib::quintptr {
-    i.internal_id()
+    i.internal_id().into()
 }

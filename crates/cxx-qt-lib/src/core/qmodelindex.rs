@@ -36,8 +36,8 @@ mod ffi {
         #[rust_name = "sibling_at_row"]
         fn siblingAtRow(self: &QModelIndex, row: i32) -> QModelIndex;
 
-        /// Returns a `quintptr` used by the model to associate the index with the internal data structure.
-        #[rust_name = "internal_id"]
+        #[doc(hidden)]
+        #[rust_name = "internal_id_quintptr"]
         fn internalId(self: &QModelIndex) -> quintptr;
         /// Returns a `*mut c_void` pointer used by the model to associate the index with the internal data structure.
         #[rust_name = "internal_pointer_mut"]
@@ -95,6 +95,13 @@ impl fmt::Display for QModelIndex {
 impl fmt::Debug for QModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         ffi::qmodelindex_to_debug_qstring(self).fmt(f)
+    }
+}
+
+impl QModelIndex {
+    /// Returns a `usize` used by the model to associate the index with the internal data structure.
+    pub fn internal_id(self: &QModelIndex) -> usize {
+        self.internal_id_quintptr().into()
     }
 }
 

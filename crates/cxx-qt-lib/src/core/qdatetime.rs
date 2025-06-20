@@ -57,10 +57,8 @@ mod ffi {
         /// Returns the date part of the datetime.
         fn date(self: &QDateTime) -> QDate;
 
-        /// Returns the number of days from this datetime to the other datetime.
-        /// The number of days is counted as the number of times midnight is reached between this datetime to the other datetime.
-        /// This means that a 10 minute difference from 23:55 to 0:05 the next day counts as one day.
-        #[rust_name = "days_to"]
+        #[doc(hidden)]
+        #[rust_name = "days_to_qint64"]
         fn daysTo(self: &QDateTime, other: &QDateTime) -> qint64;
 
         /// Returns if this datetime falls in Daylight-Saving Time.
@@ -79,14 +77,12 @@ mod ffi {
         #[rust_name = "offset_from_utc"]
         fn offsetFromUtc(self: &QDateTime) -> i32;
 
-        /// Returns the number of milliseconds from this datetime to the other datetime.
-        /// If the other datetime is earlier than this datetime, the value returned is negative.
-        #[rust_name = "msecs_to"]
+        #[doc(hidden)]
+        #[rust_name = "msecs_to_qint64"]
         fn msecsTo(self: &QDateTime, other: &QDateTime) -> qint64;
 
-        /// Returns the number of seconds from this datetime to the other datetime.
-        /// If the other datetime is earlier than this datetime, the value returned is negative.
-        #[rust_name = "secs_to"]
+        #[doc(hidden)]
+        #[rust_name = "secs_to_qint64"]
         fn secsTo(self: &QDateTime, other: &QDateTime) -> qint64;
 
         #[doc(hidden)]
@@ -126,16 +122,16 @@ mod ffi {
         #[rust_name = "to_local_time"]
         fn toLocalTime(self: &QDateTime) -> QDateTime;
 
-        /// Returns the datetime as the number of milliseconds that have passed since 1970-01-01T00:00:00.000, Coordinated Universal Time (Qt::UTC).
-        #[rust_name = "to_msecs_since_epoch"]
+        #[doc(hidden)]
+        #[rust_name = "to_msecs_since_epoch_qint64"]
         fn toMSecsSinceEpoch(self: &QDateTime) -> qint64;
 
         /// Returns a copy of this datetime converted to a spec of Qt::OffsetFromUTC with the given offsetSeconds.
         #[rust_name = "to_offset_from_utc"]
         fn toOffsetFromUtc(self: &QDateTime, offset_seconds: i32) -> QDateTime;
 
-        /// Returns the datetime as the number of seconds that have passed since 1970-01-01T00:00:00.000, Coordinated Universal Time (Qt::UTC).
-        #[rust_name = "to_secs_since_epoch"]
+        #[doc(hidden)]
+        #[rust_name = "to_secs_since_epoch_qint64"]
         fn toSecsSinceEpoch(self: &QDateTime) -> qint64;
 
         /// Returns the time as a string. The format parameter determines the format of the string.
@@ -274,13 +270,20 @@ impl QDateTime {
 
     /// Returns the number of milliseconds since 1970-01-01T00:00:00 Universal Coordinated Time.
     /// This number is like the POSIX time_t variable, but expressed in milliseconds instead.
-    pub fn current_msecs_since_epoch() -> ffi::qint64 {
-        ffi::qdatetime_current_msecs_since_epoch()
+    pub fn current_msecs_since_epoch() -> i64 {
+        ffi::qdatetime_current_msecs_since_epoch().into()
     }
 
     /// Returns the number of seconds since 1970-01-01T00:00:00 Universal Coordinated Time.
-    pub fn current_secs_since_epoch() -> ffi::qint64 {
-        ffi::qdatetime_current_secs_since_epoch()
+    pub fn current_secs_since_epoch() -> i64 {
+        ffi::qdatetime_current_secs_since_epoch().into()
+    }
+
+    /// Returns the number of days from this datetime to the other datetime.
+    /// The number of days is counted as the number of times midnight is reached between this datetime to the other datetime.
+    /// This means that a 10 minute difference from 23:55 to 0:05 the next day counts as one day.
+    pub fn days_to(&self, other: &Self) -> i64 {
+        self.days_to_qint64(other).into()
     }
 
     /// Construct a Rust QDateTime from a given QDate, QTime, and QTimeZone
@@ -307,14 +310,14 @@ impl QDateTime {
 
     /// Returns a datetime whose date and time are the number of milliseconds msecs that have passed since 1970-01-01T00:00:00.000,
     /// Coordinated Universal Time (Qt::UTC) and with the given timeZone.
-    pub fn from_msecs_since_epoch(msecs: ffi::qint64, time_zone: &ffi::QTimeZone) -> Self {
-        ffi::qdatetime_from_msecs_since_epoch(msecs, time_zone)
+    pub fn from_msecs_since_epoch(msecs: i64, time_zone: &ffi::QTimeZone) -> Self {
+        ffi::qdatetime_from_msecs_since_epoch(msecs.into(), time_zone)
     }
 
     /// Returns a datetime whose date and time are the number of seconds secs that have passed since 1970-01-01T00:00:00.000,
     /// Coordinated Universal Time (Qt::UTC) and converted to the given spec.
-    pub fn from_secs_since_epoch(secs: ffi::qint64, time_zone: &ffi::QTimeZone) -> Self {
-        ffi::qdatetime_from_secs_since_epoch(secs, time_zone)
+    pub fn from_secs_since_epoch(secs: i64, time_zone: &ffi::QTimeZone) -> Self {
+        ffi::qdatetime_from_secs_since_epoch(secs.into(), time_zone)
     }
 
     /// Returns the datetime represented in the string as a QDateTime using the format given, or None if this is not possible.
@@ -325,6 +328,18 @@ impl QDateTime {
         } else {
             None
         }
+    }
+
+    /// Returns the number of milliseconds from this datetime to the other datetime.
+    /// If the other datetime is earlier than this datetime, the value returned is negative.
+    pub fn msecs_to(self: &QDateTime, other: &QDateTime) -> i64 {
+        self.msecs_to_qint64(other).into()
+    }
+
+    /// Returns the number of seconds from this datetime to the other datetime.
+    /// If the other datetime is earlier than this datetime, the value returned is negative.
+    pub fn secs_to(self: &QDateTime, other: &QDateTime) -> i64 {
+        self.secs_to_qint64(other).into()
     }
 
     /// Sets the date part of this datetime to date. If no time is set yet, it is set to midnight.
@@ -354,6 +369,16 @@ impl QDateTime {
     /// Returns the time zone of the datetime.
     pub fn time_zone(&self) -> cxx::UniquePtr<ffi::QTimeZone> {
         ffi::qdatetime_time_zone(self)
+    }
+
+    /// Returns the datetime as the number of milliseconds that have passed since 1970-01-01T00:00:00.000, Coordinated Universal Time (Qt::UTC).
+    pub fn to_msecs_since_epoch(self: &QDateTime) -> i64 {
+        self.to_msecs_since_epoch_qint64().into()
+    }
+
+    /// Returns the datetime as the number of seconds that have passed since 1970-01-01T00:00:00.000, Coordinated Universal Time (Qt::UTC).
+    pub fn to_secs_since_epoch(self: &QDateTime) -> i64 {
+        self.to_secs_since_epoch_qint64().into()
     }
 }
 
