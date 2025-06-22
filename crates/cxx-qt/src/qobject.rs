@@ -14,10 +14,6 @@ mod ffi {
         /// Most methods available on this type are within the [cxx_qt_lib::core::QObjectExt] trait,
         /// which needs to be imported in order to access these.
         type QObject;
-
-        #[cxx_name = "dumpObjectInfo"]
-        /// Dump information about this QObjects name and signals
-        fn dump_object_info(&self);
     }
 }
 

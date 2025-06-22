@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use cxx_qt::casting::Upcast;
 pub use cxx_qt::QObject;
 use std::pin::Pin;
 
@@ -33,6 +34,9 @@ pub mod ffi {
 
         #[rust_name = "set_parent"]
         pub unsafe fn setParent(self: Pin<&mut Self>, parent: *mut QObjectExternal);
+
+        #[rust_name = "dump_object_info"]
+        fn dumpObjectInfo(&self);
     }
 }
 
@@ -49,9 +53,11 @@ pub trait QObjectExt {
 
     fn object_name(&self) -> QString;
 
-    fn parent(&self) -> *mut Self;
+    fn parent(&self) -> *mut QObjectExternal;
 
     fn set_parent(self: Pin<&mut Self>, parent: &Self);
+
+    fn dump_object_info(&self);
 }
 
 /// Used to convert the QObject type from the library type to the C++ type, as a pin
@@ -70,31 +76,38 @@ fn cast(obj: &QObject) -> &QObjectExternal {
     }
 }
 
-impl QObjectExt for QObject {
+impl<T> QObjectExt for T
+where
+    T: Upcast<QObject>,
+{
     fn block_signals(self: Pin<&mut Self>, block: bool) -> bool {
-        cast_pin(self).block_signals(block)
+        cast_pin(self.upcast_pin()).block_signals(block)
     }
 
     fn signals_blocked(&self) -> bool {
-        cast(self).signals_blocked()
+        cast(self.upcast()).signals_blocked()
     }
 
     fn set_object_name(self: Pin<&mut Self>, name: &QString) {
-        cast_pin(self).set_object_name(name)
+        cast_pin(self.upcast_pin()).set_object_name(name)
     }
 
     fn object_name(&self) -> QString {
-        cast(self).object_name()
+        cast(self.upcast()).object_name()
     }
 
-    fn parent(&self) -> *mut Self {
-        cast(self).parent() as *mut Self
+    fn parent(&self) -> *mut QObjectExternal {
+        cast(self.upcast()).parent()
     }
 
     fn set_parent(self: Pin<&mut Self>, parent: &Self) {
+        let s = cast_pin(self.upcast_pin());
         unsafe {
-            cast_pin(self)
-                .set_parent(cast(parent) as *const QObjectExternal as *mut QObjectExternal);
+            s.set_parent(cast(parent.upcast()) as *const QObjectExternal as *mut QObjectExternal)
         }
+    }
+
+    fn dump_object_info(&self) {
+        cast(self.upcast()).dump_object_info()
     }
 }
