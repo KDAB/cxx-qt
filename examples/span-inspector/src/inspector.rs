@@ -140,7 +140,7 @@ impl qobject::SpanInspector {
     }
 
     // Expand input code as #[cxxqt_qt::bridge] would do
-    fn expand(input: &str, cursor_position: usize) -> Result<(String, Option<Vec<bool>>), String> {
+    fn expand(input: &str, cursor_position: usize) -> Result<(String, Vec<(bool, bool)>), String> {
         let input_stream: TokenStream = TokenStream::from_str(input).map_err(|e|e.to_string())?;
         
         let mut module: ItemMod = parse2(input_stream.clone()).map_err(|e| e.to_string())?;
@@ -157,19 +157,24 @@ impl qobject::SpanInspector {
             range.start <= cursor_position && range.end >= cursor_position
         }).map(|token| token.span());
 
-        let span_data: Option<Vec<bool>> = target_span.map(|target_span|
-            Self::flatten_tokenstream(output_stream.clone())
-                .into_iter()
-                // prettyplease may insert extra tokens.
-                // This filter simply ignores them.
-                .filter(|token| {
-                    let string = token.to_string();
-                    !matches!(string.as_str(), "," | "}" | "{")
-                }) 
-                .map(|token| target_span.byte_range().eq(token.span().byte_range()))
-                .collect()
-        );
-        
+        let span_data: Vec<(bool, bool)> = Self::flatten_tokenstream(output_stream.clone())
+            .into_iter()
+            // prettyplease may insert extra tokens.
+            // This filter simply ignores them.
+            .filter(|token| {
+                let string = token.to_string();
+                !matches!(string.as_str(), "," | "}" | "{")
+            }) 
+            .map(|token|
+                (
+                    target_span
+                        .map(|s| s.byte_range().eq(token.span().byte_range()))
+                        .unwrap_or_else(|| false),
+                    token.span().byte_range().start == 0
+                )
+            )
+            .collect();
+
         Ok((format!("{}", output_stream), span_data))
     }
 
@@ -209,38 +214,36 @@ impl qobject::SpanInspector {
         output
     }
 
-    fn build_html(input: String, span_data: Option<Vec<bool>>) -> String{        
+    fn build_html(input: String, span_data: Vec<(bool, bool)>) -> String{        
         let flat_tokenstream = Self::flatten_tokenstream(TokenStream::from_str(input.as_str()).unwrap());
         let mut highlighted_string = input.clone();
         
-        match span_data {
-            Some(span_data) => {
-                let mut token_position = span_data.len();
-                for token in flat_tokenstream.into_iter().rev() {
-                    // prettyplease may insert extra tokens.
-                    // This `if` statement simply ignores them.
-                    let token_string = token.to_string();
-                    if !matches!(token_string.as_str(), "," | "{" | "}") { 
-                        token_position = token_position - 1;
-                    }
-                    if *span_data.get(token_position).unwrap() {
-                        highlighted_string.replace_range(token.span().byte_range(), format!("<span class=\"highlight\">{}</span>", Self::sanitize(&token.to_string())).as_str());
-                    } else {
-                        highlighted_string.replace_range(token.span().byte_range(), Self::sanitize(&token.to_string()).as_str());
-                    }
-                }
-            },
-            None => {
-                for token in flat_tokenstream.into_iter().rev() {
-                    highlighted_string.replace_range(token.span().byte_range(), Self::sanitize(&token.to_string()).as_str());
-                }
+        let mut token_position = span_data.len();
+        for token in flat_tokenstream.into_iter().rev() {
+            // prettyplease may insert extra tokens.
+            // This `if` statement simply ignores them.
+            let token_string = token.to_string();
+            if !matches!(token_string.as_str(), "," | "{" | "}") { 
+                token_position = token_position - 1;
             }
-        }        
+            if span_data.get(token_position).unwrap().0 {
+                highlighted_string.replace_range(token.span().byte_range(), format!("<span class=\"highlight\">{}</span>", Self::sanitize(&token.to_string())).as_str());
+            } else if span_data.get(token_position).unwrap().1 {
+                highlighted_string.replace_range(token.span().byte_range(), format!("<span class=\"generated\">{}</span>", Self::sanitize(&token.to_string())).as_str());
+            } else {
+                highlighted_string.replace_range(token.span().byte_range(), Self::sanitize(&token.to_string()).as_str());
+            } 
+        }
         
         let style = String::from("
             <style> 
                 .highlight {
                     background-color: #ff00ff;
+                    padding: 2px 6px;
+                    border-radius: 6px;
+                }
+                .generated {
+                    color: rgba(255, 255, 255, 100);
                     padding: 2px 6px;
                     border-radius: 6px;
                 }
