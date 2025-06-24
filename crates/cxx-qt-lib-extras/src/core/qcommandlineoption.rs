@@ -50,7 +50,7 @@ mod ffi {
 
         /// Sets the name of the expected value, for the documentation, to `value_name`.
         ///
-        /// Options without a value assigned have a boolean-like behavior: either the user specifies –option or they don't.
+        /// Options without a value assigned have a boolean-like behavior: either the user specifies `–option` or they don't.
         ///
         /// Options with a value assigned need to set a name for the expected value, for the documentation of the option in the help output. An option with names `o` and `output`, and a value name of file will appear as `-o, --output <file>`.
         ///
