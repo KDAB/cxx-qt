@@ -160,6 +160,7 @@ impl fmt::Debug for QVariant {
     }
 }
 
+/// Trait implementation for a value in a [`QVariant`].
 pub trait QVariantValue {
     fn can_convert(variant: &QVariant) -> bool;
     fn construct(value: &Self) -> QVariant;
