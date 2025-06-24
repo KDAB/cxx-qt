@@ -9,10 +9,10 @@
 //!
 //! See the [book](https://kdab.github.io/cxx-qt/book/) for more information.
 
-use std::ops::Deref;
-use std::pin::Pin;
 use std::{fs::File, io::Write, path::Path};
 
+#[doc(hidden)]
+pub mod casting;
 mod connection;
 mod connectionguard;
 mod qobject;
@@ -20,14 +20,103 @@ mod qobject;
 pub mod signalhandler;
 mod threading;
 
+/// A procedural macro which generates a QObject for a struct inside a module.
+///
+/// # Example
+///
+/// ```rust
+/// #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
+/// mod qobject {
+///     extern "RustQt" {
+///         #[qobject]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyObject = super::MyObjectRust;
+///
+///         #[qinvokable]
+///         fn invokable(self: &MyObject, a: i32, b: i32) -> i32;
+///     }
+/// }
+///
+/// #[derive(Default)]
+/// pub struct MyObjectRust;
+///
+/// impl qobject::MyObject {
+///     fn invokable(&self, a: i32, b: i32) -> i32 {
+///         a + b
+///     }
+/// }
+///
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
+/// ```
 pub use cxx_qt_macro::bridge;
+
+/// Force a crate to be initialized
 pub use cxx_qt_macro::init_crate;
+
+/// Force a QML module with the given URI to be initialized
 pub use cxx_qt_macro::init_qml_module;
+
+/// A macro which describes that a struct should be made into a QObject.
+///
+/// It should not be used by itself and instead should be used inside a cxx_qt::bridge definition.
+///
+/// # Example
+///
+/// ```rust
+/// #[cxx_qt::bridge]
+/// mod my_object {
+///     extern "RustQt" {
+///         #[qobject]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyObject = super::MyObjectRust;
+///     }
+/// }
+///
+/// #[derive(Default)]
+/// pub struct MyObjectRust;
+///
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
+/// ```
+///
+/// You can also specify a custom base class by using `#[base = QStringListModel]`, you must then use CXX to add any includes needed.
+///
+/// # Example
+///
+/// ```rust
+/// #[cxx_qt::bridge]
+/// mod my_object {
+///     extern "RustQt" {
+///         #[qobject]
+///         #[base = QStringListModel]
+///         # // Note that we can't use properties as this confuses the linker on Windows
+///         type MyModel = super::MyModelRust;
+///     }
+///
+///     unsafe extern "C++" {
+///         include!(<QtCore/QStringListModel>);
+///         type QStringListModel;
+///     }
+/// }
+///
+/// #[derive(Default)]
+/// pub struct MyModelRust;
+///
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt);
+/// # }
+/// ```
 pub use cxx_qt_macro::qobject;
 pub use qobject::QObject;
 
 pub use connection::{ConnectionType, QMetaObjectConnection};
-pub use connectionguard::QMetaObjectConnectionGuard;
+pub use connectionguard::{QMetaObjectConnectionGuard, QScopedMetaObjectConnectionGuard};
 pub use threading::{CxxQtThread, ThreadingQueueError};
 
 // Export static assertions that can then be used in cxx-qt-gen generation
@@ -127,102 +216,6 @@ pub trait Threading: Sized {
     fn threading_drop(cxx_qt_thread: &mut CxxQtThread<Self>);
 }
 
-/// This trait is automatically implemented by CXX-Qt and you most likely do not need to manually implement it.
-/// Allows upcasting to either [QObject] or the provided base class of a type.
-/// Will not be implemented if no types inherit from [QObject] or have the `#[base = T]` attribute.
-pub trait Upcast<T> {
-    #[doc(hidden)]
-    /// # Safety
-    ///
-    /// Internal function, Should probably not be implemented manually unless you're absolutely sure you need it.
-    /// Automatically available for types in RustQt blocks in [cxx_qt::bridge](bridge)s.
-    /// Upcasts a pointer to `Self` to a pointer to the base class `T`.
-    /// > Note: Internal implementation uses `static_cast`.
-    unsafe fn upcast_ptr(this: *const Self) -> *const T;
-
-    #[doc(hidden)]
-    /// # Safety
-    ///
-    /// Internal function, Should probably not be implemented manually unless you're absolutely sure you need it.
-    /// Automatically available for types in RustQt blocks in [cxx_qt::bridge](bridge)s.
-    /// Downcasts a pointer to base class `T` to a pointer to `Self`.
-    /// Return a null pointer if `Self` is not actually a child of base.
-    /// > Note: Internal implementation uses `dynamic_cast`.
-    unsafe fn from_base_ptr(base: *const T) -> *const Self;
-
-    /// Upcast a reference to self to a reference to the base class
-    fn upcast(&self) -> &T {
-        let ptr = self as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(ptr);
-            &*base
-        }
-    }
-
-    /// Upcast a mutable reference to sell to a mutable reference to the base class
-    fn upcast_mut(&mut self) -> &mut T {
-        let ptr = self as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(ptr) as *mut T;
-            &mut *base
-        }
-    }
-
-    /// Upcast a pinned mutable reference to self to a pinned mutable reference to the base class
-    fn upcast_pin(self: Pin<&mut Self>) -> Pin<&mut T> {
-        let this = self.deref() as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(this) as *mut T;
-            Pin::new_unchecked(&mut *base)
-        }
-    }
-}
-
-/// This trait is automatically implemented by CXX-Qt and you most likely do not need to manually implement it.
-/// Trait for downcasting to a subclass, provided the subclass implements [Upcast] to this type.
-/// Returns `None` in cases where `Sub` isn't a child class of `Self`.
-pub trait Downcast: Sized {
-    /// Try to downcast to a subclass of this type, given that the subclass upcasts to this type
-    fn downcast<Sub: Upcast<Self>>(&self) -> Option<&Sub> {
-        unsafe {
-            let ptr = Sub::from_base_ptr(self as *const Self);
-            if ptr.is_null() {
-                None
-            } else {
-                Some(&*ptr)
-            }
-        }
-    }
-
-    /// Try to downcast mutably to a subclass of this, given that the subclass upcasts to this type
-    fn downcast_mut<Sub: Upcast<Self>>(&mut self) -> Option<&mut Sub> {
-        unsafe {
-            let ptr = Sub::from_base_ptr(self as *const Self) as *mut Sub;
-            if ptr.is_null() {
-                None
-            } else {
-                Some(&mut *ptr)
-            }
-        }
-    }
-
-    /// Try to downcast a pin to a pinned subclass of this, given that the subclass upcasts to this type
-    fn downcast_pin<Sub: Upcast<Self>>(self: Pin<&mut Self>) -> Option<Pin<&mut Sub>> {
-        let this = self.deref() as *const Self;
-        unsafe {
-            let ptr = Sub::from_base_ptr(this) as *mut Sub;
-            if ptr.is_null() {
-                None
-            } else {
-                Some(Pin::new_unchecked(&mut *ptr))
-            }
-        }
-    }
-}
-
-/// Automatic implementation of Downcast for any applicable types
-impl<T: Sized> Downcast for T {}
-
 /// This trait can be implemented on any [CxxQtType] to define a
 /// custom constructor in C++ for the QObject.
 ///
@@ -313,6 +306,7 @@ impl<T: Sized> Downcast for T {}
 /// To reduce the boilerplate of this use-case, CXX-Qt provides the [Initialize] trait.
 ///
 /// If a QObject implements the `Initialize` trait, and the inner Rust struct is [Default]-constructible it will automatically implement `cxx_qt::Constructor<()>`.
+/// Additionally, implementing `impl cxx_qt::Initialize` will act as shorthand for `cxx_qt::Constructor<()>`.
 pub trait Constructor<Arguments>: CxxQtType {
     /// The arguments that are passed to the [`new()`](Self::new) function to construct the inner Rust struct.
     /// This must be a tuple of CXX compatible types.
@@ -361,6 +355,7 @@ pub trait Constructor<Arguments>: CxxQtType {
 /// that calls the `initialize` function after constructing a default Rust struct.
 ///
 /// Ensure that the `impl cxx_qt::Constructor<()> for ... {}` is declared inside the CXX-Qt bridge.
+/// Alternatively, using `impl cxx_qt::Initialize for ... {}` acts as shorthand for the above line.
 ///
 /// # Example
 ///
@@ -376,6 +371,8 @@ pub trait Constructor<Arguments>: CxxQtType {
 ///
 ///     // Remember to tell the bridge about the default constructor
 ///     impl cxx_qt::Constructor<()> for MyStruct {}
+///     // or
+///     impl cxx_qt::Initialize for MyStruct {}
 /// }
 ///
 /// // Make sure the inner Rust struct implements `Default`

@@ -50,18 +50,6 @@ qurlFromEncoded(const QByteArray& input)
 }
 
 QUrl
-qurlFromLocalFile(const QString& localFile)
-{
-  return QUrl::fromLocalFile(localFile);
-}
-
-QString
-qurlFromPercentEncoding(const QByteArray& input)
-{
-  return QUrl::fromPercentEncoding(input);
-}
-
-QUrl
 qurlFromUserInput(const QString& userInput, const QString& workingDirectory)
 {
   return QUrl::fromUserInput(userInput, workingDirectory);
@@ -71,12 +59,6 @@ QString
 qurlHost(const QUrl& url)
 {
   return url.host();
-}
-
-QStringList
-qurlIdnWhitelist()
-{
-  return QUrl::idnWhitelist();
 }
 
 QString
@@ -113,12 +95,6 @@ void
 qurlSetHost(QUrl& url, const QString& host)
 {
   url.setHost(host);
-}
-
-void
-qurlSetIdnWhitelist(const QStringList& list)
-{
-  QUrl::setIdnWhitelist(list);
 }
 
 void
@@ -179,14 +155,6 @@ QString
 qurlToQString(const QUrl& url)
 {
   return url.toString();
-}
-
-QByteArray
-qurlToPercentEncoding(const QString& input,
-                      const QByteArray& exclude,
-                      const QByteArray& include)
-{
-  return QUrl::toPercentEncoding(input, exclude, include);
 }
 
 QString

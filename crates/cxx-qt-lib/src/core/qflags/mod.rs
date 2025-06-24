@@ -4,8 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx::ExternType;
-use std::fmt::Debug;
-use std::hash::Hash;
+use std::fmt::{self, Debug, Formatter};
+use std::hash::{Hash, Hasher};
 use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign, Not};
 
 mod qflag;
@@ -19,7 +19,6 @@ mod util;
 
 /// The `QFlags<T>` class is a template class, where T is an enum type.
 /// QFlags are used throughout Qt for storing combinations of enum values.
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct QFlags<T: QFlag> {
     repr: <T::Repr as QFlagRepr>::Int,
@@ -30,6 +29,38 @@ impl<T: QFlag> Copy for QFlags<T> {}
 impl<T: QFlag> Clone for QFlags<T> {
     fn clone(&self) -> Self {
         *self
+    }
+}
+
+impl<T: QFlag> Debug for QFlags<T> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.debug_struct("QFlags").field("repr", &self.repr).finish()
+    }
+}
+
+impl<T: QFlag> PartialEq for QFlags<T> {
+    fn eq(&self, other: &Self) -> bool {
+        self.repr == other.repr
+    }
+}
+
+impl<T: QFlag> Eq for QFlags<T> {}
+
+impl<T: QFlag> PartialOrd for QFlags<T> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl<T: QFlag> Ord for QFlags<T> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.repr.cmp(&other.repr)
+    }
+}
+
+impl<T: QFlag> Hash for QFlags<T> {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.repr.hash(state);
     }
 }
 

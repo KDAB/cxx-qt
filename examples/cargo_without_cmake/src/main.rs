@@ -14,8 +14,9 @@
 // ANCHOR: book_cargo_imports
 pub mod cxxqt_object;
 
-use cxx_qt::Upcast;
-use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
+use cxx_qt::casting::Upcast;
+use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QQmlEngine, QUrl};
+use std::pin::Pin;
 // ANCHOR_END: book_cargo_imports
 
 // ANCHOR: book_cargo_rust_main
@@ -30,9 +31,9 @@ fn main() {
     }
 
     if let Some(engine) = engine.as_mut() {
+        let engine: Pin<&mut QQmlEngine> = engine.upcast_pin();
         // Listen to a signal from the QML Engine
         engine
-            .upcast_pin()
             .on_quit(|_| {
                 println!("QML Quit!");
             })

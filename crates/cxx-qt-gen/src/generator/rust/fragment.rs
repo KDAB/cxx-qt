@@ -78,7 +78,7 @@ impl GeneratedRustFragment {
                 }
             }],
             cxx_qt_mod_contents: vec![parse_quote! {
-                impl ::cxx_qt::Upcast<#base_qualified> for #struct_name {
+                unsafe impl ::cxx_qt::casting::Upcast<#base_qualified> for #struct_name {
                     unsafe fn upcast_ptr(this: *const Self) -> *const #base_qualified {
                         #upcast_fn_qualified(this)
                     }

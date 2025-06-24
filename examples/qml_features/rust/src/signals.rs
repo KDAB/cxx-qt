@@ -56,7 +56,7 @@ pub mod qobject {
     // ANCHOR_END: book_rust_obj_impl
 
     // ANCHOR: book_initialize_decl
-    impl cxx_qt::Constructor<()> for RustSignals {}
+    impl cxx_qt::Initialize for RustSignals {}
     // ANCHOR_END: book_initialize_decl
 
     // ANCHOR: book_constructor_decl
@@ -65,8 +65,8 @@ pub mod qobject {
 }
 
 use core::pin::Pin;
-use cxx_qt::CxxQtType;
-use cxx_qt_lib::{ConnectionType, QMetaObjectConnectionGuard, QString, QUrl};
+use cxx_qt::{CxxQtType, QMetaObjectConnectionGuard};
+use cxx_qt_lib::{ConnectionType, QString, QUrl};
 
 /// A QObject which has Q_SIGNALs
 #[derive(Default)]

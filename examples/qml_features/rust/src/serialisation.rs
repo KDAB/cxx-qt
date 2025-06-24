@@ -28,18 +28,18 @@ pub mod qobject {
 
         /// An error signal
         #[qsignal]
-        fn error(self: Pin<&mut Serialisation>, message: QString);
+        fn error(self: Pin<&mut Self>, message: QString);
 
         /// Retrieve the JSON form of this QObject
         #[qinvokable]
         #[cxx_name = "asJsonStr"]
-        fn as_json_str(self: Pin<&mut Serialisation>) -> QString;
+        fn as_json_str(self: Pin<&mut Self>) -> QString;
 
         /// From a given JSON string try to load values for the Q_PROPERTYs
         // ANCHOR: book_grab_values
         #[qinvokable]
         #[cxx_name = "fromJsonStr"]
-        fn from_json_str(self: Pin<&mut Serialisation>, string: &QString);
+        fn from_json_str(self: Pin<&mut Self>, string: &QString);
         // ANCHOR_END: book_grab_values
     }
 }

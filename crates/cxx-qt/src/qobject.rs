@@ -8,13 +8,15 @@
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        // TODO! Implement QObject wrapper properly
         include!(<QtCore/QObject>);
-        /// QObject type
+        /// QObject type.
+        ///
+        /// Most methods available on this type are within the [cxx_qt_lib::core::QObjectExt] trait,
+        /// which needs to be imported in order to access these.
         type QObject;
 
         #[cxx_name = "dumpObjectInfo"]
-        /// Dump Object info method, added so that upcast methods can be tested.
+        /// Dump information about this QObjects name and signals
         fn dump_object_info(&self);
     }
 }

@@ -17,6 +17,9 @@ pub mod qobject {
         type QString = cxx_qt_lib::QString;
     }
 
+    // Enabling threading on the qobject
+    impl cxx_qt::Threading for EnergyUsage {}
+
     extern "RustQt" {
         #[qobject]
         #[qml_element]
@@ -24,34 +27,27 @@ pub mod qobject {
         #[qproperty(u32, sensors)]
         #[qproperty(f64, total_use)]
         type EnergyUsage = super::EnergyUsageRust;
-    }
 
-    // Enabling threading on the qobject
-    impl cxx_qt::Threading for EnergyUsage {}
-
-    extern "RustQt" {
         /// A new sensor has been detected
         #[qsignal]
         #[cxx_name = "sensorAdded"]
-        fn sensor_added(self: Pin<&mut EnergyUsage>, uuid: QString);
+        fn sensor_added(self: Pin<&mut Self>, uuid: QString);
         /// A value on an existing sensor has changed
         #[qsignal]
         #[cxx_name = "sensorChanged"]
-        fn sensor_changed(self: Pin<&mut EnergyUsage>, uuid: QString);
+        fn sensor_changed(self: Pin<&mut Self>, uuid: QString);
         /// An existing sensor has been removed
         #[qsignal]
         #[cxx_name = "sensorRemoved"]
-        fn sensor_removed(self: Pin<&mut EnergyUsage>, uuid: QString);
-    }
+        fn sensor_removed(self: Pin<&mut Self>, uuid: QString);
 
-    extern "RustQt" {
         /// A Q_INVOKABLE that returns the current power usage for a given uuid
         #[qinvokable]
         #[cxx_name = "sensorPower"]
-        fn sensor_power(self: Pin<&mut EnergyUsage>, uuid: &QString) -> f64;
+        fn sensor_power(self: Pin<&mut Self>, uuid: &QString) -> f64;
     }
 
-    impl cxx_qt::Constructor<()> for EnergyUsage {}
+    impl cxx_qt::Initialize for EnergyUsage {}
 }
 
 use crate::{

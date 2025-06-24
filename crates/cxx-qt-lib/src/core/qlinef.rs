@@ -170,7 +170,7 @@ impl From<QLineF> for ffi::QLine {
 
 impl fmt::Display for QLineF {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qlinef_to_debug_qstring(self))
+        ffi::qlinef_to_debug_qstring(self).fmt(f)
     }
 }
 

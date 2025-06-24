@@ -118,7 +118,7 @@ impl Default for QMarginsF {
 
 impl fmt::Display for QMarginsF {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qmarginsf_to_debug_qstring(self))
+        ffi::qmarginsf_to_debug_qstring(self).fmt(f)
     }
 }
 

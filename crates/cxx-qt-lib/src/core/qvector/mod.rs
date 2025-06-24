@@ -151,15 +151,22 @@ where
         T::len(self)
     }
 
+    /// Removes the element at index position.
+    pub fn remove(&mut self, pos: isize) {
+        T::remove(self, pos);
+    }
+
     /// Reserve the specified capacity to prevent repeated allocations
     /// when the maximum size is known.
     pub fn reserve(&mut self, size: isize) {
         T::reserve(self, size);
     }
 
-    /// Removes the element at index position.
-    pub fn remove(&mut self, pos: isize) {
-        T::remove(self, pos);
+    /// Helper function for handling Rust values.
+    pub(crate) fn reserve_usize(&mut self, size: usize) {
+        if size != 0 {
+            T::reserve(self, isize::try_from(size).unwrap_or(isize::MAX));
+        }
     }
 }
 
@@ -203,11 +210,58 @@ where
     /// The original slice can still be used after constructing the QVector.
     fn from(vec: S) -> Self {
         let mut qvec = Self::default();
-        qvec.reserve(vec.as_ref().len().try_into().unwrap());
+        qvec.reserve_usize(vec.as_ref().len());
         for element in vec.as_ref() {
             qvec.append_clone(element);
         }
         qvec
+    }
+}
+impl<'a, T> Extend<&'a T> for QVector<T>
+where
+    T: QVectorElement,
+{
+    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        self.reserve_usize(iter.size_hint().0);
+        for element in iter {
+            self.append_clone(element);
+        }
+    }
+}
+
+impl<T> Extend<T> for QVector<T>
+where
+    T: QVectorElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        self.reserve_usize(iter.size_hint().0);
+        for element in iter {
+            self.append(element);
+        }
+    }
+}
+
+impl<'a, T> FromIterator<&'a T> for QVector<T>
+where
+    T: QVectorElement,
+{
+    fn from_iter<I: IntoIterator<Item = &'a T>>(iter: I) -> Self {
+        let mut qlist = Self::default();
+        qlist.extend(iter);
+        qlist
+    }
+}
+
+impl<T> FromIterator<T> for QVector<T>
+where
+    T: QVectorElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut qlist = Self::default();
+        qlist.extend(iter);
+        qlist
     }
 }
 
@@ -255,6 +309,19 @@ where
 {
     fn len(&self) -> usize {
         (self.vector.len() - self.index) as usize
+    }
+}
+
+impl<'a, T> IntoIterator for &'a QVector<T>
+where
+    T: QVectorElement,
+{
+    type Item = &'a T;
+
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }
 

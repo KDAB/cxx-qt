@@ -41,7 +41,7 @@ mod ffi {
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qdatetime.h");
         type QDateTime = crate::QDateTime;
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QByteArray.h");
         type QList_QByteArray = crate::QList<crate::QByteArray>;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
@@ -232,16 +232,16 @@ impl std::cmp::Eq for QTimeZone {}
 
 impl fmt::Display for QTimeZone {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let name = self.display_name(
+        self.display_name(
             QTimeZoneTimeType::GenericTime,
             QTimeZoneNameType::DefaultName,
-        );
-        write!(f, "{name}")
+        )
+        .fmt(f)
     }
 }
 
 impl fmt::Debug for QTimeZone {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qtimezone_to_debug_qstring(self))
+        ffi::qtimezone_to_debug_qstring(self).fmt(f)
     }
 }

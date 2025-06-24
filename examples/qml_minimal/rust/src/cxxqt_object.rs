@@ -21,8 +21,8 @@ pub mod qobject {
     }
     // ANCHOR_END: book_qstring_import
 
-    // ANCHOR: book_rustobj_struct_signature
     extern "RustQt" {
+        // ANCHOR: book_rustobj_struct_signature
         // The QObject definition
         // We tell CXX-Qt that we want a QObject class with the name MyObject
         // based on the Rust struct MyObjectRust.
@@ -32,21 +32,19 @@ pub mod qobject {
         #[qproperty(QString, string)]
         #[namespace = "my_object"]
         type MyObject = super::MyObjectRust;
-    }
-    // ANCHOR_END: book_rustobj_struct_signature
+        // ANCHOR_END: book_rustobj_struct_signature
 
-    // ANCHOR: book_rustobj_invokable_signature
-    extern "RustQt" {
+        // ANCHOR: book_rustobj_invokable_signature
         // Declare the invokable methods we want to expose on the QObject
         #[qinvokable]
         #[cxx_name = "incrementNumber"]
-        fn increment_number(self: Pin<&mut MyObject>);
+        fn increment_number(self: Pin<&mut Self>);
 
         #[qinvokable]
         #[cxx_name = "sayHi"]
-        fn say_hi(self: &MyObject, string: &QString, number: i32);
+        fn say_hi(&self, string: &QString, number: i32);
+        // ANCHOR_END: book_rustobj_invokable_signature
     }
-    // ANCHOR_END: book_rustobj_invokable_signature
 }
 
 // ANCHOR: book_use
@@ -76,6 +74,7 @@ impl qobject::MyObject {
         println!("Hi from Rust! String is '{string}' and number is {number}");
     }
 }
+
 // ANCHOR_END: book_rustobj_invokable_impl
 
 // ANCHOR_END: book_cxx_qt_module

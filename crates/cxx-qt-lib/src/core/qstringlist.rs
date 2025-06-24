@@ -2,11 +2,10 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::core::qstringlist::ffi::QList_QString;
 use crate::{QList, QString};
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
-use cxx_qt::Upcast;
+use cxx_qt::casting::Upcast;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
@@ -22,26 +21,11 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qlist.h");
+        include!("cxx-qt-lib/qlist_QString.h");
         type QList_QString = crate::QList<QString>;
 
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = super::QStringList;
-
-        include!("cxx-qt/casting.h");
-
-        #[doc(hidden)]
-        #[rust_name = "upcast_qstringlist"]
-        #[cxx_name = "upcastPtr"]
-        #[namespace = "rust::cxxqt1"]
-        unsafe fn upcast(thiz: *const QStringList) -> *const QList_QString;
-
-        #[doc(hidden)]
-        #[rust_name = "downcast_qlist_qstring"]
-        #[cxx_name = "downcastPtr"]
-        #[namespace = "rust::cxxqt1"]
-        #[cfg(cxxqt_qt_version_at_least_6)]
-        unsafe fn downcast(base: *const QList_QString) -> *const QStringList;
 
         /// Returns true if the list contains the string str; otherwise returns false.
         fn contains(self: &QStringList, str: &QString, cs: CaseSensitivity) -> bool;
@@ -65,6 +49,19 @@ mod ffi {
             after: &QString,
             cs: CaseSensitivity,
         ) -> &mut QStringList;
+    }
+
+    #[namespace = "rust::cxxqt1"]
+    unsafe extern "C++" {
+        include!("cxx-qt/casting.h");
+
+        #[doc(hidden)]
+        #[rust_name = "upcast_qstringlist"]
+        unsafe fn upcastPtr(thiz: *const QStringList) -> *const QList_QString;
+
+        #[doc(hidden)]
+        #[rust_name = "downcast_qlist_qstring"]
+        unsafe fn downcastPtrStatic(base: *const QList_QString) -> *const QStringList;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -155,13 +152,13 @@ impl std::cmp::Eq for QStringList {}
 
 impl fmt::Display for QStringList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qstringlist_to_debug_qstring(self))
+        ffi::qstringlist_to_debug_qstring(self).fmt(f)
     }
 }
 
 impl fmt::Debug for QStringList {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", **self)
+        (**self).fmt(f)
     }
 }
 
@@ -207,19 +204,13 @@ impl DerefMut for QStringList {
     }
 }
 
-impl Upcast<QList_QString> for QStringList {
-    unsafe fn upcast_ptr(this: *const Self) -> *const QList_QString {
+unsafe impl Upcast<QList<QString>> for QStringList {
+    unsafe fn upcast_ptr(this: *const Self) -> *const QList<QString> {
         ffi::upcast_qstringlist(this)
     }
 
-    #[cfg(cxxqt_qt_version_at_least_6)]
-    unsafe fn from_base_ptr(base: *const QList_QString) -> *const Self {
+    unsafe fn from_base_ptr(base: *const QList<QString>) -> *const Self {
         ffi::downcast_qlist_qstring(base)
-    }
-
-    #[cfg(cxxqt_qt_version_major = "5")]
-    unsafe fn from_base_ptr(_base: *const QList_QString) -> *const Self {
-        std::ptr::null()
     }
 }
 

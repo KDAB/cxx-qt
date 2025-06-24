@@ -54,6 +54,7 @@ fn main() {
 
     let rust_bridges = vec![
         "core/qelapsedtimer",
+        "core/qeventloop",
         "core/qcommandlineoption",
         "core/qcommandlineparser",
         "gui/qapplication",
@@ -80,7 +81,7 @@ fn main() {
     });
     println!("cargo::rerun-if-changed=src/assertion_utils.h");
 
-    builder
-        .include_prefix("cxx-qt-lib-extras-internals")
-        .build();
+    // Use a short name due to the Windows file path limit!
+    // We don't re-export these headers anyway.
+    builder.include_prefix("private").build();
 }

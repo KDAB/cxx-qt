@@ -42,10 +42,15 @@ mod qmarginsf;
 pub use qmarginsf::QMarginsF;
 
 // Reexport QMetaObjectConnection and guard from cxx-qt
-pub use cxx_qt::{QMetaObjectConnection, QMetaObjectConnectionGuard};
+pub use cxx_qt::{
+    QMetaObjectConnection, QMetaObjectConnectionGuard, QScopedMetaObjectConnectionGuard,
+};
 
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;
+
+mod qobject;
+pub use qobject::QObjectExt;
 
 mod qpersistentmodelindex;
 pub use qpersistentmodelindex::QPersistentModelIndex;
@@ -113,7 +118,9 @@ mod qvector;
 pub use qvector::{QVector, QVectorElement};
 
 mod qtlogging;
-pub use qtlogging::{qt_message_output, QMessageLogContext, QtMsgType};
+pub use qtlogging::{
+    q_format_log_message, q_set_message_pattern, qt_message_output, QMessageLogContext, QtMsgType,
+};
 
 #[cxx::bridge]
 mod ffi {

@@ -44,7 +44,7 @@ pub mod qobject {
         ///
         /// Due to a raw pointer this is considered unsafe in CXX
         #[qsignal]
-        unsafe fn called(self: Pin<&mut OuterObject>, inner: *mut InnerObject);
+        unsafe fn called(self: Pin<&mut Self>, inner: *mut InnerObject);
     }
 
     extern "RustQt" {
@@ -62,7 +62,7 @@ pub mod qobject {
         fn reset(self: Pin<&mut OuterObject>);
     }
 
-    impl cxx_qt::Constructor<()> for OuterObject {}
+    impl cxx_qt::Initialize for OuterObject {}
 }
 
 use core::pin::Pin;

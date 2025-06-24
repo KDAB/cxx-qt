@@ -96,13 +96,13 @@ impl std::cmp::Eq for QPersistentModelIndex {}
 
 impl fmt::Display for QPersistentModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{self:?}")
+        ffi::qpersistentmodelindex_to_debug_qstring(self).fmt(f)
     }
 }
 
 impl fmt::Debug for QPersistentModelIndex {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qpersistentmodelindex_to_debug_qstring(self))
+        ffi::qpersistentmodelindex_to_debug_qstring(self).fmt(f)
     }
 }
 

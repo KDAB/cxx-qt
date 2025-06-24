@@ -9,12 +9,6 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-QList<QByteArray>
-qtimezoneAvailableTimeZoneIds()
-{
-  return QTimeZone::availableTimeZoneIds();
-}
-
 ::std::unique_ptr<QTimeZone>
 qtimezoneClone(const QTimeZone& timezone)
 {
@@ -51,12 +45,6 @@ qtimezoneFromIana(const QByteArray& ianaId)
 qtimezoneSystemTimeZone()
 {
   return ::std::make_unique<QTimeZone>(QTimeZone::systemTimeZone());
-}
-
-QByteArray
-qtimezoneSystemTimeZoneId()
-{
-  return QTimeZone::systemTimeZoneId();
 }
 
 ::std::unique_ptr<QTimeZone>

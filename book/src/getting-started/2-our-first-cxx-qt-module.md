@@ -107,7 +107,7 @@ In our case that means:
 - `#[qproperty(i32, number)]` ⇾ `Q_PROPERTY(::std::int32_t number ...)`
 - `#[qproperty(QString, string)` ⇾ `Q_PROPERTY(QString string ...)`
 
-For `i32`, CXX-Qt already knows how to translate it.
+For `i32`, CXX already knows how to translate it.
 A `QString` however is unknown to CXX.
 Luckily, the [`cxx_qt_lib`](https://docs.rs/cxx-qt-lib/latest/cxx_qt_lib/) crate already wraps many Qt types for us.
 We can just include them in the bridge like any other CXX type:
@@ -142,6 +142,13 @@ These functions then need to be implemented **outside** the bridge using `impl q
 ```rust,ignore
 {{#include ../../../examples/qml_minimal/rust/src/cxxqt_object.rs:book_rustobj_invokable_impl}}
 ```
+
+### Inlining the self receiver
+
+If an `extern "RustQt"` block contains exactly one `QObject`, the self type of methods can be inferred.
+For instance, in a block with multiple or no `QObject`s, a function like `foo(&self)` or `foo(self: Pin<&mut Self>)`
+would not compile, but will compile with the `Self` type set to that blocks `QObject`.
+This is how CXX [handles it](https://cxx.rs/extern-rust.html) (see the Methods heading).
 
 This setup is a bit unusual, as the type `qobject::MyObject` is actually defined in C++.
 However, it is still possible to add member functions to it in Rust and then expose them back to C++.

@@ -14,12 +14,15 @@ repository.workspace = true
 rust-version.workspace = true
 
 [dependencies]
+anyhow = "1.0"
 cc.workspace = true
+semver.workspace = true
 serde = { workspace = true, optional = true }
-versions = "6.3"
 thiserror.workspace = true
 
 [features]
+# TODO: should we default to qmake or let downstream crates specify, such as cxx-qt-build
+default = ["qmake"]
 # When Cargo links an executable, whether a bin crate or test executable,
 # and Qt 6 is linked statically, this feature must be enabled to link
 # unarchived .o files with static symbols that Qt ships (for example
@@ -31,6 +34,7 @@ thiserror.workspace = true
 #
 # When linking Qt dynamically, this makes no difference.
 link_qt_object_files = []
+qmake = []
 serde = ["dep:serde"]
 
 [lints]

@@ -32,8 +32,8 @@ use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
 pub use qt_build_utils::MocArguments;
-use qt_build_utils::SemVer;
 use quote::ToTokens;
+use semver::Version;
 use std::{
     collections::HashSet,
     env,
@@ -43,8 +43,8 @@ use std::{
 };
 
 use cxx_qt_gen::{
-    parse_qt_file, write_cpp, write_rust, CppFragment, CxxQtItem, GeneratedCppBlocks, GeneratedOpt,
-    GeneratedRustBlocks, Parser,
+    parse_qt_file, self_inlining::qualify_self_types, write_cpp, write_rust, CppFragment,
+    CxxQtItem, GeneratedCppBlocks, GeneratedOpt, GeneratedRustBlocks, Parser,
 };
 
 // TODO: we need to eventually support having multiple modules defined in a single file. This
@@ -132,7 +132,10 @@ impl GeneratedCpp {
                     }
                     found_bridge = true;
 
-                    let parser = Parser::from(m.clone())
+                    let mut parser = Parser::from(*m.clone())
+                        .map_err(GeneratedError::from)
+                        .map_err(to_diagnostic)?;
+                    qualify_self_types(&mut parser)
                         .map_err(GeneratedError::from)
                         .map_err(to_diagnostic)?;
                     let generated_cpp = GeneratedCppBlocks::from(&parser, &cxx_qt_opt)
@@ -264,7 +267,7 @@ fn generate_cxxqt_cpp_files(
     header_dir: impl AsRef<Path>,
     include_prefix: &str,
 ) -> Vec<GeneratedCppFilePaths> {
-    let cxx_qt_dir = dir::out().join("cxx-qt-gen");
+    let cxx_qt_dir = dir::gen();
     std::fs::create_dir_all(&cxx_qt_dir).expect("Failed to create cxx-qt-gen directory!");
     std::fs::write(cxx_qt_dir.join("include-prefix.txt"), include_prefix).expect("");
 
@@ -597,7 +600,7 @@ impl CxxQtBuilder {
         }
     }
 
-    fn define_qt_version_cfg_variables(version: &SemVer) {
+    fn define_qt_version_cfg_variables(version: Version) {
         // Allow for Qt 5 or Qt 6 as valid values
         CxxQtBuilder::define_cfg_check_variable(
             "cxxqt_qt_version_major".to_owned(),
@@ -699,7 +702,7 @@ impl CxxQtBuilder {
             moc_arguments,
         } in &self.qobject_headers
         {
-            let moc_products = qtbuild.moc(path, moc_arguments.clone());
+            let moc_products = qtbuild.moc().compile(path, moc_arguments.clone());
             // Include the moc folder
             if let Some(dir) = moc_products.cpp.parent() {
                 self.cc_builder.include(dir);
@@ -824,7 +827,7 @@ impl CxxQtBuilder {
                     }
 
                     cc_builder.file(&qobject);
-                    let moc_products = qtbuild.moc(
+                    let moc_products = qtbuild.moc().compile(
                         qobject_header,
                         MocArguments::default().uri(qml_module.uri.clone()),
                     );
@@ -849,8 +852,10 @@ impl CxxQtBuilder {
                 &qml_module.qml_files,
                 &qml_module.qrc_files,
             );
+            if let Some(qmltyperegistrar) = qml_module_registration_files.qmltyperegistrar {
+                cc_builder.file(qmltyperegistrar);
+            }
             cc_builder
-                .file(qml_module_registration_files.qmltyperegistrar)
                 .file(qml_module_registration_files.plugin)
                 // In comparison to the other RCC files, we don't need to link this with whole-archive or
                 // anything like that.
@@ -1027,12 +1032,12 @@ extern "C" bool {init_fun}() {{
             .iter()
             .map(|qrc_file| {
                 // Also ensure that each of the files in the qrc can cause a change
-                for qrc_inner_file in qtbuild.qrc_list(&qrc_file) {
+                for qrc_inner_file in qtbuild.rcc().list(qrc_file) {
                     println!("cargo::rerun-if-changed={}", qrc_inner_file.display());
                 }
                 // We need to link this using an object file or +whole-achive, the static initializer of
                 // the qrc file isn't lost.
-                qtbuild.qrc(&qrc_file)
+                qtbuild.rcc().compile(qrc_file)
             })
             .collect()
     }

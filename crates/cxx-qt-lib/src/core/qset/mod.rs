@@ -127,6 +127,13 @@ where
     pub fn reserve(&mut self, size: isize) {
         T::reserve(self, size);
     }
+
+    /// Helper function for handling Rust values.
+    pub(crate) fn reserve_usize(&mut self, size: usize) {
+        if size != 0 {
+            T::reserve(self, isize::try_from(size).unwrap_or(isize::MAX));
+        }
+    }
 }
 
 impl<T> QSet<T>
@@ -137,6 +144,54 @@ where
     /// and returns an iterator pointing at the inserted item.
     pub fn insert(&mut self, value: T) {
         T::insert(self, value);
+    }
+}
+
+impl<'a, T> Extend<&'a T> for QSet<T>
+where
+    T: QSetElement,
+{
+    fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        self.reserve_usize(iter.size_hint().0);
+        for element in iter {
+            self.insert_clone(element);
+        }
+    }
+}
+
+impl<T> Extend<T> for QSet<T>
+where
+    T: QSetElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+        let iter = iter.into_iter();
+        self.reserve_usize(iter.size_hint().0);
+        for element in iter {
+            self.insert(element);
+        }
+    }
+}
+
+impl<'a, T> FromIterator<&'a T> for QSet<T>
+where
+    T: QSetElement,
+{
+    fn from_iter<I: IntoIterator<Item = &'a T>>(iter: I) -> Self {
+        let mut qset = Self::default();
+        qset.extend(iter);
+        qset
+    }
+}
+
+impl<T> FromIterator<T> for QSet<T>
+where
+    T: QSetElement + ExternType<Kind = cxx::kind::Trivial>,
+{
+    fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+        let mut qset = Self::default();
+        qset.extend(iter);
+        qset
     }
 }
 
@@ -184,6 +239,19 @@ where
 {
     fn len(&self) -> usize {
         (self.set.len() - self.index) as usize
+    }
+}
+
+impl<'a, T> IntoIterator for &'a QSet<T>
+where
+    T: QSetElement,
+{
+    type Item = &'a T;
+
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
     }
 }
 

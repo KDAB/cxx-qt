@@ -15,7 +15,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.7.1...HEAD)
+## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.7.2...HEAD)
 
 ### Added
 
@@ -30,15 +30,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CXX-Qt-build: Allow forcing initialization of crates/QML modules (`cxx_qt::init_crate!`/`cxx_qt::init_qml_module!`)
 - Add pure virtual function specified through the `#[cxx_pure]` attribute
 - Add wrappers for up and down casting, for all types which inherit from QObject, available for &T, &mut T and Pin<&mut T>
-- `#[base = T]` is now suported in `extern "C++Qt"` blocks
-- Casting is automatically implmented for qobjects or types which have `#[base = T]` in `"RustQt"` or `"C++Qt"` blocks
+- `#[base = T]` is now supported in `extern "C++Qt"` blocks
+- Casting is automatically implemented for qobjects or types which have `#[base = T]` in `"RustQt"` or `"C++Qt"` blocks
 - Support for `QMessageLogContext` and sending log messages to the Qt message handler.
 - Serde support for further types: `QByteArray`, `QSet`, `QStringList`, `QVector`, `QUrl`
+- Added `QEventLoop` to cxx-qt-lib-extras.
+- Add `QScopedMetaObjectConnectionGuard`, which is `QMetaObjectConnectionGuard` with a scoped lifetime. `QMetaObjectConnectionGuard` is now a type alias for `QScopedMetaObjectConnectionGuard<'static>`.
+- Support for setting Qt log message patterns with `q_set_message_pattern` and formatting log messages ith `q_format_log_message`.
+- Implement `IntoIterator` for `&QHash`, `&QList`, `&QMap`, `&QSet`, and `&QVector`.
 
 ### Removed
 
 - CXX-Qt-build: Interface no longer includes compiler definitions (<https://github.com/KDAB/cxx-qt/issues/1165>)
 - CXX-Qt-build: Interface no longer includes initializers
+
+## [0.7.2](https://github.com/KDAB/cxx-qt/compare/v0.7.1...v0.7.2) - 2025-04-28
+
+### Added
+
+- `impl cxx_qt::Initialize for X {}` as shorthand for `impl cxx_qt::Constructor<()> for X {}`
+- `extern "RustQt"` blocks no longer have to be marked `unsafe`
+
+### Fixed
+
+- cxx-qt-build: Use shorter paths to avoid file path length limitations on Windows
+- CMake: Use Release Qt DLLs and runtime for MSVC Debug builds
+- Fix some generated links to book page
+- `#[inherit]` attributes are no longer ignored in `extern "C++Qt"` blocks - they now trigger an error
 
 ## [0.7.1](https://github.com/KDAB/cxx-qt/compare/v0.7.0...v0.7.1) - 2025-03-04
 

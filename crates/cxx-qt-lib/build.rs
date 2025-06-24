@@ -150,6 +150,7 @@ fn main() {
         "core/qmargins",
         "core/qmarginsf",
         "core/qmodelindex",
+        "core/qobject",
         "core/qpersistentmodelindex",
         "core/qpoint",
         "core/qpointf",
@@ -342,10 +343,6 @@ fn main() {
         cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
     }
 
-    if qt_quickcontrols_enabled() {
-        cpp_files.extend(["quickcontrols/qquickstyle"]);
-    }
-
     if !emscripten_targeted {
         cpp_files.extend(["core/qdatetime", "core/qtimezone"]);
     }
@@ -356,7 +353,9 @@ fn main() {
         .reexport_dependency("cxx-qt");
 
     let mut builder = CxxQtBuilder::library(interface)
-        .include_prefix("cxx-qt-lib-internals")
+        // Use a short name due to the Windows file path limit!
+        // We don't re-export these headers anyway
+        .include_prefix("private")
         .initializer(qt_build_utils::Initializer {
             file: Some("src/core/init.cpp".into()),
             ..qt_build_utils::Initializer::default_signature("init_cxx_qt_lib_core")

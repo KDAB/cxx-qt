@@ -43,18 +43,18 @@ pub mod qobject {
         /// Override QQuickPaintedItem::paint to draw two rectangles in Rust using QPainter
         #[qinvokable]
         #[cxx_override]
-        unsafe fn paint(self: Pin<&mut CustomParentClass>, painter: *mut QPainter);
+        unsafe fn paint(self: Pin<&mut Self>, painter: *mut QPainter);
 
         /// Define that we need to inherit size() from the base class
         #[inherit]
-        fn size(self: &CustomParentClass) -> QSizeF;
+        fn size(self: &Self) -> QSizeF;
 
         /// Define that we need to inherit update() from the base class
         #[inherit]
-        fn update(self: Pin<&mut CustomParentClass>);
+        fn update(self: Pin<&mut Self>);
     }
 
-    impl cxx_qt::Constructor<()> for CustomParentClass {}
+    impl cxx_qt::Initialize for CustomParentClass {}
 }
 
 use core::pin::Pin;

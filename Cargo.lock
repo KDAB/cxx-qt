@@ -24,6 +24,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "862ed96ca487e809f1c8e5a8447f6ee2cf102f846893800b20cebdf541fc6bbd"
 
 [[package]]
+name = "anyhow"
+version = "1.0.97"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dcfed56ad506cb2c684a14971b8861fdc3baaaae314b9e5f9bb532cbe3ba7a4f"
+
+[[package]]
 name = "async-channel"
 version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -369,7 +375,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "cxx",
  "cxx-qt-build",
@@ -391,7 +397,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-build"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "cc",
  "codespan-reporting 0.11.1",
@@ -400,14 +406,14 @@ dependencies = [
  "proc-macro2",
  "qt-build-utils",
  "quote",
+ "semver",
  "serde",
  "serde_json",
- "version_check",
 ]
 
 [[package]]
 name = "cxx-qt-gen"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "clang-format",
  "convert_case",
@@ -421,7 +427,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-lib"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "bytes",
  "chrono",
@@ -442,7 +448,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-lib-extras"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
  "cxx",
  "cxx-qt",
@@ -452,10 +458,8 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-macro"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
- "cxx",
- "cxx-qt",
  "cxx-qt-gen",
  "proc-macro2",
  "quote",
@@ -925,15 +929,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f4c7245a08504955605670dbf141fceab975f15ca21570696aebe9d2e71576bd"
 
 [[package]]
-name = "itertools"
-version = "0.13.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186"
-dependencies = [
- "either",
-]
-
-[[package]]
 name = "itoa"
 version = "1.0.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1009,22 +1004,6 @@ name = "memchr"
 version = "2.7.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "32a282da65faaf38286cf3be983213fcf1d2e2a58700e808f83f4ea9a4804bc0"
-
-[[package]]
-name = "minimal-lexical"
-version = "0.2.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
-
-[[package]]
-name = "nom"
-version = "7.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d273983c5a657a70a3e8f2a01329822f3b8c8172b73826411a55751e404a0a4a"
-dependencies = [
- "memchr",
- "minimal-lexical",
-]
 
 [[package]]
 name = "num-conv"
@@ -1187,12 +1166,13 @@ dependencies = [
 
 [[package]]
 name = "qt-build-utils"
-version = "0.7.1"
+version = "0.7.2"
 dependencies = [
+ "anyhow",
  "cc",
+ "semver",
  "serde",
  "thiserror",
- "versions",
 ]
 
 [[package]]
@@ -1254,6 +1234,12 @@ name = "ryu"
 version = "1.0.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "28d3b2b1366ec20994f1fd18c3c594f05c5dd4bc44d8bb0c1c632c8d6829481f"
+
+[[package]]
+name = "semver"
+version = "1.0.26"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56e6fa9c48d24d85fb3de5ad847117517440f6beceb7798af16b4a87d616b8d0"
 
 [[package]]
 name = "serde"

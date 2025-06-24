@@ -18,7 +18,7 @@ pub mod qobject {
 
         /// Increment the persistent value Q_PROPERTY of the QML_SINGLETON
         #[qinvokable]
-        fn increment(self: Pin<&mut RustSingleton>);
+        fn increment(self: Pin<&mut Self>);
     }
 }
 

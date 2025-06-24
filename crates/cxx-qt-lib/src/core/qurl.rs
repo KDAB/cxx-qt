@@ -427,13 +427,13 @@ impl fmt::Display for QUrl {
     ///
     /// Note that this converts from UTF-16 to UTF-8
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "{}", ffi::qurl_to_display_string(self))
+        ffi::qurl_to_display_string(self).fmt(f)
     }
 }
 
 impl fmt::Debug for QUrl {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qurl_to_debug_qstring(self))
+        ffi::qurl_to_debug_qstring(self).fmt(f)
     }
 }
 

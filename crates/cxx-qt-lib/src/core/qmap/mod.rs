@@ -202,6 +202,19 @@ where
     }
 }
 
+impl<'a, T> IntoIterator for &'a QMap<T>
+where
+    T: QMapPair,
+{
+    type Item = (&'a T::Key, &'a T::Value);
+
+    type IntoIter = Iter<'a, T>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.iter()
+    }
+}
+
 /// Trait implementation for a pair in a [`QMap`].
 pub trait QMapPair: Sized {
     type Key;

@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+//! This is an auto-generated file. Do not edit.
+//! Edit instead: cxx-qt-lib/src/core/qlist/generate.sh
+
 use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
@@ -13,7 +16,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = crate::QVariant;
 
-        include!("cxx-qt-lib/qhash.h");
+        include!("cxx-qt-lib/qhash_QString_QVariant.h");
         type QHash_QString_QVariant = crate::QHash<super::QHashPair_QString_QVariant>;
     }
 
@@ -41,7 +44,11 @@ pub mod ffi {
         #[rust_name = "get_or_default_QString_QVariant"]
         fn qhashGetOrDefault(_: &QHash_QString_QVariant, key: &QString) -> QVariant;
         #[rust_name = "get_unchecked_key_QString_QVariant"]
-        unsafe fn qhashGetUncheckedKey(_: &QHash_QString_QVariant, pos: isize) -> &QString;
+        #[allow(clippy::needless_lifetimes)]
+        unsafe fn qhashGetUncheckedKey<'a>(
+            _: &'a QHash_QString_QVariant,
+            pos: isize,
+        ) -> &'a QString;
         #[rust_name = "get_unchecked_value_QString_QVariant"]
         unsafe fn qhashGetUncheckedValue(_: &QHash_QString_QVariant, pos: isize) -> &QVariant;
         #[rust_name = "insert_QString_QVariant"]

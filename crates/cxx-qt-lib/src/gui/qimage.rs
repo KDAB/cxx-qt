@@ -339,7 +339,7 @@ impl Eq for QImage {}
 
 impl fmt::Debug for QImage {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", ffi::qimage_to_debug_qstring(self))
+        ffi::qimage_to_debug_qstring(self).fmt(f)
     }
 }
 

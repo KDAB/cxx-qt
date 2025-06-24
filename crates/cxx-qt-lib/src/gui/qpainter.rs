@@ -177,7 +177,8 @@ mod ffi {
         type QPolygon = crate::QPolygon;
         include!("cxx-qt-lib/qregion.h");
         type QRegion = crate::QRegion;
-        include!("cxx-qt-lib/qvector.h");
+        include!("cxx-qt-lib/qvector_QLine.h");
+        include!("cxx-qt-lib/qvector_QLineF.h");
         type QVector_QLine = crate::QVector<QLine>;
         type QVector_QLineF = crate::QVector<QLineF>;
 

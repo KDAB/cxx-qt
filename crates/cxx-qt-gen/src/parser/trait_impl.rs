@@ -3,7 +3,7 @@ use indoc::formatdoc;
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use syn::{Error, Ident, ItemImpl, Path, Result, Token, Type, TypePath};
+use syn::{parse_quote, Error, Ident, ItemImpl, Path, Result, Token, Type, TypePath};
 
 use crate::{parser::constructor::Constructor, syntax::path::path_compare_str};
 
@@ -11,7 +11,7 @@ use crate::{parser::constructor::Constructor, syntax::path::path_compare_str};
 #[derive(Debug, PartialEq, Eq)]
 pub enum TraitKind {
     Threading,
-    Constructor(Constructor),
+    Constructor(Box<Constructor>),
 }
 
 impl TraitKind {
@@ -33,7 +33,7 @@ impl TraitKind {
 
     fn parse_constructor(imp: &ItemImpl) -> Result<Self> {
         let constructor = Constructor::parse(imp.clone())?;
-        Ok(Self::Constructor(constructor))
+        Ok(Self::Constructor(Box::new(constructor)))
     }
 
     fn parse(imp: &ItemImpl) -> Result<Self> {
@@ -46,6 +46,13 @@ impl TraitKind {
             Self::parse_threading(not, path, imp)
         } else if path_compare_str(path, &["cxx_qt", "Constructor"]) {
             Self::parse_constructor(imp)
+        } else if path_compare_str(path, &["cxx_qt", "Initialize"]) {
+            let struct_name = &*imp.self_ty;
+            // Inside the bridge, Initialize is shorthand for the line below
+            let default_constructor: ItemImpl = parse_quote! {
+                impl cxx_qt::Constructor<()> for #struct_name {}
+            };
+            Self::parse_constructor(&default_constructor)
         } else {
             // TODO: Give suggestions on which trait might have been meant
             Err(Error::new_spanned(
@@ -55,6 +62,7 @@ impl TraitKind {
                     CXX-Qt currently only supports:
                       - cxx_qt::Threading
                       - cxx_qt::Constructor
+                      - cxx_qt::Initialize (as shorthand for Constructor<()>)
                       - (cxx_qt::Locking has been removed as of CXX-Qt 0.7)
                     Note that the trait must always be fully-qualified.
                     "},
@@ -128,6 +136,23 @@ mod tests {
         let marker = TraitImpl::parse(imp).unwrap();
         assert_eq!(marker.qobject, format_ident!("MyObject"));
         assert!(matches!(marker.kind, TraitKind::Constructor(_)))
+    }
+
+    #[test]
+    fn parse_constructor_shorthand() {
+        let imp = parse_quote! {
+            impl cxx_qt::Constructor<()> for MyObject {}
+        };
+        let marker = TraitImpl::parse(imp).unwrap();
+        assert_eq!(marker.qobject, format_ident!("MyObject"));
+        assert!(matches!(marker.kind, TraitKind::Constructor(_)));
+
+        let imp = parse_quote! {
+            impl cxx_qt::Initialize for MyObject {}
+        };
+        let shorthand = TraitImpl::parse(imp).unwrap();
+        assert_eq!(marker.kind, shorthand.kind);
+        assert_eq!(marker.qobject, shorthand.qobject);
     }
 
     use crate::tests::assert_parse_errors;

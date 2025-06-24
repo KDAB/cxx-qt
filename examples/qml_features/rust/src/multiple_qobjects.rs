@@ -23,26 +23,22 @@ pub mod qobject {
         #[qproperty(i32, counter)]
         #[qproperty(QColor, color)]
         type FirstObject = super::FirstObjectRust;
+
+        /// Accepted Q_SIGNAL
+        #[qsignal]
+        fn accepted(self: Pin<&mut Self>);
+
+        /// Rejected Q_SIGNAL
+        #[qsignal]
+        fn rejected(self: Pin<&mut Self>);
+
+        /// A Q_INVOKABLE on the first QObject which increments a counter
+        #[qinvokable]
+        fn increment(self: Pin<&mut Self>);
     }
 
     // Enabling threading on the qobject
     impl cxx_qt::Threading for FirstObject {}
-
-    extern "RustQt" {
-        /// Accepted Q_SIGNAL
-        #[qsignal]
-        fn accepted(self: Pin<&mut FirstObject>);
-
-        /// Rejected Q_SIGNAL
-        #[qsignal]
-        fn rejected(self: Pin<&mut FirstObject>);
-    }
-
-    extern "RustQt" {
-        /// A Q_INVOKABLE on the first QObject which increments a counter
-        #[qinvokable]
-        fn increment(self: Pin<&mut FirstObject>);
-    }
 
     extern "RustQt" {
         #[qobject]
@@ -50,26 +46,22 @@ pub mod qobject {
         #[qproperty(i32, counter)]
         #[qproperty(QUrl, url)]
         type SecondObject = super::SecondObjectRust;
+
+        /// Accepted Q_SIGNAL
+        #[qsignal]
+        fn accepted(self: Pin<&mut Self>);
+
+        /// Rejected Q_SIGNAL
+        #[qsignal]
+        fn rejected(self: Pin<&mut Self>);
+
+        /// A Q_INVOKABLE on the second QObject which increments a counter
+        #[qinvokable]
+        fn increment(self: Pin<&mut Self>);
     }
 
     // Enabling threading on the qobject
     impl cxx_qt::Threading for SecondObject {}
-
-    extern "RustQt" {
-        /// Accepted Q_SIGNAL
-        #[qsignal]
-        fn accepted(self: Pin<&mut SecondObject>);
-
-        /// Rejected Q_SIGNAL
-        #[qsignal]
-        fn rejected(self: Pin<&mut SecondObject>);
-    }
-
-    extern "RustQt" {
-        /// A Q_INVOKABLE on the second QObject which increments a counter
-        #[qinvokable]
-        fn increment(self: Pin<&mut SecondObject>);
-    }
 }
 
 use core::pin::Pin;
