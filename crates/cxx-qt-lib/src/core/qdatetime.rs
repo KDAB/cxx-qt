@@ -338,7 +338,7 @@ impl QDateTime {
     ///
     /// If the spec is [`TimeSpec::OffsetFromUTC`] and `offset_seconds` is 0 then the time spec will be set to [`TimeSpec::UTC`], i.e. an offset of 0 seconds.
     ///
-    /// If spec is [`TimeSpec:TimeZone`] then the spec will be set to [`TimeSpec::LocalTime`], i.e. the current system time zone.
+    /// If spec is [`TimeSpec::TimeZone`] then the spec will be set to [`TimeSpec::LocalTime`], i.e. the current system time zone.
     ///
     /// **Note:** This method is only available with Qt < 6.8.
     #[cfg(not(cxxqt_qt_version_at_least_6_8))]
