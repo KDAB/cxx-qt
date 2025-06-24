@@ -49,8 +49,8 @@ mod ffi {
         /// Returns a string list where every string has had the `before` text replaced with the `after` text wherever the `before` text is found.
         ///
         /// **Note:** If you use an empty `before` argument, the `after` argument will be inserted *before and after* each character of the string.
-    ///
-    /// If `cs` is [`CaseSensitivity::CaseSensitive`], the string comparison is case-sensitive; otherwise the comparison is case-insensitive.
+        ///
+        /// If `cs` is [`CaseSensitivity::CaseSensitive`], the string comparison is case-sensitive; otherwise the comparison is case-insensitive.
         #[rust_name = "replace_in_strings"]
         fn replaceInStrings(
             self: &mut QStringList,
