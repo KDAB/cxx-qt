@@ -1,11 +1,16 @@
 // SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+// SPDX-FileContributor: Quentin Weber <quentin.weber@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx_qt_gen::{write_rust, Parser};
 use proc_macro2::{Span, TokenStream, TokenTree};
-use std::{str::FromStr, sync::{Arc, Mutex}, usize};
+use std::{
+    str::FromStr,
+    sync::{Arc, Mutex},
+    usize,
+};
 use syn::{parse2, ItemMod};
 
 #[cxx_qt::bridge]
@@ -95,30 +100,34 @@ impl qobject::SpanInspector {
         self.as_mut().input_changed();
     }
 
-    fn rebuild_output(self: Pin<&mut Self>, pos: i32){
+    fn rebuild_output(self: Pin<&mut Self>, pos: i32) {
         let mut cursor_position = match self.cursor_position.lock() {
             Ok(mutex) => mutex,
-            Err(poison_error) => poison_error.into_inner()
+            Err(poison_error) => poison_error.into_inner(),
         };
         *cursor_position = pos;
 
         let input = unsafe { Pin::new_unchecked(&mut *self.input) };
         let cursor_position = self.cursor_position.clone();
         let qt_thread = self.qt_thread();
-        qt_thread.queue(|this|{
-            unsafe { this.output_document() }.set_html(&QString::from(String::from("expanding...")))
-        })
-        .ok();
+        qt_thread
+            .queue(|this| {
+                unsafe { this.output_document() }
+                    .set_html(&QString::from(String::from("expanding...")))
+            })
+            .ok();
 
-        let text = unsafe { Pin::new_unchecked(&mut *input.text_document()) }.to_plain_text().to_string();
+        let text = unsafe { Pin::new_unchecked(&mut *input.text_document()) }
+            .to_plain_text()
+            .to_string();
 
         std::thread::spawn(move || {
             let cursor_position = match cursor_position.lock() {
                 Ok(mutex) => mutex,
-                Err(poison_error) => poison_error.into_inner()
+                Err(poison_error) => poison_error.into_inner(),
             };
 
-            let output = match Self::expand(&text, *cursor_position as usize){
+            let output = match Self::expand(&text, *cursor_position as usize) {
                 Ok((expanded, span_data)) => {
                     let Ok(file) = syn::parse_file(expanded.as_str())
                         .map_err(|err| eprintln!("Parsing error: {err}"))
@@ -126,10 +135,8 @@ impl qobject::SpanInspector {
                         return;
                     };
                     Self::build_html(prettyplease::unparse(&file), span_data)
-                },
-                Err(error) => {
-                    Self::build_error_html(error)
                 }
+                Err(error) => Self::build_error_html(error),
             };
             qt_thread
                 .queue(move |this| {
@@ -141,21 +148,26 @@ impl qobject::SpanInspector {
 
     // Expand input code as #[cxxqt_qt::bridge] would do
     fn expand(input: &str, cursor_position: usize) -> Result<(String, Vec<(bool, bool)>), String> {
-        let input_stream: TokenStream = TokenStream::from_str(input).map_err(|e|e.to_string())?;
-        
+        let input_stream: TokenStream = TokenStream::from_str(input).map_err(|e| e.to_string())?;
+
         let mut module: ItemMod = parse2(input_stream.clone()).map_err(|e| e.to_string())?;
 
         let args = TokenStream::default();
         let args_input = format!("#[cxx_qt::bridge({args})] mod dummy;");
-        let attrs = syn::parse_str::<ItemMod>(&args_input).map_err(|e| e.to_string())?.attrs;
+        let attrs = syn::parse_str::<ItemMod>(&args_input)
+            .map_err(|e| e.to_string())?
+            .attrs;
         module.attrs = attrs.into_iter().chain(module.attrs).collect();
 
         let output_stream = Self::extract_and_generate(module);
-        
-        let target_span: Option<Span> = Self::flatten_tokenstream(input_stream).into_iter().find( |token| {
-            let range = token.span().byte_range();
-            range.start <= cursor_position && range.end >= cursor_position
-        }).map(|token| token.span());
+
+        let target_span: Option<Span> = Self::flatten_tokenstream(input_stream)
+            .into_iter()
+            .find(|token| {
+                let range = token.span().byte_range();
+                range.start <= cursor_position && range.end >= cursor_position
+            })
+            .map(|token| token.span());
 
         let span_data: Vec<(bool, bool)> = Self::flatten_tokenstream(output_stream.clone())
             .into_iter()
@@ -164,15 +176,15 @@ impl qobject::SpanInspector {
             .filter(|token| {
                 let string = token.to_string();
                 !matches!(string.as_str(), "," | "}" | "{")
-            }) 
-            .map(|token|
+            })
+            .map(|token| {
                 (
                     target_span
                         .map(|s| s.byte_range().eq(token.span().byte_range()))
                         .unwrap_or_else(|| false),
-                    token.span().byte_range().start == 0
+                    token.span().byte_range().start == 0,
                 )
-            )
+            })
             .collect();
 
         Ok((format!("{}", output_stream), span_data))
@@ -187,16 +199,21 @@ impl qobject::SpanInspector {
             .into()
     }
 
-    fn build_error_html(input: String) -> String{
-        let style = String::from("
+    fn build_error_html(input: String) -> String {
+        let style = String::from(
+            "
             <style>
                 .error {
                     whitespace = normal;
                     color: red;
                 }
             </style> 
-        ");
-        format!("<!DOCTYPE html><html><head>{}</head><body><p class=\"error\">{}</p></body></html>", style, input)
+        ",
+        );
+        format!(
+            "<!DOCTYPE html><html><head>{}</head><body><p class=\"error\">{}</p></body></html>",
+            style, input
+        )
     }
 
     fn flatten_tokenstream(stream: TokenStream) -> Vec<TokenTree> {
@@ -214,28 +231,47 @@ impl qobject::SpanInspector {
         output
     }
 
-    fn build_html(input: String, span_data: Vec<(bool, bool)>) -> String{        
-        let flat_tokenstream = Self::flatten_tokenstream(TokenStream::from_str(input.as_str()).unwrap());
+    fn build_html(input: String, span_data: Vec<(bool, bool)>) -> String {
+        let flat_tokenstream =
+            Self::flatten_tokenstream(TokenStream::from_str(input.as_str()).unwrap());
         let mut highlighted_string = input.clone();
-        
+
         let mut token_position = span_data.len();
         for token in flat_tokenstream.into_iter().rev() {
             // prettyplease may insert extra tokens.
             // This `if` statement simply ignores them.
             let token_string = token.to_string();
-            if !matches!(token_string.as_str(), "," | "{" | "}") { 
+            if !matches!(token_string.as_str(), "," | "{" | "}") {
                 token_position = token_position - 1;
             }
             if span_data.get(token_position).unwrap().0 {
-                highlighted_string.replace_range(token.span().byte_range(), format!("<span class=\"highlight\">{}</span>", Self::sanitize(&token.to_string())).as_str());
+                highlighted_string.replace_range(
+                    token.span().byte_range(),
+                    format!(
+                        "<span class=\"highlight\">{}</span>",
+                        Self::sanitize(&token.to_string())
+                    )
+                    .as_str(),
+                );
             } else if span_data.get(token_position).unwrap().1 {
-                highlighted_string.replace_range(token.span().byte_range(), format!("<span class=\"generated\">{}</span>", Self::sanitize(&token.to_string())).as_str());
+                highlighted_string.replace_range(
+                    token.span().byte_range(),
+                    format!(
+                        "<span class=\"generated\">{}</span>",
+                        Self::sanitize(&token.to_string())
+                    )
+                    .as_str(),
+                );
             } else {
-                highlighted_string.replace_range(token.span().byte_range(), Self::sanitize(&token.to_string()).as_str());
-            } 
+                highlighted_string.replace_range(
+                    token.span().byte_range(),
+                    Self::sanitize(&token.to_string()).as_str(),
+                );
+            }
         }
-        
-        let style = String::from("
+
+        let style = String::from(
+            "
             <style> 
                 .highlight {
                     background-color: #ff00ff;
@@ -248,20 +284,25 @@ impl qobject::SpanInspector {
                     border-radius: 6px;
                 }
             </style>
-        ");
+        ",
+        );
 
-        format!("<!DOCTYPE html><html><head>{}</head><body><pre>{}</pre></body></html>", style, highlighted_string)
+        format!(
+            "<!DOCTYPE html><html><head>{}</head><body><pre>{}</pre></body></html>",
+            style, highlighted_string
+        )
     }
 
     fn sanitize(input: &String) -> String {
-        input.chars().map(|char| 
-            match char {
+        input
+            .chars()
+            .map(|char| match char {
                 '>' => "&gt;".to_string(),
                 '<' => "&lt;".to_string(),
                 '&' => "&amp;".to_string(),
                 '"' => "&quot;".to_string(),
                 _ => char.to_string(),
-            }
-        ).collect()
+            })
+            .collect()
     }
 }
