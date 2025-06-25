@@ -80,6 +80,14 @@ Versions below Qt 5.15 LTS are *explicitly unsupported*.
 bindings for these QObject subclasses can be used in QWidgets applications, but these projects do not provide Rust
 bindings for QWidgets APIs.
 
+## Sccache
+Using sscache is advised for most projects since it can significantly speed up recompilation times
+
+To set up sscache to work with CXX-Qt you need to:
+1) Install sccache
+2) create a link to sccache `ln /usr/local/bin/sccache /usr/local/bin/cc`
+3) In your build.rs add `.cc_builder(|cc| { cc.compiler("/usr/local/bin/cc"); })` after `CxxQtBuilder::new()`
+
 ## Contributing to CXX-Qt
 
 ### Clone the Git repository
