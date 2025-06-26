@@ -82,6 +82,8 @@ impl qobject::CustomParentClass {
             // Now pinned painter can be used as normal
             // to render a rectangle with two colours
             let size = self.as_ref().size();
+            let color = self.as_ref().color();
+            pinned_painter.set_pen(color);
             pinned_painter.as_mut().fill_rect(
                 &QRectF::new(0.0, 0.0, size.width() / 2.0, size.height()),
                 self.as_ref().color(),
