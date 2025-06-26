@@ -6,6 +6,12 @@
 #[cxx_qt::bridge]
 mod ffi {
     unsafe extern "C++" {
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
+        include!("cxx-qt-lib/qanystringview.h");
+        type QAnyStringView<'a> = crate::QAnyStringView<'a>;
+    }
+
+    unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
@@ -32,6 +38,16 @@ mod ffi {
 
         /// Loads the root QML file located at url.
         fn load(self: Pin<&mut QQmlApplicationEngine>, url: &QUrl);
+
+        /// Loads the QML type typeName from the module specified by uri.
+        /// This function was introduced in Qt 6.5.
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
+        #[rust_name = "load_from_module"]
+        fn loadFromModule(
+            self: Pin<&mut QQmlApplicationEngine>,
+            uri: QAnyStringView,
+            typeName: QAnyStringView,
+        );
 
         /// This property holds the directory for storing offline user data
         #[rust_name = "offline_storage_path"]
