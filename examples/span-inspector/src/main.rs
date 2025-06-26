@@ -8,8 +8,9 @@
 /// A module for our Rust defined QObject
 pub mod inspector;
 
-use cxx_qt::Upcast;
-use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QUrl};
+use cxx_qt::casting::Upcast;
+use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QQmlEngine, QUrl};
+use std::pin::Pin;
 
 fn main() {
     // Create the application and engine
@@ -22,9 +23,9 @@ fn main() {
     }
 
     if let Some(engine) = engine.as_mut() {
+        let engine: Pin<&mut QQmlEngine> = engine.upcast_pin();
         // Listen to a signal from the QML Engine
         engine
-            .upcast_pin()
             .on_quit(|_| {
                 println!("QML Quit!");
             })
