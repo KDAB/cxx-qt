@@ -2,56 +2,57 @@
 // SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // clang-format on
 // SPDX-FileContributor: Joshua Goins <joshua.goins@kdab.com>
+// SPDX-FileContributor: Joshua Booth <joshua.n.booth@gmail.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #include "cxx-qt-lib/qtlogging.h"
 
-#include <cxx-qt-lib/assertion_utils.h>
+#include <QtCore/qlogging.h>
 
-// QMessageLogContext has three "const char*" members for line, category, etc
-// https://codebrowser.dev/qt5/qtbase/src/corelib/global/qlogging.h.html#QMessageLogContext
-assert_alignment_and_size(QMessageLogContext, {
-  int version;
-  int line;
-  const char* file;
-  const char* function;
-  const char* category;
-});
+namespace rust {
+namespace cxxqtlib1 {
 
-static_assert(!::std::is_trivially_copy_assignable<QMessageLogContext>::value);
-static_assert(
-  !::std::is_trivially_copy_constructible<QMessageLogContext>::value);
-static_assert(::std::is_trivially_destructible<QMessageLogContext>::value);
-
-QMessageLogContext
-construct_qmessagelogcontext(const char* fileName,
-                             int lineNumber,
-                             const char* functionName,
-                             const char* categoryName)
+inline void
+log(QtMsgType type,
+    const char* fileName,
+    int lineNumber,
+    const QString& message)
 {
-  return QMessageLogContext(fileName, lineNumber, functionName, categoryName);
+  qt_message_output(
+    type,
+    QMessageLogContext(fileName, lineNumber, nullptr, "default"),
+    message);
 }
 
-int
-qmessagelogcontext_line(const QMessageLogContext& context)
+void
+q_debug(const char* fileName, int lineNumber, const QString& message)
 {
-  return context.line;
+  log(QtMsgType::QtDebugMsg, fileName, lineNumber, message);
 }
 
-const char*
-qmessagelogcontext_file(const QMessageLogContext& context)
+void
+q_info(const char* fileName, int lineNumber, const QString& message)
 {
-  return context.file;
+  log(QtMsgType::QtInfoMsg, fileName, lineNumber, message);
 }
 
-const char*
-qmessagelogcontext_function(const QMessageLogContext& context)
+void
+q_warning(const char* fileName, int lineNumber, const QString& message)
 {
-  return context.function;
+  log(QtMsgType::QtWarningMsg, fileName, lineNumber, message);
 }
 
-const char*
-qmessagelogcontext_category(const QMessageLogContext& context)
+void
+q_critical(const char* fileName, int lineNumber, const QString& message)
 {
-  return context.category;
+  log(QtMsgType::QtCriticalMsg, fileName, lineNumber, message);
+}
+
+void
+q_fatal(const char* fileName, int lineNumber, const QString& message)
+{
+  log(QtMsgType::QtFatalMsg, fileName, lineNumber, message);
+}
+
+}
 }
