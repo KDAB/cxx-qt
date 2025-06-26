@@ -104,6 +104,7 @@ add_executable(${APP_NAME}
     cpp/qstringlist.h
     cpp/qtime.h
     cpp/qtimezone.h
+    cpp/qtlogging.h
     cpp/qurl.h
     cpp/qvariant.h
     cpp/qvector.h
