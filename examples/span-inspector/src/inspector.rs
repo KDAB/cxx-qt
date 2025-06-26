@@ -9,7 +9,6 @@ use proc_macro2::{Span, TokenStream, TokenTree};
 use std::{
     str::FromStr,
     sync::{Arc, Mutex},
-    usize,
 };
 use syn::{parse2, ItemMod};
 
@@ -88,7 +87,7 @@ impl Default for SpanInspectorRust {
 
 impl qobject::SpanInspector {
     unsafe fn output_document(&self) -> Pin<&mut QTextDocument> {
-        if self.output == ptr::null_mut() {
+        if self.output.is_null() {
             panic!("Output document must be set!");
         }
         let output = unsafe { &*self.output };
@@ -134,9 +133,9 @@ impl qobject::SpanInspector {
                     else {
                         return;
                     };
-                    Self::build_html(prettyplease::unparse(&file), span_data)
+                    Self::build_html(&prettyplease::unparse(&file), span_data)
                 }
-                Err(error) => Self::build_error_html(error),
+                Err(error) => Self::build_error_html(&error),
             };
             qt_thread
                 .queue(move |this| {
@@ -196,10 +195,9 @@ impl qobject::SpanInspector {
             .and_then(|parser| cxx_qt_gen::GeneratedRustBlocks::from(&parser))
             .map(|generated_rust| write_rust(&generated_rust, None))
             .unwrap_or_else(|err| err.to_compile_error())
-            .into()
     }
 
-    fn build_error_html(input: String) -> String {
+    fn build_error_html(input: &str) -> String {
         let style = String::from(
             "
             <style>
@@ -210,10 +208,7 @@ impl qobject::SpanInspector {
             </style> 
         ",
         );
-        format!(
-            "<!DOCTYPE html><html><head>{}</head><body><p class=\"error\">{}</p></body></html>",
-            style, input
-        )
+        format!("<!DOCTYPE html><html><head>{style}</head><body><p class=\"error\">{input}</p></body></html>")
     }
 
     fn flatten_tokenstream(stream: TokenStream) -> Vec<TokenTree> {
@@ -231,10 +226,9 @@ impl qobject::SpanInspector {
         output
     }
 
-    fn build_html(input: String, span_data: Vec<(bool, bool)>) -> String {
-        let flat_tokenstream =
-            Self::flatten_tokenstream(TokenStream::from_str(input.as_str()).unwrap());
-        let mut highlighted_string = input.clone();
+    fn build_html(input: &str, span_data: Vec<(bool, bool)>) -> String {
+        let flat_tokenstream = Self::flatten_tokenstream(TokenStream::from_str(input).unwrap());
+        let mut highlighted_string = input.to_string();
 
         let mut token_position = span_data.len();
         for token in flat_tokenstream.into_iter().rev() {
@@ -242,7 +236,7 @@ impl qobject::SpanInspector {
             // This `if` statement simply ignores them.
             let token_string = token.to_string();
             if !matches!(token_string.as_str(), "," | "{" | "}") {
-                token_position = token_position - 1;
+                token_position -= 1;
             }
             if span_data.get(token_position).unwrap().0 {
                 highlighted_string.replace_range(
@@ -287,13 +281,10 @@ impl qobject::SpanInspector {
         ",
         );
 
-        format!(
-            "<!DOCTYPE html><html><head>{}</head><body><pre>{}</pre></body></html>",
-            style, highlighted_string
-        )
+        format!("<!DOCTYPE html><html><head>{style}</head><body><pre>{highlighted_string}</pre></body></html>")
     }
 
-    fn sanitize(input: &String) -> String {
+    fn sanitize(input: &str) -> String {
         input
             .chars()
             .map(|char| match char {
