@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qmargins.h");
         type QMargins = crate::QMargins;
 
-        include!("cxx-qt-lib/qvector_QMargins.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QMargins.h");
         type QVector_QMargins = crate::QVector<QMargins>;
     }
 

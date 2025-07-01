@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
 
-        include!("cxx-qt-lib/qvector_QRect.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QRect.h");
         type QVector_QRect = crate::QVector<QRect>;
     }
 

@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qline.h");
         type QLine = crate::QLine;
 
-        include!("cxx-qt-lib/qvector_QLine.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QLine.h");
         type QVector_QLine = crate::QVector<QLine>;
     }
 
