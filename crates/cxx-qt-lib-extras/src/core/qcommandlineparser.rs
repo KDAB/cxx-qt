@@ -37,9 +37,9 @@ mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib-extras/qcommandlineparser.h");
+        include!("cxx-qt-lib-extras/core/qcommandlineparser.h");
         type QCommandLineParser = super::QCommandLineParser;
-        include!("cxx-qt-lib-extras/qcommandlineoption.h");
+        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
         type QCommandLineOption = crate::QCommandLineOption;
 
         include!("cxx-qt-lib/qstring.h");

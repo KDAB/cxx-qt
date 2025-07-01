@@ -8,7 +8,7 @@ use cxx::{type_id, ExternType};
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib-extras/qelapsedtimer.h");
+        include!("cxx-qt-lib-extras/core/qelapsedtimer.h");
         type QElapsedTimer = crate::QElapsedTimer;
 
         /// Returns `false` if the timer has never been started or invalidated by a call to [`invalidate`](Self::invalidate).

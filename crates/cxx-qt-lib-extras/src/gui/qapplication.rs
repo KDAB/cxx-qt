@@ -20,7 +20,7 @@ mod ffi {
         include!("cxx-qt-lib/qfont.h");
         type QFont = cxx_qt_lib::QFont;
 
-        include!("cxx-qt-lib-extras/qapplication.h");
+        include!("cxx-qt-lib-extras/gui/qapplication.h");
         /// The `QApplication` class manages the GUI application's control flow and main settings.
         ///
         /// Qt Documentation: [QApplication](https://doc.qt.io/qt/qapplication.html#details)

@@ -6,7 +6,7 @@
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qset_u16.h");
+        include!("cxx-qt-lib/core/qset/qset_u16.h");
         type QSet_u16 = crate::QSet<u16>;
     }
 

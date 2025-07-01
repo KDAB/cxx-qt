@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qsizef.h");
         type QSizeF = crate::QSizeF;
 
-        include!("cxx-qt-lib/qvector_QSizeF.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QSizeF.h");
         type QVector_QSizeF = crate::QVector<QSizeF>;
     }
 

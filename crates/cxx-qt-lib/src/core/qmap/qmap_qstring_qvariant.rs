@@ -16,7 +16,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = crate::QVariant;
 
-        include!("cxx-qt-lib/qmap_QString_QVariant.h");
+        include!("cxx-qt-lib/core/qmap/qmap_QString_QVariant.h");
         type QMap_QString_QVariant = crate::QMap<super::QMapPair_QString_QVariant>;
     }
 
