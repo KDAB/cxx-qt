@@ -118,9 +118,7 @@ mod qvector;
 pub use qvector::{QVector, QVectorElement};
 
 mod qtlogging;
-pub use qtlogging::{
-    q_format_log_message, q_set_message_pattern, qt_message_output, QMessageLogContext, QtMsgType,
-};
+pub use qtlogging::{q_critical, q_debug, q_fatal, q_info, q_set_message_pattern, q_warning};
 
 #[cxx::bridge]
 mod ffi {

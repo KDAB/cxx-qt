@@ -45,6 +45,7 @@
 #include "qstringlist.h"
 #include "qtime.h"
 #include "qtimezone.h"
+#include "qtlogging.h"
 #include "qurl.h"
 #include "qvariant.h"
 #include "qvector.h"
@@ -97,6 +98,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QStringListTest));
   runTest(QScopedPointer<QObject>(new QTimeTest));
   runTest(QScopedPointer<QObject>(new QTimeZoneTest));
+  runTest(QScopedPointer<QObject>(new QtLoggingTest));
   runTest(QScopedPointer<QObject>(new QUrlTest));
   runTest(QScopedPointer<QObject>(new QVariantTest));
   runTest(QScopedPointer<QObject>(new QVectorTest));
