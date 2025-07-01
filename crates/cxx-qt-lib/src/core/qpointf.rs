@@ -7,6 +7,8 @@
 use cxx::{type_id, ExternType};
 use std::fmt;
 
+use crate::QPoint;
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -17,29 +19,29 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        /// Returns true if both the x and y coordinates are set to 0.0 (ignoring the sign); otherwise returns false.
+        /// Returns `true` if both the x and y coordinates are set to 0.0 (ignoring the sign); otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QPointF) -> bool;
 
-        /// Returns the sum of the absolute values of x() and y(),
+        /// Returns the sum of the absolute values of `self.x()` and `self.y()`,
         /// traditionally known as the "Manhattan length" of the vector from the origin to the point.
         #[rust_name = "manhattan_length"]
         fn manhattanLength(self: &QPointF) -> f64;
 
-        /// Sets the x coordinate of this point to the given finite x coordinate.
+        /// Sets the x coordinate of this point to the given finite `x` coordinate.
         #[rust_name = "set_x"]
         fn setX(self: &mut QPointF, x: f64);
 
-        /// Sets the y coordinate of this point to the given finite y coordinate.
+        /// Sets the y coordinate of this point to the given finite `y` coordinate.
         #[rust_name = "set_y"]
         fn setY(self: &mut QPointF, y: f64);
 
         /// Rounds the coordinates of this point to the nearest integer,
-        /// and returns a QPoint object with the rounded coordinates.
+        /// and returns a `QPoint` object with the rounded coordinates.
         #[rust_name = "to_point"]
         fn toPoint(self: &QPointF) -> QPoint;
 
-        /// Returns a point with x and y coordinates exchanged
+        /// Returns a point with x and y coordinates exchanged.
         fn transposed(self: &QPointF) -> QPointF;
 
         /// Returns the x coordinate of this point.
@@ -87,7 +89,9 @@ mod ffi {
     }
 }
 
-/// The QPointF struct defines a point in the plane using floating point precision.
+/// The `QPointF` class defines a point in the plane using floating point precision.
+///
+/// Qt Documentation: [QPointF](https://doc.qt.io/qt/qpointf.html#details)
 #[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QPointF {
@@ -96,19 +100,19 @@ pub struct QPointF {
 }
 
 impl QPointF {
-    /// Returns the dot product of p1 and p2.
+    /// Returns the dot product of `p1` and `p2`.
     pub fn dot_product(p1: &QPointF, p2: &QPointF) -> f64 {
         ffi::qpointf_dot_product(p1, p2)
     }
 
-    /// Constructs a point with the given coordinates (x, y).
-    pub fn new(x: f64, y: f64) -> Self {
-        ffi::qpointf_init(x, y)
+    /// Constructs a point with the given coordinates (`xpos`, `ypos`).
+    pub fn new(xpos: f64, ypos: f64) -> Self {
+        ffi::qpointf_init(xpos, ypos)
     }
 }
 
 impl Default for QPointF {
-    /// Constructs a null point, i.e. with coordinates (0.0, 0.0)
+    /// Constructs a null point, i.e. with coordinates (0.0, 0.0).
     fn default() -> Self {
         ffi::qpointf_init_default()
     }
@@ -120,18 +124,18 @@ impl fmt::Display for QPointF {
     }
 }
 
-impl From<&ffi::QPoint> for QPointF {
-    /// Constructs a copy of the given point.
-    fn from(point: &ffi::QPoint) -> Self {
+impl From<&QPoint> for QPointF {
+    /// Constructs a copy of the given `point`.
+    fn from(point: &QPoint) -> Self {
         ffi::qpointf_from_qpoint(point)
     }
 }
 
-impl From<QPointF> for ffi::QPoint {
-    /// Rounds the coordinates of this point to the nearest integer,
-    /// and returns a QPoint object with the rounded coordinates.
-    fn from(value: QPointF) -> Self {
-        value.to_point()
+impl From<QPointF> for QPoint {
+    /// Rounds the coordinates of `point` to the nearest integer,
+    /// and returns a `QPoint` object with the rounded coordinates.
+    fn from(point: QPointF) -> Self {
+        point.to_point()
     }
 }
 

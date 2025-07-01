@@ -21,6 +21,9 @@ mod ffi {
         type QFont = cxx_qt_lib::QFont;
 
         include!("cxx-qt-lib-extras/gui/qapplication.h");
+        /// The `QApplication` class manages the GUI application's control flow and main settings.
+        ///
+        /// Qt Documentation: [QApplication](https://doc.qt.io/qt/qapplication.html#details)
         type QApplication;
     }
 
@@ -94,25 +97,28 @@ mod ffi {
 pub use ffi::QApplication;
 
 impl QApplication {
-    /// Prepends path to the beginning of the library path list,
+    /// Prepends `path` to the beginning of the library path list,
     /// ensuring that it is searched for libraries first.
-    /// If path is empty or already in the path list, the path list is not changed.
+    /// If `path` is empty or already in the path list, the path list is not changed.
     pub fn add_library_path(self: Pin<&mut Self>, path: &QString) {
         ffi::qapplication_add_library_path(self, path);
     }
 
-    /// The name of this application
+    /// Returns the name of this application.
     pub fn application_name(&self) -> QString {
         ffi::qapplication_application_name(self)
     }
 
-    /// The version of this application
+    /// Returns the version of this application.
     pub fn application_version(&self) -> QString {
         ffi::qapplication_application_version(self)
     }
 
-    /// Enters the main event loop and waits until exit() is called,
-    /// and then returns the value that was set to exit() (which is 0 if exit() is called via quit()).
+    /// Enters the main event loop and waits until [exit]\() is called,
+    /// and then returns the value that was set to [exit]\() (which is 0 if [exit]\() is called via [quit]\()).
+    ///
+    /// [exit]: https://doc.qt.io/qt/qcoreapplication.html#exit
+    /// [quit]: https://doc.qt.io/qt/qcoreapplication.html#quit
     pub fn exec(self: Pin<&mut Self>) -> i32 {
         ffi::qapplication_exec(self)
     }
@@ -128,7 +134,7 @@ impl QApplication {
     }
 
     /// Initializes the window system and constructs an application object.
-    /// Standard [Qt command line arguments](https://doc.qt.io/qt-6/qapplication.html#supported-command-line-options) are handled automatically.
+    /// Standard [Qt command line arguments](https://doc.qt.io/qt/qguiapplication.html#supported-command-line-options) are handled automatically.
     pub fn new() -> cxx::UniquePtr<Self> {
         let mut vector = QVector::<QByteArray>::default();
 
@@ -152,48 +158,48 @@ impl QApplication {
         ffi::qapplication_new(&vector)
     }
 
-    /// The Internet domain of the organization that wrote this application
+    /// Returns the Internet domain of the organization that wrote this application.
     pub fn organization_domain(&self) -> QString {
         ffi::qapplication_organization_domain(self)
     }
 
-    /// The name of the organization that wrote this application
+    /// Returns the name of the organization that wrote this application.
     pub fn organization_name(&self) -> QString {
         ffi::qapplication_organization_name(self)
     }
 
-    /// Set the name of this application
+    /// Set the `name` of this application.
     pub fn set_application_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qapplication_set_application_name(self, name);
     }
 
-    /// Removes path from the library path list. If path is empty or not in the path list, the list is not changed.
+    /// Removes `path` from the library path list. If `path` is empty or not in the path list, the list is not changed.
     pub fn remove_library_path(&self, path: &QString) {
         ffi::qapplication_remove_library_path(self, path)
     }
 
-    /// Set the version of this application
+    /// Set the `version` of this application.
     pub fn set_application_version(self: Pin<&mut Self>, version: &QString) {
         ffi::qapplication_set_application_version(self, version);
     }
 
-    /// Changes the default application font to font.
+    /// Changes the default application font to `font`.
     pub fn set_application_font(self: Pin<&mut Self>, font: &QFont) {
         ffi::qapplication_set_font(self, font);
     }
 
-    /// Sets the list of directories to search when loading plugins with QLibrary to paths.
-    /// All existing paths will be deleted and the path list will consist of the paths given in paths and the path to the application.
+    /// Sets the list of directories to search when loading plugins with [QLibrary](https://doc.qt.io/qt/qlibrary.html) to `paths`.
+    /// All existing paths will be deleted and the path list will consist of the paths given in `paths` and the path to the application.
     pub fn set_library_paths(self: Pin<&mut Self>, paths: &QStringList) {
         ffi::qapplication_set_library_paths(self, paths);
     }
 
-    /// Sets the Internet domain of the organization that wrote this application
+    /// Sets the Internet `domain` of the organization that wrote this application.
     pub fn set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
         ffi::qapplication_set_organization_domain(self, domain);
     }
 
-    /// Sets the name of the organization that wrote this application
+    /// Sets the `name` of the organization that wrote this application.
     pub fn set_organization_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qapplication_set_organization_name(self, name);
     }

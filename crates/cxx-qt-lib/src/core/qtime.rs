@@ -21,33 +21,47 @@ mod ffi {
         type QTime = super::QTime;
         type QString = crate::QString;
 
-        /// Returns a QTime object containing a time ms milliseconds later
-        /// than the time of this object (or earlier if ms is negative).
+        /// Returns a `QTime` object containing a time `ms` milliseconds later
+        /// than the time of this object (or earlier if `ms` is negative).
+        ///
+        /// Note that the time will wrap if it passes midnight.
+        ///
+        /// Returns a null time if this time is invalid.
         #[rust_name = "add_msecs"]
         fn addMSecs(self: &QTime, ms: i32) -> QTime;
 
-        /// Returns a QTime object containing a time s seconds later than the
-        /// time of this object (or earlier if s is negative).
+        /// Returns a `QTime` object containing a time `s` seconds later than the
+        /// time of this object (or earlier if `s` is negative).
+        ///
+        /// Note that the time will wrap if it passes midnight.
+        ///
+        /// Returns a null time if this time is invalid.
         #[rust_name = "add_secs"]
         fn addSecs(self: &QTime, s: i32) -> QTime;
 
         /// Returns the hour part (0 to 23) of the time.
+        ///
+        /// Returns -1 if the time is invalid.
         fn hour(self: &QTime) -> i32;
 
-        /// Returns true if the time is null (i.e., the QTime object was
-        /// constructed using the default constructor); otherwise returns false.
+        /// Returns `true` if the time is null (i.e., the `QTime` object was
+        /// constructed using the default constructor); otherwise returns `false`.
         /// A null time is also an invalid time.
         #[rust_name = "is_null"]
         fn isNull(self: &QTime) -> bool;
 
-        /// Returns true if the time is valid; otherwise returns false.
+        /// Returns `true` if the time is valid; otherwise returns `false`. For example, the time 23:30:55.746 is valid, but 24:12:30 is invalid.
         #[rust_name = "is_valid"]
         fn isValid(self: &QTime) -> bool;
 
         /// Returns the minute part (0 to 59) of the time.
+        ///
+        /// Returns -1 if the time is invalid.
         fn minute(self: &QTime) -> i32;
 
         /// Returns the millisecond part (0 to 999) of the time.
+        ///
+        /// Returns -1 if the time is invalid.
         fn msec(self: &QTime) -> i32;
 
         /// Returns the number of msecs since the start of the day, i.e. since 00:00:00.
@@ -55,17 +69,19 @@ mod ffi {
         fn msecsSinceStartOfDay(self: &QTime) -> i32;
 
         /// Returns the second part (0 to 59) of the time.
+        ///
+        /// Returns -1 if the time is invalid.
         fn second(self: &QTime) -> i32;
 
-        /// Sets the time to hour h, minute m, seconds s and milliseconds ms.
+        /// Sets the time to hour `h`, minute `m`, seconds `s` and milliseconds `ms`.
         #[rust_name = "set_hms"]
         fn setHMS(self: &mut QTime, h: i32, m: i32, s: i32, ms: i32) -> bool;
 
-        /// Returns the time as a string. The format parameter determines the format of the result string.
+        /// Returns the time as a string. The `format` parameter determines the format of the string.
         #[rust_name = "format"]
         fn toString(self: &QTime, format: &QString) -> QString;
 
-        /// Returns the time as a string. The format parameter determines the format of the string.
+        /// Returns the time as a string. The `format` parameter determines the format of the string.
         #[rust_name = "format_enum"]
         fn toString(self: &QTime, format: DateFormat) -> QString;
     }
@@ -116,7 +132,9 @@ mod ffi {
     }
 }
 
-/// The QTime class provides clock time functions.
+/// The `QTime` class provides clock time functions.
+///
+/// Qt Documentation: [QTime](https://doc.qt.io/qt/qtime.html#details)
 #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(C)]
 pub struct QTime {
@@ -125,45 +143,61 @@ pub struct QTime {
 
 impl QTime {
     /// Returns the current time as reported by the system clock.
+    ///
+    /// Note that the accuracy depends on the accuracy of the underlying operating system; not all systems provide 1-millisecond accuracy.
+    ///
+    /// Furthermore, the value only increases within each day; it shall drop by 24 hours each time midnight passes; and, beside this, changes in it may not correspond to elapsed time, if a daylight-saving transition intervenes.
     pub fn current_time() -> Self {
         ffi::qtime_current_time()
     }
 
-    /// Returns a new QTime instance with the time set to the number of msecs
+    /// Returns a new `QTime` instance with the time set to the number of `msecs`
     /// since the start of the day, i.e. since 00:00:00.
+    ///
+    /// If `msecs` falls outside the valid range an invalid `QTime` will be returned.
     pub fn from_msecs_since_start_of_day(msecs: i32) -> Self {
         ffi::qtime_from_msecs_since_start_of_day(msecs)
     }
 
-    /// Returns the QTime represented by the string, using the format given, or an invalid time if the string cannot be parsed.
-    pub fn from_string(string: &ffi::QString, format: &ffi::QString) -> Self {
+    /// Returns the time represented in the `string` as a `QTime` using the `format` given, or an invalid time if the string cannot be parsed.
+    pub fn from_string(string: &QString, format: &QString) -> Self {
         ffi::qtime_from_string(string, format)
     }
 
-    /// Returns the time represented in the string as a QTime using the format given, or an invalid time if this is not possible.
-    pub fn from_string_enum(string: &ffi::QString, format: ffi::DateFormat) -> Self {
+    /// Returns the time represented in the `string` as a `QTime` using the `format` given, or an invalid time if this is not possible.
+    pub fn from_string_enum(string: &QString, format: DateFormat) -> Self {
         ffi::qtime_from_string_enum(string, format)
     }
 
-    /// Returns the number of milliseconds from this time to t.
-    /// If t is earlier than this time, the number of milliseconds returned is negative.
+    /// Returns the number of milliseconds from this time to `t`.
+    /// If `t` is earlier than this time, the number of milliseconds returned is negative.
+    ///
+    /// Because `QTime` measures time within a day and there are 86400 seconds in a day, the result is always between -86400000 and 86400000 ms.
+    ///
+    /// Returns 0 if either time is invalid.
     pub fn msecs_to(&self, t: Self) -> i32 {
         ffi::qtime_msecs_to(self, t)
     }
 
-    /// Constructs a time with hour h, minute m, seconds s and milliseconds ms.
+    /// Constructs a time with hour `h`, minute `m`, seconds `s` and milliseconds `ms`.
     pub fn new(h: i32, m: i32, s: i32, ms: i32) -> Self {
         ffi::qtime_init(h, m, s, ms)
     }
 
-    /// Returns the number of seconds from this time to t.
-    /// If t is earlier than this time, the number of seconds returned is negative.
+    /// Returns the number of seconds from this time to `t`.
+    /// If `t` is earlier than this time, the number of seconds returned is negative.
+    ///
+    /// Because `QTime` measures time within a day and there are 86400 seconds in a day, the result is always between -86400 and 86400.
+    ///
+    /// This function does not take into account any milliseconds.
+    ///
+    /// Returns 0 if either time is invalid.
     pub fn secs_to(&self, t: Self) -> i32 {
         ffi::qtime_secs_to(self, t)
     }
 
-    /// Returns true if the specified time is valid; otherwise returns false.
-    /// The time is valid if h is in the range 0 to 23, m and s are in the range 0 to 59, and ms is in the range 0 to 999.
+    /// Returns `true` if the specified time is valid; otherwise returns `false`.
+    /// The time is valid if `h` is in the range 0 to 23, `m` and `s` are in the range 0 to 59, and `ms` is in the range 0 to 999.
     pub fn is_valid_time(h: i32, m: i32, s: i32, ms: i32) -> bool {
         ffi::qtime_is_valid(h, m, s, ms)
     }
@@ -178,7 +212,7 @@ impl Default for QTime {
 
 impl fmt::Display for QTime {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.format_enum(ffi::DateFormat::TextDate).fmt(f)
+        self.format_enum(DateFormat::TextDate).fmt(f)
     }
 }
 
@@ -191,12 +225,14 @@ impl fmt::Debug for QTime {
 #[cfg(feature = "chrono")]
 use chrono::Timelike;
 
+use crate::{DateFormat, QString};
+
 #[cfg(feature = "chrono")]
 impl TryFrom<chrono::NaiveTime> for QTime {
     type Error = &'static str;
 
-    /// Errors if [chrono::NaiveTime] has milliseconds larger than 999,
-    /// as Qt does not support representing a leap second in this way
+    /// Errors if [`NaiveTime`](chrono::NaiveTime) has milliseconds larger than 999,
+    /// as Qt does not support representing a leap second in this way.
     fn try_from(value: chrono::NaiveTime) -> Result<Self, Self::Error> {
         let ms = (value.nanosecond() / 1_000_000) as i32;
         // NaiveTime can have a nanosecond larger than 1 second

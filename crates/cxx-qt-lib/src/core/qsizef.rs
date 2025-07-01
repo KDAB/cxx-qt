@@ -7,6 +7,8 @@
 use cxx::{type_id, ExternType};
 use std::fmt;
 
+use crate::QSize;
+
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
@@ -25,48 +27,48 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        /// Returns a size holding the minimum width and height of this size and the given otherSize.
+        /// Returns a size holding the minimum width and height of this size and the given `other_size`.
         #[rust_name = "bounded_to"]
         fn boundedTo(self: &QSizeF, other_size: &QSizeF) -> QSizeF;
 
-        /// Returns a size holding the maximum width and height of this size and the given otherSize.
+        /// Returns a size holding the maximum width and height of this size and the given `other_size`.
         #[rust_name = "expanded_to"]
         fn expandedTo(self: &QSizeF, other_size: &QSizeF) -> QSizeF;
 
         /// Returns the height.
         fn height(self: &QSizeF) -> f64;
 
-        /// Returns true if either of the width and height is less than or equal to 0; otherwise returns false.
+        /// Returns `true` if either of the width and height is less than or equal to 0; otherwise returns `false`.
         #[rust_name = "is_empty"]
         fn isEmpty(self: &QSizeF) -> bool;
 
-        /// Returns true if both the width and height are 0.0 (ignoring the sign); otherwise returns false.
+        /// Returns `true` if both the width and height are 0.0 (ignoring the sign); otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QSizeF) -> bool;
 
-        /// Returns true if both the width and height are equal to or greater than 0; otherwise returns false.
+        /// Returns `true` if both the width and height are equal to or greater than 0; otherwise returns `false`.
         #[rust_name = "is_valid"]
         fn isValid(self: &QSizeF) -> bool;
 
-        /// Returns the size that results from growing this size by margins.
+        /// Returns the size that results from growing this size by `margins`.
         #[rust_name = "grown_by"]
         fn grownBy(self: &QSizeF, margins: QMarginsF) -> QSizeF;
 
-        /// Scales the size to a rectangle with the given size, according to the specified mode.
+        /// Scales the size to a rectangle with the given `size`, according to the specified `mode`.
         fn scale(self: &mut QSizeF, size: &QSizeF, mode: AspectRatioMode);
 
-        /// Returns a size scaled to a rectangle with the given size s, according to the specified mode.
+        /// Returns a size scaled to a rectangle with the given size `s`, according to the specified `mode`.
         fn scaled(self: &QSizeF, s: &QSizeF, mode: AspectRatioMode) -> QSizeF;
 
-        /// Sets the height to the given finite height.
+        /// Sets the height to the given finite `height`.
         #[rust_name = "set_height"]
         fn setHeight(self: &mut QSizeF, height: f64);
 
-        /// Sets the width to the given finite width.
+        /// Sets the width to the given finite `width`.
         #[rust_name = "set_width"]
         fn setWidth(self: &mut QSizeF, width: f64);
 
-        /// Returns the size that results from shrinking this size by margins.
+        /// Returns the size that results from shrinking this size by `margins`.
         #[rust_name = "shrunk_by"]
         fn shrunkBy(self: &QSizeF, margins: QMarginsF) -> QSizeF;
 
@@ -117,7 +119,9 @@ mod ffi {
     }
 }
 
-/// The QSizeF class defines the size of a two-dimensional object using floating point precision.
+/// The `QSizeF` class defines the size of a two-dimensional object using floating point precision.
+///
+/// Qt Documentation: [QSizeF](https://doc.qt.io/qt/qsizef.html#details)
 #[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QSizeF {
@@ -126,9 +130,9 @@ pub struct QSizeF {
 }
 
 impl QSizeF {
-    /// Constructs a size with the given width and height.
-    pub fn new(w: f64, h: f64) -> Self {
-        ffi::qsizef_init(w, h)
+    /// Constructs a size with the given `width` and `height`.
+    pub fn new(width: f64, height: f64) -> Self {
+        ffi::qsizef_init(width, height)
     }
 }
 
@@ -145,14 +149,14 @@ impl fmt::Display for QSizeF {
     }
 }
 
-impl From<&ffi::QSize> for QSizeF {
-    /// Constructs a size with floating point accuracy from the given size.
-    fn from(size: &ffi::QSize) -> Self {
+impl From<&QSize> for QSizeF {
+    /// Constructs a size with floating point accuracy from the given `size`.
+    fn from(size: &QSize) -> Self {
         ffi::qsizef_from_qsize(size)
     }
 }
 
-impl From<QSizeF> for ffi::QSize {
+impl From<QSizeF> for QSize {
     /// Returns an integer based copy of this size.
     ///
     /// Note that the coordinates in the returned size will be rounded to the nearest integer.

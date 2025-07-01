@@ -34,44 +34,53 @@ mod ffi {
         include!("cxx-qt-lib/qpolygon.h");
         type QPolygon = super::QPolygon;
 
-        /// Returns the bounding rectangle of the polygon, or QRect(0, 0, 0, 0) if the polygon is empty.
+        /// Returns the bounding rectangle of the polygon, or `QRect::new(0, 0, 0, 0)` if the polygon is empty.
         #[rust_name = "bounding_rect"]
         fn boundingRect(self: &QPolygon) -> QRect;
 
-        /// Returns true if the given point is inside the polygon according to the specified fillRule; otherwise returns false.
+        /// Returns `true` if the given `point` is inside the polygon according to the specified `fill_rule`; otherwise returns `false`.
         #[rust_name = "contains_point"]
-        fn containsPoint(self: &QPolygon, point: &QPoint, fillRule: FillRule) -> bool;
+        fn containsPoint(self: &QPolygon, point: &QPoint, fill_rule: FillRule) -> bool;
 
-        /// Returns a polygon which is the intersection of this polygon and r.
+        /// Returns a polygon which is the intersection of this polygon and `r`.
+        ///
+        /// Set operations on polygons will treat the polygons as areas. Non-closed polygons will be treated as implicitly closed.
         fn intersected(self: &QPolygon, r: &QPolygon) -> QPolygon;
 
-        /// Returns true if the current polygon intersects at any point the given polygon p.
-        /// Also returns true if the current polygon contains or is contained by any part of p.
+        /// Returns `true` if the current polygon intersects at any point the given polygon `p`.
+        /// Also returns `true` if the current polygon contains or is contained by any part of `p`.
+        ///
+        /// Set operations on polygons will treat the polygons as areas. Non-closed polygons will be treated as implicitly closed.
         fn intersects(self: &QPolygon, p: &QPolygon) -> bool;
 
-        /// Returns the point at the given index.
+        /// Returns the point at the given `index`.
         fn point(self: &QPolygon, index: i32) -> QPoint;
 
-        /// Sets the point at the given index to the given point.
+        /// Sets the point at the given `index` to the given `point`.
         #[rust_name = "set_point"]
         fn setPoint(self: &mut QPolygon, index: i32, point: &QPoint);
 
-        /// Returns a polygon which is r subtracted from this polygon.
+        /// Returns a polygon which is `r` subtracted from this polygon.
+        ///
+        /// Set operations on polygons will treat the polygons as areas. Non-closed polygons will be treated as implicitly closed.
         fn subtracted(self: &QPolygon, r: &QPolygon) -> QPolygon;
 
         /// Returns this polygon as a polygon with floating point accuracy.
-        /// since Qt 6.4.
+        ///
+        /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_polygonf"]
         fn toPolygonF(self: &QPolygon) -> QPolygonF;
 
-        /// Translates all points in the polygon by (dx, dy).
+        /// Translates all points in the polygon by (`dx`, `dy`).
         fn translate(self: &mut QPolygon, dx: i32, dy: i32);
 
-        /// Returns a copy of the polygon that is translated by (dx, dy).
+        /// Returns a copy of the polygon that is translated by (`dx`, `dy`).
         fn translated(self: &QPolygon, dx: i32, dy: i32) -> QPolygon;
 
-        /// Returns a polygon which is the union of this polygon and r.
+        /// Returns a polygon which is the union of this polygon and `r`.
+        ///
+        /// Set operations on polygons, will treat the polygons as areas, and implicitly close the polygon.
         fn united(self: &QPolygon, r: &QPolygon) -> QPolygon;
     }
 
@@ -118,7 +127,9 @@ mod ffi {
     }
 }
 
-/// The QPolygon class provides a list of QPoint.
+/// The `QPolygon` class provides a list of points using integer precision.
+///
+/// Qt Documentation: [QPolygon](https://doc.qt.io/qt/qpolygon.html#details)
 #[repr(C)]
 pub struct QPolygon {
     /// The layout has changed between Qt 5 and Qt 6
@@ -132,7 +143,7 @@ pub struct QPolygon {
 }
 
 impl Default for QPolygon {
-    /// Constructs a copy of the given polygon.
+    /// Constructs a polygon with no points.
     fn default() -> Self {
         ffi::qpolygon_init_default()
     }
@@ -151,11 +162,13 @@ impl Clone for QPolygon {
 }
 
 impl QPolygon {
-    /// Constructs a polygon from the given rectangle. If closed is false, the polygon
+    /// Constructs a polygon from the given `rectangle`. If `closed` is `false`, the polygon
     /// just contains the four points of the rectangle ordered clockwise, otherwise the
-    /// polygon's fifth point is set to rectangle.topLeft().
-    pub fn new(rect: &QRect, closed: bool) -> Self {
-        ffi::qpolygon_init_qrect(rect, closed)
+    /// polygon's fifth point is set to `rectangle.top_left()`.
+    ///
+    /// Note that the bottom-right corner of the rectangle is located at (`rectangle.x() + rectangle.width()`, `rectangle.y() + rectangle.height()`).
+    pub fn new(rectangle: &QRect, closed: bool) -> Self {
+        ffi::qpolygon_init_qrect(rectangle, closed)
     }
 }
 

@@ -33,6 +33,10 @@ mod ffi {
 
     unsafe extern "C++Qt" {
         include!("cxx-qt-lib/qguiapplication.h");
+
+        /// The `QGuiApplication` class manages the GUI application's control flow and main settings.
+        ///
+        /// Qt Documentation: [QGuiApplication](https://doc.qt.io/qt/qguiapplication.html#details)
         #[qobject]
         #[base = QCoreApplication]
         type QGuiApplication;
@@ -123,25 +127,28 @@ mod ffi {
 pub use ffi::QGuiApplication;
 
 impl QGuiApplication {
-    /// Prepends path to the beginning of the library path list,
+    /// Prepends `path` to the beginning of the library path list,
     /// ensuring that it is searched for libraries first.
-    /// If path is empty or already in the path list, the path list is not changed.
+    /// If `path` is empty or already in the path list, the path list is not changed.
     pub fn add_library_path(self: Pin<&mut Self>, path: &QString) {
         ffi::qguiapplication_add_library_path(self, path);
     }
 
-    /// The name of this application
+    /// Returns the name of this application.
     pub fn application_name(&self) -> QString {
         ffi::qguiapplication_application_name(self)
     }
 
-    /// The version of this application
+    /// Returns the version of this application.
     pub fn application_version(&self) -> QString {
         ffi::qguiapplication_application_version(self)
     }
 
-    /// Enters the main event loop and waits until exit() is called,
-    /// and then returns the value that was set to exit() (which is 0 if exit() is called via quit()).
+    /// Enters the main event loop and waits until [exit]\() is called,
+    /// and then returns the value that was set to [exit]\() (which is 0 if [exit]\() is called via [quit]\()).
+    ///
+    /// [exit]: https://doc.qt.io/qt/qcoreapplication.html#exit
+    /// [quit]: https://doc.qt.io/qt/qcoreapplication.html#quit
     pub fn exec(self: Pin<&mut Self>) -> i32 {
         ffi::qguiapplication_exec(self)
     }
@@ -157,7 +164,7 @@ impl QGuiApplication {
     }
 
     /// Initializes the window system and constructs an application object.
-    /// Standard [Qt command line arguments](https://doc.qt.io/qt-6/qguiapplication.html#supported-command-line-options) are handled automatically.
+    /// Standard [Qt command line arguments](https://doc.qt.io/qt/qguiapplication.html#supported-command-line-options) are handled automatically.
     pub fn new() -> cxx::UniquePtr<Self> {
         let mut vector = QVector::<QByteArray>::default();
 
@@ -181,53 +188,53 @@ impl QGuiApplication {
         ffi::qguiapplication_new(&vector)
     }
 
-    /// The Internet domain of the organization that wrote this application
+    /// Returns the Internet domain of the organization that wrote this application.
     pub fn organization_domain(&self) -> QString {
         ffi::qguiapplication_organization_domain(self)
     }
 
-    /// The name of the organization that wrote this application
+    /// Returns the name of the organization that wrote this application.
     pub fn organization_name(&self) -> QString {
         ffi::qguiapplication_organization_name(self)
     }
 
-    /// Set the name of this application
+    /// Set the `name` of this application.
     pub fn set_application_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qguiapplication_set_application_name(self, name);
     }
 
-    /// Removes path from the library path list. If path is empty or not in the path list, the list is not changed.
+    /// Removes `path` from the library path list. If `path` is empty or not in the path list, the list is not changed.
     pub fn remove_library_path(&self, path: &QString) {
         ffi::qguiapplication_remove_library_path(self, path)
     }
 
-    /// Set the version of this application
+    /// Set the `version` of this application.
     pub fn set_application_version(self: Pin<&mut Self>, version: &QString) {
         ffi::qguiapplication_set_application_version(self, version);
     }
 
-    /// Changes the default application font to font.
+    /// Changes the default application font to `font`.
     pub fn set_application_font(self: Pin<&mut Self>, font: &QFont) {
         ffi::qguiapplication_set_font(font);
     }
 
-    /// Sets the list of directories to search when loading plugins with QLibrary to paths.
-    /// All existing paths will be deleted and the path list will consist of the paths given in paths and the path to the application.
+    /// Sets the list of directories to search when loading plugins with [QLibrary](https://doc.qt.io/qt/qlibrary.html) to `paths`.
+    /// All existing paths will be deleted and the path list will consist of the paths given in `paths` and the path to the application.
     pub fn set_library_paths(self: Pin<&mut Self>, paths: &QStringList) {
         ffi::qguiapplication_set_library_paths(self, paths);
     }
 
-    /// Sets the Internet domain of the organization that wrote this application
+    /// Sets the Internet `domain` of the organization that wrote this application.
     pub fn set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
         ffi::qguiapplication_set_organization_domain(self, domain);
     }
 
-    /// Sets the name of the organization that wrote this application
+    /// Sets the `name` of the organization that wrote this application.
     pub fn set_organization_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qguiapplication_set_organization_name(self, name);
     }
 
-    /// Changes the desktop file name to name.
+    /// Changes the desktop file name to `name`.
     pub fn set_desktop_file_name(name: &QString) {
         ffi::qguiapplication_set_desktop_file_name(name);
     }
@@ -239,33 +246,33 @@ impl QGuiApplication {
 
     /// Returns the current state of the modifier keys on the keyboard. The current state is updated
     /// synchronously as the event queue is emptied of events that will spontaneously change the
-    /// keyboard state (QEvent::KeyPress and QEvent::KeyRelease events).
+    /// keyboard state ([QEvent::KeyPress](https://doc.qt.io/qt/qevent.html#Type-enum) and [QEvent::KeyRelease](https://doc.qt.io/qt/qevent.html#Type-enum)).
     ///
     /// It should be noted this may not reflect the actual keys held on the input device at the time
     /// of calling but rather the modifiers as last reported in an event.
-    /// If no keys are being held Qt::NoModifier is returned.
+    /// If no keys are being held [`KeyboardModifier::NoModifier`](crate::KeyboardModifier::NoModifier) is returned.
     pub fn keyboard_modifiers(&self) -> KeyboardModifiers {
         ffi::qguiapplication_keyboard_modifiers()
     }
 
     /// Returns the current state of the buttons on the mouse. The current state is updated
     /// synchronously as the event queue is emptied of events that will spontaneously change the
-    /// mouse state (QEvent::MouseButtonPress and QEvent::MouseButtonRelease events).
+    /// mouse state ([QEvent::MouseButtonPress](https://doc.qt.io/qt/qevent.html#Type-enum) and [QEvent::MouseButtonRelease](https://doc.qt.io/qt/qevent.html#Type-enum) events).
     ///
     /// It should be noted this may not reflect the actual buttons held on the input device at the
     /// time of calling but rather the mouse buttons as last reported in one of the above events.
-    /// If no mouse buttons are being held Qt::NoButton is returned.
+    /// If no mouse buttons are being held [`MouseButton::NoButton`](crate::MouseButton::NoButton) is returned.
     pub fn mouse_buttons(&self) -> MouseButtons {
         ffi::qguiapplication_mouse_buttons()
     }
 
     /// Queries and returns the state of the modifier keys on the keyboard. Unlike
-    /// keyboardModifiers, this method returns the actual keys held on the input device at the time
+    /// [`keyboard_modifiers`](Self::keyboard_modifiers), this method returns the actual keys held on the input device at the time
     /// of calling the method.
     ///
     /// It does not rely on the keypress events having been received by this process, which makes it
     /// possible to check the modifiers while moving a window, for instance. Note that in most
-    /// cases, you should use keyboardModifiers(), which is faster and more accurate since it
+    /// cases, you should use [`keyboard_modifiers`](Self::keyboard_modifiers), which is faster and more accurate since it
     /// contains the state of the modifiers as they were when the currently processed event was
     /// received.
     pub fn query_keyboard_modifiers(&self) -> KeyboardModifiers {

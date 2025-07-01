@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::unsafe_impl_qflag;
+use crate::{unsafe_impl_qflag, QFlags};
 
 #[cxx::bridge(namespace = "Qt")]
 mod ffi {
@@ -26,15 +26,22 @@ mod ffi {
 
     #[repr(i32)]
     enum DateFormat {
+        /// The default Qt format, which includes the day and month name, the day number in the month, and the year in full. The day and month names will be short names in English (C locale). This effectively uses, for a date, format `ddd MMM d yyyy`, for a time `HH:mm:ss` and combines these as `ddd MMM d HH:mm:ss yyyy` for a date-time, with an optional zone-offset suffix, where relevant. When reading from a string, a fractional part is also recognized on the seconds of a time part, as `HH:mm:ss.zzz`, and some minor variants on the format may be recognized, for compatibility with earlier versions of Qt and with changes to the format planned for the future. In particular, the zone-offset suffix presently uses GMT\[±`tzoff`\] with a `tzoff` in `HH[[:]mm]` format (two-digit hour and optional two-digit minutes, with optional colon separator); this shall change to use UTC in place of GMT in a future release of Qt, so the planned UTC format is recognized.
         TextDate = 0,
+        /// ISO 8601 extended format: uses `yyyy-MM-dd` for dates, `HH:mm:ss.zzz` for times or `yyyy-MM-ddTHH:mm:ss.zzz` (e.g. `2017-07-24T15:46:29.739`) for combined dates and times, optionally with a time-zone suffix (`Z` for UTC otherwise an offset as `±HH:mm`) where appropriate. When parsed, a single space, `' '`, may be used in place of the `'T'` separator between date and time; no other spacing characters are permitted. This format also accepts `HH:mm` and plain `HH` formats for the time part, either of which may include a fractional part, `HH:mm.zzz` or `HH.zzz`, applied to the last field present (hour or minute).
         ISODateWithMs = 9,
+        /// ISO 8601 extended format, as for `ISODateWithMs`, but omitting the milliseconds (`.zzz`) part when converting to a string. There is no difference when reading from a string: if a fractional part is present on the last time field, either format will accept it.
         ISODate = 1,
+        /// RFC 2822, RFC 850 and RFC 1036 format: when converting dates to string form, format `dd MMM yyyy` is used, for times the format is `HH:mm:ss`. For combined date and time, these are combined as `dd MMM yyyy HH:mm:ss ±tzoff` (omitting the optional leading day of the week from the first format recognized). When reading from a string either `[ddd,] dd MMM yyyy [HH:mm[:ss]][ ±tzoff]` or `ddd MMM dd[ HH:mm:ss] yyyy[ ±tzoff]` will be recognized for combined dates and times, where `tzoff` is a timezone offset in `HHmm` format. Arbitrary spacing may appear before or after the text and any non-empty spacing may replace the spaces in this format. For dates and times separately, the same formats are matched and the unwanted parts are ignored. In particular, note that a time is not recognized without an accompanying date.
         RFC2822Date = 8,
     }
 
+    /// This enum specifies how [`QString::split`](crate::QString::split) functions should behave with respect to empty strings.
     #[repr(i32)]
     enum SplitBehaviorFlags {
+        /// If a field is empty, keep it in the result.
         KeepEmptyParts,
+        /// If a field is empty, don't include it in the result.
         SkipEmptyParts,
     }
 
@@ -59,10 +66,10 @@ mod ffi {
         SmoothTransformation,
     }
 
-    /// This enum type defines the pen styles that can be drawn using QPainter.
+    /// This enum type defines the pen styles that can be drawn using [`QPainter`](crate::QPainter).
     #[repr(i32)]
     enum PenStyle {
-        /// no line at all. For example, QPainter::drawRect() fills but does not draw any boundary line.
+        /// No line at all. For example, [`QPainter::draw_rect_f`](crate::QPainter::draw_rect_f) fills but does not draw any boundary line.
         NoPen,
         /// A plain line.
         SolidLine,
@@ -74,29 +81,39 @@ mod ffi {
         DashDotLine,
         /// One dash, two dots, one dash, two dots.
         DashDotDotLine,
-        /// A custom pattern defined using QPainterPathStroker::setDashPattern().
+        /// A custom pattern defined using [QPainterPathStroker::setDashPattern](https://doc.qt.io/qt/qpainterpathstroker.html#setDashPattern)().
         CustomDashLine,
     }
 
-    /// This enum type defines the line endcap style
+    /// This enum type defines the pen cap styles supported by Qt, i.e. the line end caps that can be drawn using [`QPainter`](crate::QPainter).
     #[repr(i32)]
     enum PenCapStyle {
+        /// A square line end that does not cover the end point of the line.
         FlatCap = 0x00,
+        /// A square line end that covers the end point and extends beyond it by half the line width.
         SquareCap = 0x10,
+        /// A rounded line end.
         RoundCap = 0x20,
+        #[doc(hidden)]
         MPenCapStyle = 0x30,
     }
 
-    /// This enum type defines the line join style.
+    /// This enum type defines the pen join styles supported by Qt, i.e. which joins between two connected lines can be drawn using [`QPainter`](crate::QPainter).
     #[repr(i32)]
     enum PenJoinStyle {
+        /// The outer edges of the lines are extended to meet at an angle, and this area is filled.
         MiterJoin = 0x00,
+        /// The triangular notch between the two lines is filled.
         BevelJoin = 0x40,
+        /// A circular arc between the two lines is filled.
         RoundJoin = 0x80,
+        /// A miter join corresponding to the definition of a miter join in the SVG 1.2 Tiny specification.
         SvgMiterJoin = 0x100,
+        #[doc(hidden)]
         MPenJoinStyle = 0x1c0,
     }
 
+    /// Specifies which method should be used to fill the paths and polygons.
     #[repr(i32)]
     enum FillRule {
         /// Specifies that the region is filled using the odd even fill rule.
@@ -117,12 +134,15 @@ mod ffi {
     /// This enum type specifies the direction of Qt's layouts and text handling.
     #[repr(i32)]
     enum LayoutDirection {
+        /// Left-to-right layout.
         LeftToRight,
+        /// Right-to-left layout.
         RightToLeft,
+        /// Automatic layout. Text directionality is determined from the content of the string to be layouted.
         LayoutDirectionAuto,
     }
 
-    /// This enum type specifies the background mode
+    /// This enum type specifies the background mode.
     #[repr(i32)]
     enum BGMode {
         TransparentMode,
@@ -131,12 +151,15 @@ mod ffi {
 
     #[repr(i32)]
     enum ClipOperation {
+        /// This operation turns clipping off.
         NoClip,
+        /// Replaces the current clip path/rect/region with the one supplied in the function call.
         ReplaceClip,
+        /// Intersects the current clip path/rect/region with the one supplied in the function call.
         IntersectClip,
     }
 
-    /// This enum is used by QPainter::drawRoundedRect() and QPainterPath::addRoundedRect()
+    /// This enum is used by [`QPainter::draw_rounded_rect`](crate::QPainter::draw_rounded_rect) and [`QPainterPath::add_rounded_rect`](crate::QPainterPath::add_rounded_rect)
     /// functions to specify the radii of rectangle corners with respect to the dimensions
     /// of the bounding rectangles specified.
     #[repr(i32)]
@@ -147,6 +170,7 @@ mod ffi {
         RelativeSize,
     }
 
+    /// This enum describes the modifier keys.
     #[derive(Debug)]
     #[repr(u32)]
     enum KeyboardModifier {
@@ -167,13 +191,14 @@ mod ffi {
         GroupSwitchModifier = 0x40000000,
     }
 
+    /// This enum type describes the different mouse buttons.
     #[derive(Debug)]
     #[repr(u32)]
     enum MouseButton {
         /// The button state does not refer to any button.
         NoButton = 0x00000000,
         /// This value corresponds to a mask of all possible mouse buttons. Use to set the
-        /// 'acceptedButtons' property of a MouseArea to accept ALL mouse buttons.
+        /// ['acceptedButtons'](https://doc.qt.io/qt/qml-qtquick-mousearea.html#acceptedButtons-prop) property of a [MouseArea](https://doc.qt.io/qt/qml-qtquick-mousearea.html) to accept ALL mouse buttons.
         AllButtons = 0x07ffffff,
         /// The left button is pressed, or an event refers to the left button. (The left button may
         /// be the right button on left-handed mice.)
@@ -243,8 +268,10 @@ pub use ffi::{
 // Reexport ConnectionType from cxx-qt
 pub use cxx_qt::ConnectionType;
 
-pub type MouseButtons = crate::QFlags<MouseButton>;
-pub type KeyboardModifiers = crate::QFlags<KeyboardModifier>;
+/// [`QFlags`] of [`MouseButton`].
+pub type MouseButtons = QFlags<MouseButton>;
+/// [`QFlags`] of [`KeyboardModifier`].
+pub type KeyboardModifiers = QFlags<KeyboardModifier>;
 
 unsafe_impl_qflag!(MouseButton, "Qt::MouseButtons", u32);
 unsafe_impl_qflag!(KeyboardModifier, "Qt::KeyboardModifiers", u32);

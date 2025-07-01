@@ -41,16 +41,30 @@ use ffi::{QObjectExternal, QString};
 /// Trait which exposes methods available on a `QObject`.
 /// Exposes some basic signals and methods for now, more to be added.
 pub trait QObjectExt {
+    /// If `block` is `true`, signals emitted by this object are blocked (i.e., emitting a signal will not invoke anything connected to it). If `block` is `false`, no such blocking will occur.
+    ///
+    /// The return value is the previous value of [`signals_blocked`](Self::signals_blocked).
+    ///
+    /// Note that the [destroyed](https://doc.qt.io/qt/qobject.html#destroyed)() signal will be emitted even if the signals for this object have been blocked.
+    ///
+    /// Signals emitted while being blocked are not buffered.
     fn block_signals(self: Pin<&mut Self>, block: bool) -> bool;
 
+    /// Returns `true` if signals are blocked; otherwise returns `false`.
+    ///
+    /// Signals are not blocked by default.
     fn signals_blocked(&self) -> bool;
 
+    /// Sets the object's name to `name`.
     fn set_object_name(self: Pin<&mut Self>, name: &QString);
 
+    /// Returns the name of this object.
     fn object_name(&self) -> QString;
 
+    /// Returns a mutable pointer to the parent object.
     fn parent(&self) -> *mut Self;
 
+    /// Makes the object a child of `parent`.
     fn set_parent(self: Pin<&mut Self>, parent: &Self);
 }
 

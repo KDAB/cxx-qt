@@ -20,6 +20,9 @@ mod ffi {
         type QVector_QByteArray = crate::QVector<QByteArray>;
 
         include!("cxx-qt-lib/qcoreapplication.h");
+        /// The `QCoreApplication` class provides an event loop for Qt applications without UI.
+        ///
+        /// Qt Documentation: [QCoreApplication](https://doc.qt.io/qt/qcoreapplication.html#details)
         type QCoreApplication;
     }
 
@@ -91,25 +94,28 @@ mod ffi {
 pub use ffi::QCoreApplication;
 
 impl QCoreApplication {
-    /// Prepends path to the beginning of the library path list,
+    /// Prepends `path` to the beginning of the library path list,
     /// ensuring that it is searched for libraries first.
-    /// If path is empty or already in the path list, the path list is not changed.
+    /// If `path` is empty or already in the path list, the path list is not changed.
     pub fn add_library_path(self: Pin<&mut Self>, path: &QString) {
         ffi::qcoreapplication_add_library_path(self, path);
     }
 
-    /// The name of this application
+    /// Returns the name of this application.
     pub fn application_name(&self) -> QString {
         ffi::qcoreapplication_application_name(self)
     }
 
-    /// The version of this application
+    /// Returns the version of this application.
     pub fn application_version(&self) -> QString {
         ffi::qcoreapplication_application_version(self)
     }
 
-    /// Enters the main event loop and waits until exit() is called,
-    /// and then returns the value that was set to exit() (which is 0 if exit() is called via quit()).
+    /// Enters the main event loop and waits until [exit]\() is called,
+    /// and then returns the value that was set to [exit]\() (which is 0 if [exit]\() is called via [quit]\()).
+    ///
+    /// [exit]: https://doc.qt.io/qt/qcoreapplication.html#exit
+    /// [quit]: https://doc.qt.io/qt/qcoreapplication.html#quit
     pub fn exec(self: Pin<&mut Self>) -> i32 {
         ffi::qcoreapplication_exec(self)
     }
@@ -119,7 +125,7 @@ impl QCoreApplication {
         ffi::qcoreapplication_library_paths(self)
     }
 
-    /// Initializes the window system and constructs an application object with command line arguments in args.
+    /// Constructs a Qt core application using the arguments from [`std::env::args_os()`]. Core applications are applications without a graphical user interface. Such applications are used at the console or as server processes.
     pub fn new() -> cxx::UniquePtr<Self> {
         let mut vector = QVector::<QByteArray>::default();
 
@@ -143,43 +149,43 @@ impl QCoreApplication {
         ffi::qcoreapplication_new(&vector)
     }
 
-    /// The Internet domain of the organization that wrote this application
+    /// Returns the Internet domain of the organization that wrote this application.
     pub fn organization_domain(&self) -> QString {
         ffi::qcoreapplication_organization_domain(self)
     }
 
-    /// The name of the organization that wrote this application
+    /// Returns the name of the organization that wrote this application.
     pub fn organization_name(&self) -> QString {
         ffi::qcoreapplication_organization_name(self)
     }
 
-    /// Removes path from the library path list. If path is empty or not in the path list, the list is not changed.
+    /// Removes `path` from the library path list. If `path` is empty or not in the path list, the list is not changed.
     pub fn remove_library_path(&self, path: &QString) {
         ffi::qcoreapplication_remove_library_path(self, path)
     }
 
-    /// Set the name of this application
+    /// Set the `name` of this application.
     pub fn set_application_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qcoreapplication_set_application_name(self, name);
     }
 
-    /// Set the version of this application
+    /// Set the `version` of this application.
     pub fn set_application_version(self: Pin<&mut Self>, version: &QString) {
         ffi::qcoreapplication_set_application_version(self, version);
     }
 
-    /// Sets the list of directories to search when loading plugins with QLibrary to paths.
-    /// All existing paths will be deleted and the path list will consist of the paths given in paths and the path to the application.
+    /// Sets the list of directories to search when loading plugins with [QLibrary](https://doc.qt.io/qt/qlibrary.html) to `paths`.
+    /// All existing paths will be deleted and the path list will consist of the paths given in `paths` and the path to the application.
     pub fn set_library_paths(self: Pin<&mut Self>, paths: &QStringList) {
         ffi::qcoreapplication_set_library_paths(self, paths);
     }
 
-    /// Sets the Internet domain of the organization that wrote this application
+    /// Sets the Internet `domain` of the organization that wrote this application.
     pub fn set_organization_domain(self: Pin<&mut Self>, domain: &QString) {
         ffi::qcoreapplication_set_organization_domain(self, domain);
     }
 
-    /// Sets the name of the organization that wrote this application
+    /// Sets the `name` of the organization that wrote this application.
     pub fn set_organization_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qcoreapplication_set_organization_name(self, name);
     }

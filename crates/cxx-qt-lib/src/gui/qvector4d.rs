@@ -7,6 +7,8 @@ use std::fmt;
 
 use cxx::{type_id, ExternType};
 
+use crate::{QPoint, QPointF, QVector2D, QVector3D};
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -24,7 +26,7 @@ mod ffi {
         include!("cxx-qt-lib/qvector4d.h");
         type QVector4D = super::QVector4D;
 
-        /// Returns true if the x, y, z, and w coordinates are set to 0.0, otherwise returns false.
+        /// Returns `true` if the x, y, z, and w coordinates are set to 0.0, otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QVector4D) -> bool;
 
@@ -47,16 +49,16 @@ mod ffi {
         /// Otherwise the normalized form of the vector of length 1 will be returned.
         fn normalized(self: &QVector4D) -> QVector4D;
 
-        /// Sets the w coordinate of this point to the given finite w coordinate.
+        /// Sets the w coordinate of this point to the given finite `w` coordinate.
         #[rust_name = "set_w"]
         fn setW(self: &mut QVector4D, w: f32);
-        /// Sets the x coordinate of this point to the given finite x coordinate.
+        /// Sets the x coordinate of this point to the given finite `x` coordinate.
         #[rust_name = "set_x"]
         fn setX(self: &mut QVector4D, x: f32);
-        /// Sets the y coordinate of this point to the given finite y coordinate.
+        /// Sets the y coordinate of this point to the given finite `y` coordinate.
         #[rust_name = "set_y"]
         fn setY(self: &mut QVector4D, y: f32);
-        /// Sets the z coordinate of this point to the given finite z coordinate.
+        /// Sets the z coordinate of this point to the given finite `z` coordinate.
         #[rust_name = "set_z"]
         fn setZ(self: &mut QVector4D, z: f32);
 
@@ -134,6 +136,8 @@ mod ffi {
 }
 
 /// The QVector4D class represents a vector or vertex in 4D space.
+///
+/// Qt Documentation: [QVector4D](https://doc.qt.io/qt/qvector4d.html#details)
 #[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QVector4D {
@@ -141,7 +145,7 @@ pub struct QVector4D {
 }
 
 impl QVector4D {
-    /// Constructs a vector with coordinates (xpos, ypos, zpos, wpos).
+    /// Constructs a vector with coordinates (`xpos`, `ypos`, `zpos`, `wpos`).
     /// All parameters must be finite.
     pub fn new(xpos: f32, ypos: f32, zpos: f32, wpos: f32) -> Self {
         ffi::qvector4d_init(xpos, ypos, zpos, wpos)
@@ -189,45 +193,45 @@ impl std::ops::Div<f32> for QVector4D {
     }
 }
 
-impl From<crate::QVector3D> for QVector4D {
+impl From<QVector3D> for QVector4D {
     /// Constructs a 4D vector from the specified 3D vector.
     /// The w coordinate is set to zero.
-    fn from(value: crate::QVector3D) -> Self {
+    fn from(value: QVector3D) -> Self {
         ffi::qvector4d_init_qvector3d(value)
     }
 }
 
-impl From<crate::QVector2D> for QVector4D {
+impl From<QVector2D> for QVector4D {
     /// Constructs a 4D vector from the specified 2D vector.
     /// The z and w coordinates are set to zero.
-    fn from(value: crate::QVector2D) -> Self {
+    fn from(value: QVector2D) -> Self {
         ffi::qvector4d_init_qvector2d(value)
     }
 }
 
-impl From<crate::QPointF> for QVector4D {
+impl From<QPointF> for QVector4D {
     /// Constructs a vector with x and y coordinates from a 2D point, and z and w coordinates of 0.
-    fn from(value: crate::QPointF) -> Self {
+    fn from(value: QPointF) -> Self {
         ffi::qvector4d_init_qpointf(value)
     }
 }
 
-impl From<QVector4D> for crate::QPointF {
-    /// Returns the QPointF form of this 4D vector. The z and w coordinates are dropped.
+impl From<QVector4D> for QPointF {
+    /// Returns the `QPointF` form of this 4D vector. The z and w coordinates are dropped.
     fn from(value: QVector4D) -> Self {
         value.to_pointf()
     }
 }
 
-impl From<crate::QPoint> for QVector4D {
+impl From<QPoint> for QVector4D {
     /// Constructs a vector with x and y coordinates from a 2D point, and z and w coordinates of 0.
-    fn from(value: crate::QPoint) -> Self {
+    fn from(value: QPoint) -> Self {
         ffi::qvector4d_init_qpoint(value)
     }
 }
 
-impl From<QVector4D> for crate::QPoint {
-    /// Returns the QPoint form of this 4D vector. The z and w coordinates are dropped.
+impl From<QVector4D> for QPoint {
+    /// Returns the `QPoint` form of this 4D vector. The z and w coordinates are dropped.
     /// The x and y coordinates are rounded to nearest integers.
     fn from(value: QVector4D) -> Self {
         value.to_point()

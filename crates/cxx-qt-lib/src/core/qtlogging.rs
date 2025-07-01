@@ -34,20 +34,28 @@ mod ffi {
         type QtMsgType;
 
         /// Outputs a message in the Qt message handler.
-        fn qt_message_output(msgType: QtMsgType, context: &QMessageLogContext, string: &QString);
+        ///
+        /// **Warning:** This function is an undocumented internal utility in the Qt library.
+        fn qt_message_output(msg_type: QtMsgType, context: &QMessageLogContext, string: &QString);
 
-        /// Generates a formatted string out of the type, context, str arguments.
+        /// Generates a formatted string out of the `msg_type`, `context`, `str` arguments.
+        ///
+        /// This function returns a `QString` that is formatted according to the current message pattern. It can be used by custom message handlers to format output similar to Qt's default message handler.
+        ///
+        /// The function is thread-safe.
         #[cxx_name = "qFormatLogMessage"]
         fn q_format_log_message(
-            msgType: QtMsgType,
+            msg_type: QtMsgType,
             context: &QMessageLogContext,
-            string: &QString,
+            str: &QString,
         ) -> QString;
 
         /// Changes the output of the default message handler.
+        /// See the [Qt documentation](https://doc.qt.io/qt/qtlogging.html#qSetMessagePattern) for full details.
         ///
         /// # Safety
         /// This function is marked as unsafe because it is not guaranteed to be thread-safe.
+        #[allow(clippy::missing_safety_doc)]
         #[cxx_name = "qSetMessagePattern"]
         unsafe fn q_set_message_pattern(pattern: &QString);
 
@@ -83,7 +91,9 @@ mod ffi {
     }
 }
 
-/// The QMessageLogContext struct defines the context passed to the Qt message handler.
+/// The `QMessageLogContext` class defines the context passed to the Qt message handler.
+///
+/// Qt Documentation: [QMessageLogContext](https://doc.qt.io/qt/qmessagelogcontext.html#details)
 #[repr(C)]
 #[derive(Clone, Copy)]
 pub struct QMessageLogContext<'a> {

@@ -9,11 +9,13 @@ use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 use std::fmt;
 
-/// The QSet class is a template class that provides a hash-table-based set.
+/// The `QSet` class is a template class that provides a hash-table-based set.
 ///
-/// Note that this means that T needs to have a global `qHash()` function.
+/// Note that this means that `T` needs to have a global [`qHash()`](https://doc.qt.io/qt/qhash.html#qHash) function.
 ///
-/// To use QSet with a custom type, implement the [`QSetElement`] trait for T.
+/// To use `QSet` with a custom type, implement the [`QSetElement`] trait for `T`.
+///
+/// Qt Documentation: [QSet]("https://doc.qt.io/qt/qset.html#details")
 #[repr(C)]
 pub struct QSet<T>
 where
@@ -27,7 +29,7 @@ impl<T> Clone for QSet<T>
 where
     T: QSetElement,
 {
-    /// Constructs a copy of the QSet.
+    /// Constructs a copy of the `QSet`.
     fn clone(&self) -> Self {
         T::clone(self)
     }
@@ -47,7 +49,7 @@ impl<T> Drop for QSet<T>
 where
     T: QSetElement,
 {
-    /// Destroys the QSet.
+    /// Destroys the `QSet`.
     fn drop(&mut self) {
         T::drop(self);
     }
@@ -57,7 +59,7 @@ impl<T> PartialEq for QSet<T>
 where
     T: QSetElement + PartialEq,
 {
-    /// Returns true if both sets contain the same elements
+    /// Returns `true` if the sets contain the same (key, value) pairs, otherwise `false`.
     fn eq(&self, other: &Self) -> bool {
         self.len() == other.len() && self.iter().all(|x| other.contains(x))
     }
@@ -83,13 +85,12 @@ where
         T::clear(self);
     }
 
-    /// Returns true if the set contains item value; otherwise returns false.
+    /// Returns `true` if the set contains item `value`; otherwise returns `false`.
     pub fn contains(&self, value: &T) -> bool {
         T::contains(self, value)
     }
 
-    /// Inserts item value into the set, if value isn't already in the set,
-    /// and returns an iterator pointing at the inserted item.
+    /// Inserts item `value` into the set, if `value` isn't already in the set.
     ///
     /// The value is a reference here so it can be opaque or trivial but
     /// note that the value is copied when being inserted into the set.
@@ -97,13 +98,13 @@ where
         T::insert_clone(self, value);
     }
 
-    /// Returns true if the set contains no elements; otherwise returns false.
+    /// Returns `true` if the set contains no elements; otherwise returns `false`.
     pub fn is_empty(&self) -> bool {
         T::len(self) == 0
     }
 
     /// An iterator visiting all elements in arbitrary order.
-    /// The iterator element type is &'a T.
+    /// The iterator element type is `&'a T`.
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             set: self,
@@ -116,14 +117,19 @@ where
         T::len(self)
     }
 
-    /// Removes any occurrence of item value from the set.
-    /// Returns true if an item was actually removed; otherwise returns false.
+    /// Removes any occurrence of item `value` from the set.
+    /// Returns `true` if an item was actually removed; otherwise returns `false`.
     pub fn remove(&mut self, value: &T) -> bool {
         T::remove(self, value)
     }
 
-    /// Reserve the specified capacity to prevent repeated allocations
-    /// when the maximum size is known.
+    /// Ensures that the set's internal hash table consists of at least `size` buckets.
+    ///
+    /// This function is useful for code that needs to build a huge set and wants to avoid repeated reallocation.
+    ///
+    /// Ideally, `size` should be slightly more than the maximum number of elements expected in the set. `size` doesn't have to be prime, because `QSet` will use a prime number internally anyway. If `size` is an underestimate, the worst that will happen is that the `QSet` will be a bit slower.
+    ///
+    /// In general, you will rarely ever need to call this function. `QSet`'s internal hash table automatically shrinks or grows to provide good performance without wasting too much memory.
     pub fn reserve(&mut self, size: isize) {
         T::reserve(self, size);
     }
@@ -140,8 +146,7 @@ impl<T> QSet<T>
 where
     T: QSetElement + ExternType<Kind = cxx::kind::Trivial>,
 {
-    /// Inserts item value into the set, if value isn't already in the set,
-    /// and returns an iterator pointing at the inserted item.
+    /// Inserts item `value` into the set, if `value` isn't already in the set.
     pub fn insert(&mut self, value: T) {
         T::insert(self, value);
     }
