@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::attribute::{extract_cfgs, extract_docs, ParsedAttribute};
+use crate::parser::attribute::ParsedAttributes;
 use crate::parser::CaseConversion;
 use crate::{naming::Name, syntax::path::path_compare_str};
 use quote::ToTokens;
@@ -61,9 +61,11 @@ impl ParsedQEnum {
         parent_namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
-        ParsedAttribute::require_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
-        let cfgs = extract_cfgs(&qenum.attrs);
-        let docs = extract_docs(&qenum.attrs);
+        // TODO: ATTR Can this be done without clone?
+        let attrs =
+            ParsedAttributes::require_attributes(qenum.attrs.clone(), &Self::ALLOWED_ATTRS)?;
+        let cfgs = attrs.extract_cfgs();
+        let docs = attrs.extract_docs();
 
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
@@ -74,7 +76,7 @@ impl ParsedQEnum {
 
         let name = Name::from_ident_and_attrs(
             &qenum.ident,
-            &qenum.attrs,
+            &attrs.clone_attrs(),
             parent_namespace,
             Some(module),
             CaseConversion::none(),

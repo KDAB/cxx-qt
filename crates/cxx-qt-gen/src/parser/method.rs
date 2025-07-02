@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::parser::attribute::{extract_cfgs, ParsedAttribute};
+use crate::parser::attribute::{extract_cfgs, ParsedAttributes};
 use crate::parser::CaseConversion;
 use crate::{
     naming::Name,
@@ -34,7 +34,7 @@ impl ParsedQInvokableSpecifiers {
         }
     }
 
-    fn from_attrs(attrs: BTreeMap<&str, &Attribute>) -> HashSet<ParsedQInvokableSpecifiers> {
+    fn from_attrs(attrs: BTreeMap<String, Vec<Attribute>>) -> HashSet<ParsedQInvokableSpecifiers> {
         let mut output = HashSet::new();
         for specifier in [
             ParsedQInvokableSpecifiers::Final,
@@ -121,15 +121,14 @@ impl ParsedMethod {
         auto_case: CaseConversion,
         unsafe_block: bool,
     ) -> Result<Self> {
-        let fields = MethodFields::parse(method, auto_case)?;
-        let attrs =
-            ParsedAttribute::require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
+        let fields = MethodFields::parse(method, auto_case, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&fields.method.attrs);
 
         // Determine if the method is invokable
-        let is_qinvokable = attrs.contains_key("qinvokable");
-        let is_pure = attrs.contains_key("cxx_pure");
-        let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs.cxx_qt_attrs);
+        let is_qinvokable = fields.attrs.contains_key("qinvokable");
+        let is_pure = fields.attrs.contains_key("cxx_pure");
+        // TODO: Can this be done without clone
+        let specifiers = ParsedQInvokableSpecifiers::from_attrs(fields.attrs.cxx_qt_attrs.clone());
 
         Ok(Self {
             method_fields: fields,
@@ -166,18 +165,30 @@ pub struct MethodFields {
     pub parameters: Vec<ParsedFunctionParameter>,
     pub safe: bool,
     pub name: Name,
+    pub attrs: ParsedAttributes,
 }
 
 impl MethodFields {
-    pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
+    pub fn parse(
+        method: ForeignItemFn,
+        auto_case: CaseConversion,
+        allowed: &[&str],
+    ) -> Result<Self> {
+        // TODO: Remove this clone?
+        let attrs = ParsedAttributes::require_attributes(method.attrs.clone(), allowed)?;
         let self_receiver = foreignmod::self_type_from_foreign_fn(&method.sig)?;
         let (qobject_ident, mutability) = types::extract_qobject_ident(&self_receiver.ty)?;
         let mutable = mutability.is_some();
 
         let parameters = ParsedFunctionParameter::parse_all_ignoring_receiver(&method.sig)?;
         let safe = method.sig.unsafety.is_none();
-        let name =
-            Name::from_ident_and_attrs(&method.sig.ident, &method.attrs, None, None, auto_case)?;
+        let name = Name::from_ident_and_attrs(
+            &method.sig.ident,
+            &attrs.clone_attrs(),
+            None,
+            None,
+            auto_case,
+        )?;
 
         Ok(MethodFields {
             method,
@@ -186,6 +197,7 @@ impl MethodFields {
             parameters,
             safe,
             name,
+            attrs,
         })
     }
 

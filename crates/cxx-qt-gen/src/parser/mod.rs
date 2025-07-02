@@ -19,11 +19,10 @@ pub mod qobject;
 pub mod signals;
 pub mod trait_impl;
 
-use crate::parser::attribute::ParsedAttribute;
+use crate::parser::attribute::ParsedAttributes;
 use crate::{naming::TypeNames, syntax::expr::expr_to_string};
 use convert_case::Case;
 use cxxqtdata::ParsedCxxQtData;
-use std::collections::BTreeMap;
 use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
@@ -72,13 +71,14 @@ impl CaseConversion {
 
     /// Create a CaseConversion object from a Map of attributes, collected using `require_attributes`
     /// Parses both `auto_cxx_name` and `auto_cxx_name = Camel`
-    pub fn from_attrs(attrs: &BTreeMap<&str, &Attribute>) -> Result<Self> {
+    pub fn from_attrs(attrs: &ParsedAttributes) -> Result<Self> {
+        // TODO: ATTR Won't error on duplicates, and needs error handling
         let rust = attrs
-            .get("auto_rust_name")
+            .get_one("auto_rust_name")
             .map(|attr| meta_to_case(attr, Case::Snake))
             .transpose()?;
         let cxx = attrs
-            .get("auto_cxx_name")
+            .get_one("auto_cxx_name")
             .map(|attr| meta_to_case(attr, Case::Camel))
             .transpose()?;
 
@@ -97,9 +97,9 @@ fn split_path(path_str: &str) -> Vec<&str> {
 }
 
 // Extract base identifier from attribute
-pub fn parse_base_type(attributes: &BTreeMap<&str, &Attribute>) -> Result<Option<Ident>> {
+pub fn parse_base_type(attributes: &ParsedAttributes) -> Result<Option<Ident>> {
     attributes
-        .get("base")
+        .get_one("base") // TODO: ATTR Check for duplicates
         .map(|attr| -> Result<Ident> {
             let expr = &attr.meta.require_name_value()?.value;
             if let Expr::Path(path_expr) = expr {
@@ -151,11 +151,13 @@ pub struct Parser {
 
 impl Parser {
     fn parse_mod_attributes(module: &mut ItemMod) -> Result<Option<String>> {
-        let attrs = ParsedAttribute::require_attributes(&module.attrs, &["doc", "cxx_qt::bridge"])?;
+        // TODO: ATTR Can this be done without clone
+        let attrs =
+            ParsedAttributes::require_attributes(module.attrs.clone(), &["doc", "cxx_qt::bridge"])?;
         let mut namespace = None;
 
         // Check for the cxx_qt::bridge attribute
-        if let Some(attr) = attrs.get("cxx_qt::bridge") {
+        if let Some(attr) = attrs.get_one("cxx_qt::bridge") {
             // If we are not #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
             if !matches!(attr.meta, Meta::Path(_)) {
                 let nested =

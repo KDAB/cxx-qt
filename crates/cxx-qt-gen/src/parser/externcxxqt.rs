@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::attribute::ParsedAttribute;
+use crate::parser::attribute::ParsedAttributes;
 use crate::{
     parser::{externqobject::ParsedExternQObject, signals::ParsedSignal, CaseConversion},
     syntax::{attribute::attribute_get_path, expr::expr_to_string},
@@ -34,15 +34,15 @@ impl ParsedExternCxxQt {
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
         // TODO: support cfg on foreign mod blocks
-        let attrs = ParsedAttribute::require_attributes(
-            &foreign_mod.attrs,
+        let attrs = ParsedAttributes::require_attributes(
+            foreign_mod.attrs,
             &["namespace", "auto_cxx_name", "auto_rust_name"],
         )?;
 
-        let auto_case = CaseConversion::from_attrs(&attrs.cxx_qt_attrs)?;
+        let auto_case = CaseConversion::from_attrs(&attrs)?;
 
         let namespace = attrs
-            .get("namespace")
+            .get_one("namespace")
             .map(|attr| -> Result<String> {
                 expr_to_string(&attr.meta.require_name_value()?.value)
             })
