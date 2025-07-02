@@ -3,9 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{
-    extract_cfgs, extract_docs, method::MethodFields, require_attributes, CaseConversion,
-};
+use crate::parser::attribute::{extract_cfgs, extract_docs, ParsedAttribute};
+use crate::parser::{method::MethodFields, CaseConversion};
 use core::ops::Deref;
 use quote::format_ident;
 use std::ops::DerefMut;
@@ -32,7 +31,7 @@ impl ParsedInheritedMethod {
     ];
 
     pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
-        require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
+        ParsedAttribute::require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
         let docs = extract_docs(&method.attrs);
         let cfgs = extract_cfgs(&method.attrs);
 

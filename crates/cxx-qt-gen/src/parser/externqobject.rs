@@ -3,7 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::naming::Name;
-use crate::parser::{parse_base_type, require_attributes, CaseConversion};
+use crate::parser::attribute::ParsedAttribute;
+use crate::parser::{parse_base_type, CaseConversion};
 use syn::{ForeignItemType, Ident, Result};
 
 /// A representation of a QObject to be generated in an extern C++ block
@@ -32,9 +33,9 @@ impl ParsedExternQObject {
         module_ident: &Ident,
         parent_namespace: Option<&str>,
     ) -> Result<ParsedExternQObject> {
-        let attributes = require_attributes(&ty.attrs, &Self::ALLOWED_ATTRS)?;
+        let attrs = ParsedAttribute::require_attributes(&ty.attrs, &Self::ALLOWED_ATTRS)?;
 
-        let base_class = parse_base_type(&attributes)?;
+        let base_class = parse_base_type(&attrs.cxx_qt_attrs)?;
 
         Ok(Self {
             name: Name::from_ident_and_attrs(

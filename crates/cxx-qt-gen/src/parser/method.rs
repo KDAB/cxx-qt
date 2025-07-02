@@ -2,10 +2,11 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::parser::attribute::{extract_cfgs, ParsedAttribute};
 use crate::parser::CaseConversion;
 use crate::{
     naming::Name,
-    parser::{extract_cfgs, parameter::ParsedFunctionParameter, require_attributes},
+    parser::parameter::ParsedFunctionParameter,
     syntax::{foreignmod, types},
 };
 use core::ops::Deref;
@@ -121,13 +122,14 @@ impl ParsedMethod {
         unsafe_block: bool,
     ) -> Result<Self> {
         let fields = MethodFields::parse(method, auto_case)?;
-        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
+        let attrs =
+            ParsedAttribute::require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&fields.method.attrs);
 
         // Determine if the method is invokable
         let is_qinvokable = attrs.contains_key("qinvokable");
         let is_pure = attrs.contains_key("cxx_pure");
-        let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs);
+        let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs.cxx_qt_attrs);
 
         Ok(Self {
             method_fields: fields,

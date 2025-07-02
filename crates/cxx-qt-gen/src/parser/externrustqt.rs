@@ -4,11 +4,12 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::cpp::err_unsupported_item;
+use crate::parser::attribute::ParsedAttribute;
 use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::method::ParsedMethod;
 use crate::parser::qobject::ParsedQObject;
 use crate::parser::signals::ParsedSignal;
-use crate::parser::{require_attributes, CaseConversion};
+use crate::parser::CaseConversion;
 use crate::syntax::attribute::attribute_get_path;
 use crate::syntax::expr::expr_to_string;
 use crate::syntax::foreignmod::ForeignTypeIdentAlias;
@@ -38,12 +39,12 @@ impl ParsedExternRustQt {
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
         // TODO: support cfg on foreign mod blocks
-        let attrs = require_attributes(
+        let attrs = ParsedAttribute::require_attributes(
             &foreign_mod.attrs,
             &["namespace", "auto_cxx_name", "auto_rust_name"],
         )?;
 
-        let auto_case = CaseConversion::from_attrs(&attrs)?;
+        let auto_case = CaseConversion::from_attrs(&attrs.cxx_qt_attrs)?;
 
         let mut extern_rustqt_block = Self {
             unsafety: foreign_mod.unsafety,

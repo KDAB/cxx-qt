@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+pub mod attribute;
 pub mod constructor;
 pub mod cxxqtdata;
 pub mod externcxxqt;
@@ -18,10 +19,8 @@ pub mod qobject;
 pub mod signals;
 pub mod trait_impl;
 
-use crate::{
-    naming::TypeNames,
-    syntax::{expr::expr_to_string, path::path_compare_str},
-};
+use crate::parser::attribute::ParsedAttribute;
+use crate::{naming::TypeNames, syntax::expr::expr_to_string};
 use convert_case::Case;
 use cxxqtdata::ParsedCxxQtData;
 use std::collections::BTreeMap;
@@ -87,24 +86,6 @@ impl CaseConversion {
     }
 }
 
-/// Iterate the attributes of the method to extract cfg attributes
-pub fn extract_cfgs(attrs: &[Attribute]) -> Vec<Attribute> {
-    attrs
-        .iter()
-        .filter(|attr| path_compare_str(attr.meta.path(), &["cfg"]))
-        .cloned()
-        .collect()
-}
-
-/// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
-pub fn extract_docs(attrs: &[Attribute]) -> Vec<Attribute> {
-    attrs
-        .iter()
-        .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
-        .cloned()
-        .collect()
-}
-
 /// Splits a path by :: separators e.g. "cxx_qt::bridge" becomes ["cxx_qt", "bridge"]
 fn split_path(path_str: &str) -> Vec<&str> {
     let path = if path_str.contains("::") {
@@ -113,32 +94,6 @@ fn split_path(path_str: &str) -> Vec<&str> {
         vec![path_str]
     };
     path
-}
-
-/// Collects a Map of all attributes found from the allowed list
-/// Will error if an attribute which is not in the allowed list is found
-pub fn require_attributes<'a>(
-    attrs: &'a [Attribute],
-    allowed: &'a [&str],
-) -> Result<BTreeMap<&'a str, &'a Attribute>> {
-    let mut output = BTreeMap::default();
-    for attr in attrs {
-        let index = allowed
-            .iter()
-            .position(|string| path_compare_str(attr.meta.path(), &split_path(string)));
-        if let Some(index) = index {
-            output.insert(allowed[index], attr); // Doesn't error on duplicates
-        } else {
-            return Err(Error::new(
-                attr.span(),
-                format!(
-                    "Unsupported attribute! The only attributes allowed on this item are\n{}",
-                    allowed.join(", ")
-                ),
-            ));
-        }
-    }
-    Ok(output)
 }
 
 // Extract base identifier from attribute
@@ -174,7 +129,7 @@ impl PassthroughMod {
 
         Self {
             items,
-            docs: extract_docs(&module.attrs),
+            docs: attribute::extract_docs(&module.attrs),
             module_ident: module.ident,
             vis: module.vis,
         }
@@ -196,7 +151,7 @@ pub struct Parser {
 
 impl Parser {
     fn parse_mod_attributes(module: &mut ItemMod) -> Result<Option<String>> {
-        let attrs = require_attributes(&module.attrs, &["doc", "cxx_qt::bridge"])?;
+        let attrs = ParsedAttribute::require_attributes(&module.attrs, &["doc", "cxx_qt::bridge"])?;
         let mut namespace = None;
 
         // Check for the cxx_qt::bridge attribute
