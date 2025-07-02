@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::CommonAttrs;
 use crate::{
     parser::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
@@ -11,10 +12,8 @@ use crate::{
     syntax::{attribute::attribute_get_path, expr::expr_to_string},
 };
 use syn::{
-    spanned::Spanned, Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, Result,
-    Token,
+    spanned::Spanned, Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, Result, Token,
 };
-use crate::parser::CommonAttrs;
 
 /// Representation of an extern "C++Qt" block
 #[derive(Default)]
@@ -39,10 +38,10 @@ impl ParsedExternCxxQt {
         module_ident: &Ident,
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
-        // TODO: support cfg on foreign mod blocks
+        // TODO: (cfg everywhere) support cfg on foreign mod blocks
         let (attrs, common_attrs) = require_attributes(
             &foreign_mod.attrs,
-            &["namespace", "doc", "auto_cxx_name", "auto_rust_name"],
+            &["doc", "namespace", "auto_cxx_name", "auto_rust_name"],
         )?;
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
@@ -72,7 +71,7 @@ impl ParsedExternCxxQt {
                 ForeignItem::Type(foreign_ty) => {
                     // Test that there is a #[qobject] attribute on any type
                     //
-                    // TODO: what happens to any docs here?
+                    // TODO: (cfg everywhere) what happens to any docs here?
                     if attribute_get_path(&foreign_ty.attrs, &["qobject"]).is_some() {
                         let extern_ty =
                             ParsedExternQObject::parse(foreign_ty, module_ident, parent_namespace)?;

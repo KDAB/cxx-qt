@@ -3,15 +3,15 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::CommonAttrs;
 use crate::{
     naming::Name,
-    parser::{property::ParsedQProperty, require_attributes, parse_base_type, CaseConversion},
+    parser::{parse_base_type, property::ParsedQProperty, require_attributes, CaseConversion},
     syntax::{expr::expr_to_string, foreignmod::ForeignTypeIdentAlias, path::path_compare_str},
 };
 #[cfg(test)]
 use quote::format_ident;
 use syn::{Attribute, Error, Ident, Meta, Result};
-use crate::parser::CommonAttrs;
 
 /// Metadata for registering QML element
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
@@ -47,11 +47,11 @@ pub struct ParsedQObject {
 
 impl ParsedQObject {
     const ALLOWED_ATTRS: [&'static str; 11] = [
+        "cfg",
+        "doc",
         "cxx_name",
         "rust_name",
         "namespace",
-        "cfg",
-        "doc",
         "qobject",
         "base",
         "qml_element",
@@ -76,7 +76,7 @@ impl ParsedQObject {
             common_attrs: CommonAttrs {
                 docs: vec![],
                 cfgs: vec![],
-            }
+            },
         }
     }
 
@@ -87,7 +87,8 @@ impl ParsedQObject {
         module: &Ident,
         auto_case: CaseConversion,
     ) -> Result<Self> {
-        let (attributes, common_attrs) = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
+        let (attributes, common_attrs) =
+            require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
 
         let has_qobject_macro = attributes.contains_key("qobject");
 
@@ -125,7 +126,7 @@ impl ParsedQObject {
             properties,
             qml_metadata,
             has_qobject_macro,
-            common_attrs
+            common_attrs,
         })
     }
 

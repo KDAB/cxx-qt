@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::generator::structuring::StructuredQObject;
+use crate::parser::CommonAttrs;
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectNames},
@@ -15,7 +16,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{parse_quote, Attribute, Result};
+use syn::{parse_quote, Result};
 
 impl GeneratedRustFragment {
     pub fn from_qobject(
@@ -28,7 +29,7 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
 
         let mut generated = vec![
-            generate_qobject_definitions(&qobject_names, &qobject.common_attrs.cfgs, &qobject.common_attrs.docs)?,
+            generate_qobject_definitions(&qobject_names, &qobject.common_attrs)?,
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
@@ -87,9 +88,11 @@ impl GeneratedRustFragment {
 /// Generate the C++ and Rust CXX definitions for the QObject
 fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
-    cfgs: &[Attribute],
-    docs: &[Attribute],
+    common_attrs: &CommonAttrs,
 ) -> Result<GeneratedRustFragment> {
+    let docs = &common_attrs.docs;
+    let cfgs = &common_attrs.cfgs;
+
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
 

@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::parser::CommonAttrs;
 use crate::{
     parser::{method::MethodFields, require_attributes, CaseConversion},
     syntax::path::path_compare_str,
@@ -9,7 +10,6 @@ use crate::{
 use core::ops::Deref;
 use std::ops::DerefMut;
 use syn::{spanned::Spanned, Error, ForeignItemFn, Result, Visibility};
-use crate::parser::CommonAttrs;
 
 #[derive(Clone)]
 /// Describes an individual Signal
@@ -26,7 +26,7 @@ pub struct ParsedSignal {
 
 impl ParsedSignal {
     const ALLOWED_ATTRS: [&'static str; 6] =
-        ["cfg", "cxx_name", "rust_name", "inherit", "doc", "qsignal"];
+        ["cfg", "doc", "cxx_name", "rust_name", "inherit", "qsignal"];
 
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body

@@ -19,12 +19,12 @@ pub struct ParsedInheritedMethod {
 
 impl ParsedInheritedMethod {
     const ALLOWED_ATTRS: [&'static str; 6] = [
+        "cfg",
+        "doc",
         "cxx_name",
         "rust_name",
         "qinvokable",
-        "doc",
         "inherit",
-        "cfg",
     ];
 
     pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
@@ -32,7 +32,7 @@ impl ParsedInheritedMethod {
 
         Ok(Self {
             method_fields: MethodFields::parse(method, auto_case)?,
-            common_attrs
+            common_attrs,
         })
     }
 

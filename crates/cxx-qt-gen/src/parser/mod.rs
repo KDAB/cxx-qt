@@ -104,7 +104,6 @@ pub fn extract_cfgs(attrs: &[Attribute]) -> Vec<Attribute> {
 /// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
 pub fn extract_docs(attrs: &[Attribute]) -> Vec<Attribute> {
     extract_attr(attrs, "doc")
-
 }
 
 /// Splits a path by :: separators e.g. "cxx_qt::bridge" becomes ["cxx_qt", "bridge"]
@@ -139,8 +138,7 @@ pub fn require_attributes<'a>(
             .position(|string| path_compare_str(attr.meta.path(), &split_path(string)));
         if let Some(index) = index {
             output.insert(allowed[index], attr); // Doesn't error on duplicates
-        }
-        else {
+        } else {
             return Err(Error::new(
                 attr.span(),
                 format!(

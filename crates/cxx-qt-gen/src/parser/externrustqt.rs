@@ -37,7 +37,7 @@ impl ParsedExternRustQt {
         module_ident: &Ident,
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
-        // TODO: support cfg on foreign mod blocks
+        // TODO: (cfg everywhere) support cfg on foreign mod blocks
         let (attrs, _common_attrs) = require_attributes(
             &foreign_mod.attrs,
             &["namespace", "auto_cxx_name", "auto_rust_name"],

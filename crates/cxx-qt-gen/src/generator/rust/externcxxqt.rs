@@ -7,10 +7,9 @@ use crate::{
     generator::rust::{fragment::GeneratedRustFragment, signals::generate_rust_signal},
     naming::TypeNames,
     parser::externcxxqt::ParsedExternCxxQt,
-    syntax::path::path_compare_str,
 };
 use quote::quote;
-use syn::{parse_quote, Attribute, Item, Result};
+use syn::{parse_quote, Item, Result};
 
 impl GeneratedRustFragment {
     pub fn from_extern_cxx_qt(
@@ -60,19 +59,9 @@ impl GeneratedRustFragment {
                     #[cxx_name = #cxx_name]
                 }
             };
-            // TODO! Can we make extract_docs return references, and then use here?
-            let cfgs: Vec<&Attribute> = obj
-                .declaration
-                .attrs
-                .iter()
-                .filter(|attr| path_compare_str(attr.meta.path(), &["cfg"]))
-                .collect();
-            let docs: Vec<&Attribute> = obj
-                .declaration
-                .attrs
-                .iter()
-                .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
-                .collect();
+            // TODO: (cfg everywhere) Can we make extract_docs return references, and then use here?
+            let cfgs = obj.common_attrs.cfgs.iter().collect::<Vec<_>>();
+            let docs = obj.common_attrs.docs.iter().collect::<Vec<_>>();
             qobject_items.push(parse_quote! {
                 #namespace
                 #cxx_name

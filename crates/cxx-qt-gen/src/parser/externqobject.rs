@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::naming::Name;
-use crate::parser::{parse_base_type, require_attributes, CaseConversion};
+use crate::parser::{parse_base_type, require_attributes, CaseConversion, CommonAttrs};
 use syn::{ForeignItemType, Ident, Result};
 
 /// A representation of a QObject to be generated in an extern C++ block
@@ -14,15 +14,17 @@ pub struct ParsedExternQObject {
     pub declaration: ForeignItemType,
     /// The base class of the struct
     pub base_class: Option<Ident>,
+    /// Common attrs for this object
+    pub common_attrs: CommonAttrs,
 }
 
 impl ParsedExternQObject {
     const ALLOWED_ATTRS: [&'static str; 7] = [
+        "cfg",
+        "doc",
         "cxx_name",
         "rust_name",
         "namespace",
-        "cfg",
-        "doc",
         "qobject",
         "base",
     ];
@@ -32,7 +34,8 @@ impl ParsedExternQObject {
         module_ident: &Ident,
         parent_namespace: Option<&str>,
     ) -> Result<ParsedExternQObject> {
-        let (attributes, _common_attrs) = require_attributes(&ty.attrs, &Self::ALLOWED_ATTRS)?;
+        // TODO: (cfg everywhere) should these have docs kept with them in the generated code?
+        let (attributes, common_attrs) = require_attributes(&ty.attrs, &Self::ALLOWED_ATTRS)?;
 
         let base_class = parse_base_type(&attributes)?;
 
@@ -46,6 +49,7 @@ impl ParsedExternQObject {
             )?,
             declaration: ty,
             base_class,
+            common_attrs,
         })
     }
 }
