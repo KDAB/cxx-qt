@@ -3,10 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::parser::CaseConversion;
-use crate::{
-    parser::{extract_cfgs, extract_docs, method::MethodFields, require_attributes},
-    syntax::path::path_compare_str,
-};
+use crate::{parser::method::MethodFields, syntax::path::path_compare_str};
 use core::ops::Deref;
 use std::ops::DerefMut;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
@@ -37,10 +34,9 @@ impl ParsedSignal {
     }
 
     pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
-        let docs = extract_docs(&method.attrs);
-        let cfgs = extract_cfgs(&method.attrs);
-        let fields = MethodFields::parse(method, auto_case)?;
-        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
+        let fields = MethodFields::parse(method, auto_case, &Self::ALLOWED_ATTRS)?;
+        let cfgs = fields.attrs.extract_cfgs();
+        let docs = fields.attrs.extract_docs();
 
         if !fields.mutable {
             return Err(Error::new(
@@ -49,7 +45,7 @@ impl ParsedSignal {
             ));
         }
 
-        let inherit = attrs.contains_key("inherit");
+        let inherit = fields.attrs.contains_key("inherit");
 
         let private = if let Visibility::Restricted(vis_restricted) = &fields.method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
