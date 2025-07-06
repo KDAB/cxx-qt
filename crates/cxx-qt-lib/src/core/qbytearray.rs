@@ -7,29 +7,64 @@ use std::fmt;
 use std::mem::MaybeUninit;
 use std::str;
 
+use crate::{unsafe_impl_qflag, QFlags};
+
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    /// This enum contains the options available for encoding and decoding Base64. Base64 is defined by [RFC 4648](https://datatracker.ietf.org/doc/html/rfc4648).
+    ///
+    /// An empty `QFlags<QByteArrayBase64Option>` will use the regular Base64 alphabet, called simply "base64".
+    #[namespace = "rust::cxxqtlib1"]
+    #[repr(u32)]
+    enum QByteArrayBase64Option {
+        /// An alternate alphabet, called "base64url", which replaces two characters in the alphabet to be more friendly to URLs.
+        Base64UrlEncoding = 1,
+        /// Omits adding the padding equal signs at the end of the encoded data.
+        OmitTrailingEquals = 2,
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    #[repr(i32)]
+    enum QByteArrayBase64DecodingStatus {
+        Ok,
+        IllegalInputLength,
+        IllegalCharacter,
+        IllegalPadding,
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
 
+        type QByteArrayBase64DecodingStatus;
+        type QByteArrayFromBase64Result = super::QByteArrayFromBase64Result;
+        type QByteArrayBase64Option;
+        type QByteArrayBase64Options = super::QByteArrayBase64Options;
+    }
+
+    unsafe extern "C++" {
         type QByteArray = super::QByteArray;
 
         /// Clears the contents of the byte array and makes it null.
-        fn clear(self: &mut Self);
+        fn clear(&mut self);
+
         /// Returns `true` if the byte array has size 0; otherwise returns `false`.
         #[rust_name = "is_empty"]
-        fn isEmpty(self: &Self) -> bool;
+        fn isEmpty(&self) -> bool;
         /// Returns `true` if this byte array is lowercase, that is, if it's identical to its [`to_lower`](Self::to_lower) folding.
         #[rust_name = "is_lower"]
-        fn isLower(self: &Self) -> bool;
+        fn isLower(&self) -> bool;
         /// Returns `true` if this byte array is null; otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &Self) -> bool;
+        fn isNull(&self) -> bool;
         /// Returns `true` if this byte array is uppercase, that is, if it's identical to its [`to_upper`](Self::to_upper) folding.
         #[rust_name = "is_upper"]
-        fn isUpper(self: &Self) -> bool;
+        fn isUpper(&self) -> bool;
         /// Releases any memory not required to store the array's data.
-        fn squeeze(self: &mut Self);
+        fn squeeze(&mut self);
+        /// Returns a copy of the byte array, encoded using the options `options`.
+        #[rust_name = "to_base64"]
+        fn toBase64(&self, options: QByteArrayBase64Options) -> QByteArray;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -75,6 +110,12 @@ mod ffi {
         #[rust_name = "qbytearray_fill"]
         fn qbytearrayFill(bytearray: &mut QByteArray, ch: u8, size: isize);
         #[doc(hidden)]
+        #[rust_name = "qbytearrray_from_base64_encoding"]
+        fn qbytearrayFromBase64Encoding(
+            base64: &QByteArray,
+            options: QByteArrayBase64Options,
+        ) -> QByteArrayFromBase64Result;
+        #[doc(hidden)]
         #[rust_name = "qbytearray_insert"]
         fn qbytearrayInsert(bytearray: &mut QByteArray, pos: isize, ch: u8);
         #[doc(hidden)]
@@ -106,6 +147,17 @@ mod ffi {
         fn qbytearrayTrimmed(bytearray: &QByteArray) -> QByteArray;
     }
 }
+
+use ffi::QByteArrayBase64DecodingStatus;
+pub use ffi::QByteArrayBase64Option;
+
+/// [`QFlags`] of [`QByteArrayBase64Option`].
+pub type QByteArrayBase64Options = QFlags<QByteArrayBase64Option>;
+unsafe_impl_qflag!(
+    QByteArrayBase64Option,
+    "rust::cxxqtlib1::QByteArrayBase64Options",
+    u32
+);
 
 /// The `QByteArray` class provides an array of bytes.
 ///
@@ -247,6 +299,26 @@ impl QByteArray {
         ffi::qbytearray_fill(self, ch, size)
     }
 
+    /// Decodes the Base64 array `base64`, using the options defined by `options`.
+    pub fn from_base64_encoding(
+        base64: &Self,
+        options: QByteArrayBase64Options,
+    ) -> Result<Self, QByteArrayFromBase64Error> {
+        let result = ffi::qbytearrray_from_base64_encoding(base64, options);
+        match result.decoding_status {
+            QByteArrayBase64DecodingStatus::IllegalInputLength => {
+                Err(QByteArrayFromBase64Error::IllegalInputLength)
+            }
+            QByteArrayBase64DecodingStatus::IllegalCharacter => {
+                Err(QByteArrayFromBase64Error::IllegalCharacter)
+            }
+            QByteArrayBase64DecodingStatus::IllegalPadding => {
+                Err(QByteArrayFromBase64Error::IllegalPadding)
+            }
+            _ => Ok(result.decoded),
+        }
+    }
+
     /// Construct a `QByteArray` from a `bytes::Bytes` without a deep copy
     ///
     /// # Safety
@@ -340,6 +412,40 @@ impl QByteArray {
     }
 }
 
+#[repr(C)]
+struct QByteArrayFromBase64Result {
+    decoded: QByteArray,
+    decoding_status: QByteArrayBase64DecodingStatus,
+}
+
+// Safety:
+//
+// Static checks on the C++ side to ensure the size is the same.
+unsafe impl ExternType for QByteArrayFromBase64Result {
+    type Id = type_id!("rust::cxxqtlib1::QByteArrayFromBase64Result");
+    type Kind = cxx::kind::Trivial;
+}
+
+#[allow(clippy::enum_variant_names)]
+#[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+pub enum QByteArrayFromBase64Error {
+    IllegalInputLength = 1,
+    IllegalCharacter,
+    IllegalPadding,
+}
+
+impl fmt::Display for QByteArrayFromBase64Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(match self {
+            Self::IllegalInputLength => "illegal input length",
+            Self::IllegalCharacter => "illegal character",
+            Self::IllegalPadding => "illegal padding",
+        })
+    }
+}
+
+impl std::error::Error for QByteArrayFromBase64Error {}
+
 #[cfg(feature = "serde")]
 impl serde::Serialize for QByteArray {
     fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
@@ -407,6 +513,24 @@ mod tests {
         assert_eq!(crate::serde_impl::roundtrip(&qbytearray), qbytearray)
     }
 
+    #[test]
+    fn qbytearray_base64() {
+        let qbytearray = QByteArray::from("KDAB");
+        let options = QByteArrayBase64Options::default();
+        let encoded = qbytearray.to_base64(options);
+        let decoded = QByteArray::from_base64_encoding(&encoded, options);
+        assert_eq!(decoded, Ok(qbytearray));
+    }
+
+    #[test]
+    fn qbytearray_base64_url() {
+        let qbytearray = QByteArray::from("KDAB");
+        let options = QByteArrayBase64Option::Base64UrlEncoding.into();
+        let encoded = qbytearray.to_base64(options);
+        let decoded = QByteArray::from_base64_encoding(&encoded, options);
+        assert_eq!(decoded, Ok(qbytearray));
+    }
+
     #[cfg(feature = "bytes")]
     #[test]
     fn test_bytes() {
@@ -421,6 +545,6 @@ mod tests {
     #[test]
     fn test_display_fmt() {
         let qbytearray = QByteArray::from("KDAB");
-        assert_eq!(format!("{:-<8}", qbytearray), "KDAB----")
+        assert_eq!(format!("{qbytearray:-<8}"), "KDAB----")
     }
 }
