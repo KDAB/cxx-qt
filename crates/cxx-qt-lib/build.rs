@@ -201,6 +201,9 @@ fn main() {
         rust_bridges.extend([
             "core/qlist/qlist_qcolor",
             "core/qvariant/qvariant_qcolor",
+            "core/qvariant/qvariant_qvector2d",
+            "core/qvariant/qvariant_qvector3d",
+            "core/qvariant/qvariant_qvector4d",
             "core/qvector/qvector_qcolor",
             "gui/qcolor",
             "gui/qfont",
