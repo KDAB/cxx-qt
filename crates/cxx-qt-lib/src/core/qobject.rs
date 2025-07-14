@@ -3,8 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use cxx_qt::casting::Upcast;
 pub use cxx_qt::QObject;
 use std::pin::Pin;
+use std::ptr;
 
 #[cxx::bridge]
 pub mod ffi {
@@ -65,23 +67,22 @@ pub trait QObjectExt {
     fn parent(&self) -> *mut Self;
 
     /// Makes the object a child of `parent`.
-    fn set_parent(self: Pin<&mut Self>, parent: &Self);
+    fn set_parent<T>(self: Pin<&mut Self>, parent: Pin<&mut T>)
+    where
+        T: Upcast<QObject>;
+
+    /// Makes the object parentless.
+    fn unset_parent(self: Pin<&mut Self>);
 }
 
 /// Used to convert the QObject type from the library type to the C++ type, as a pin
 fn cast_pin(obj: Pin<&mut QObject>) -> Pin<&mut QObjectExternal> {
-    unsafe {
-        let mut_ptr = obj.get_unchecked_mut() as *mut QObject as *mut QObjectExternal;
-        Pin::new_unchecked(&mut *mut_ptr)
-    }
+    unsafe { Pin::new_unchecked(&mut *ptr::from_mut(obj.get_unchecked_mut()).cast()) }
 }
 
 /// Used to convert the QObject type from the library type to the C++ type
 fn cast(obj: &QObject) -> &QObjectExternal {
-    unsafe {
-        let ptr = obj as *const QObject as *const QObjectExternal;
-        &*ptr
-    }
+    unsafe { &*(ptr::from_ref(obj).cast()) }
 }
 
 impl QObjectExt for QObject {
@@ -105,10 +106,17 @@ impl QObjectExt for QObject {
         cast(self).parent() as *mut Self
     }
 
-    fn set_parent(self: Pin<&mut Self>, parent: &Self) {
+    fn set_parent<T>(self: Pin<&mut Self>, parent: Pin<&mut T>)
+    where
+        T: Upcast<QObject>,
+    {
         unsafe {
-            cast_pin(self)
-                .set_parent(cast(parent) as *const QObjectExternal as *mut QObjectExternal);
+            let parent = ptr::from_mut(parent.get_unchecked_mut().upcast_mut()).cast();
+            cast_pin(self).set_parent(parent)
         }
+    }
+
+    fn unset_parent(self: Pin<&mut Self>) {
+        unsafe { cast_pin(self).set_parent(ptr::null_mut()) }
     }
 }
