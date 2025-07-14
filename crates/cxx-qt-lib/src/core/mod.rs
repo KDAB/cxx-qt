@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 mod qbytearray;
-pub use qbytearray::QByteArray;
+pub use qbytearray::{
+    QByteArray, QByteArrayBase64Option, QByteArrayBase64Options, QByteArrayFromBase64Error,
+};
 
 mod qcoreapplication;
 pub use qcoreapplication::QCoreApplication;

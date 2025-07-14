@@ -38,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `QScopedMetaObjectConnectionGuard`, which is `QMetaObjectConnectionGuard` with a scoped lifetime. `QMetaObjectConnectionGuard` is now a type alias for `QScopedMetaObjectConnectionGuard<'static>`.
 - Support for setting Qt log message patterns with `q_set_message_pattern` and formatting log messages ith `q_format_log_message`.
 - Implement `IntoIterator` for `&QHash`, `&QList`, `&QMap`, `&QSet`, and `&QVector`.
+- Add `QByteArray:from_base64_encoding` and `QByteArray::to_base64`.
 
 ### Removed
 
