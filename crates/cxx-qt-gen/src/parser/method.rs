@@ -5,7 +5,7 @@
 use crate::parser::CaseConversion;
 use crate::{
     naming::Name,
-    parser::{extract_cfgs, parameter::ParsedFunctionParameter, require_attributes},
+    parser::{parameter::ParsedFunctionParameter, require_attributes},
     syntax::{foreignmod, types},
 };
 use core::ops::Deref;
@@ -121,8 +121,7 @@ impl ParsedMethod {
         unsafe_block: bool,
     ) -> Result<Self> {
         let fields = MethodFields::parse(method, auto_case)?;
-        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
-        let cfgs = extract_cfgs(&fields.method.attrs);
+        let (attrs, common_attrs) = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
         // Determine if the method is invokable
         let is_qinvokable = attrs.contains_key("qinvokable");
@@ -134,7 +133,7 @@ impl ParsedMethod {
             specifiers,
             is_qinvokable,
             is_pure,
-            cfgs,
+            cfgs: common_attrs.cfgs,
             unsafe_block,
         })
     }

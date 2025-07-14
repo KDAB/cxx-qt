@@ -100,8 +100,8 @@ pub fn generate_rust_signal(
     } else {
         Some(quote! { unsafe })
     };
-    let doc_comments = &signal.docs;
-    let cfgs = &signal.cfgs;
+    let doc_comments = &signal.common_attrs.docs;
+    let cfgs = &signal.common_attrs.cfgs;
     let namespace = if let Some(namespace) = qobject_name.namespace() {
         quote_spanned! { span=> #[namespace = #namespace ] }
     } else {

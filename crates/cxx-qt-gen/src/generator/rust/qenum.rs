@@ -16,8 +16,8 @@ pub fn generate_cxx_mod_contents(qenums: &[ParsedQEnum]) -> Vec<Item> {
             let item = &qenum.item;
             let vis = &item.vis;
             let variants = &item.variants;
-            let docs = &qenum.docs;
-            let cfgs = &qenum.cfgs;
+            let docs = &qenum.common_attrs.docs;
+            let cfgs = &qenum.common_attrs.cfgs;
 
             let cxx_namespace = if namespace.is_none() {
                 quote! {}

@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::CommonAttrs;
 use crate::{
     parser::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
@@ -19,6 +20,8 @@ use syn::{
 pub struct ParsedExternCxxQt {
     /// The namespace of the type in C++.
     pub namespace: Option<String>,
+    /// All the universal top level attributes for the block
+    pub common_attrs: CommonAttrs,
     /// Whether this block has an unsafe token
     pub unsafety: Option<Token![unsafe]>,
     /// Items which can be passed into the extern "C++Qt" block
@@ -35,10 +38,10 @@ impl ParsedExternCxxQt {
         module_ident: &Ident,
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
-        // TODO: support cfg on foreign mod blocks
-        let attrs = require_attributes(
+        // TODO: (cfg everywhere) support cfg on foreign mod blocks
+        let (attrs, common_attrs) = require_attributes(
             &foreign_mod.attrs,
-            &["namespace", "auto_cxx_name", "auto_rust_name"],
+            &["doc", "namespace", "auto_cxx_name", "auto_rust_name"],
         )?;
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
@@ -52,6 +55,7 @@ impl ParsedExternCxxQt {
 
         let mut extern_cxx_block = ParsedExternCxxQt {
             namespace,
+            common_attrs,
             unsafety: foreign_mod.unsafety,
             ..Default::default()
         };
@@ -67,7 +71,7 @@ impl ParsedExternCxxQt {
                 ForeignItem::Type(foreign_ty) => {
                     // Test that there is a #[qobject] attribute on any type
                     //
-                    // TODO: what happens to any docs here?
+                    // TODO: (cfg everywhere) what happens to any docs here?
                     if attribute_get_path(&foreign_ty.attrs, &["qobject"]).is_some() {
                         let extern_ty =
                             ParsedExternQObject::parse(foreign_ty, module_ident, parent_namespace)?;
