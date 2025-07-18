@@ -19,10 +19,11 @@ pub mod qobject;
 pub mod signals;
 pub mod trait_impl;
 
-use crate::parser::attribute::ParsedAttributes;
+use crate::parser::attribute::{ParsedAttribute, ParsedAttributes};
 use crate::{naming::TypeNames, syntax::expr::expr_to_string};
 use convert_case::Case;
 use cxxqtdata::ParsedCxxQtData;
+use proc_macro2::Span;
 use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
@@ -73,14 +74,50 @@ impl CaseConversion {
     /// Parses both `auto_cxx_name` and `auto_cxx_name = Camel`
     pub fn from_attrs(attrs: &ParsedAttributes) -> Result<Self> {
         // TODO: ATTR Won't error on duplicates, and needs error handling
-        let rust = attrs
-            .get_one("auto_rust_name")
-            .map(|attr| meta_to_case(attr, Case::Snake))
-            .transpose()?;
-        let cxx = attrs
-            .get_one("auto_cxx_name")
-            .map(|attr| meta_to_case(attr, Case::Camel))
-            .transpose()?;
+        // let rust = attrs
+        //     .get_one("auto_rust_name")
+        //     .map(|attr| meta_to_case(attr, Case::Snake))
+        //     .transpose()?;
+        // let cxx = attrs
+        //     .get_one("auto_cxx_name")
+        //     .map(|attr| meta_to_case(attr, Case::Camel))
+        //     .transpose()?;
+
+        let rust = match attrs.require_one("auto_rust_name") {
+            ParsedAttribute::Single(attr) => Some(meta_to_case(attr, Case::Snake)?),
+            ParsedAttribute::Absent => None,
+            ParsedAttribute::MultipleDisallowed(_) => {
+                Err(Error::new(
+                    Span::call_site(),
+                    "There must be at most one auto_rust_name attribute",
+                ))? // TODO: ATTR use real span
+            }
+            _ => {
+                // CODECOV_EXCLUDE_START
+                unreachable!(
+                    "Auto_rust_name is not an allowed duplicate, nor required so this block should be unreachable"
+                )
+                // CODECOV_EXCLUDE_STOP
+            }
+        };
+
+        let cxx = match attrs.require_one("auto_cxx_name") {
+            ParsedAttribute::Single(attr) => Some(meta_to_case(attr, Case::Camel)?),
+            ParsedAttribute::Absent => None,
+            ParsedAttribute::MultipleDisallowed(_) => {
+                Err(Error::new(
+                    Span::call_site(),
+                    "There must be at most one auto_cxx_name attribute",
+                ))? // TODO: ATTR use real span
+            }
+            _ => {
+                // CODECOV_EXCLUDE_START
+                unreachable!(
+                    "Auto_cxx_name is not an allowed duplicate, nor required so this block should be unreachable"
+                )
+                // CODECOV_EXCLUDE_STOP
+            }
+        };
 
         Ok(Self { rust, cxx })
     }
@@ -98,20 +135,35 @@ fn split_path(path_str: &str) -> Vec<&str> {
 
 // Extract base identifier from attribute
 pub fn parse_base_type(attributes: &ParsedAttributes) -> Result<Option<Ident>> {
-    attributes
-        .get_one("base") // TODO: ATTR Check for duplicates
-        .map(|attr| -> Result<Ident> {
+    match attributes.require_one("base") {
+        ParsedAttribute::Single(attr) => {
             let expr = &attr.meta.require_name_value()?.value;
             if let Expr::Path(path_expr) = expr {
-                Ok(path_expr.path.require_ident()?.clone())
+                Ok(Some(path_expr.path.require_ident()?.clone()))
             } else {
                 Err(Error::new_spanned(
                     expr,
-                    "Base must be a identifier and cannot be empty!",
+                    "There must be a single base identifier, not string, and cannot be empty!",
                 ))
             }
-        })
-        .transpose()
+        }
+        ParsedAttribute::Absent => Ok(None),
+        ParsedAttribute::MultipleDisallowed(attrs) => {
+            let attr = attrs.first().expect("Expected at least one attribute");
+            let expr = &attr.meta.require_name_value()?.value;
+            Err(Error::new_spanned(
+                expr,
+                "There must be a single base identifier, not string, and cannot be empty!",
+            ))
+        }
+        _ => {
+            // CODECOV_EXCLUDE_START
+            unreachable!(
+                "base is not an allowed duplicate, nor required so this block should be unreachable"
+            )
+            // CODECOV_EXCLUDE_STOP
+        }
+    }
 }
 
 /// Struct representing the necessary components of a cxx mod to be passed through to generation

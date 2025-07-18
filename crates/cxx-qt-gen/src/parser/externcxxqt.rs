@@ -3,11 +3,12 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::attribute::ParsedAttributes;
+use crate::parser::attribute::{ParsedAttribute, ParsedAttributes};
 use crate::{
     parser::{externqobject::ParsedExternQObject, signals::ParsedSignal, CaseConversion},
     syntax::{attribute::attribute_get_path, expr::expr_to_string},
 };
+use proc_macro2::Span;
 use syn::{
     spanned::Spanned, Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, Result, Token,
 };
@@ -41,12 +42,25 @@ impl ParsedExternCxxQt {
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
 
-        let namespace = attrs
-            .get_one("namespace")
-            .map(|attr| -> Result<String> {
-                expr_to_string(&attr.meta.require_name_value()?.value)
-            })
-            .transpose()?;
+        let namespace = match attrs.require_one("namespace") {
+            ParsedAttribute::Single(attr) => {
+                expr_to_string(&attr.meta.require_name_value()?.value).ok()
+            }
+            ParsedAttribute::Absent => None,
+            ParsedAttribute::MultipleDisallowed(_) => {
+                Err(Error::new(
+                    Span::call_site(),
+                    "There must be at most one namespace attribute",
+                ))? // TODO: ATTR use real span
+            }
+            _ => {
+                // CODECOV_EXCLUDE_START
+                unreachable!(
+                    "Namepsace is not an allowed duplicate, nor required so this block should be unreachable"
+                )
+                // CODECOV_EXCLUDE_STOP
+            }
+        };
 
         let mut extern_cxx_block = ParsedExternCxxQt {
             namespace,
@@ -216,6 +230,26 @@ mod tests {
             // All types in "C++Qt" blocks must be marked as QObjects
             {
                 unsafe extern "C++Qt" {
+                    type QPushButton;
+                }
+            }
+
+            // Duplicate base attr is an error
+            {
+                extern "C++Qt" {
+                    #[base = QPushButton]
+                    #[base = QPushButton]
+                    #[qobject]
+                    type QPushButtonChild;
+                }
+            }
+
+            // All types in "C++Qt" blocks must be marked as QObjects
+            {
+                #[namespace = "My namespace"]
+                #[namespace = "My other namespace"]
+                unsafe extern "C++Qt" {
+                    #[qobject]
                     type QPushButton;
                 }
             }

@@ -14,6 +14,20 @@ pub struct ParsedAttributes {
     pub passthrough_attrs: Vec<Attribute>,
 }
 
+// TODO: ATTR could this instead be used as Result<ParsedAttribute> to encapsulate error states
+pub enum ParsedAttribute<'a> {
+    /// A single attribute was found
+    Single(&'a Attribute),
+    /// An attribute was not found, but this is ok
+    Absent,
+    /// An attribute was not found, and this is an error
+    AbsentRequired,
+    /// Multiple attributes were found, but this is ok
+    Multiple(Vec<&'a Attribute>),
+    /// Multiple attributes were found, but this is an error
+    MultipleDisallowed(Vec<&'a Attribute>),
+}
+
 /// Iterate the attributes of the method to extract cfg attributes
 pub fn extract_cfgs(attrs: &[Attribute]) -> Vec<Attribute> {
     attrs
@@ -106,6 +120,18 @@ impl<'a> ParsedAttributes {
     /// Search in first the CXX-Qt, and then passthrough attributes by key
     pub fn get_one(&self, key: &str) -> Option<&Attribute> {
         self.cxx_qt_attrs.get(key)?.first()
+    }
+
+    pub fn require_one(&self, key: &str) -> ParsedAttribute {
+        if let Some(attrs) = self.cxx_qt_attrs.get(key) {
+            if attrs.len() != 1 {
+                ParsedAttribute::MultipleDisallowed(attrs.iter().by_ref().collect())
+            } else {
+                ParsedAttribute::Single(attrs.first().expect("Expected at least one attribute"))
+            }
+        } else {
+            ParsedAttribute::Absent
+        }
     }
 
     /// Check if CXX-Qt or passthrough attributes contains a particular key
