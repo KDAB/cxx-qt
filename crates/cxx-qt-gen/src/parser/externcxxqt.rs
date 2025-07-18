@@ -3,12 +3,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::attribute::{ParsedAttribute, ParsedAttributes};
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
 use crate::{
     parser::{externqobject::ParsedExternQObject, signals::ParsedSignal, CaseConversion},
     syntax::{attribute::attribute_get_path, expr::expr_to_string},
 };
-use proc_macro2::Span;
 use syn::{
     spanned::Spanned, Error, ForeignItem, ForeignItemFn, Ident, ItemForeignMod, Result, Token,
 };
@@ -37,30 +36,19 @@ impl ParsedExternCxxQt {
         // TODO: support cfg on foreign mod blocks
         let attrs = ParsedAttributes::require_attributes(
             foreign_mod.attrs,
-            &["namespace", "auto_cxx_name", "auto_rust_name"],
+            &[
+                (AttributeConstraint::Unique, "namespace"),
+                (AttributeConstraint::Unique, "auto_cxx_name"),
+                (AttributeConstraint::Unique, "auto_rust_name"),
+            ],
         )?;
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
 
-        let namespace = match attrs.require_one("namespace") {
-            ParsedAttribute::Single(attr) => {
-                expr_to_string(&attr.meta.require_name_value()?.value).ok()
-            }
-            ParsedAttribute::Absent => None,
-            ParsedAttribute::MultipleDisallowed(_) => {
-                Err(Error::new(
-                    Span::call_site(),
-                    "There must be at most one namespace attribute",
-                ))? // TODO: ATTR use real span
-            }
-            _ => {
-                // CODECOV_EXCLUDE_START
-                unreachable!(
-                    "Namepsace is not an allowed duplicate, nor required so this block should be unreachable"
-                )
-                // CODECOV_EXCLUDE_STOP
-            }
-        };
+        let namespace = attrs
+            .get_one("namespace")
+            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
+            .transpose()?;
 
         let mut extern_cxx_block = ParsedExternCxxQt {
             namespace,

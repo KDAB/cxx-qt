@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::naming::Name;
-use crate::parser::attribute::ParsedAttributes;
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
 use crate::parser::{parse_base_type, CaseConversion};
 use syn::{ForeignItemType, Ident, Result};
 
@@ -18,14 +18,14 @@ pub struct ParsedExternQObject {
 }
 
 impl ParsedExternQObject {
-    const ALLOWED_ATTRS: [&'static str; 7] = [
-        "cxx_name",
-        "rust_name",
-        "namespace",
-        "cfg",
-        "doc",
-        "qobject",
-        "base",
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 7] = [
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "namespace"),
+        (AttributeConstraint::Duplicate, "cfg"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Unique, "qobject"),
+        (AttributeConstraint::Unique, "base"),
     ];
 
     pub fn parse(

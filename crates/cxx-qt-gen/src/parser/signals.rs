@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::parser::attribute::AttributeConstraint;
 use crate::parser::CaseConversion;
 use crate::{parser::method::MethodFields, syntax::path::path_compare_str};
 use core::ops::Deref;
@@ -24,8 +25,14 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
-    const ALLOWED_ATTRS: [&'static str; 6] =
-        ["cfg", "cxx_name", "rust_name", "inherit", "doc", "qsignal"];
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 6] = [
+        (AttributeConstraint::Duplicate, "cfg"),
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "inherit"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Unique, "qsignal"),
+    ];
 
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body

@@ -14,18 +14,11 @@ pub struct ParsedAttributes {
     pub passthrough_attrs: Vec<Attribute>,
 }
 
-// TODO: ATTR could this instead be used as Result<ParsedAttribute> to encapsulate error states
-pub enum ParsedAttribute<'a> {
-    /// A single attribute was found
-    Single(&'a Attribute),
-    /// An attribute was not found, but this is ok
-    Absent,
-    /// An attribute was not found, and this is an error
-    AbsentRequired,
-    /// Multiple attributes were found, but this is ok
-    Multiple(Vec<&'a Attribute>),
-    /// Multiple attributes were found, but this is an error
-    MultipleDisallowed(Vec<&'a Attribute>),
+pub enum AttributeConstraint {
+    /// Indicates that there must be only one of this attribute
+    Unique,
+    /// Indicates there can be multiple of this attribute
+    Duplicate,
 }
 
 /// Iterate the attributes of the method to extract cfg attributes
@@ -48,32 +41,49 @@ pub fn extract_docs(attrs: &[Attribute]) -> Vec<Attribute> {
 
 impl<'a> ParsedAttributes {
     /// Collects a Map of all attributes found from the allowed list
-    /// Will error if an attribute which is not in the allowed list is found
+    /// Will error if an attribute which is not in the allowed list is found, or attribute is used incorrectly
     pub fn require_attributes(
         mut attrs: Vec<Attribute>,
-        allowed: &'a [&str],
+        allowed: &'a [(AttributeConstraint, &str)],
     ) -> Result<ParsedAttributes> {
         let mut output = BTreeMap::<String, Vec<Attribute>>::default();
+        // Iterate all attributes found
         for attr in attrs.drain(..) {
-            let index = allowed
-                .iter()
-                .position(|string| path_compare_str(attr.meta.path(), &parser::split_path(string)));
+            let index = allowed.iter().position(|(_, string)| {
+                path_compare_str(attr.meta.path(), &parser::split_path(string))
+            });
             if let Some(index) = index {
-                // TODO: ATTR Doesn't error on duplicates / distinguish allowed and disallowed duplicates
-                match output.entry(allowed[index].into()) {
-                    Entry::Occupied(mut entry) => {
-                        entry.get_mut().push(attr);
+                match allowed[index].0 {
+                    AttributeConstraint::Unique => {
+                        match output.entry(allowed[index].1.into()) {
+                            Entry::Occupied(_) => return Err(Error::new_spanned(
+                                attr,
+                                "There must be at most one of this attribute on this given item",
+                            )),
+                            Entry::Vacant(entry) => {
+                                entry.insert(vec![attr]);
+                            }
+                        }
                     }
-                    Entry::Vacant(entry) => {
-                        entry.insert(vec![attr]);
-                    }
+                    AttributeConstraint::Duplicate => match output.entry(allowed[index].1.into()) {
+                        Entry::Occupied(mut entry) => {
+                            entry.get_mut().push(attr);
+                        }
+                        Entry::Vacant(entry) => {
+                            entry.insert(vec![attr]);
+                        }
+                    },
                 }
             } else {
                 return Err(Error::new(
                     attr.span(),
                     format!(
                         "Unsupported attribute! The only attributes allowed on this item are\n{}",
-                        allowed.join(", ")
+                        allowed
+                            .iter()
+                            .map(|(_, string)| *string)
+                            .collect::<Vec<_>>()
+                            .join(", ")
                     ),
                 ));
             }
@@ -120,18 +130,6 @@ impl<'a> ParsedAttributes {
     /// Search in first the CXX-Qt, and then passthrough attributes by key
     pub fn get_one(&self, key: &str) -> Option<&Attribute> {
         self.cxx_qt_attrs.get(key)?.first()
-    }
-
-    pub fn require_one(&self, key: &str) -> ParsedAttribute {
-        if let Some(attrs) = self.cxx_qt_attrs.get(key) {
-            if attrs.len() != 1 {
-                ParsedAttribute::MultipleDisallowed(attrs.iter().by_ref().collect())
-            } else {
-                ParsedAttribute::Single(attrs.first().expect("Expected at least one attribute"))
-            }
-        } else {
-            ParsedAttribute::Absent
-        }
     }
 
     /// Check if CXX-Qt or passthrough attributes contains a particular key
