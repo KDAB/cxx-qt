@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::parser::attribute::{extract_cfgs, ParsedAttributes};
+use crate::parser::attribute::{extract_cfgs, AttributeConstraint, ParsedAttributes};
 use crate::parser::CaseConversion;
 use crate::{
     naming::Name,
@@ -69,16 +69,16 @@ pub struct ParsedMethod {
 }
 
 impl ParsedMethod {
-    const ALLOWED_ATTRS: [&'static str; 9] = [
-        "cxx_name",
-        "rust_name",
-        "qinvokable",
-        "cxx_final",
-        "cxx_override",
-        "cxx_virtual",
-        "cxx_pure",
-        "doc",
-        "cfg",
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 9] = [
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "qinvokable"),
+        (AttributeConstraint::Unique, "cxx_final"),
+        (AttributeConstraint::Unique, "cxx_override"),
+        (AttributeConstraint::Unique, "cxx_virtual"),
+        (AttributeConstraint::Unique, "cxx_pure"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Duplicate, "cfg"),
     ];
 
     #[cfg(test)]
@@ -172,7 +172,7 @@ impl MethodFields {
     pub fn parse(
         method: ForeignItemFn,
         auto_case: CaseConversion,
-        allowed: &[&str],
+        allowed: &[(AttributeConstraint, &str)],
     ) -> Result<Self> {
         // TODO: Remove this clone?
         let attrs = ParsedAttributes::require_attributes(method.attrs.clone(), allowed)?;

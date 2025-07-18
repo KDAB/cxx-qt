@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::attribute::AttributeConstraint;
 use crate::parser::{method::MethodFields, CaseConversion};
 use core::ops::Deref;
 use quote::format_ident;
@@ -20,13 +21,13 @@ pub struct ParsedInheritedMethod {
 }
 
 impl ParsedInheritedMethod {
-    const ALLOWED_ATTRS: [&'static str; 6] = [
-        "cxx_name",
-        "rust_name",
-        "qinvokable",
-        "doc",
-        "inherit",
-        "cfg",
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 6] = [
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "qinvokable"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Unique, "inherit"),
+        (AttributeConstraint::Duplicate, "cfg"),
     ];
 
     pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {

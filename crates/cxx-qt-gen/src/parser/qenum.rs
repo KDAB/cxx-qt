@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::attribute::ParsedAttributes;
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
 use crate::parser::CaseConversion;
 use crate::{naming::Name, syntax::path::path_compare_str};
 use quote::ToTokens;
@@ -25,8 +25,14 @@ pub struct ParsedQEnum {
 }
 
 impl ParsedQEnum {
-    const ALLOWED_ATTRS: [&'static str; 6] =
-        ["cfg", "doc", "cxx_name", "rust_name", "namespace", "qenum"];
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 6] = [
+        (AttributeConstraint::Duplicate, "cfg"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "namespace"),
+        (AttributeConstraint::Unique, "qenum"),
+    ];
     fn parse_variant(variant: &Variant) -> Result<Ident> {
         fn err(spanned: &impl ToTokens, message: &str) -> Result<Ident> {
             Err(syn::Error::new_spanned(spanned, message))

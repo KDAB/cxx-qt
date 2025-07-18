@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::naming::cpp::err_unsupported_item;
-use crate::parser::attribute::{ParsedAttribute, ParsedAttributes};
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
 use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::method::ParsedMethod;
 use crate::parser::qobject::ParsedQObject;
@@ -13,7 +13,7 @@ use crate::parser::CaseConversion;
 use crate::syntax::attribute::attribute_get_path;
 use crate::syntax::expr::expr_to_string;
 use crate::syntax::foreignmod::ForeignTypeIdentAlias;
-use proc_macro2::{Ident, Span};
+use proc_macro2::Ident;
 use syn::spanned::Spanned;
 use syn::{Error, ForeignItem, ForeignItemFn, ItemForeignMod, Result, Token};
 
@@ -41,7 +41,11 @@ impl ParsedExternRustQt {
         // TODO: support cfg on foreign mod blocks
         let attrs = ParsedAttributes::require_attributes(
             foreign_mod.attrs,
-            &["namespace", "auto_cxx_name", "auto_rust_name"],
+            &[
+                (AttributeConstraint::Unique, "namespace"),
+                (AttributeConstraint::Unique, "auto_cxx_name"),
+                (AttributeConstraint::Unique, "auto_rust_name"),
+            ],
         )?;
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
@@ -51,31 +55,11 @@ impl ParsedExternRustQt {
             ..Default::default()
         };
 
-        // let namespace = attrs
-        //     .get_one("namespace")
-        //     .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
-        //     .transpose()?
-        //     .or_else(|| parent_namespace.map(String::from));
-
-        let namespace = match attrs.require_one("namespace") {
-            ParsedAttribute::Single(attr) => {
-                expr_to_string(&attr.meta.require_name_value()?.value).ok()
-            }
-            ParsedAttribute::Absent => None,
-            ParsedAttribute::MultipleDisallowed(_) => {
-                Err(Error::new(
-                    Span::call_site(),
-                    "There must be at most one namespace attribute",
-                ))? // TODO: ATTR use real span
-            }
-            _ => {
-                // CODECOV_EXCLUDE_START
-                unreachable!(
-                    "Namepsace is not an allowed duplicate, nor required so this block should be unreachable"
-                )
-                // CODECOV_EXCLUDE_STOP
-            }
-        }.or_else(|| parent_namespace.map(String::from));
+        let namespace = attrs
+            .get_one("namespace")
+            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
+            .transpose()?
+            .or_else(|| parent_namespace.map(String::from));
 
         for item in foreign_mod.items.drain(..) {
             match item {

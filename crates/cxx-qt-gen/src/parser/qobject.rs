@@ -11,7 +11,7 @@ use crate::{
 #[cfg(test)]
 use quote::format_ident;
 
-use crate::parser::attribute::ParsedAttributes;
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
 use crate::parser::{parse_base_type, CaseConversion};
 use syn::{Attribute, Error, Ident, Meta, Result};
 
@@ -48,19 +48,20 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
-    const ALLOWED_ATTRS: [&'static str; 11] = [
-        "cxx_name",
-        "rust_name",
-        "namespace",
-        "cfg",
-        "doc",
-        "qobject",
-        "base",
-        "qml_element",
-        "qml_uncreatable",
-        "qml_singleton",
-        "qproperty",
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 11] = [
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "namespace"),
+        (AttributeConstraint::Duplicate, "cfg"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Unique, "qobject"),
+        (AttributeConstraint::Unique, "base"),
+        (AttributeConstraint::Unique, "qml_element"),
+        (AttributeConstraint::Unique, "qml_uncreatable"),
+        (AttributeConstraint::Unique, "qml_singleton"),
+        (AttributeConstraint::Duplicate, "qproperty"),
     ];
+
     #[cfg(test)]
     pub fn mock() -> Self {
         ParsedQObject {
@@ -356,6 +357,13 @@ pub mod tests {
             |input |ParsedQObject::parse(input, None, &format_ident!("qobject"), CaseConversion::none()) =>
 
             {
+                #[qobject]
+                #[base = ""]
+                type MyObject = super::T;
+            }
+            // Duplicate attribute should fail
+            {
+                #[qobject]
                 #[qobject]
                 #[base = ""]
                 type MyObject = super::T;
