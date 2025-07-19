@@ -53,6 +53,7 @@ impl<const N: usize, const M: usize> QGenericMatrix<N, M> {
         self.data_mut().fill(value);
     }
 
+    /// Constructs a matrix with all values set to `value`.
     pub const fn filled(value: f32) -> Self {
         Self {
             data: [[value; M]; N],
@@ -71,6 +72,7 @@ impl<const N: usize, const M: usize> QGenericMatrix<N, M> {
         Self { data }
     }
 
+    /// Returns `true` if this matrix is the identity; `false` otherwise.
     pub fn is_identity(&self) -> bool {
         for (col, data) in self.data.iter().enumerate() {
             for (row, &value) in data.iter().enumerate() {
