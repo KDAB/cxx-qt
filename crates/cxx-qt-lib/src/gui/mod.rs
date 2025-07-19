@@ -6,6 +6,12 @@
 mod qcolor;
 pub use qcolor::{QColor, QColorNameFormat, QColorSpec};
 
+mod qgenericmatrix;
+pub use qgenericmatrix::{
+    QGenericMatrix, QMatrix2x2, QMatrix2x3, QMatrix2x4, QMatrix3x2, QMatrix3x3, QMatrix3x4,
+    QMatrix4x2, QMatrix4x3,
+};
+
 mod qguiapplication;
 pub use qguiapplication::QGuiApplication;
 
