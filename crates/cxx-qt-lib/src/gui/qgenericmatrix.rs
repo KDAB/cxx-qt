@@ -39,7 +39,7 @@ impl<const N: usize, const M: usize> QGenericMatrix<N, M> {
     }
 
     /// Returns a mutable reference to the raw data of this matrix.
-    pub const fn data_mut(&mut self) -> &mut [f32] {
+    pub fn data_mut(&mut self) -> &mut [f32] {
         // TODO: Replace with `array::as_flattened_mut` once MSRV is 1.80.0.
         unsafe { slice::from_raw_parts_mut(self.data.as_mut_ptr().cast(), N * M) }
     }
