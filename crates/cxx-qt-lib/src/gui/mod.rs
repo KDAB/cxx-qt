@@ -15,6 +15,9 @@ pub use qgenericmatrix::{
 mod qguiapplication;
 pub use qguiapplication::QGuiApplication;
 
+mod qquaternion;
+pub use qquaternion::QQuaternion;
+
 mod qvector2d;
 pub use qvector2d::QVector2D;
 
