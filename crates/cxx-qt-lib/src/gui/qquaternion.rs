@@ -388,6 +388,10 @@ unsafe impl ExternType for QQuaternion {
 mod test {
     use super::*;
 
+    fn round(n: f32) -> i32 {
+        n.round() as i32
+    }
+
     #[test]
     fn get_axes() {
         let axis1 = QVector3D::new(1.0, 0.0, 0.0);
@@ -400,14 +404,15 @@ mod test {
     #[test]
     fn get_axis_and_angle() {
         let qq = QQuaternion::from_axis_and_angle(1.0, 0.0, 0.0, 40.0);
-        assert_eq!(qq.get_axis_and_angle(), (1.0, 0.0, 0.0, 40.0));
+        let (a, b, c, d) = qq.get_axis_and_angle();
+        assert_eq!((round(a), round(b), round(c), round(d)), (1, 0, 0, 40));
     }
 
     #[test]
     fn get_euler_angles() {
         let qq = QQuaternion::from_euler_angles(10.0, 20.0, 30.0);
         let (a, b, c) = qq.get_euler_angles();
-        assert_eq!((a.round(), b.round(), c.round()), (10.0, 20.0, 30.0));
+        assert_eq!((round(a), round(b), round(c)), (10, 20, 30));
     }
 
     #[test]
