@@ -225,7 +225,7 @@ impl TypeNames {
                     if !this.shared_types.contains(&name.rust)
                         || this.extern_types.contains(&name.rust)
                     {
-                        return Err(this.err_duplicate_type(&name.rust));
+                        return Err(Self::err_duplicate_type(&name.rust));
                     }
                     this.check_duplicate_compatability(&name)
                 },
@@ -270,7 +270,7 @@ impl TypeNames {
                     if !this.extern_types.contains(&name.rust)
                         || this.shared_types.contains(&name.rust)
                     {
-                        return Err(this.err_duplicate_type(&name.rust));
+                        return Err(Self::err_duplicate_type(&name.rust));
                     }
                     this.check_duplicate_compatability(&name)
                 })?;
@@ -287,7 +287,7 @@ impl TypeNames {
         Ok(())
     }
 
-    fn err_unknown_type(&self, ident: &Ident) -> Error {
+    fn err_unknown_type(ident: &Ident) -> Error {
         Error::new_spanned(ident, format!("Undeclared type: `{ident}`!"))
     }
 
@@ -297,7 +297,7 @@ impl TypeNames {
     pub fn lookup(&self, ident: &Ident) -> Result<&Name> {
         self.names
             .get(ident)
-            .ok_or_else(|| self.err_unknown_type(ident))
+            .ok_or_else(|| Self::err_unknown_type(ident))
     }
 
     /// For a given rust ident return the CXX name with its namespace
@@ -334,7 +334,7 @@ impl TypeNames {
         self.lookup(ident).map(Name::rust_qualified)
     }
 
-    fn err_duplicate_type(&self, ident: &Ident) -> Error {
+    fn err_duplicate_type(ident: &Ident) -> Error {
         Error::new_spanned(
             ident,
             format!("The type name `{ident}` is defined multiple times"),
@@ -350,13 +350,9 @@ impl TypeNames {
         parent_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
-        self.populate_or_else(
-            ident,
-            attrs,
-            parent_namespace,
-            module_ident,
-            |this, name| Err(this.err_duplicate_type(&name.rust)),
-        )
+        self.populate_or_else(ident, attrs, parent_namespace, module_ident, |_, name| {
+            Err(Self::err_duplicate_type(&name.rust))
+        })
     }
 
     fn populate_or_else(
@@ -390,7 +386,7 @@ impl TypeNames {
         let entry = self.names.entry(name.rust.clone());
 
         match entry {
-            Entry::Occupied(_) => Err(self.err_duplicate_type(&name.rust)),
+            Entry::Occupied(_) => Err(Self::err_duplicate_type(&name.rust)),
             Entry::Vacant(entry) => {
                 entry.insert(name);
                 Ok(())

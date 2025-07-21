@@ -681,7 +681,7 @@ impl CxxQtBuilder {
     // A dependency can specify which of its own include paths it wants to export.
     // Set up each of these exported include paths as symlinks in our own include directory,
     // or deep copy the files if the platform does not support symlinks.
-    fn include_dependency(&mut self, dependency: &Dependency) {
+    fn include_dependency(dependency: &Dependency) {
         let header_root = dir::header_root();
         let dependency_root = dependency.path.join("include");
         for include_prefix in &dependency.manifest.exported_include_prefixes {
@@ -1082,7 +1082,7 @@ extern "C" bool {init_fun}() {{
         Self::write_common_headers();
         let dependencies = Dependency::find_all();
         for dependency in &dependencies {
-            self.include_dependency(dependency);
+            Self::include_dependency(dependency);
         }
         let qt_modules = self.qt_modules(&dependencies);
 

@@ -228,11 +228,16 @@ impl QtInstallation for QtInstallationQMake {
             } else {
                 (
                     format!("Qt{}{qt_module}", self.qmake_version.major),
-                    self.find_qt_module_prl(&lib_path, prefix, self.qmake_version.major, qt_module),
+                    Self::find_qt_module_prl(
+                        &lib_path,
+                        prefix,
+                        self.qmake_version.major,
+                        qt_module,
+                    ),
                 )
             };
 
-            self.link_qt_library(
+            Self::link_qt_library(
                 &format!("Qt{}{qt_module}", self.qmake_version.major),
                 &prefix_path,
                 &lib_path,
@@ -245,7 +250,7 @@ impl QtInstallation for QtInstallationQMake {
         if utils::is_emscripten_target() {
             let platforms_path = format!("{}/platforms", self.qmake_query("QT_INSTALL_PLUGINS"));
             println!("cargo::rustc-link-search={platforms_path}");
-            self.link_qt_library(
+            Self::link_qt_library(
                 "qwasm",
                 &prefix_path,
                 &lib_path,
@@ -280,7 +285,6 @@ impl QtInstallationQMake {
     /// Some prl files include their architecture in their naming scheme.
     /// Just try all known architectures and fallback to non when they all failed.
     fn find_qt_module_prl(
-        &self,
         lib_path: &str,
         prefix: &str,
         version_major: u64,
@@ -304,7 +308,6 @@ impl QtInstallationQMake {
     }
 
     fn link_qt_library(
-        &self,
         name: &str,
         prefix_path: &str,
         lib_path: &str,
