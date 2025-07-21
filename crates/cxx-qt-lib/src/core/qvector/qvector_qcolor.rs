@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
 
-        include!("cxx-qt-lib/qvector_QColor.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QColor.h");
         type QVector_QColor = crate::QVector<QColor>;
     }
 

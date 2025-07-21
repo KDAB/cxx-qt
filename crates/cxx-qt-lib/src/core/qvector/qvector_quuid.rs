@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/quuid.h");
         type QUuid = crate::QUuid;
 
-        include!("cxx-qt-lib/qvector_QUuid.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QUuid.h");
         type QVector_QUuid = crate::QVector<QUuid>;
     }
 

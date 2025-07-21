@@ -33,6 +33,9 @@
 
 #ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QColor>
+#include <QtGui/QVector2D>
+#include <QtGui/QVector3D>
+#include <QtGui/QVector4D>
 #endif
 
 #include "rust/cxx.h"
@@ -80,6 +83,9 @@ CXX_QT_QVARIANT_CAN_CONVERT(I64)
 CXX_QT_QVARIANT_CAN_CONVERT(QByteArray)
 #ifdef CXX_QT_GUI_FEATURE
 CXX_QT_QVARIANT_CAN_CONVERT(QColor)
+CXX_QT_QVARIANT_CAN_CONVERT(QVector2D)
+CXX_QT_QVARIANT_CAN_CONVERT(QVector3D)
+CXX_QT_QVARIANT_CAN_CONVERT(QVector4D)
 #endif
 CXX_QT_QVARIANT_CAN_CONVERT(QDate)
 CXX_QT_QVARIANT_CAN_CONVERT(QDateTime)

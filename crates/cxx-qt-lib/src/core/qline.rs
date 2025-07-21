@@ -38,7 +38,7 @@ mod ffi {
         /// Returns the y-coordinate of the line's end point.
         fn y2(self: &QLine) -> i32;
 
-        /// Returns the center point of this line. This is equivalent to (p1() + p2()) / 2, except it will never overflow.
+        /// Returns the center point of this line. This is equivalent to `(self.p1() + self.p2()) / 2`, except it will never overflow.
         fn center(self: &QLine) -> QPoint;
 
         /// Returns the horizontal component of the line's vector.
@@ -47,36 +47,37 @@ mod ffi {
         /// Returns the vertical component of the line's vector.
         fn dy(self: &QLine) -> i32;
 
-        /// Returns true if the line does not have distinct start and end points; otherwise returns false.
+        /// Returns `true` if the line does not have distinct start and end points; otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QLine) -> bool;
 
-        /// Sets the starting point of this line to p1.
+        /// Sets the starting point of this line to `p1`.
         #[rust_name = "set_p1"]
         fn setP1(self: &mut QLine, p1: &QPoint);
 
-        /// Sets the end point of this line to p2.
+        /// Sets the end point of this line to `p2`.
         #[rust_name = "set_p2"]
         fn setP2(self: &mut QLine, p1: &QPoint);
 
-        /// Sets this line to the start in x1, y1 and end in x2, y2.
+        /// Sets this line to the start in `x1`, `y1` and end in `x2`, `y2`.
         #[rust_name = "set_line"]
         fn setLine(self: &mut QLine, x1: i32, y1: i32, x2: i32, y2: i32);
 
-        /// Sets the start point of this line to p1 and the end point of this line to p2.
+        /// Sets the start point of this line to `p1` and the end point of this line to `p2`.
         #[rust_name = "set_points"]
         fn setPoints(self: &mut QLine, p1: &QPoint, p2: &QPoint);
 
         /// Returns this line as a line with floating point accuracy.
-        /// since Qt 6.4.
+        ///
+        /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_linef"]
         fn toLineF(self: &QLine) -> QLineF;
 
-        /// Translates this line by the given offset.
+        /// Translates this line by the given `offset`.
         fn translate(self: &mut QLine, offset: &QPoint);
 
-        /// Returns this line translated by the given offset.
+        /// Returns this line translated by the given `offset`.
         fn translated(self: &QLine, offset: &QPoint) -> QLine;
     }
 
@@ -98,7 +99,9 @@ mod ffi {
     }
 }
 
-/// The QLine class provides a two-dimensional vector using integer precision
+/// The `QLine` class provides a two-dimensional vector using integer precision.
+///
+/// Qt Documentation: [QLine](https://doc.qt.io/qt/qline.html#details)
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct QLine {
@@ -107,7 +110,7 @@ pub struct QLine {
 }
 
 impl QLine {
-    /// Constructs a line object that represents the line between p1 and p2.
+    /// Constructs a line object that represents the line between `p1` and `p2`.
     pub fn new(pt1: QPoint, pt2: QPoint) -> Self {
         ffi::qline_new(pt1, pt2)
     }

@@ -15,9 +15,11 @@ use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 use std::fmt;
 
-/// The QList class is a template class that provides a dynamic array.
+/// The `QList` class is a template class that provides a dynamic array.
 ///
-/// To use QList with a custom type, implement the [`QListElement`] trait for T.
+/// To use `QList` with a custom type, implement the [`QListElement`] trait for `T`.
+///
+/// Qt Documentation: [QList]("https://doc.qt.io/qt/qlist.html#details")
 #[repr(C)]
 pub struct QList<T>
 where
@@ -25,8 +27,8 @@ where
 {
     /// The layout has changed between Qt 5 and Qt 6
     ///
-    /// Qt5 QList has one pointer as a member
-    /// Qt6 QVector/QList has one member, which contains two pointers and a size_t
+    /// Qt5 `QList` has one pointer as a member
+    /// Qt6 `QVector`/`QList` has one member, which contains two pointers and a size_t
     #[cfg(cxxqt_qt_version_major = "5")]
     _space: MaybeUninit<usize>,
     #[cfg(cxxqt_qt_version_major = "6")]
@@ -38,7 +40,7 @@ impl<T> Clone for QList<T>
 where
     T: QListElement,
 {
-    /// Constructs a copy of the QList.
+    /// Constructs a copy of the `QList`.
     fn clone(&self) -> Self {
         T::clone(self)
     }
@@ -58,7 +60,7 @@ impl<T> Drop for QList<T>
 where
     T: QListElement,
 {
-    /// Destroys the QList.
+    /// Destroys the `QList`.
     fn drop(&mut self) {
         T::drop(self);
     }
@@ -68,7 +70,7 @@ impl<T> PartialEq for QList<T>
 where
     T: QListElement + PartialEq,
 {
-    /// Returns true if both lists contain the same elements in the same order
+    /// Returns `true` if both lists contain the same elements in the same order, otherwise `false`.
     fn eq(&self, other: &Self) -> bool {
         self.len() == other.len() && self.iter().zip(other.iter()).all(|(a, b)| a == b)
     }
@@ -89,7 +91,7 @@ impl<T> QList<T>
 where
     T: QListElement,
 {
-    /// Inserts value at the end of the list.
+    /// Inserts `value` at the end of the list.
     ///
     /// The value is a reference here so it can be opaque or trivial but
     /// note that the value is copied when being appended into the list.
@@ -98,18 +100,18 @@ where
     }
 
     /// Removes all elements from the list.
+    ///
+    /// In Qt 6, the capacity is preserved. In Qt 5, this function releases the memory used by the list.
     pub fn clear(&mut self) {
         T::clear(self);
     }
 
-    /// Returns true if the list contains item value; otherwise returns false.
+    /// Returns `true` if the list contains an occurrence of `value`; otherwise returns `false`.
     pub fn contains(&self, value: &T) -> bool {
         T::contains(self, value)
     }
 
-    /// Returns the item at index position in the list.
-    ///
-    /// index must be a valid position in the list (i.e., 0 <= index < len()).
+    /// Returns the item at index position `index` in the list, or `None` if `index` is out of bounds (i.e. `index < 0 || index >= self.len()`).
     pub fn get(&self, index: isize) -> Option<&T> {
         if index >= 0 && index < self.len() {
             Some(unsafe { T::get_unchecked(self, index) })
@@ -118,13 +120,12 @@ where
         }
     }
 
-    /// Returns the index position of the first occurrence of value in the list,
-    /// searching forward from index position from. Returns -1 if no item matched.
+    /// Returns the index position of the first occurrence of `value` in the list. Returns -1 if no item matched.
     pub fn index_of(&self, value: &T) -> isize {
         T::index_of(self, value)
     }
 
-    /// Inserts item value into the list at the given position.
+    /// Inserts item `value` into the list at index position `pos`.
     ///
     /// The value is a reference here so it can be opaque or trivial but
     /// note that the value is copied when being inserted into the list.
@@ -132,13 +133,13 @@ where
         T::insert_clone(self, pos, value);
     }
 
-    /// Returns true if the list contains no elements; otherwise returns false.
+    /// Returns `true` if the list has size 0; otherwise returns `false`.
     pub fn is_empty(&self) -> bool {
         T::len(self) == 0
     }
 
     /// An iterator visiting all elements in arbitrary order.
-    /// The iterator element type is &'a T.
+    /// The iterator element type is `&'a T`.
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             list: self,
@@ -151,13 +152,18 @@ where
         T::len(self)
     }
 
-    /// Removes the element at index position.
+    /// Removes the element at index position `pos`.
+    ///
+    /// Element removal will preserve the list's capacity and not reduce the amount of allocated memory.
     pub fn remove(&mut self, pos: isize) {
         T::remove(self, pos);
     }
 
-    /// Reserve the specified capacity to prevent repeated allocations
-    /// when the maximum size is known.
+    /// Attempts to allocate memory for at least `size` elements.
+    ///
+    /// If you know in advance how large the list will be, you should call this function to prevent reallocations and memory fragmentation. If you resize the list often, you are also likely to get better performance.
+    ///
+    /// If in doubt about how much space shall be needed, it is usually better to use an upper bound as `size`, or a high estimate of the most likely size, if a strict upper bound would be much bigger than this. If `size` is an underestimate, the list will grow as needed once the reserved size is exceeded, which may lead to a larger allocation than your best overestimate would have and will slow the operation that triggers it.
     pub fn reserve(&mut self, size: isize) {
         T::reserve(self, size);
     }
@@ -174,12 +180,12 @@ impl<T> QList<T>
 where
     T: QListElement + ExternType<Kind = cxx::kind::Trivial>,
 {
-    /// Inserts value at the end of the list.
+    /// Inserts `value` at the end of the list.
     pub fn append(&mut self, value: T) {
         T::append(self, value);
     }
 
-    /// Inserts item value into the list at the given position.
+    /// Inserts item `value` into the list at index position `pos`.
     pub fn insert(&mut self, pos: isize, value: T) {
         T::insert(self, pos, value);
     }
@@ -189,8 +195,8 @@ impl<T> From<&QList<T>> for Vec<T>
 where
     T: QListElement + Clone,
 {
-    /// Convert a reference to a [QList] into a [Vec] by making a deep copy of the data.
-    /// The original QList can still be used after constructing the Vec.
+    /// Convert a reference to a [`QList`] into a [`Vec`] by making a deep copy of the data.
+    /// The original `QList` can still be used after constructing the `Vec`.
     fn from(qlist: &QList<T>) -> Self {
         let mut vec = Vec::with_capacity(qlist.len().try_into().unwrap());
         for element in qlist.iter() {
@@ -205,9 +211,9 @@ where
     T: QListElement + Clone,
     S: AsRef<[T]>,
 {
-    /// Convert anything that can be cheaply converted to a slice, such as an [array] or [Vec], into a [QList]
+    /// Convert anything that can be cheaply converted to a slice, such as an [array] or [`Vec`], into a [`QList`]
     /// by making a deep copy of the data.
-    /// The original slice can still be used after constructing the QList.
+    /// The original slice can still be used after constructing the `QList`.
     fn from(vec: S) -> Self {
         let mut qlist = Self::default();
         qlist.reserve_usize(vec.as_ref().len());

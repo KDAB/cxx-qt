@@ -6,6 +6,8 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
+use crate::{PenStyle, QColor};
+
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
@@ -35,11 +37,15 @@ mod ffi {
         #[rust_name = "dash_offset"]
         fn dashOffset(self: &QPen) -> f64;
 
-        /// Returns true if the pen is cosmetic; otherwise returns false.
+        /// Returns `true` if the pen is cosmetic; otherwise returns `false`.
+        ///
+        /// Cosmetic pens are used to draw strokes that have a constant width regardless of any transformations applied to the [`QPainter`](crate::QPainter) they are used with. Drawing a shape with a cosmetic pen ensures that its outline will have the same thickness at different scale factors.
+        ///
+        /// A zero width pen is cosmetic by default.
         #[rust_name = "is_comestic"]
         fn isCosmetic(self: &QPen) -> bool;
 
-        /// Returns true if the pen has a solid fill, otherwise false.
+        /// Returns `true` if the pen has a solid fill, otherwise `false`.
         #[rust_name = "is_solid"]
         fn isSolid(self: &QPen) -> bool;
 
@@ -48,41 +54,49 @@ mod ffi {
         fn joinStyle(self: &QPen) -> PenJoinStyle;
 
         /// Returns the miter limit of the pen. The miter limit is only
-        /// relevant when the join style is set to Qt::MiterJoin.
+        /// relevant when the join style is set to [`PenJoinStyle::MiterJoin`].
         #[rust_name = "miter_limit"]
         fn miterLimit(self: &QPen) -> f64;
 
-        /// Sets the pen's cap style to the given style. The default value is Qt::SquareCap.
+        /// Sets the pen's cap style to the given `style`. The default value is [`PenCapStyle::SquareCap`].
         #[rust_name = "set_cap_style"]
         fn setCapStyle(self: &mut QPen, style: PenCapStyle);
 
-        /// Sets the color of this pen's brush to the given color.
+        /// Sets the color of this pen's brush to the given `color`.
         #[rust_name = "set_color"]
         fn setColor(self: &mut QPen, color: &QColor);
 
-        /// Sets this pen to cosmetic or non-cosmetic, depending on the value of cosmetic.
+        /// Sets this pen to cosmetic or non-cosmetic, depending on the value of `cosmetic`.
         #[rust_name = "set_cosmetic"]
         fn setCosmetic(self: &mut QPen, cosmetic: bool);
 
         /// Sets the dash offset (the starting point on the dash pattern) for this pen to
-        /// the offset specified. The offset is measured in terms of the units used to
+        /// the `offset` specified. The offset is measured in terms of the units used to
         /// specify the dash pattern.
         #[rust_name = "set_dash_offset"]
         fn setDashOffset(self: &mut QPen, offset: f64);
 
-        /// Sets the pen's join style to the given style. The default value is Qt::BevelJoin.
+        /// Sets the pen's join style to the given style. The default value is [`PenJoinStyle::BevelJoin`].
         #[rust_name = "set_join_style"]
         fn setJoinStyle(self: &mut QPen, style: PenJoinStyle);
 
-        /// Sets the pen style to the given style.
+        /// Sets the pen style to the given `style`.
         #[rust_name = "set_style"]
         fn setStyle(self: &mut QPen, style: PenStyle);
 
-        /// Sets the miter limit of this pen to the given limit.
+        /// Sets the miter limit of this pen to the given `limit`.
+        ///
+        /// The miter limit describes how far a miter join can extend from the join point. This is used to reduce artifacts between line joins where the lines are close to parallel.
+        ///
+        /// This value does only have effect when the pen style is set to [`PenJoinStyle::MiterJoin`]. The value is specified in units of the pen's width, e.g. a miter limit of 5 in width 10 is 50 pixels long. The default miter limit is 2, i.e. twice the pen width in pixels.
         #[rust_name = "set_miter_limit"]
         fn setMiterLimit(self: &mut QPen, limit: f64);
 
-        /// Sets the pen width to the given width in pixels with integer precision.
+        /// Sets the pen width to the given `width` in pixels with integer precision.
+        ///
+        /// A line width of zero indicates a cosmetic pen. This means that the pen width is always drawn one pixel wide, independent of the transformation set on the painter.
+        ///
+        /// Setting a pen width with a negative value is not supported.
         #[rust_name = "set_width"]
         fn setWidth(self: &mut QPen, width: i32);
 
@@ -127,6 +141,9 @@ mod ffi {
     }
 }
 
+/// The `QPen` class defines how a [`QPainter`](crate::QPainter) should draw lines and outlines of shapes.
+///
+/// Qt Documentation: [QPen](https://doc.qt.io/qt/qpen.html#details)
 #[repr(C)]
 pub struct QPen {
     _cspec: MaybeUninit<usize>,
@@ -159,15 +176,17 @@ impl PartialEq for QPen {
 
 impl Eq for QPen {}
 
-impl From<&ffi::QColor> for QPen {
-    fn from(color: &ffi::QColor) -> Self {
+impl From<&QColor> for QPen {
+    /// Constructs a solid line pen with 1 width and the given `color`.
+    fn from(color: &QColor) -> Self {
         ffi::qpen_init_from_qcolor(color)
     }
 }
 
-impl From<&ffi::PenStyle> for QPen {
-    fn from(penstyle: &ffi::PenStyle) -> Self {
-        ffi::qpen_init_from_penstyle(penstyle)
+impl From<&PenStyle> for QPen {
+    /// Constructs a black pen with 1 width and the given `style`.
+    fn from(style: &PenStyle) -> Self {
+        ffi::qpen_init_from_penstyle(style)
     }
 }
 

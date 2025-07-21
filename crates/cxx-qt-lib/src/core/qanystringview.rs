@@ -21,11 +21,11 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        /// Returns true if the string has no characters; otherwise returns false.
+        /// Returns `true` if the string has no characters; otherwise returns `false`.
         #[rust_name = "is_empty"]
         fn isEmpty(self: &QAnyStringView) -> bool;
 
-        /// Returns true if this string is null; otherwise returns false.
+        /// Returns `true` if this string is null; otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QAnyStringView) -> bool;
 
@@ -64,10 +64,14 @@ mod ffi {
     }
 }
 
-/// The QAnyStringView class provides a unified view of a Latin-1, UTF-8, or UTF-16 string.
+/// The `QAnyStringView` class provides a unified view of a Latin-1, UTF-8, or UTF-16 string.
+///
+/// Introduced in Qt 6.0.
+///
+/// Qt Documentation: [QAnyStringView](https://doc.qt.io/qt/qanystringview.html#details)
 #[repr(C)]
 pub struct QAnyStringView<'a> {
-    /// QAnyStringView has two members, a pointer and a size_t
+    /// `QAnyStringView` has two members, a pointer and a `size_t`
     _space: MaybeUninit<[usize; 1]>,
     _space2: MaybeUninit<[c_void; 1]>,
 
@@ -76,16 +80,16 @@ pub struct QAnyStringView<'a> {
 }
 
 impl<'a> Clone for QAnyStringView<'a> {
-    /// Constructs a copy of other.
+    /// Constructs a copy of `self`.
     ///
-    /// This operation takes constant time, because QAnyStringView is a view-only string.
+    /// This operation takes constant time, because `QAnyStringView` is a view-only string.
     fn clone(&self) -> QAnyStringView<'a> {
         ffi::QAnyStringView_init_from_QAnyStringView(self)
     }
 }
 
 impl Default for QAnyStringView<'_> {
-    /// Constructs a null string. Null strings are also empty.
+    /// Constructs a null string view.
     fn default() -> Self {
         ffi::QAnyStringView_init_default()
     }
@@ -100,28 +104,28 @@ impl PartialEq for QAnyStringView<'_> {
 impl Eq for QAnyStringView<'_> {}
 
 impl<'a> From<&'a str> for QAnyStringView<'a> {
-    /// Constructs a QAnyStringView from a Rust string
+    /// Constructs a `QAnyStringView` from a Rust string.
     fn from(str: &'a str) -> Self {
         ffi::QAnyStringView_init_from_rust_string(str)
     }
 }
 
 impl<'a> From<&'a QByteArray> for QAnyStringView<'a> {
-    /// Constructs a QAnyStringView from a QByteArray
+    /// Constructs a `QAnyStringView` from a `QByteArray`.
     fn from(bytes: &'a QByteArray) -> Self {
         ffi::QAnyStringView_init_from_qbytearray(bytes)
     }
 }
 
 impl<'a> From<&'a QString> for QAnyStringView<'a> {
-    /// Constructs a QAnyStringView from a QString
+    /// Constructs a `QAnyStringView` from a `QString`.
     fn from(string: &'a QString) -> Self {
         ffi::QAnyStringView_init_from_qstring(string)
     }
 }
 
 impl QAnyStringView<'_> {
-    /// Returns the number of characters in this string.
+    /// Returns the size of this string view, in the encoding's code points.
     pub fn len(&self) -> isize {
         ffi::QAnyStringView_len(self)
     }

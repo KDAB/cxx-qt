@@ -18,6 +18,8 @@ use std::fmt;
 /// The QVector class is a template class that provides a dynamic array.
 ///
 /// To use QVector with a custom type, implement the [`QVectorElement`] trait for T.
+///
+/// Qt Documentation: [QVector]("https://doc.qt.io/qt/qvector.html#details")
 #[repr(C)]
 pub struct QVector<T>
 where
@@ -25,8 +27,8 @@ where
 {
     /// The layout has changed between Qt 5 and Qt 6
     ///
-    /// Qt5 QVector has one pointer as a member
-    /// Qt6 QVector/QList has one member, which contains two pointers and a size_t
+    /// Qt5 `QVector` has one pointer as a member
+    /// Qt6 `QVector`/`QList` has one member, which contains two pointers and a `size_t`
     #[cfg(cxxqt_qt_version_major = "5")]
     _space: MaybeUninit<usize>,
     #[cfg(cxxqt_qt_version_major = "6")]
@@ -38,7 +40,7 @@ impl<T> Clone for QVector<T>
 where
     T: QVectorElement,
 {
-    /// Constructs a copy of the QVector.
+    /// Constructs a copy of the `QVector`.
     fn clone(&self) -> Self {
         T::clone(self)
     }
@@ -58,7 +60,7 @@ impl<T> Drop for QVector<T>
 where
     T: QVectorElement,
 {
-    /// Destroys the QVector.
+    /// Destroys the `QVector`.
     fn drop(&mut self) {
         T::drop(self);
     }
@@ -68,7 +70,7 @@ impl<T> PartialEq for QVector<T>
 where
     T: QVectorElement + PartialEq,
 {
-    /// Returns true if both vectors contain the same elements in the same order
+    /// Returns `true` if both vectors contain the same elements in the same order, otherwise returns `false`.
     fn eq(&self, other: &Self) -> bool {
         self.len() == other.len() && self.iter().zip(other.iter()).all(|(a, b)| a == b)
     }
@@ -89,7 +91,7 @@ impl<T> QVector<T>
 where
     T: QVectorElement,
 {
-    /// Inserts value at the end of the vector.
+    /// Inserts `value` at the end of the vector.
     ///
     /// The value is a reference here so it can be opaque or trivial but
     /// note that the value is copied when being appended into the vector.
@@ -98,18 +100,18 @@ where
     }
 
     /// Removes all elements from the vector.
+    ///
+    /// In versions of Qt starting from 5.7, the capacity is preserved. In versions before 5.6, this also releases the memory used by the vector.
     pub fn clear(&mut self) {
         T::clear(self);
     }
 
-    /// Returns true if the vector contains item value; otherwise returns false.
+    /// Returns `true` if the vector contains item `value`; otherwise returns `false`.
     pub fn contains(&self, value: &T) -> bool {
         T::contains(self, value)
     }
 
-    /// Returns the item at index position in the vector.
-    ///
-    /// index must be a valid position in the vector (i.e., 0 <= index < len()).
+    /// Returns the item at index position `index` in the list, or `None` if `index` is out of bounds (i.e. `index < 0 || index >= self.len()`).
     pub fn get(&self, index: isize) -> Option<&T> {
         if index >= 0 && index < self.len() {
             Some(unsafe { T::get_unchecked(self, index) })
@@ -118,13 +120,12 @@ where
         }
     }
 
-    /// Returns the index position of the first occurrence of value in the vector,
-    /// searching forward from index position from. Returns -1 if no item matched.
+    /// Returns the index position of the first occurrence of `value` in the vector. Returns -1 if no item matched.
     pub fn index_of(&self, value: &T) -> isize {
         T::index_of(self, value)
     }
 
-    /// Inserts item value into the vector at the given position.
+    /// Inserts item value into the vector at index position `pos`.
     ///
     /// The value is a reference here so it can be opaque or trivial but
     /// note that the value is copied when being inserted into the vector.
@@ -132,13 +133,13 @@ where
         T::insert_clone(self, pos, value);
     }
 
-    /// Returns true if the vector contains no elements; otherwise returns false.
+    /// Returns `true` if the vector contains no elements; otherwise returns `false`.
     pub fn is_empty(&self) -> bool {
         T::len(self) == 0
     }
 
     /// An iterator visiting all elements in arbitrary order.
-    /// The iterator element type is &'a T.
+    /// The iterator element type is `&'a T`.
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             vector: self,
@@ -151,13 +152,16 @@ where
         T::len(self)
     }
 
-    /// Removes the element at index position.
+    /// Removes the element at index position `pos`.
     pub fn remove(&mut self, pos: isize) {
         T::remove(self, pos);
     }
 
-    /// Reserve the specified capacity to prevent repeated allocations
-    /// when the maximum size is known.
+    /// Attempts to allocate memory for at least `size` elements.
+    ///
+    /// If you know in advance how large the vector will be, you should call this function to prevent reallocations and memory fragmentation. If you resize the vector often, you are also likely to get better performance.
+    ///
+    /// If in doubt about how much space shall be needed, it is usually better to use an upper bound as `size`, or a high estimate of the most likely size, if a strict upper bound would be much bigger than this. If `size` is an underestimate, the vector will grow as needed once the reserved size is exceeded, which may lead to a larger allocation than your best overestimate would have and will slow the operation that triggers it.
     pub fn reserve(&mut self, size: isize) {
         T::reserve(self, size);
     }
@@ -174,12 +178,12 @@ impl<T> QVector<T>
 where
     T: QVectorElement + ExternType<Kind = cxx::kind::Trivial>,
 {
-    /// Inserts value at the end of the vector.
+    /// Inserts `value` at the end of the vector.
     pub fn append(&mut self, value: T) {
         T::append(self, value);
     }
 
-    /// Inserts item value into the vector at the given position.
+    /// Inserts item `value` into the vector at index position `pos`.
     pub fn insert(&mut self, pos: isize, value: T) {
         T::insert(self, pos, value);
     }
@@ -189,8 +193,8 @@ impl<T> From<&QVector<T>> for Vec<T>
 where
     T: QVectorElement + Clone,
 {
-    /// Convert a reference to a [QVector] into a [Vec] by making a deep copy of the data.
-    /// The original QVector can still be used after constructing the Vec.
+    /// Convert a reference to a [`QVector`] into a [`Vec`] by making a deep copy of the data.
+    /// The original `QVector` can still be used after constructing the `Vec`.
     fn from(qvec: &QVector<T>) -> Self {
         let mut vec = Vec::with_capacity(qvec.len().try_into().unwrap());
         for element in qvec.iter() {
@@ -205,9 +209,9 @@ where
     T: QVectorElement + Clone,
     S: AsRef<[T]>,
 {
-    /// Convert anything that can be cheaply converted to a slice, such as an [array] or [Vec], into a [QVector]
+    /// Convert anything that can be cheaply converted to a slice, such as an [array] or [`Vec`], into a [`QVector`]
     /// by making a deep copy of the data.
-    /// The original slice can still be used after constructing the QVector.
+    /// The original slice can still be used after constructing the `QVector`.
     fn from(vec: S) -> Self {
         let mut qvec = Self::default();
         qvec.reserve_usize(vec.as_ref().len());

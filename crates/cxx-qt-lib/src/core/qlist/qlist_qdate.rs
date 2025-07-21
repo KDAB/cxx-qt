@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qdate.h");
         type QDate = crate::QDate;
 
-        include!("cxx-qt-lib/qlist_QDate.h");
+        include!("cxx-qt-lib/core/qlist/qlist_QDate.h");
         type QList_QDate = crate::QList<QDate>;
     }
 
