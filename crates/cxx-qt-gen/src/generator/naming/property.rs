@@ -23,8 +23,7 @@ impl Deref for NameState {
 
     fn deref(&self) -> &Self::Target {
         match self {
-            Self::Auto(name) => name,
-            Self::Custom(name) => name,
+            Self::Custom(name) | Self::Auto(name) => name,
         }
     }
 }

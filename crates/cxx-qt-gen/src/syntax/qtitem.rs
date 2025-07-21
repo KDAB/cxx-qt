@@ -73,10 +73,7 @@ impl ToTokens for CxxQtItem {
             CxxQtItem::Item(item) => {
                 item.to_tokens(tokens);
             }
-            CxxQtItem::Cxx(module) => {
-                module.to_tokens(tokens);
-            }
-            CxxQtItem::CxxQt(module) => {
+            CxxQtItem::Cxx(module) | CxxQtItem::CxxQt(module) => {
                 module.to_tokens(tokens);
             }
         }

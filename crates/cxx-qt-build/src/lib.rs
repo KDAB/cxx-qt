@@ -199,8 +199,7 @@ impl GeneratedCpp {
             let mut header =
                 File::create(&header_path).expect("Could not create cxx-qt header file");
             let header_generated = match cxx_qt_generated {
-                CppFragment::Pair { header, source: _ } => header,
-                CppFragment::Header(header) => header,
+                CppFragment::Header(header) | CppFragment::Pair { header, source: _ } => header,
                 CppFragment::Source(_) => panic!("Unexpected call for source fragment."),
             };
             header
@@ -219,9 +218,8 @@ impl GeneratedCpp {
             }
             let mut cpp = File::create(&cpp_path).expect("Could not create cxx-qt source file");
             let source_generated = match cxx_qt_generated {
-                CppFragment::Pair { header: _, source } => source,
+                CppFragment::Source(source) | CppFragment::Pair { header: _, source } => source,
                 CppFragment::Header(_) => panic!("Unexpected call for header fragment."),
-                CppFragment::Source(source) => source,
             };
             cpp.write_all(source_generated.as_bytes())
                 .expect("Could not write cxx-qt source file");

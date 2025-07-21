@@ -38,18 +38,20 @@ pub fn write_cpp(generated: &GeneratedCppBlocks, include_path: &str) -> CppFragm
 /// Extract the header from a given CppFragment
 pub fn pair_as_header(pair: &CppFragment) -> Option<String> {
     match pair {
-        CppFragment::Pair { header, source: _ } => Some(header.clone()),
-        CppFragment::Header(header) => Some(header.clone()),
         CppFragment::Source(_) => None,
+        CppFragment::Header(header) | CppFragment::Pair { header, source: _ } => {
+            Some(header.clone())
+        }
     }
 }
 
 /// Extract the source from a given CppFragment
 pub fn pair_as_source(pair: &CppFragment) -> Option<String> {
     match pair {
-        CppFragment::Pair { header: _, source } => Some(source.clone()),
         CppFragment::Header(_) => None,
-        CppFragment::Source(source) => Some(source.clone()),
+        CppFragment::Source(source) | CppFragment::Pair { header: _, source } => {
+            Some(source.clone())
+        }
     }
 }
 
