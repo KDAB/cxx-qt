@@ -4,6 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::ffi::CStr;
+
 use crate::QString;
 
 #[cxx::bridge]
@@ -34,8 +36,6 @@ mod ffi {
         unsafe fn q_fatal(file: *const c_char, line: i32, message: &QString);
     }
 }
-
-use std::ffi::CStr;
 
 pub use ffi::q_set_message_pattern;
 
