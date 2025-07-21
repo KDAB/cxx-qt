@@ -187,7 +187,7 @@ impl TypeNames {
             self.populate_from_foreign_mod_item(&foreign_mod, bridge_namespace, module_ident)?;
 
             // Find and register the names of any qobjects in extern "C++Qt"
-            for qobject in extern_cxxqt.qobjects.iter() {
+            for qobject in &extern_cxxqt.qobjects {
                 self.insert(qobject.name.clone())?;
             }
 

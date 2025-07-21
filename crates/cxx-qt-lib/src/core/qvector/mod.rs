@@ -197,7 +197,7 @@ where
     /// The original `QVector` can still be used after constructing the `Vec`.
     fn from(qvec: &QVector<T>) -> Self {
         let mut vec = Vec::with_capacity(qvec.len().try_into().unwrap());
-        for element in qvec.iter() {
+        for element in qvec {
             vec.push(element.clone());
         }
         vec

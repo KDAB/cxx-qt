@@ -244,7 +244,7 @@ impl Parser {
         // Check that there are items in the module
         if let Some((_, items)) = module.content {
             // Loop through items and load into qobject or others and populate mappings
-            for item in items.into_iter() {
+            for item in items {
                 // Try to find any CXX-Qt items, if found add them to the relevant
                 // qobject or extern C++Qt block. Otherwise return them to be added to other
                 if let Some(other) = cxx_qt_data.parse_cxx_qt_item(item)? {

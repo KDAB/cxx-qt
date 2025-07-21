@@ -199,7 +199,7 @@ where
     /// The original `QList` can still be used after constructing the `Vec`.
     fn from(qlist: &QList<T>) -> Self {
         let mut vec = Vec::with_capacity(qlist.len().try_into().unwrap());
-        for element in qlist.iter() {
+        for element in qlist {
             vec.push(element.clone());
         }
         vec

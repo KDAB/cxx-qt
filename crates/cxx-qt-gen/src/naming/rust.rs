@@ -23,9 +23,9 @@ fn qualify_type_path(ty_path: &TypePath, type_names: &TypeNames) -> Result<Type>
     let mut ty_path = ty_path.clone();
 
     // Convert any generic arguments
-    for segment in ty_path.path.segments.iter_mut() {
+    for segment in &mut ty_path.path.segments {
         if let PathArguments::AngleBracketed(angled) = &mut segment.arguments {
-            for arg in angled.args.iter_mut() {
+            for arg in &mut angled.args {
                 if let GenericArgument::Type(ty) = arg {
                     *ty = syn_type_cxx_bridge_to_qualified(ty, type_names)?;
                 } else {
@@ -89,7 +89,7 @@ pub(crate) fn syn_type_cxx_bridge_to_qualified(ty: &Type, type_names: &TypeNames
                 **ty = syn_type_cxx_bridge_to_qualified(ty, type_names)?;
             }
 
-            for arg in ty_bare_fn.inputs.iter_mut() {
+            for arg in &mut ty_bare_fn.inputs {
                 arg.ty = syn_type_cxx_bridge_to_qualified(&arg.ty, type_names)?;
             }
 
@@ -101,7 +101,7 @@ pub(crate) fn syn_type_cxx_bridge_to_qualified(ty: &Type, type_names: &TypeNames
         Type::Slice(ty_slice) => convert_elem!(ty_slice, Type::Slice, type_names),
         Type::Tuple(ty_tuple) => {
             let mut ty_tuple = ty_tuple.clone();
-            for elem in ty_tuple.elems.iter_mut() {
+            for elem in &mut ty_tuple.elems {
                 *elem = syn_type_cxx_bridge_to_qualified(elem, type_names)?;
             }
             Ok(Type::Tuple(ty_tuple))
