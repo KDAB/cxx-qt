@@ -115,24 +115,20 @@ impl GeneratedCpp {
             match item {
                 CxxQtItem::Cxx(m) => {
                     // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if found_bridge {
-                        panic!(
+                    assert!(!found_bridge,
                             "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
                             The file {} has more than one of these.",
                             rust_file_path.display());
-                    }
                     found_bridge = true;
 
                     tokens.extend(m.into_token_stream());
                 }
                 CxxQtItem::CxxQt(m) => {
                     // TODO: later we will allow for multiple CXX or CXX-Qt blocks in one file
-                    if found_bridge {
-                        panic!(
+                    assert!(!found_bridge,
                             "Unfortunately only files with either a single cxx or a single cxx_qt module are currently supported.
                             The file {} has more than one of these.",
                             rust_file_path.display());
-                    }
                     found_bridge = true;
 
                     let mut parser = Parser::from(*m.clone())
@@ -521,11 +517,9 @@ impl CxxQtBuilder {
     /// to disable any qt modules that are optional.
     pub fn qt_module(mut self, module: &str) -> Self {
         // Ensure that CMake and Cargo build.rs are not out of sync
-        if qt_modules_import().is_some() && !self.qt_modules.contains(module) {
-            panic!("Qt module mismatch between cxx-qt-build and CMake!\n\
+        assert!(qt_modules_import().is_none() || self.qt_modules.contains(module), "Qt module mismatch between cxx-qt-build and CMake!\n\
                     Qt module '{module}' was not specified in CMake!\n\
                     When building with CMake, all Qt modules must be specified with the QT_MODULES argument in cxx_qt_import_crate");
-        }
 
         self.qt_modules.insert(module.to_owned());
         self
@@ -825,13 +819,12 @@ impl CxxQtBuilder {
                     }
                 })
                 .collect::<HashSet<String>>();
-            if dirs.len() > 1 {
-                panic!(
-                    "Only one directory is supported per QmlModule for rust_files.\n\
+            assert!(
+                dirs.len() <= 1,
+                "Only one directory is supported per QmlModule for rust_files.\n\
                     This is due to Qt bug https://bugreports.qt.io/browse/QTBUG-93443\n\
                     Found directories: {dirs:?}"
-                );
-            }
+            );
 
             // TODO: for now we use the global CxxQtBuilder cc_builder
             // this means that any includes/files etc on these are in this builder

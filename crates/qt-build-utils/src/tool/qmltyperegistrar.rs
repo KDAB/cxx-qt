@@ -74,12 +74,11 @@ impl QtToolQmlTypeRegistrar {
             .args(args)
             .output()
             .unwrap_or_else(|_| panic!("qmltyperegistrar failed for {uri}"));
-        if !cmd.status.success() {
-            panic!(
-                "qmltyperegistrar failed for {uri}:\n{}",
-                String::from_utf8_lossy(&cmd.stderr)
-            );
-        }
+        assert!(
+            cmd.status.success(),
+            "qmltyperegistrar failed for {uri}:\n{}",
+            String::from_utf8_lossy(&cmd.stderr)
+        );
 
         Some(qmltyperegistrar_output_path)
     }

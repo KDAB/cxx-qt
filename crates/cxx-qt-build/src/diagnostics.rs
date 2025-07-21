@@ -159,9 +159,11 @@ impl Diagnostic {
     pub(crate) fn report(self) {
         // If loading the source file fails, or printing to stderr isn't
         // possible, we try panicing as a last resort.
-        self.try_report().unwrap_or_else(|_| {
-            panic!("{}", self.errors.first().unwrap());
-        });
+        assert!(
+            self.try_report().is_ok(),
+            "{}",
+            self.errors.first().unwrap()
+        );
     }
 }
 
