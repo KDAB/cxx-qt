@@ -8,6 +8,7 @@ use crate::naming::Name;
 use crate::parser::constructor::Constructor;
 use crate::parser::inherit::ParsedInheritedMethod;
 use crate::parser::method::ParsedMethod;
+use crate::parser::property::ParsedQProperty;
 use crate::parser::signals::ParsedSignal;
 use crate::parser::{qenum::ParsedQEnum, qobject::ParsedQObject};
 use proc_macro2::Ident;
@@ -45,13 +46,13 @@ impl<'a> StructuredQObject<'a> {
         let pending_methods = qobject
             .properties
             .iter()
-            .flat_map(|property| property.pending_methods())
+            .flat_map(ParsedQProperty::pending_methods)
             .collect();
 
         let pending_signals = qobject
             .properties
             .iter()
-            .flat_map(|property| property.pending_signals())
+            .flat_map(ParsedQProperty::pending_signals)
             .collect();
 
         Self {
