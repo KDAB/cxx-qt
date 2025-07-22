@@ -4,9 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::generator::{cpp::qobject::GeneratedCppQObjectBlocks, naming::qobject::QObjectNames};
-use syn::Result;
 
-pub fn generate(qobject_idents: &QObjectNames) -> Result<GeneratedCppQObjectBlocks> {
+pub fn generate(qobject_idents: &QObjectNames) -> GeneratedCppQObjectBlocks {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     let rust_struct = qobject_idents.rust_struct.cxx_qualified();
@@ -19,7 +18,7 @@ pub fn generate(qobject_idents: &QObjectNames) -> Result<GeneratedCppQObjectBloc
         .base_classes
         .push(format!("::rust::cxxqt1::CxxQtType<{rust_struct}>"));
 
-    Ok(result)
+    result
 }
 
 #[cfg(test)]
@@ -32,7 +31,7 @@ mod tests {
     fn test_generate_cpp_cxxqt_type() {
         let qobject_idents = create_qobjectname();
 
-        let generated = generate(&qobject_idents).unwrap();
+        let generated = generate(&qobject_idents);
 
         // includes
         assert_eq!(generated.includes.len(), 1);

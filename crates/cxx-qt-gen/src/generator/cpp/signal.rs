@@ -103,7 +103,7 @@ pub fn generate_cpp_signal(
 
     // Prepare the idents
     let idents = QSignalNames::from(signal);
-    let idents_helper = QSignalHelperNames::new(&idents, qobject_name)?;
+    let idents_helper = QSignalHelperNames::new(&idents, qobject_name);
 
     let signal_ident = idents.name.cxx_unqualified();
     let free_connect_ident_cpp = idents_helper.connect_name.cxx_unqualified();

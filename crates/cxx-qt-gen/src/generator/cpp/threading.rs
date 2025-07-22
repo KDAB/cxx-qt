@@ -8,9 +8,8 @@ use crate::generator::{
     naming::qobject::QObjectNames,
 };
 use indoc::formatdoc;
-use syn::Result;
 
-pub fn generate(qobject_idents: &QObjectNames) -> Result<(String, GeneratedCppQObjectBlocks)> {
+pub fn generate(qobject_idents: &QObjectNames) -> (String, GeneratedCppQObjectBlocks) {
     let mut result = GeneratedCppQObjectBlocks::default();
 
     let cpp_class = &qobject_idents.name.cxx_unqualified();
@@ -38,7 +37,7 @@ pub fn generate(qobject_idents: &QObjectNames) -> Result<(String, GeneratedCppQO
 
     let class_initializer = format!("::rust::cxxqt1::CxxQtThreading<{cpp_class}>(this)");
 
-    Ok((class_initializer, result))
+    (class_initializer, result)
 }
 
 #[cfg(test)]
@@ -54,7 +53,7 @@ mod tests {
     fn test_generate_cpp_threading() {
         let qobject_idents = create_qobjectname();
 
-        let (initializer, generated) = generate(&qobject_idents).unwrap();
+        let (initializer, generated) = generate(&qobject_idents);
 
         // forward declares
         assert_eq!(generated.forward_declares.len(), 1);

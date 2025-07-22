@@ -28,14 +28,14 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
 
         let mut generated = vec![
-            generate_qobject_definitions(&qobject_names, &qobject.cfgs)?,
+            generate_qobject_definitions(&qobject_names, &qobject.cfgs),
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
                 type_names,
                 structured_qobject,
             )?,
-            generate_rust_methods(&structured_qobject.methods, &qobject_names)?,
+            generate_rust_methods(&structured_qobject.methods, &qobject_names),
             inherit::generate(&qobject_names, &structured_qobject.inherited_methods)?,
             generate_rust_signals(&structured_qobject.signals, &qobject_names, type_names)?,
         ];
@@ -88,7 +88,7 @@ impl GeneratedRustFragment {
 fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
     cfgs: &[Attribute],
-) -> Result<GeneratedRustFragment> {
+) -> GeneratedRustFragment {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
 
@@ -105,7 +105,7 @@ fn generate_qobject_definitions(
         }
     };
 
-    Ok(GeneratedRustFragment {
+    GeneratedRustFragment {
         cxx_mod_contents: vec![
             parse_quote! {
                 unsafe extern "C++" {
@@ -134,7 +134,7 @@ fn generate_qobject_definitions(
             },
         ],
         cxx_qt_mod_contents: vec![],
-    })
+    }
 }
 
 #[cfg(test)]

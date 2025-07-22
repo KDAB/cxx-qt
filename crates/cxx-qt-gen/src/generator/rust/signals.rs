@@ -29,7 +29,7 @@ pub fn generate_rust_signal(
 ) -> Result<GeneratedRustFragment> {
     let span = signal.method.span();
     let idents = QSignalNames::from(signal);
-    let idents_helper = QSignalHelperNames::new(&idents, qobject_name)?;
+    let idents_helper = QSignalHelperNames::new(&idents, qobject_name);
 
     let qobject_name_rust = qobject_name.rust_unqualified();
 
