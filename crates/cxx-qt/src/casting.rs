@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::ops::Deref;
 use std::pin::Pin;
 
 /// This trait is automatically implemented by CXX-Qt and you most likely do not need to manually implement it.
@@ -35,29 +34,17 @@ pub unsafe trait Upcast<T> {
 
     /// Upcast a reference to self to a reference to the base class
     fn upcast(&self) -> &T {
-        let ptr = self as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(ptr);
-            &*base
-        }
+        unsafe { &*Self::upcast_ptr(self) }
     }
 
     /// Upcast a mutable reference to sell to a mutable reference to the base class
     fn upcast_mut(&mut self) -> &mut T {
-        let ptr = self as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(ptr) as *mut T;
-            &mut *base
-        }
+        unsafe { &mut *Self::upcast_ptr(self).cast_mut() }
     }
 
     /// Upcast a pinned mutable reference to self to a pinned mutable reference to the base class
     fn upcast_pin(self: Pin<&mut Self>) -> Pin<&mut T> {
-        let this = self.deref() as *const Self;
-        unsafe {
-            let base = Self::upcast_ptr(this) as *mut T;
-            Pin::new_unchecked(&mut *base)
-        }
+        unsafe { Pin::new_unchecked(Self::upcast_mut(self.get_unchecked_mut())) }
     }
 }
 
@@ -67,38 +54,19 @@ pub unsafe trait Upcast<T> {
 pub trait Downcast: Sized {
     /// Try to downcast to a subclass of this type, given that the subclass upcasts to this type
     fn downcast<Sub: Upcast<Self>>(&self) -> Option<&Sub> {
-        unsafe {
-            let ptr = Sub::from_base_ptr(self as *const Self);
-            if ptr.is_null() {
-                None
-            } else {
-                Some(&*ptr)
-            }
-        }
+        unsafe { Sub::from_base_ptr(self).as_ref() }
     }
 
     /// Try to downcast mutably to a subclass of this, given that the subclass upcasts to this type
     fn downcast_mut<Sub: Upcast<Self>>(&mut self) -> Option<&mut Sub> {
-        unsafe {
-            let ptr = Sub::from_base_ptr(self as *const Self) as *mut Sub;
-            if ptr.is_null() {
-                None
-            } else {
-                Some(&mut *ptr)
-            }
-        }
+        unsafe { Sub::from_base_ptr(self).cast_mut().as_mut() }
     }
 
     /// Try to downcast a pin to a pinned subclass of this, given that the subclass upcasts to this type
     fn downcast_pin<Sub: Upcast<Self>>(self: Pin<&mut Self>) -> Option<Pin<&mut Sub>> {
-        let this = self.deref() as *const Self;
         unsafe {
-            let ptr = Sub::from_base_ptr(this) as *mut Sub;
-            if ptr.is_null() {
-                None
-            } else {
-                Some(Pin::new_unchecked(&mut *ptr))
-            }
+            let base = Self::downcast_mut(self.get_unchecked_mut())?;
+            Some(Pin::new_unchecked(base))
         }
     }
 }

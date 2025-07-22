@@ -548,12 +548,12 @@ impl QImage {
             // In this case the *mut ffi::c_void is actually a `*mut Vec<u8>` that was created by
             // Box::into_raw(), so can be re-created by Box::from_raw().
             // QImage also guarantees that this is only called once when the last copy is destroyed.
-            let the_box: Box<Vec<u8>> = unsafe { Box::from_raw(boxed_vec as *mut Vec<u8>) };
+            let the_box: Box<Vec<u8>> = unsafe { Box::from_raw(boxed_vec.cast()) };
             drop(the_box);
         }
         let data = Box::new(data);
         let bytes = data.as_ptr() as *mut ffi::uchar;
-        let raw_box = Box::into_raw(data) as *mut ffi::c_void;
+        let raw_box = Box::into_raw(data).cast();
         QImage::from_raw_parts_mut(bytes, width, height, format, delete_boxed_vec, raw_box)
     }
 

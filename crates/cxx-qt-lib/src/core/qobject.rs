@@ -103,7 +103,7 @@ impl QObjectExt for QObject {
     }
 
     fn parent(&self) -> *mut Self {
-        cast(self).parent() as *mut Self
+        cast(self).parent().cast()
     }
 
     fn set_parent<T>(self: Pin<&mut Self>, parent: Pin<&mut T>)

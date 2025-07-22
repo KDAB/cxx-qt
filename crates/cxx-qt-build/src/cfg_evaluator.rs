@@ -12,6 +12,7 @@ use std::borrow::Borrow;
 use std::cmp::Ordering;
 use std::collections::{BTreeMap as Map, BTreeSet as Set};
 use std::env;
+use std::ptr;
 use std::sync::OnceLock;
 
 static ENV: OnceLock<CargoEnv> = OnceLock::new();
@@ -102,7 +103,7 @@ struct Lookup(str);
 
 impl Lookup {
     fn new(name: &str) -> &Self {
-        unsafe { &*(name as *const str as *const Self) }
+        unsafe { &*(ptr::from_ref(name) as *const Self) }
     }
 }
 
