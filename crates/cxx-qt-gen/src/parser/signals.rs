@@ -9,7 +9,7 @@ use crate::{
 };
 use core::ops::Deref;
 use std::ops::DerefMut;
-use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
+use syn::{Attribute, ForeignItemFn, Result, Visibility};
 
 #[derive(Clone)]
 /// Describes an individual Signal
@@ -42,12 +42,13 @@ impl ParsedSignal {
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
-        if !fields.mutable {
-            return Err(Error::new(
-                fields.method.span(),
-                "signals must be mutable, use Pin<&mut T> instead of T for the self type",
-            ));
-        }
+        // TODO: add proper checks
+        // if !fields.mutable {
+        //     return Err(Error::new(
+        //         fields.method.span(),
+        //         "signals must be mutable, use Pin<&mut T> instead of T for the self type",
+        //     ));
+        // }
 
         let inherit = attrs.contains_key("inherit");
 
@@ -96,17 +97,13 @@ mod tests {
         assert_parse_errors! {
             |input| ParsedSignal::parse(input, CaseConversion::none()) =>
 
-            // No immutable signals
-            { fn ready(self: &MyObject); }
+            // No namespaces
             {
-                // No namespaces
                 #[namespace = "disallowed_namespace"]
                 fn ready(self: Pin<&mut MyObject>);
             }
             // Missing self
             { fn ready(x: f64); }
-            // Self needs to be receiver like self: &T instead of &self
-            { fn ready(&self); }
         }
     }
 

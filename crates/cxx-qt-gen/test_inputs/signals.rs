@@ -27,6 +27,9 @@ mod ffi {
         fn ready(self: Pin<&mut Self>);
 
         #[qsignal]
+        fn const_ready(&self);
+
+        #[qsignal]
         fn data_changed(
             self: Pin<&mut Self>,
             first: i32,

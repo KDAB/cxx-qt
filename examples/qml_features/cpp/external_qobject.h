@@ -22,4 +22,5 @@ public:
 Q_SIGNALS:
   void triggered();
   void triggeredPrivateSignal(QPrivateSignal);
+  void triggeredConstSignal() const;
 };
