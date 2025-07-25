@@ -29,6 +29,11 @@ using QTimerCxxQtSignalHandlertimeout =
   ::rust::cxxqt1::SignalHandler<struct QTimerCxxQtSignalParamstimeout*>;
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+using QTimerCxxQtSignalHandlerconst_ready =
+  ::rust::cxxqt1::SignalHandler<struct QTimerCxxQtSignalParamsconst_ready*>;
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
 #include "directory/file_ident.cxx.h"
 
 namespace cxx_qt::my_object::rust::cxxqtgen1 {
@@ -36,6 +41,15 @@ namespace cxx_qt::my_object::rust::cxxqtgen1 {
 QTimer_timeoutConnect(
   cxx_qt::my_object::QTimer& self,
   ::cxx_qt::my_object::rust::cxxqtgen1::QTimerCxxQtSignalHandlertimeout closure,
+  ::Qt::ConnectionType type);
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
+QTimer_const_readyConnect(
+  cxx_qt::my_object::QTimer const& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::QTimerCxxQtSignalHandlerconst_ready
+    closure,
   ::Qt::ConnectionType type);
 } // namespace cxx_qt::my_object::rust::cxxqtgen1
 

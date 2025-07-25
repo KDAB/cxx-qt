@@ -85,9 +85,7 @@ pub fn generate_rust_signal(
     let self_type_cxx = if signal.mutable {
         parse_quote_spanned! {span => Pin<&mut #qobject_name_rust> }
     } else {
-        // CODECOV_EXCLUDE_START
-        unreachable!("Signals cannot be immutable right now so this cannot be reached")
-        // CODECOV_EXCLUDE_STOP
+        parse_quote_spanned! {span => &#qobject_name_rust }
     };
     let self_type_qualified = syn_type_cxx_bridge_to_qualified(&self_type_cxx, type_names)?;
     let qualified_impl = qobject_name.rust_qualified();
