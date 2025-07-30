@@ -201,6 +201,7 @@ fn main() {
         rust_bridges.extend([
             "core/qlist/qlist_qcolor",
             "core/qvariant/qvariant_qcolor",
+            "core/qvariant/qvariant_qquaternion",
             "core/qvariant/qvariant_qvector2d",
             "core/qvariant/qvariant_qvector3d",
             "core/qvariant/qvariant_qvector4d",
@@ -209,6 +210,7 @@ fn main() {
             "gui/qfont",
             "gui/qguiapplication",
             "gui/qimage",
+            "gui/qquaternion",
             "gui/qpainterpath",
             "gui/qpainter",
             "gui/qpen",
@@ -286,6 +288,7 @@ fn main() {
             "gui/qpen",
             "gui/qpolygon",
             "gui/qpolygonf",
+            "gui/qquaternion",
             "gui/qregion",
             "gui/qvector2d",
             "gui/qvector3d",
