@@ -22,6 +22,11 @@ pub mod ffi {
         #[qsignal]
         fn triggered(self: Pin<&mut Self>);
 
+        /// const signal that is emitted when trigger is fired
+        #[qsignal]
+        #[rust_name = "triggered_const_signal"]
+        fn triggeredConstSignal(&self);
+
         /// Private signal that is emitted when trigger is fired
         #[qsignal]
         #[rust_name = "triggered_private_signal"]
