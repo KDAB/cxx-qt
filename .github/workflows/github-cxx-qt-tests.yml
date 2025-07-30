@@ -420,7 +420,6 @@ jobs:
         # Allow a larger cache size so that code in branches can be cached
         # but still leave room for the tools cache
         SCCACHE_CACHE_SIZE: 600M
-        SCCACHE_LOG: debug
         SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
 
     steps:
