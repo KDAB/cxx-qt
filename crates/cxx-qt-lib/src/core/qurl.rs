@@ -461,7 +461,7 @@ impl fmt::Display for QUrl {
     /// Format the `QUrl` as a Rust string.
     ///
     /// Note that this converts from UTF-16 to UTF-8.
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter) -> std::fmt::Result {
         ffi::qurl_to_display_string(self).fmt(f)
     }
 }

@@ -175,7 +175,7 @@ impl ParsedQProperty {
                                 ))
                             }
                         }
-                    };
+                    }
 
                     Ok(())
                 };

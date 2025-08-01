@@ -83,7 +83,7 @@ impl CaseConversion {
             .map(|attr| meta_to_case(attr, Case::Camel))
             .transpose()?;
 
-        Ok(Self { rust, cxx })
+        Ok(Self { cxx, rust })
     }
 }
 
