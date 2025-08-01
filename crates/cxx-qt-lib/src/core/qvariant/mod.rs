@@ -3,6 +3,8 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#![allow(clippy::trivially_copy_pass_by_ref)]
+
 use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;

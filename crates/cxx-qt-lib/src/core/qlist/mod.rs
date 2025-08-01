@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#![allow(clippy::trivially_copy_pass_by_ref)]
 
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
