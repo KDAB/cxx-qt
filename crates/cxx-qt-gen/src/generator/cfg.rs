@@ -176,7 +176,7 @@ mod tests {
     fn test_try_eval_unconditional() {
         let cfg_expr = CfgExpr::Unconditional;
         let cfg_evaluator = Box::new(UnsupportedCfgEvaluator);
-        assert_eq!(try_eval(cfg_evaluator.as_ref(), &cfg_expr).unwrap(), true);
+        assert!(try_eval(cfg_evaluator.as_ref(), &cfg_expr).unwrap());
     }
 
     #[test]
