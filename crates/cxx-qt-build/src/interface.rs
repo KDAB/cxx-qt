@@ -99,7 +99,7 @@ impl Interface {
         std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
         println!(
             "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
-            manifest_path.to_string_lossy()
+            manifest_path.display()
         );
     }
 }

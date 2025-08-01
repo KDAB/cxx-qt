@@ -116,10 +116,10 @@ pub fn generate_rust_signal(
 
     let closure_struct = idents_helper.struct_closure;
     let signal_handler_alias = idents_helper.handler_alias;
-    let signal_handler_alias_namespaced_str = idents_helper.handler_alias_namespaced.to_string();
+    let signal_handler_alias_namespaced_str = idents_helper.handler_alias_namespaced;
     let signal_handler_call = idents_helper.function_call;
     let signal_handler_drop = idents_helper.function_drop;
-    let namespace_str = idents_helper.namespace.to_string();
+    let namespace_str = idents_helper.namespace;
 
     let mut cxx_mod_contents = vec![];
 

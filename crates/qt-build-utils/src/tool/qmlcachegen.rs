@@ -58,9 +58,9 @@ impl QtToolQmlCacheGen {
 
         let common_args = [
             "-i".to_string(),
-            common_args.qmldir_path.to_string_lossy().to_string(),
+            common_args.qmldir_path.to_string_lossy().into_owned(),
             "--resource".to_string(),
-            common_args.qmldir_qrc_path.to_string_lossy().to_string(),
+            common_args.qmldir_qrc_path.to_string_lossy().into_owned(),
         ];
 
         let qml_cache_path = qmlcachegen_dir.join(format!(
@@ -72,13 +72,13 @@ impl QtToolQmlCacheGen {
 
         let specific_args = vec![
             "--resource-path".to_string(),
-            qml_resource_path.to_string(),
+            qml_resource_path.clone(),
             "-o".to_string(),
-            qml_cache_path.to_string_lossy().to_string(),
+            qml_cache_path.to_string_lossy().into_owned(),
             std::fs::canonicalize(&file)
                 .unwrap()
                 .to_string_lossy()
-                .to_string(),
+                .into_owned(),
         ];
 
         let cmd = Command::new(&self.executable)
@@ -120,9 +120,9 @@ impl QtToolQmlCacheGen {
 
         let common_args = [
             "-i".to_string(),
-            common_args.qmldir_path.to_string_lossy().to_string(),
+            common_args.qmldir_path.to_string_lossy().into_owned(),
             "--resource".to_string(),
-            common_args.qmldir_qrc_path.to_string_lossy().to_string(),
+            common_args.qmldir_qrc_path.to_string_lossy().into_owned(),
         ];
 
         let qmlcachegen_loader = qmlcachegen_dir.join("qmlcache_loader.cpp");
@@ -130,7 +130,7 @@ impl QtToolQmlCacheGen {
             "--resource-name".to_string(),
             format!("qmlcache_{qml_uri_underscores}"),
             "-o".to_string(),
-            qmlcachegen_loader.to_string_lossy().to_string(),
+            qmlcachegen_loader.to_string_lossy().into_owned(),
         ];
 
         let cmd = Command::new(&self.executable)

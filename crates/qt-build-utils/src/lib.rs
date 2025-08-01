@@ -384,7 +384,7 @@ public:
                 MocArguments::default().uri(uri.to_owned()),
             );
             // Pass the include directory of the moc file to the caller
-            include_path = moc_product.cpp.parent().map(|path| path.to_path_buf());
+            include_path = moc_product.cpp.parent().map(Path::to_path_buf);
 
             // Generate Initializer for static QQmlExtensionPlugin
             let plugin_init = Initializer {

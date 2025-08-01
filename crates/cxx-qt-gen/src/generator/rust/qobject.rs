@@ -98,7 +98,6 @@ fn generate_qobject_definitions(
     let cxx_name = if cpp_class_name_rust.to_string() == *cpp_class_name_cpp {
         quote! {}
     } else {
-        let cpp_class_name_cpp = cpp_class_name_cpp.to_string();
         quote! {
             #[doc = "\n\nNote: The C++ name of this QObject is: "]
             #[doc = #cpp_class_name_cpp]

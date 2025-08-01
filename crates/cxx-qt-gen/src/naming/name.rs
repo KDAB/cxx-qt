@@ -99,7 +99,7 @@ impl Name {
         let mut namespace = if let Some(attr) = attribute_get_path(attrs, &["namespace"]) {
             Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
         } else {
-            parent_namespace.map(|namespace| namespace.to_owned())
+            parent_namespace.map(str::to_owned)
         };
 
         // This is an important check as it allows for the namespace to be cleared by assigning an

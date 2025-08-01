@@ -38,13 +38,11 @@ impl QtToolQmlTypeRegistrar {
             .iter()
             .filter(|f| {
                 std::fs::metadata(f)
-                    .unwrap_or_else(|_| {
-                        panic!("couldn't open json file {}", f.as_ref().to_string_lossy())
-                    })
+                    .unwrap_or_else(|_| panic!("couldn't open json file {}", f.as_ref().display()))
                     .len()
                     > 0
             })
-            .map(|f| f.as_ref().to_string_lossy().to_string())
+            .map(|f| f.as_ref().to_string_lossy().into_owned())
             .collect();
 
         // Only run qmltyperegistrar if we have valid json files left out
@@ -61,7 +59,7 @@ impl QtToolQmlTypeRegistrar {
 
         let mut args = vec![
             "--generate-qmltypes".to_string(),
-            qmltypes.as_ref().to_string_lossy().to_string(),
+            qmltypes.as_ref().to_string_lossy().into_owned(),
             "--major-version".to_string(),
             version.major.to_string(),
             "--minor-version".to_string(),
@@ -69,7 +67,7 @@ impl QtToolQmlTypeRegistrar {
             "--import-name".to_string(),
             uri.to_string(),
             "-o".to_string(),
-            qmltyperegistrar_output_path.to_string_lossy().to_string(),
+            qmltyperegistrar_output_path.to_string_lossy().into_owned(),
         ];
         args.extend(metatypes_json);
         let cmd = Command::new(&self.executable)
