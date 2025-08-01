@@ -101,7 +101,7 @@ impl GeneratedCpp {
             // Remove the .rs extension
             .with_extension("")
             .to_string_lossy()
-            .to_string();
+            .into_owned();
 
         // The include path we inject needs any prefix (eg the crate name) too
         let include_ident = format!("{include_prefix}/{file_ident}");
@@ -280,7 +280,7 @@ fn generate_cxxqt_cpp_files(
     let mut generated_file_paths: Vec<GeneratedCppFilePaths> = Vec::with_capacity(rs_source.len());
     for rs_path in rs_source {
         let path = manifest_dir.join(rs_path);
-        println!("cargo::rerun-if-changed={}", path.to_string_lossy());
+        println!("cargo::rerun-if-changed={}", path.display());
 
         let generated_code = match GeneratedCpp::new(&path, rs_path, include_prefix) {
             Ok(v) => v,
@@ -416,7 +416,7 @@ impl CxxQtBuilder {
             qml_modules: vec![],
             cc_builder: cc::Build::new(),
             include_prefix: crate_name(),
-            crate_include_root: Some("".to_owned()),
+            crate_include_root: Some(String::new()),
             additional_include_dirs: vec![],
         }
     }
@@ -641,7 +641,7 @@ impl CxxQtBuilder {
         // Find the Qt version and tell the Rust compiler
         // this allows us to have conditional Rust code
         CxxQtBuilder::define_cfg_variable(
-            "cxxqt_qt_version_major".to_string(),
+            "cxxqt_qt_version_major".to_owned(),
             Some(version.major.to_string().as_str()),
         );
 
@@ -663,7 +663,7 @@ impl CxxQtBuilder {
         for minor in 0..=version.minor {
             let qt_version_at_least =
                 format!("cxxqt_qt_version_at_least_{}_{}", version.major, minor);
-            CxxQtBuilder::define_cfg_variable(qt_version_at_least.to_string(), None);
+            CxxQtBuilder::define_cfg_variable(qt_version_at_least, None);
         }
 
         // We don't support Qt < 5
@@ -773,15 +773,12 @@ impl CxxQtBuilder {
                 std::fs::create_dir_all(directory).unwrap_or_else(|_| {
                     panic!(
                         "Could not create directory for exporting object file: {}",
-                        export_path.to_string_lossy()
+                        export_path.display()
                     )
                 });
             }
             std::fs::copy(obj_file, &export_path).unwrap_or_else(|_| {
-                panic!(
-                    "Failed to export object file to {}!",
-                    export_path.to_string_lossy()
-                )
+                panic!("Failed to export object file to {}!", export_path.display())
             });
         } else {
             panic!(
@@ -821,7 +818,7 @@ impl CxxQtBuilder {
                 .iter()
                 .map(|file| {
                     if let Some(parent) = file.parent() {
-                        parent.to_string_lossy().to_string()
+                        parent.to_string_lossy().into_owned()
                     } else {
                         // Fallback to an empty string if there is no parent path
                         String::new()

@@ -42,10 +42,8 @@ impl QtToolRcc {
         let input_path = input_file.as_ref();
         let output_folder = QtTool::Rcc.writable_path();
         std::fs::create_dir_all(&output_folder).expect("Could not create qrc dir");
-        let output_path = output_folder.join(format!(
-            "{}.cpp",
-            input_path.file_name().unwrap().to_string_lossy(),
-        ));
+        let mut output_path = output_folder.join(input_path.file_name().unwrap());
+        output_path.set_extension("cpp");
         let name = input_path
             .file_name()
             .unwrap()

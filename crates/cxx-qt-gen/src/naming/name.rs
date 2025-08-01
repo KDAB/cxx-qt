@@ -99,7 +99,7 @@ impl Name {
         let mut namespace = if let Some(attr) = attribute_get_path(attrs, &["namespace"]) {
             Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
         } else {
-            parent_namespace.map(|namespace| namespace.to_owned())
+            parent_namespace.map(str::to_owned)
         };
 
         // This is an important check as it allows for the namespace to be cleared by assigning an
@@ -309,7 +309,7 @@ impl Name {
     #[cfg(test)]
     /// Helper for creating cxx_named Names, usually for camelcase cxx names
     pub fn mock_name_with_cxx(name: &str, cxx: &str) -> Name {
-        Name::new(format_ident!("{name}")).with_cxx_name(cxx.to_string())
+        Name::new(format_ident!("{name}")).with_cxx_name(cxx.to_owned())
     }
 }
 

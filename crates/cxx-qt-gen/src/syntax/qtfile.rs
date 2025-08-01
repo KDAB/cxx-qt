@@ -47,7 +47,7 @@ impl ToTokens for CxxQtFile {
 pub fn parse_qt_file(path: impl AsRef<std::path::Path>) -> Result<CxxQtFile> {
     let source = std::fs::read_to_string(path.as_ref()).unwrap_or_else(|err| {
         // todo: fixme with a proper error propagation
-        panic!("Failed to read file {:?}: {}", path.as_ref(), err);
+        panic!("Failed to read file {}: {}", path.as_ref().display(), err);
     });
 
     // We drop the shebang from the generated Rust code

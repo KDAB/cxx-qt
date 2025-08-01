@@ -17,7 +17,7 @@ impl From<&MyDataRust> for DataSerde {
     fn from(value: &MyDataRust) -> Self {
         Self {
             number: value.number,
-            string: value.string.to_string(),
+            string: String::from(&value.string),
         }
     }
 }

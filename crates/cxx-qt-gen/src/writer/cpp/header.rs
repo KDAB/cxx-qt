@@ -12,7 +12,7 @@ use indoc::formatdoc;
 /// With a given block name, join the given items and add them under the block
 fn create_block(block: &str, items: &[String]) -> String {
     if items.is_empty() {
-        "".to_owned()
+        String::new()
     } else {
         formatdoc! {r#"
         {block}:
@@ -76,7 +76,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         let qobject_assert = if qobject.has_qobject_macro {
             format!("static_assert(::std::is_base_of<QObject, {ident}>::value, \"{ident} must inherit from QObject\");")
         } else {
-            "".to_owned()
+            String::new()
         };
         let class_definition = namespaced(
             qobject.name.namespace().unwrap_or_default(),
@@ -113,7 +113,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             let ty = qobject.name.cxx_qualified();
             format!("Q_DECLARE_METATYPE({ty}*)")
         } else {
-            "".to_owned()
+            String::new()
         };
 
         formatdoc! {r#"
@@ -189,7 +189,7 @@ mod tests {
 
     #[test]
     fn test_create_block() {
-        let block = create_block("block", &["line1".to_string(), "line2".to_string()]);
+        let block = create_block("block", &["line1".to_owned(), "line2".to_owned()]);
         let expected = indoc! {"
         block:
           line1
@@ -202,7 +202,7 @@ mod tests {
     fn test_create_block_with_empty() {
         let block = create_block(
             "block",
-            &["line1".to_string(), "".to_string(), "line2".to_string()],
+            &["line1".to_owned(), String::new(), "line2".to_owned()],
         );
         let expected = indoc! {"
         block:

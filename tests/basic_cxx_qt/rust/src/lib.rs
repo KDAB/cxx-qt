@@ -132,6 +132,6 @@ impl qobject::MyObject {
 
     #[cfg(not(target_family = "wasm"))]
     fn throw_exception(&self) -> Result<i32, String> {
-        Err("RustException".to_string())
+        Err("RustException".to_owned())
     }
 }

@@ -71,7 +71,7 @@ fn collect_pathbuf_vec(asref: &[impl AsRef<Path>]) -> Vec<PathBuf> {
 impl<A: AsRef<Path>, B: AsRef<Path>> From<QmlModule<'_, A, B>> for OwningQmlModule {
     fn from(other: QmlModule<'_, A, B>) -> Self {
         OwningQmlModule {
-            uri: other.uri.to_string(),
+            uri: other.uri.to_owned(),
             version_major: other.version_major,
             version_minor: other.version_minor,
             rust_files: collect_pathbuf_vec(other.rust_files),

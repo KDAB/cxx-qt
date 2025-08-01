@@ -79,7 +79,7 @@ impl qobject::Serialisation {
     /// From a given JSON string try to load values for the Q_PROPERTYs
     // ANCHOR: book_grab_values
     pub fn from_json_str(mut self: Pin<&mut Self>, qstring: &QString) {
-        match serde_json::from_str::<SerialisationRust>(&qstring.to_string()) {
+        match serde_json::from_str::<SerialisationRust>(&String::from(qstring)) {
             Ok(data_serde) => {
                 self.as_mut().set_number(data_serde.number);
                 self.as_mut().set_string(data_serde.string);

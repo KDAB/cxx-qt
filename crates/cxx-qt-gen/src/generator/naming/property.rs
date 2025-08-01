@@ -117,7 +117,7 @@ impl QPropertyNames {
 }
 
 fn capitalise_first(str: String) -> String {
-    let mut out = "".to_string();
+    let mut out = "".to_owned();
     if let Some(first) = str.chars().next() {
         out.push(first.to_ascii_uppercase());
         out.push_str(&str[1..]);
@@ -210,7 +210,7 @@ pub mod tests {
     #[test]
     fn test_capitalise_first() {
         assert_eq!(capitalise_first("abc".to_owned()), "Abc".to_owned());
-        assert_eq!(capitalise_first("".to_string()), "".to_owned());
+        assert_eq!(capitalise_first(String::new()), String::new());
         assert_eq!(capitalise_first("a".to_owned()), "A".to_owned());
     }
 }

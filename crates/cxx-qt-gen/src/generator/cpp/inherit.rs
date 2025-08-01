@@ -47,7 +47,7 @@ pub fn generate(
         mutability = if method.mutable { "" } else { " const" },
         func_ident = method.name.cxx_unqualified(),
         wrapper_ident = method.wrapper_ident(),
-        return_type = return_type.unwrap_or_else(|| "void".to_string()),
+        return_type = return_type.unwrap_or_else(|| "void".to_owned()),
         base_class = base_class
         }));
     }

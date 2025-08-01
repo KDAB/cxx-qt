@@ -118,7 +118,7 @@ impl GeneratedCppQObject {
         let base_class = if let Some(ident) = &qobject.base_class {
             type_names.lookup(ident)?.cxx_qualified()
         } else if qobject.has_qobject_macro {
-            "QObject".to_string()
+            "QObject".to_owned()
         } else {
             // CODECOV_EXCLUDE_START
             unreachable!("Cannot have an empty #[base] attribute  with no #[qobject] attribute");

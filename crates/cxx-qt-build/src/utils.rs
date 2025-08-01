@@ -21,12 +21,12 @@ pub(crate) fn best_effort_copy_headers(
     };
     // Ensure that we rebuild if there are files added/removed
     if emit_rerun_if_changed {
-        println!("cargo::rerun-if-changed={}", src.to_string_lossy());
+        println!("cargo::rerun-if-changed={}", src.display());
     }
 
     while let Some(Ok(entry)) = entries.next() {
         let file_name = entry.file_name();
-        if file_name.to_string_lossy().starts_with('.') {
+        if file_name.as_encoded_bytes().starts_with(b".") {
             continue;
         }
         match entry.file_type() {
@@ -50,7 +50,7 @@ pub(crate) fn best_effort_copy_headers(
 
                 // Ensure that we rebuild if there are changes
                 if emit_rerun_if_changed {
-                    println!("cargo::rerun-if-changed={}", src.to_string_lossy());
+                    println!("cargo::rerun-if-changed={}", src.display());
                 }
 
                 dst_created = true;

@@ -260,6 +260,13 @@ impl From<&QByteArray> for Vec<u8> {
     }
 }
 
+impl<const N: usize> From<&[u8; N]> for QByteArray {
+    #[inline]
+    fn from(bytes: &[u8; N]) -> Self {
+        ffi::qbytearray_from_slice_u8(bytes)
+    }
+}
+
 #[cfg(feature = "bytes")]
 impl From<&bytes::Bytes> for QByteArray {
     /// Convert `bytes::Bytes` to a `QByteArray`. This makes a deep copy of the data.

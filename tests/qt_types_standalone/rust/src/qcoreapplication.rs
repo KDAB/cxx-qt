@@ -27,5 +27,5 @@ fn construct_qcoreapplication() -> cxx::UniquePtr<QCoreApplication> {
 }
 
 fn read_qcoreapplication(app: &QCoreApplication) -> bool {
-    app.application_name().to_string() == "kdab"
+    String::from(&app.application_name()) == "kdab"
 }

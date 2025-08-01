@@ -243,10 +243,7 @@ mod test {
     fn deref() {
         let mut list = QStringList::default();
         list.append(QString::from("element"));
-        assert_eq!(
-            list.get(0).map(|s| s.to_string()),
-            Some("element".to_owned())
-        );
+        assert_eq!(list.get(0).map(String::from).as_deref(), Some("element"));
     }
 
     #[cfg(feature = "serde")]

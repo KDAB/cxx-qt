@@ -177,7 +177,7 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
                 )),
             }
         }
-        Type::Tuple(tuple) if tuple.elems.is_empty() => Ok("void".to_string()),
+        Type::Tuple(tuple) if tuple.elems.is_empty() => Ok("void".to_owned()),
         _others => Err(err_unsupported_type(ty)),
     }
 }
@@ -407,7 +407,7 @@ mod tests {
         let ty = parse_quote! { -> bool };
         assert_eq!(
             syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
-            Some("bool".to_string())
+            Some("bool".to_owned())
         );
     }
 
@@ -416,7 +416,7 @@ mod tests {
         let ty = parse_quote! { -> [i32; 5] };
         assert_eq!(
             syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
-            Some("::std::array<::std::int32_t, 5>".to_string())
+            Some("::std::array<::std::int32_t, 5>".to_owned())
         );
     }
 
@@ -425,7 +425,7 @@ mod tests {
         let ty = parse_quote! { -> Result<bool> };
         assert_eq!(
             syn_type_to_cpp_return_type(&ty, &TypeNames::default()).unwrap(),
-            Some("bool".to_string())
+            Some("bool".to_owned())
         );
     }
 

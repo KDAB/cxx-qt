@@ -59,7 +59,7 @@ pub fn generate(
             let base_class = if let Some(ident) = &qobject.base_class {
                 type_names.lookup(ident)?.cxx_qualified()
             } else {
-                "QObject".to_string()
+                "QObject".to_owned()
             };
             generated.base_classes.push(base_class);
         }
