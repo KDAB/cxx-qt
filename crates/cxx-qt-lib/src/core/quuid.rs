@@ -354,6 +354,7 @@ impl From<QUuid> for Uuid {
 }
 
 #[cfg(test)]
+#[allow(clippy::unreadable_literal)]
 mod test {
     use super::*;
 
