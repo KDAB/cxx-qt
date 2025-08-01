@@ -28,7 +28,7 @@ fn construct_qurl(test: &QString) -> QUrl {
 }
 
 fn read_qurl(u: &QUrl, test: &QString) -> bool {
-    u.to_string() == String::from(&test)
+    u.to_string() == String::from(test)
 }
 
 fn clone_qurl(u: &QUrl) -> QUrl {
