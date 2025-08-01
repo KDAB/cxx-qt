@@ -484,9 +484,9 @@ impl<'de> serde::Deserialize<'de> for QByteArray {
 
             fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
                 let mut values = Self::Value::default();
-                if let Some(size_hint) = seq.size_hint() {
-                    if size_hint != 0 && size_hint <= isize::MAX as usize {
-                        values.reserve(size_hint as isize);
+                if let Some(size_hint) = seq.size_hint().and_then(|hint| hint.try_into().ok()) {
+                    if size_hint != 0 {
+                        values.reserve(size_hint);
                     }
                 }
                 while let Some(value) = seq.next_element()? {
