@@ -275,8 +275,8 @@ impl From<time::Date> for QDate {
     fn from(value: time::Date) -> Self {
         QDate::new(
             value.year(),
-            Into::<u8>::into(value.month()) as i32,
-            value.day() as i32,
+            u8::from(value.month()).into(),
+            value.day().into(),
         )
     }
 }

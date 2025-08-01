@@ -272,10 +272,10 @@ impl TryFrom<QTime> for chrono::NaiveTime {
 impl From<time::Time> for QTime {
     fn from(value: time::Time) -> Self {
         QTime::new(
-            value.hour() as i32,
-            value.minute() as i32,
-            value.second() as i32,
-            value.millisecond() as i32,
+            value.hour().into(),
+            value.minute().into(),
+            value.second().into(),
+            value.millisecond().into(),
         )
     }
 }
