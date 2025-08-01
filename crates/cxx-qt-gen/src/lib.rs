@@ -3,7 +3,6 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 #![deny(missing_docs)]
 #![allow(clippy::format_collect)]
 #![allow(clippy::missing_panics_doc)]

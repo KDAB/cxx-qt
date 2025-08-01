@@ -2,7 +2,6 @@
 // SPDX-FileContributor: Be Wilson <be.wilson@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 #![deny(missing_docs)]
 
 //! This crate provides information about the Qt installation and can invoke Qt's
@@ -12,7 +11,6 @@
 //! [cc](https://docs.rs/cc/latest/cc/),
 //! [cxx_build](https://docs.rs/cxx-build/latest/cxx_build/), or
 //! [cpp_build](https://docs.rs/cpp_build/latest/cpp_build/).
-
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::missing_panics_doc)]
 

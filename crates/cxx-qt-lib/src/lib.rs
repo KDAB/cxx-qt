@@ -3,7 +3,6 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 #[cfg(not(any(cxxqt_qt_version_major = "5", cxxqt_qt_version_major = "6")))]
