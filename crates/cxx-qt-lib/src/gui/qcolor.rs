@@ -688,6 +688,6 @@ mod tests {
     #[test]
     fn test_display_fmt() {
         let qcolor = QColor::from_rgba(50, 100, 150, 200);
-        assert_eq!(format!("{:-<30}", qcolor), "RGBA(50, 100, 150, 200)-------");
+        assert_eq!(format!("{qcolor:-<30}"), "RGBA(50, 100, 150, 200)-------");
     }
 }

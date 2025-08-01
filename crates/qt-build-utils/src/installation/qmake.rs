@@ -293,10 +293,7 @@ impl QtInstallationQMake {
         qt_module: &str,
     ) -> String {
         for arch in ["", "_arm64-v8a", "_armeabi-v7a", "_x86", "_x86_64"] {
-            let prl_path = format!(
-                "{}/{}Qt{}{}{}.prl",
-                lib_path, prefix, version_major, qt_module, arch
-            );
+            let prl_path = format!("{lib_path}/{prefix}Qt{version_major}{qt_module}{arch}.prl");
             match Path::new(&prl_path).try_exists() {
                 Ok(exists) => {
                     if exists {
@@ -304,18 +301,12 @@ impl QtInstallationQMake {
                     }
                 }
                 Err(e) => {
-                    println!(
-                        "cargo::warning=failed checking for existence of {}: {}",
-                        prl_path, e
-                    );
+                    println!("cargo::warning=failed checking for existence of {prl_path}: {e}");
                 }
             }
         }
 
-        format!(
-            "{}/{}Qt{}{}.prl",
-            lib_path, prefix, version_major, qt_module
-        )
+        format!("{lib_path}/{prefix}Qt{version_major}{qt_module}.prl")
     }
 
     fn link_qt_library(

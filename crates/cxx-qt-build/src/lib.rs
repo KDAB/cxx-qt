@@ -614,7 +614,7 @@ impl CxxQtBuilder {
         } else {
             println!("cargo::rustc-cfg={key}");
         }
-        let variable_cargo = format!("CARGO_CFG_{}", key);
+        let variable_cargo = format!("CARGO_CFG_{key}");
         env::set_var(variable_cargo, value.unwrap_or("true"));
     }
 
@@ -668,7 +668,7 @@ impl CxxQtBuilder {
 
         // We don't support Qt < 5
         for major in 5..=version.major {
-            let at_least_qt_major_version = format!("cxxqt_qt_version_at_least_{}", major);
+            let at_least_qt_major_version = format!("cxxqt_qt_version_at_least_{major}");
             CxxQtBuilder::define_cfg_variable(at_least_qt_major_version, None);
         }
     }

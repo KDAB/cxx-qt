@@ -412,8 +412,7 @@ mod tests {
         let type_names = TypeNames::mock();
 
         let qobject_names = create_qobjectname();
-        let generated =
-            generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names).unwrap();
+        let generated = generate_rust_signals(&[&qsignal], &qobject_names, &type_names).unwrap();
 
         let qobject_name = type_names.lookup(&qsignal.qobject_ident).unwrap().clone();
         let other_generated = generate_rust_signal(
@@ -453,8 +452,7 @@ mod tests {
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("QColor", None, None, None);
-        let generated =
-            generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names).unwrap();
+        let generated = generate_rust_signals(&[&qsignal], &qobject_names, &type_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 3);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 8);
@@ -595,8 +593,7 @@ mod tests {
 
         let mut type_names = TypeNames::mock();
         type_names.mock_insert("T", None, None, None);
-        let generated =
-            generate_rust_signals(&vec![&qsignal], &qobject_names, &type_names).unwrap();
+        let generated = generate_rust_signals(&[&qsignal], &qobject_names, &type_names).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 3);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 8);
@@ -739,7 +736,7 @@ mod tests {
         let qobject_names = create_qobjectname();
 
         let generated =
-            generate_rust_signals(&vec![&qsignal], &qobject_names, &TypeNames::mock()).unwrap();
+            generate_rust_signals(&[&qsignal], &qobject_names, &TypeNames::mock()).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 3);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 8);

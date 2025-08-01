@@ -87,7 +87,7 @@ mod tests {
         let qobject = create_parsed_qobject();
         let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
 
-        let generated = generate(&qobject_names, &TypeNames::mock(), &vec![]).unwrap();
+        let generated = generate(&qobject_names, &TypeNames::mock(), &[]).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

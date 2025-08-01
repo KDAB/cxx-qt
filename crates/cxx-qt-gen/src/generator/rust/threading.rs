@@ -189,13 +189,8 @@ mod tests {
         let qobject_names = QObjectNames::from_qobject(&qobject, &TypeNames::mock()).unwrap();
         let namespace_ident = NamespaceName::from(&qobject);
 
-        let generated = generate(
-            &qobject_names,
-            &namespace_ident,
-            &TypeNames::mock(),
-            &vec![],
-        )
-        .unwrap();
+        let generated =
+            generate(&qobject_names, &namespace_ident, &TypeNames::mock(), &[]).unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 2);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 2);

@@ -22,8 +22,8 @@ pub(crate) enum GeneratedError {
 impl Display for GeneratedError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            GeneratedError::Cxx(err) => write!(f, "{}", err),
-            GeneratedError::CxxQt(err) => write!(f, "{}", err),
+            GeneratedError::Cxx(err) => write!(f, "{err}"),
+            GeneratedError::CxxQt(err) => write!(f, "{err}"),
         }
     }
 }
