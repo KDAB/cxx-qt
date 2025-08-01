@@ -262,7 +262,7 @@ impl From<&QByteArray> for Vec<u8> {
 
 impl<const N: usize> From<&[u8; N]> for QByteArray {
     #[inline]
-    fn from(value: &[u8; N]) -> Self {
+    fn from(bytes: &[u8; N]) -> Self {
         ffi::qbytearray_from_slice_u8(bytes)
     }
 }
