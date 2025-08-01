@@ -5,6 +5,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![deny(missing_docs)]
+#![allow(clippy::format_collect)]
+#![allow(clippy::missing_panics_doc)]
+#![allow(clippy::ref_option)]
 
 //! The cxx-qt-gen crate provides methods for generated C++ and Rust code from a TokenStream.
 
@@ -47,7 +50,7 @@ mod tests {
         pub cfgs: HashMap<&'a str, Option<&'a str>>,
     }
 
-    impl<'a> CfgEvaluator for CfgEvaluatorTest<'a> {
+    impl CfgEvaluator for CfgEvaluatorTest<'_> {
         fn eval(&self, name: &str, query_value: Option<&str>) -> CfgResult {
             if self.cfgs.get(name) == Some(&query_value) {
                 CfgResult::True
