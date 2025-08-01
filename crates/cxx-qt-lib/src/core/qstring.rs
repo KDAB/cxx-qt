@@ -327,7 +327,7 @@ impl From<&QString> for String {
     ///
     /// Note that this converts from UTF-16 to UTF-8.
     fn from(qstring: &QString) -> Self {
-        String::from_utf16_lossy(&qstring.as_slice())
+        String::from_utf16_lossy(qstring.as_slice())
     }
 }
 
@@ -336,7 +336,7 @@ impl From<QString> for String {
     ///
     /// Note that this converts from UTF-16 to UTF-8.
     fn from(qstring: QString) -> Self {
-        String::from_utf16_lossy(&qstring.as_slice())
+        String::from_utf16_lossy(qstring.as_slice())
     }
 }
 
