@@ -27,8 +27,9 @@ namespace cxxqtlib1 {
 
 QString
 qstringInitFromRustString(::rust::Str string);
-::rust::String
-qstringToRustString(const QString& string);
+
+::rust::Slice<const ::std::uint16_t>
+qstringAsSlice(const QString& string);
 
 QString
 qstringArg(const QString& string, const QString& a);
