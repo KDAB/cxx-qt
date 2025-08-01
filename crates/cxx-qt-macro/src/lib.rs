@@ -7,6 +7,7 @@
 // We explicitly allow missing docs for the macros in this crate, as they should be documented in
 // cxx-qt itself.
 #![allow(missing_docs)]
+#![allow(clippy::missing_panics_doc)]
 //! The cxx-qt-macro crate provides the procedural attribute macros which are used with cxx-qt.
 //!
 //! See the [cxx-qt crate docs](https://docs.rs/cxx-qt/latest/) for documentation of the macros

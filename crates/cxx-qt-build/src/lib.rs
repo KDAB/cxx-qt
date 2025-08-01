@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #![deny(missing_docs)]
+#![allow(clippy::missing_panics_doc)]
 
 //! This crate provides a builder which parses given Rust source code to search
 //! for CXX-Qt or CXX macros and generate any resulting C++ code. It also builds
