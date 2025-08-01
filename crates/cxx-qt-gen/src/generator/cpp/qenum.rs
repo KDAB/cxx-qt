@@ -46,7 +46,7 @@ pub fn generate_declaration(
     let is_standalone = qenum.qobject.is_none();
     if is_standalone {
         // required for Q_NAMESPACE and Q_ENUM_NS if we're not on a QObject
-        includes.insert("#include <QtCore/QObject>".to_string());
+        includes.insert("#include <QtCore/QObject>".to_owned());
     }
 
     let enum_definition = generate_definition(qenum).indented(2);
@@ -88,7 +88,7 @@ pub fn generate_on_qobject<'a>(
             qualified_name.insert_str(0, "::");
         }
 
-        generated.includes.insert("#include <cstdint>".to_string());
+        generated.includes.insert("#include <cstdint>".to_owned());
         let enum_definition = generate_definition(qenum);
         generated.metaobjects.push(formatdoc! {r#"
             #ifdef Q_MOC_RUN

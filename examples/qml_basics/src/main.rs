@@ -48,7 +48,7 @@ impl Greeting {
             (&Greeting::Bye, Language::French) => "Au revoir!",
             _ => "🤯",
         }
-        .to_string()
+        .to_owned()
     }
 }
 

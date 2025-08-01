@@ -58,15 +58,15 @@ impl QtToolQmlTypeRegistrar {
             output_folder.join(format!("{qml_uri_underscores}_qmltyperegistration.cpp"));
 
         let mut args = vec![
-            "--generate-qmltypes".to_string(),
+            "--generate-qmltypes".to_owned(),
             qmltypes.as_ref().to_string_lossy().into_owned(),
-            "--major-version".to_string(),
+            "--major-version".to_owned(),
             version.major.to_string(),
-            "--minor-version".to_string(),
+            "--minor-version".to_owned(),
             version.minor.to_string(),
-            "--import-name".to_string(),
+            "--import-name".to_owned(),
             uri.to_string(),
-            "-o".to_string(),
+            "-o".to_owned(),
             qmltyperegistrar_output_path.to_string_lossy().into_owned(),
         ];
         args.extend(metatypes_json);

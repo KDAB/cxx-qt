@@ -381,7 +381,7 @@ impl QtInstallationQMake {
                 .stdout,
         )
         .trim()
-        .to_string()
+        .to_owned()
     }
 
     fn try_qmake_find_tool(&self, tool_name: &str) -> anyhow::Result<PathBuf> {

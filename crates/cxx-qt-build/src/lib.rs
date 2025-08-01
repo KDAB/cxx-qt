@@ -641,7 +641,7 @@ impl CxxQtBuilder {
         // Find the Qt version and tell the Rust compiler
         // this allows us to have conditional Rust code
         CxxQtBuilder::define_cfg_variable(
-            "cxxqt_qt_version_major".to_string(),
+            "cxxqt_qt_version_major".to_owned(),
             Some(version.major.to_string().as_str()),
         );
 

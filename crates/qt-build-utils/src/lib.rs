@@ -163,7 +163,7 @@ impl QtBuild {
         mut qt_modules: Vec<String>,
     ) -> Self {
         if qt_modules.is_empty() {
-            qt_modules.push("Core".to_string());
+            qt_modules.push("Core".to_owned());
         }
 
         Self {
@@ -290,7 +290,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
         // qmlcachegen has a different CLI in Qt 5, so only support Qt >= 6
         if self.qt_installation.version().major >= 6 {
             let qml_cache_args = QmlCacheArguments {
-                uri: uri.to_string(),
+                uri: uri.to_owned(),
                 qmldir_path: qmldir_file_path,
                 qmldir_qrc_path: qrc_path.clone(),
             };

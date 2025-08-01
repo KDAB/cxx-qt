@@ -309,7 +309,7 @@ impl Name {
     #[cfg(test)]
     /// Helper for creating cxx_named Names, usually for camelcase cxx names
     pub fn mock_name_with_cxx(name: &str, cxx: &str) -> Name {
-        Name::new(format_ident!("{name}")).with_cxx_name(cxx.to_string())
+        Name::new(format_ident!("{name}")).with_cxx_name(cxx.to_owned())
     }
 }
 
