@@ -433,7 +433,6 @@ unsafe impl ExternType for QByteArrayFromBase64Result {
     type Kind = cxx::kind::Trivial;
 }
 
-#[allow(clippy::enum_variant_names)]
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum QByteArrayFromBase64Error {
     IllegalInputLength = 1,
