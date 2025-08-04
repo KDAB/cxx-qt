@@ -251,7 +251,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
                     "    <file alias=\"{}\">{}</file>\n",
                     path_display,
                     std::fs::canonicalize(file_path)
-                        .unwrap_or_else(|_| panic!("Could not canonicalize path {}", path_display))
+                        .unwrap_or_else(|_| panic!("Could not canonicalize path {path_display}"))
                         .display()
                 )
             }
