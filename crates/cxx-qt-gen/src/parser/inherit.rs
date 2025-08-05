@@ -3,43 +3,36 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{
-    extract_cfgs, extract_docs, method::MethodFields, require_attributes, CaseConversion,
-};
+use crate::parser::{method::MethodFields, require_attributes, CaseConversion, CommonAttrs};
 use core::ops::Deref;
 use quote::format_ident;
 use std::ops::DerefMut;
-use syn::{Attribute, ForeignItemFn, Ident, Result};
+use syn::{ForeignItemFn, Ident, Result};
 
 /// Describes a method found in an extern "RustQt" with #[inherit]
 pub struct ParsedInheritedMethod {
     /// The common fields which are available on all callable types
     pub method_fields: MethodFields,
-    /// All the docs (each line) of the inherited method
-    pub docs: Vec<Attribute>,
-    /// Cfgs for the inherited method
-    pub cfgs: Vec<Attribute>,
+    /// All the universal attributes for the inherited method
+    pub common_attrs: CommonAttrs,
 }
 
 impl ParsedInheritedMethod {
     const ALLOWED_ATTRS: [&'static str; 6] = [
+        "cfg",
+        "doc",
         "cxx_name",
         "rust_name",
         "qinvokable",
-        "doc",
         "inherit",
-        "cfg",
     ];
 
     pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
-        require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
-        let docs = extract_docs(&method.attrs);
-        let cfgs = extract_cfgs(&method.attrs);
+        let (_attrs, common_attrs) = require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
 
         Ok(Self {
             method_fields: MethodFields::parse(method, auto_case)?,
-            docs,
-            cfgs,
+            common_attrs,
         })
     }
 

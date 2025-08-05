@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::generator::structuring::StructuredQObject;
+use crate::parser::CommonAttrs;
 use crate::{
     generator::{
         naming::{namespace::NamespaceName, qobject::QObjectNames},
@@ -15,7 +16,7 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{parse_quote, Attribute, Result};
+use syn::{parse_quote, Result};
 
 impl GeneratedRustFragment {
     pub fn from_qobject(
@@ -28,7 +29,7 @@ impl GeneratedRustFragment {
         let namespace_idents = NamespaceName::from(qobject);
 
         let mut generated = vec![
-            generate_qobject_definitions(&qobject_names, &qobject.cfgs)?,
+            generate_qobject_definitions(&qobject_names, &qobject.common_attrs)?,
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
@@ -57,7 +58,7 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
-                &qobject.cfgs,
+                &qobject.common_attrs.cfgs,
             )?);
         }
 
@@ -75,9 +76,9 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
-                &qobject.cfgs,
+                &qobject.common_attrs.cfgs,
             )?,
-            cxxqttype::generate(&qobject_names, type_names, &qobject.cfgs)?,
+            cxxqttype::generate(&qobject_names, type_names, &qobject.common_attrs.cfgs)?,
         ]);
 
         Ok(GeneratedRustFragment::flatten(generated))
@@ -87,8 +88,11 @@ impl GeneratedRustFragment {
 /// Generate the C++ and Rust CXX definitions for the QObject
 fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
-    cfgs: &[Attribute],
+    common_attrs: &CommonAttrs,
 ) -> Result<GeneratedRustFragment> {
+    let docs = &common_attrs.docs;
+    let cfgs = &common_attrs.cfgs;
+
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
 
@@ -106,6 +110,15 @@ fn generate_qobject_definitions(
         }
     };
 
+    let maybe_docs = if docs.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+            #[doc = "\n"]
+            #(#docs)*
+        }
+    };
+
     Ok(GeneratedRustFragment {
         cxx_mod_contents: vec![
             parse_quote! {
@@ -116,6 +129,7 @@ fn generate_qobject_definitions(
                     #[doc = "Use this type when referring to the QObject as a pointer"]
                     #[doc = "\n"]
                     #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/concepts/generated_qobject.html>"]
+                    #maybe_docs
                     #namespace
                     #cxx_name
                     #(#cfgs)*
@@ -130,6 +144,7 @@ fn generate_qobject_definitions(
                     // but to apply it to only certain types, it is needed here too
                     #namespace
                     #(#cfgs)*
+                    #(#docs)*
                     type #rust_struct_name_rust;
                 }
             },
