@@ -262,7 +262,7 @@ pub mod tests {
         assert_eq!(
             obj.qml_metadata,
             Some(QmlElementMetadata {
-                name: str_name.to_string(),
+                name: str_name.to_owned(),
                 uncreatable: false,
                 singleton: false,
             })
@@ -318,7 +318,7 @@ pub mod tests {
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
-                name: "MyObject".to_string(),
+                name: "MyObject".to_owned(),
                 uncreatable: false,
                 singleton: true,
             })
@@ -336,7 +336,7 @@ pub mod tests {
         assert_eq!(
             qobject.qml_metadata,
             Some(QmlElementMetadata {
-                name: "MyObject".to_string(),
+                name: "MyObject".to_owned(),
                 uncreatable: true,
                 singleton: false,
             })

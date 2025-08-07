@@ -42,7 +42,7 @@ fn read_qmap_qstring_qvariant(h: &QMap<QMapPair_QString_QVariant>) -> bool {
     let value_qt = h
         .get_or_default(&QString::from("Qt"))
         .value::<QString>()
-        .map_or_else(|| false, |value| value.to_string() == "Rust");
+        .map_or_else(|| false, |value| String::from(&value) == "Rust");
 
     h.contains(&QString::from("kdab"))
         && value_kdab

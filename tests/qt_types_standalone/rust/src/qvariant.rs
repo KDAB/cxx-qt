@@ -109,7 +109,7 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             None => false,
         },
         VariantTest::QByteArray => match v.value::<QByteArray>() {
-            Some(bytes) => bytes.to_string() == "C++ bytes",
+            Some(bytes) => bytes.as_slice() == b"C++ bytes",
             None => false,
         },
         VariantTest::QColor => match v.value::<QColor>() {
@@ -170,7 +170,7 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             None => false,
         },
         VariantTest::QString => match v.value::<QString>() {
-            Some(s) => s.to_string() == "C++ string",
+            Some(s) => String::from(&s) == "C++ string",
             None => false,
         },
         VariantTest::QTime => match v.value::<QTime>() {
