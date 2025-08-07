@@ -13,6 +13,7 @@
 //! [cpp_build](https://docs.rs/cpp_build/latest/cpp_build/).
 #![allow(clippy::too_many_arguments)]
 #![allow(clippy::missing_panics_doc)]
+#![allow(clippy::missing_errors_doc)]
 
 mod error;
 pub use error::QtBuildError;

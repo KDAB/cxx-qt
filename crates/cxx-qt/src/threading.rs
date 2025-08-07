@@ -99,6 +99,10 @@ where
     ///
     /// The first argument of the closure is a pinned mutable reference to the QObject.
     /// With this parameter, you can then update the QObject to reflect any state changes that have occured in the background thread.
+    ///
+    /// # Errors
+    ///
+    /// This function returns an error if the closure cannot be queued.
     pub fn queue<F>(&self, f: F) -> Result<(), crate::ThreadingQueueError>
     where
         F: FnOnce(Pin<&mut T>),

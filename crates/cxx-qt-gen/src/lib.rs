@@ -7,6 +7,7 @@
 #![allow(clippy::format_collect)]
 #![allow(clippy::missing_panics_doc)]
 #![allow(clippy::ref_option)]
+#![allow(clippy::missing_errors_doc)]
 
 //! The cxx-qt-gen crate provides methods for generated C++ and Rust code from a TokenStream.
 

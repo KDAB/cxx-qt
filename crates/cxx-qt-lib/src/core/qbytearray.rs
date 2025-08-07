@@ -307,6 +307,10 @@ impl QByteArray {
     }
 
     /// Decodes the Base64 array `base64`, using the options defined by `options`.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if the contents of `base64` are not Base64 encoded.
     pub fn from_base64_encoding(
         base64: &Self,
         options: QByteArrayBase64Options,
