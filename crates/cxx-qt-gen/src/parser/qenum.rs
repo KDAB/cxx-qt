@@ -3,8 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{extract_cfgs, extract_docs, CaseConversion};
-use crate::{naming::Name, parser::require_attributes, syntax::path::path_compare_str};
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
+use crate::parser::CaseConversion;
+use crate::{naming::Name, syntax::path::path_compare_str};
 use quote::ToTokens;
 use syn::{Attribute, Ident, ItemEnum, Result, Variant};
 
@@ -24,8 +25,14 @@ pub struct ParsedQEnum {
 }
 
 impl ParsedQEnum {
-    const ALLOWED_ATTRS: [&'static str; 6] =
-        ["cfg", "doc", "cxx_name", "rust_name", "namespace", "qenum"];
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 6] = [
+        (AttributeConstraint::Duplicate, "cfg"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "namespace"),
+        (AttributeConstraint::Unique, "qenum"),
+    ];
     fn parse_variant(variant: &Variant) -> Result<Ident> {
         fn err(spanned: &impl ToTokens, message: &str) -> Result<Ident> {
             Err(syn::Error::new_spanned(spanned, message))
@@ -60,9 +67,11 @@ impl ParsedQEnum {
         parent_namespace: Option<&str>,
         module: &Ident,
     ) -> Result<Self> {
-        require_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
-        let cfgs = extract_cfgs(&qenum.attrs);
-        let docs = extract_docs(&qenum.attrs);
+        // TODO: ATTR Can this be done without clone?
+        let attrs =
+            ParsedAttributes::require_attributes(qenum.attrs.clone(), &Self::ALLOWED_ATTRS)?;
+        let cfgs = attrs.extract_cfgs();
+        let docs = attrs.extract_docs();
 
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
@@ -73,7 +82,7 @@ impl ParsedQEnum {
 
         let name = Name::from_ident_and_attrs(
             &qenum.ident,
-            &qenum.attrs,
+            &attrs.clone_attrs(),
             parent_namespace,
             Some(module),
             CaseConversion::none(),
