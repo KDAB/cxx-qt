@@ -258,23 +258,17 @@ impl QtInstallation for QtInstallationQMake {
 
     fn try_find_tool(&self, tool: QtTool) -> anyhow::Result<PathBuf> {
         let find_tool = || self.try_qmake_find_tool(tool.binary_name());
-
         // Attempt to use the cache
-        if let Ok(mut tool_cache) = self.tool_cache.try_borrow_mut() {
-            // Read the tool from the cache or insert
-            let path = tool_cache.get(&tool);
-            let path = match path {
-                Some(path) => path.clone(),
-                None => {
-                    let path = find_tool()?;
-                    tool_cache.insert(tool, path.clone());
-                    path
-                }
-            };
-            Ok(path)
-        } else {
-            find_tool()
+        let Ok(mut tool_cache) = self.tool_cache.try_borrow_mut() else {
+            return find_tool();
+        };
+        // Read the tool from the cache or insert
+        if let Some(path) = tool_cache.get(&tool) {
+            return Ok(path.clone());
         }
+        let path = find_tool()?;
+        tool_cache.insert(tool, path.clone());
+        Ok(path)
     }
 
     fn version(&self) -> semver::Version {

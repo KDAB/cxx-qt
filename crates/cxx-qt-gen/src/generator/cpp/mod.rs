@@ -100,9 +100,7 @@ pub fn get_cpp_params(method: &ForeignItemFn, type_names: &TypeNames) -> Result<
         .map(|input| {
             // Match parameters to extract their idents
             if let FnArg::Typed(PatType { pat, ty, .. }) = input {
-                let ident = if let Pat::Ident(PatIdent { ident, .. }) = &**pat {
-                    ident
-                } else {
+                let Pat::Ident(PatIdent { ident, .. }) = &**pat else {
                     // CODECOV_EXCLUDE_START
                     unreachable!("Unknown pattern for type, FnArg can only have Pat::Ident")
                     // CODECOV_EXCLUDE_STOP

@@ -162,10 +162,10 @@ impl Name {
         // Use the cxx name if there is one or fallback to the original ident
         // But only if it is different to the resultant rust ident
         let cxx = cxx_name.or_else(|| {
-            if rust != self.rust {
-                Some(self.rust.to_string())
-            } else {
+            if rust == self.rust {
                 None
+            } else {
+                Some(self.rust.to_string())
             }
         });
 

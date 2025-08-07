@@ -255,12 +255,12 @@ impl Parser {
         }
 
         // Create a new module using only items that are not CXX-Qt items
-        if !others.is_empty() {
-            module.content = Some((Brace::default(), others));
-            module.semi = None;
-        } else {
+        if others.is_empty() {
             module.content = None;
             module.semi = Some(Semi::default());
+        } else {
+            module.content = Some((Brace::default(), others));
+            module.semi = None;
         }
         Ok((cxx_qt_data, module))
     }

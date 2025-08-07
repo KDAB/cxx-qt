@@ -238,17 +238,16 @@ impl TypeNames {
     }
 
     fn check_duplicate_compatability(&self, duplicate: &Name) -> Result<()> {
-        if Some(duplicate) != self.names.get(&duplicate.rust) {
-            Err(Error::new_spanned(
-                &duplicate.rust,
-                format!(
-                    "The type `{}` is defined multiple times with different mappings!",
-                    duplicate.rust
-                ),
-            ))
-        } else {
-            Ok(())
+        if self.names.get(&duplicate.rust) == Some(duplicate) {
+            return Ok(());
         }
+        Err(Error::new_spanned(
+            &duplicate.rust,
+            format!(
+                "The type `{}` is defined multiple times with different mappings!",
+                duplicate.rust
+            ),
+        ))
     }
 
     /// Add this item to the available types.
