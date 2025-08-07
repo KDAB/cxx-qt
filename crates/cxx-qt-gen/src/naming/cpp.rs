@@ -43,44 +43,41 @@ pub(crate) fn syn_type_to_cpp_return_type(
     return_ty: &ReturnType,
     type_names: &TypeNames,
 ) -> Result<Option<String>> {
-    if let ReturnType::Type(_, ty) = return_ty {
-        // If we are a Result<T> then we just become T for C++
-        if let Type::Path(ty_path) = &**ty {
-            if let Some(segment) = ty_path.path.segments.first() {
-                if segment.ident == "Result" {
-                    let mut args = path_argument_to_string(&segment.arguments, type_names)?
-                        .unwrap_or_default();
-                    if args.len() != 1 {
-                        return Err(Error::new(
-                            return_ty.span(),
-                            "Result must have one argument!",
-                        ));
-                    }
+    let ReturnType::Type(_, ty) = return_ty else {
+        return Ok(None);
+    };
+    // If we are a Result<T> then we just become T for C++
+    if let Type::Path(ty_path) = &**ty {
+        let Some(segment) = ty_path.path.segments.first() else {
+            // CODECOV_EXCLUDE_START
+            unreachable!("Path cannot be empty!")
+            // CODECOV_EXCLUDE_STOP
+        };
 
-                    if let Some(arg) = args.pop() {
-                        // Map void to None
-                        if arg == "void" {
-                            return Ok(None);
-                        }
-
-                        return Ok(Some(arg));
-                    } else {
-                        // CODECOV_EXCLUDE_START
-                        unreachable!("Args should be of length 1");
-                        // CODECOV_EXCLUDE_STOP
-                    }
-                }
-            } else {
-                // CODECOV_EXCLUDE_START
-                unreachable!("Path cannot be empty!")
-                // CODECOV_EXCLUDE_STOP
+        if segment.ident == "Result" {
+            let mut args =
+                path_argument_to_string(&segment.arguments, type_names)?.unwrap_or_default();
+            if args.len() != 1 {
+                return Err(Error::new(
+                    return_ty.span(),
+                    "Result must have one argument!",
+                ));
             }
-        }
 
-        syn_type_to_cpp_type(ty, type_names).map(|v| if v == "void" { None } else { Some(v) })
-    } else {
-        Ok(None)
+            let arg = args.pop().unwrap();
+            // Map void to None
+            if arg == "void" {
+                return Ok(None);
+            }
+            return Ok(Some(arg));
+        }
     }
+
+    let v = syn_type_to_cpp_type(ty, type_names)?;
+    if v == "void" {
+        return Ok(None);
+    }
+    Ok(Some(v))
 }
 
 /// For a given Rust type attempt to generate a C++ string

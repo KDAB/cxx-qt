@@ -40,7 +40,7 @@ pub fn generate_cpp_methods(
             .map(|parameter| format!("{ty} {ident}", ident = parameter.ident, ty = parameter.ty))
             .collect::<Vec<String>>()
             .join(", ");
-        let is_const = if !invokable.mutable { " const" } else { "" };
+        let is_const = if invokable.mutable { "" } else { " const" };
 
         let mut is_final = "";
         let mut is_override = "";
