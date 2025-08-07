@@ -117,6 +117,61 @@ MyObject_readyConnect(
 namespace rust::cxxqt1 {
 template<>
 SignalHandler<
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalParamsconst_ready*>::
+  ~SignalHandler() noexcept
+{
+  if (data[0] == nullptr && data[1] == nullptr) {
+    return;
+  }
+
+  drop_MyObject_signal_handler_const_ready(::std::move(*this));
+}
+
+template<>
+template<>
+void
+SignalHandler<
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalParamsconst_ready*>::
+operator()<cxx_qt::my_object::MyObject const&>(
+  cxx_qt::my_object::MyObject const& self)
+{
+  call_MyObject_signal_handler_const_ready(*this, self);
+}
+
+static_assert(alignof(SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                                      MyObjectCxxQtSignalParamsconst_ready*>) <=
+                alignof(::std::size_t),
+              "unexpected aligment");
+static_assert(sizeof(SignalHandler<::cxx_qt::my_object::rust::cxxqtgen1::
+                                     MyObjectCxxQtSignalParamsconst_ready*>) ==
+                sizeof(::std::size_t[2]),
+              "unexpected size");
+} // namespace rust::cxxqt1
+
+namespace cxx_qt::my_object::rust::cxxqtgen1 {
+::QMetaObject::Connection
+MyObject_const_readyConnect(
+  cxx_qt::my_object::MyObject const& self,
+  ::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerconst_ready
+    closure,
+  ::Qt::ConnectionType type)
+{
+  return ::QObject::connect(
+    &self,
+    &cxx_qt::my_object::MyObject::const_ready,
+    &self,
+    [&, closure = ::std::move(closure)]() mutable {
+      closure.template operator()<cxx_qt::my_object::MyObject const&>(self);
+    },
+    type);
+}
+} // namespace cxx_qt::my_object::rust::cxxqtgen1
+
+// Define namespace otherwise we hit a GCC bug
+// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
+namespace rust::cxxqt1 {
+template<>
+SignalHandler<
   ::cxx_qt::my_object::rust::cxxqtgen1::
     MyObjectCxxQtSignalParamsdata_changed*>::~SignalHandler() noexcept
 {

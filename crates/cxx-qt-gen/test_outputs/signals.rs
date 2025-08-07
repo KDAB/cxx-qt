@@ -74,6 +74,37 @@ mod ffi {
         );
     }
     unsafe extern "C++" {
+        #[cxx_name = "const_ready"]
+        #[namespace = "cxx_qt::my_object"]
+        fn const_ready(self: &MyObject);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        type MyObjectCxxQtSignalHandlerconst_ready<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<
+            'a,
+            super::MyObjectCxxQtSignalClosureconst_ready,
+        >;
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        #[cxx_name = "MyObject_const_readyConnect"]
+        fn MyObject_connect_const_ready(
+            self_value: &MyObject,
+            signal_handler: MyObjectCxxQtSignalHandlerconst_ready,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_MyObject_signal_handler_const_ready(handler: MyObjectCxxQtSignalHandlerconst_ready);
+        #[doc(hidden)]
+        fn call_MyObject_signal_handler_const_ready(
+            handler: &mut MyObjectCxxQtSignalHandlerconst_ready,
+            self_value: &MyObject,
+        );
+    }
+    unsafe extern "C++" {
         #[cxx_name = "data_changed"]
         #[namespace = "cxx_qt::my_object"]
         fn data_changed(
@@ -287,6 +318,66 @@ cxx_qt::static_assertions::assert_eq_align!(
 );
 cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureready>,
+    [usize; 2]
+);
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "const_ready"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    pub fn connect_const_ready<'a, F: FnMut(&ffi::MyObject) + 'a + Send>(
+        self: &ffi::MyObject,
+        closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_const_ready(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureconst_ready>::new(
+                Box::new(closure),
+            ),
+            conn_type,
+        ))
+    }
+}
+impl ffi::MyObject {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "const_ready"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    pub fn on_const_ready<'a, F: FnMut(&ffi::MyObject) + 'a + Send>(
+        self: &ffi::MyObject,
+        closure: F,
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::MyObject_connect_const_ready(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<MyObjectCxxQtSignalClosureconst_ready>::new(
+                Box::new(closure),
+            ),
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
+    }
+}
+#[doc(hidden)]
+pub struct MyObjectCxxQtSignalClosureconst_ready {}
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClosureconst_ready {
+    type Id = cxx::type_id!(
+        "::cxx_qt::my_object::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerconst_ready"
+    );
+    type FnType<'a> = dyn FnMut(&ffi::MyObject) + 'a + Send;
+}
+use core::mem::drop as drop_MyObject_signal_handler_const_ready;
+fn call_MyObject_signal_handler_const_ready(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureconst_ready>,
+    self_value: &ffi::MyObject,
+) {
+    handler.closure()(self_value);
+}
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureconst_ready>,
+    usize
+);
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureconst_ready>,
     [usize; 2]
 );
 impl ffi::MyObject {
