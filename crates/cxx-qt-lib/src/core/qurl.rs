@@ -320,45 +320,45 @@ impl QUrl {
 
     /// Sets the authority of the URL to `authority`.
     pub fn set_authority(&mut self, authority: &QString) {
-        ffi::qurl_set_authority(self, authority)
+        ffi::qurl_set_authority(self, authority);
     }
 
     /// Sets the fragment of the URL to `fragment`.
     /// The fragment is the last part of the URL, represented by a `'#'` followed by a string of characters.
     pub fn set_fragment(&mut self, fragment: &QString) {
-        ffi::qurl_set_fragment(self, fragment)
+        ffi::qurl_set_fragment(self, fragment);
     }
 
     /// Sets the host of the URL to `host`. The host is part of the authority.
     pub fn set_host(&mut self, host: &QString) {
-        ffi::qurl_set_host(self, host)
+        ffi::qurl_set_host(self, host);
     }
 
     /// Sets the whitelist of Top-Level Domains (TLDs) that are allowed to have non-ASCII characters in domains to the value of `list`.
     pub fn set_idn_whitelist(list: &QStringList) {
-        ffi::qurl_set_idn_whitelist(list)
+        ffi::qurl_set_idn_whitelist(list);
     }
 
     /// Sets the URL's password to `password`.
     pub fn set_password(&mut self, password: &QString) {
-        ffi::qurl_set_password(self, password)
+        ffi::qurl_set_password(self, password);
     }
 
     /// Sets the path of the URL to `path`.
     /// The path is the part of the URL that comes after the authority but before the query string.
     pub fn set_path(&mut self, path: &QString) {
-        ffi::qurl_set_path(self, path)
+        ffi::qurl_set_path(self, path);
     }
 
     /// Sets the query string of the URL to `query`.
     pub fn set_query(&mut self, query: &QString) {
-        ffi::qurl_set_query(self, query)
+        ffi::qurl_set_query(self, query);
     }
 
     /// Sets the scheme of the URL to `scheme`. As a scheme can only contain ASCII characters,
     /// no conversion or decoding is done on the input. It must also start with an ASCII letter.
     pub fn set_scheme(&mut self, scheme: &QString) {
-        ffi::qurl_set_scheme(self, scheme)
+        ffi::qurl_set_scheme(self, scheme);
     }
 
     /// Parses `url` and sets this object to that value.
@@ -367,17 +367,17 @@ impl QUrl {
     /// (letters, digits, hyphens, underscores, dots and tildes).
     /// All other characters are left in their original forms.
     pub fn set_url(&mut self, url: &QString) {
-        ffi::qurl_set_url(self, url)
+        ffi::qurl_set_url(self, url);
     }
 
     /// Sets the user info of the URL to `user_info`.
     pub fn set_user_info(&mut self, user_info: &QString) {
-        ffi::qurl_set_user_info(self, user_info)
+        ffi::qurl_set_user_info(self, user_info);
     }
 
     /// Sets the URL's user name to `user_name`.
     pub fn set_user_name(&mut self, user_name: &QString) {
-        ffi::qurl_set_user_name(self, user_name)
+        ffi::qurl_set_user_name(self, user_name);
     }
 
     /// Returns a human-displayable string representation of the URL.
@@ -475,7 +475,7 @@ impl fmt::Debug for QUrl {
 impl Drop for QUrl {
     /// Destructor; called immediately before the object is deleted.
     fn drop(&mut self) {
-        ffi::qurl_drop(self)
+        ffi::qurl_drop(self);
     }
 }
 

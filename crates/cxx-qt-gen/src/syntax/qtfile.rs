@@ -77,7 +77,7 @@ mod tests {
 
         assert!(qt_file.attrs.is_empty());
         assert_eq!(qt_file.items.len(), 1);
-        assert!(matches!(qt_file.items.first(), Some(CxxQt(_))))
+        assert!(matches!(qt_file.items.first(), Some(CxxQt(_))));
     }
 
     #[test]
@@ -88,7 +88,7 @@ mod tests {
 
         assert!(qt_file.attrs.is_empty());
         assert_eq!(qt_file.items.len(), 1);
-        assert!(matches!(qt_file.items.first(), Some(CxxQt(_))))
+        assert!(matches!(qt_file.items.first(), Some(CxxQt(_))));
     }
 
     #[test]
@@ -133,7 +133,7 @@ mod tests {
                  name: &str
              }
             },
-        )
+        );
     }
 
     #[test]

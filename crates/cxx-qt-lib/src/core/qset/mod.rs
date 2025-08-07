@@ -373,6 +373,6 @@ mod test {
         set.insert(0);
         set.insert(1);
         set.insert(2);
-        assert_eq!(crate::serde_impl::roundtrip(&set), set)
+        assert_eq!(crate::serde_impl::roundtrip(&set), set);
     }
 }

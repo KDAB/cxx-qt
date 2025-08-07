@@ -262,6 +262,6 @@ mod tests {
         assert_tokens_eq(
             &quote! { struct MyStruct; },
             quote! { struct MyOtherStruct; },
-        )
+        );
     }
 }

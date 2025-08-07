@@ -288,6 +288,6 @@ public:
 
 "#};
 
-        assert_str_eq!(format_cpp(&header), format_cpp(expected))
+        assert_str_eq!(format_cpp(&header), format_cpp(expected));
     }
 }

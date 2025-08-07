@@ -228,7 +228,7 @@ impl fmt::Debug for QByteArray {
 impl Drop for QByteArray {
     /// Destroys the byte array.
     fn drop(&mut self) {
-        ffi::qbytearray_drop(self)
+        ffi::qbytearray_drop(self);
     }
 }
 
@@ -303,7 +303,7 @@ impl QByteArray {
     /// If `size` is different from -1,
     /// the byte array is resized to size `size` beforehand.
     pub fn fill(&mut self, ch: u8, size: isize) {
-        ffi::qbytearray_fill(self, ch, size)
+        ffi::qbytearray_fill(self, ch, size);
     }
 
     /// Decodes the Base64 array `base64`, using the options defined by `options`.
@@ -517,7 +517,7 @@ mod tests {
     #[test]
     fn qbytearray_serde() {
         let qbytearray = QByteArray::from("KDAB");
-        assert_eq!(crate::serde_impl::roundtrip(&qbytearray), qbytearray)
+        assert_eq!(crate::serde_impl::roundtrip(&qbytearray), qbytearray);
     }
 
     #[test]
@@ -546,12 +546,12 @@ mod tests {
         assert_eq!(bytes.as_ref(), qbytearray.as_ref());
 
         let bytes_bytes = bytes::Bytes::from(&qbytearray);
-        assert_eq!(bytes, bytes_bytes)
+        assert_eq!(bytes, bytes_bytes);
     }
 
     #[test]
     fn test_display_fmt() {
         let qbytearray = QByteArray::from("KDAB");
-        assert_eq!(format!("{qbytearray:-<8}"), "KDAB----")
+        assert_eq!(format!("{qbytearray:-<8}"), "KDAB----");
     }
 }

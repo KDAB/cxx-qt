@@ -447,7 +447,7 @@ pub fn generate(
                     qobject,
                     (#(#extract_initialize_arguments,)*));
             }
-        }])
+        }]);
     }
     Ok(result)
 }

@@ -225,7 +225,7 @@ mod tests {
             }
         };
         let result = foreign_mod_to_foreign_item_types(&item);
-        assert!(result.is_err())
+        assert!(result.is_err());
     }
 
     #[test]

@@ -147,7 +147,7 @@ pub fn generate(
                 }}
                 "#,
             },
-        })
+        });
     }
 
     Ok(generated)

@@ -266,7 +266,7 @@ impl QDateTime {
     ///
     /// If `time_zone` is invalid then the datetime will be invalid.
     pub fn set_time_zone(&mut self, time_zone: &QTimeZone) {
-        ffi::qdatetime_settimezone(self, time_zone)
+        ffi::qdatetime_settimezone(self, time_zone);
     }
 
     /// Returns a `QDateTime` object containing a datetime `ndays` days later than the datetime of this object (or earlier if `ndays` is negative).

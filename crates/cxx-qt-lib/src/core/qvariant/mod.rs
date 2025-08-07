@@ -95,7 +95,7 @@ impl Default for QVariant {
 impl Drop for QVariant {
     /// Destroys the `QVariant` and the contained object.
     fn drop(&mut self) {
-        ffi::qvariant_drop(self)
+        ffi::qvariant_drop(self);
     }
 }
 

@@ -43,11 +43,11 @@ pub fn generate_cpp_properties(
         }
 
         if let Some(setter) = setter::generate(&idents, &cxx_ty) {
-            generated.methods.push(setter)
+            generated.methods.push(setter);
         }
 
         if let Some(notify) = signal::generate(&idents, &qobject_idents.name) {
-            signals.push(notify)
+            signals.push(notify);
         }
     }
 

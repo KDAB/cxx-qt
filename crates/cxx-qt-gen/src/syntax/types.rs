@@ -182,6 +182,6 @@ mod tests {
             unsafe fn test(self: Pin);
         };
         let parsed = ParsedMethod::parse(method, CaseConversion::none(), false);
-        assert!(parsed.is_err())
+        assert!(parsed.is_err());
     }
 }

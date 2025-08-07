@@ -47,7 +47,7 @@ impl GeneratedRustFragment {
                     unsafe extern "C++" {
                         include!(<QtQml/QQmlEngine>);
                     }
-                }))
+                }));
             }
         }
 

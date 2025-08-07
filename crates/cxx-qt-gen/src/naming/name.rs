@@ -323,7 +323,7 @@ mod tests {
         let old_namespace = name.set_namespace(None);
 
         assert_eq!(old_namespace, Some("my_namespace".into()));
-        assert!(name.namespace.is_none())
+        assert!(name.namespace.is_none());
     }
 
     #[test]

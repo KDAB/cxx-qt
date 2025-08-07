@@ -175,7 +175,7 @@ impl QApplication {
 
     /// Removes `path` from the library path list. If `path` is empty or not in the path list, the list is not changed.
     pub fn remove_library_path(&self, path: &QString) {
-        ffi::qapplication_remove_library_path(self, path)
+        ffi::qapplication_remove_library_path(self, path);
     }
 
     /// Set the `version` of this application.

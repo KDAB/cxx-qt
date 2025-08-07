@@ -26,15 +26,15 @@ pub fn generate(idents: &QPropertyNames, flags: &QPropertyFlags, cxx_ty: &str) -
     }
 
     if flags.constant {
-        parts.push(String::from("CONSTANT"))
+        parts.push(String::from("CONSTANT"));
     }
 
     if flags.required {
-        parts.push(String::from("REQUIRED"))
+        parts.push(String::from("REQUIRED"));
     }
 
     if flags.is_final {
-        parts.push(String::from("FINAL"))
+        parts.push(String::from("FINAL"));
     }
 
     format!(

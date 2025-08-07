@@ -161,7 +161,7 @@ impl Diagnostic {
         // possible, we try panicing as a last resort.
         self.try_report().unwrap_or_else(|_| {
             panic!("{}", self.errors.first().unwrap());
-        })
+        });
     }
 }
 

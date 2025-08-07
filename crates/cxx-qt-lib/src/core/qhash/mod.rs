@@ -49,7 +49,7 @@ where
 {
     /// Destroys the hash.
     fn drop(&mut self) {
-        T::drop(self)
+        T::drop(self);
     }
 }
 
@@ -76,7 +76,7 @@ where
 {
     /// Removes all items from the hash and frees up all memory used by it.
     pub fn clear(&mut self) {
-        T::clear(self)
+        T::clear(self);
     }
 
     /// Returns `true` if the hash contains an item with the key; otherwise returns `false`.
@@ -107,7 +107,7 @@ where
     /// The key and value is a reference here so it can be opaque or trivial but
     /// note that the key and value is copied when being inserted into the hash.
     pub fn insert_clone(&mut self, key: &T::Key, value: &T::Value) {
-        T::insert_clone(self, key, value)
+        T::insert_clone(self, key, value);
     }
 
     /// Returns `true` if the hash contains no items; otherwise returns `false`.
@@ -145,7 +145,7 @@ where
 {
     /// Inserts a new item with the `key` and a value of `value`.
     pub fn insert(&mut self, key: T::Key, value: T::Value) {
-        T::insert(self, key, value)
+        T::insert(self, key, value);
     }
 }
 

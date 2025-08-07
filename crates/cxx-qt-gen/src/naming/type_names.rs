@@ -911,6 +911,6 @@ mod tests {
         let mut types = TypeNames::default();
         assert!(types
             .populate_from_foreign_mod_item(&item_mod, None, &format_ident!("ffi"))
-            .is_err())
+            .is_err());
     }
 }

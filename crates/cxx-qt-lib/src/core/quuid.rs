@@ -361,12 +361,12 @@ mod test {
 
     #[test]
     fn quuid_is_null() {
-        assert!(QUuid::null().is_null())
+        assert!(QUuid::null().is_null());
     }
 
     #[test]
     fn quuid_is_not_null() {
-        assert!(!QUuid::create_uuid().is_null())
+        assert!(!QUuid::create_uuid().is_null());
     }
 
     #[test]
@@ -392,13 +392,13 @@ mod test {
                 QUuidVersion::Random,
                 QUuidVersion::Sha1
             ]
-        )
+        );
     }
 
     #[test]
     fn quuid_to_rfc_4122() {
         let bytes = <[u8; 16]>::try_from("random test data".as_bytes()).unwrap();
-        assert_eq!(Vec::from(&QUuid::from_bytes(bytes).to_rfc_4122()), bytes)
+        assert_eq!(Vec::from(&QUuid::from_bytes(bytes).to_rfc_4122()), bytes);
     }
 
     #[test]
@@ -432,21 +432,21 @@ mod test {
         assert_eq!(
             QUuid::from_u128(0x7e95e361a22c51c18c297ac24cb61e83).to_string(),
             "{7e95e361-a22c-51c1-8c29-7ac24cb61e83}"
-        )
+        );
     }
 
     #[test]
     fn quuid_qstring_round_trip() {
         let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from(&QString::from(&uuid.to_string()));
-        assert_eq!(uuid, roundtrip)
+        assert_eq!(uuid, roundtrip);
     }
 
     #[test]
     fn quuid_str_round_trip() {
         let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from(&uuid.to_string());
-        assert_eq!(uuid, roundtrip)
+        assert_eq!(uuid, roundtrip);
     }
 
     #[test]
@@ -454,27 +454,27 @@ mod test {
         let uuid = QUuid::create_uuid();
         let (d1, d2, d3, &d4) = uuid.as_fields();
         let roundtrip = QUuid::from_fields(d1, d2, d3, d4);
-        assert_eq!(uuid, roundtrip)
+        assert_eq!(uuid, roundtrip);
     }
 
     #[test]
     fn quuid_bytes_round_trip() {
         let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_bytes(uuid.to_bytes());
-        assert_eq!(uuid, roundtrip)
+        assert_eq!(uuid, roundtrip);
     }
 
     #[test]
     fn quuid_qbytearray_round_trip() {
         let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_rfc_4122(&uuid.to_rfc_4122());
-        assert_eq!(uuid, roundtrip)
+        assert_eq!(uuid, roundtrip);
     }
 
     #[test]
     fn quuid_u128_round_trip() {
         let uuid = QUuid::create_uuid();
         let roundtrip = QUuid::from_u128(uuid.to_u128());
-        assert_eq!(uuid, roundtrip)
+        assert_eq!(uuid, roundtrip);
     }
 }
