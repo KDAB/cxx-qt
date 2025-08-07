@@ -38,12 +38,12 @@ pub fn generate(
         let base_class = base_class.unwrap_or("QObject");
 
         result.methods.push(CppFragment::Header(formatdoc! {
-        r#"
+        r"
               template <class... Args>
               {return_type} {wrapper_ident}(Args ...args){mutability}
               {{
                   return {base_class}::{func_ident}(args...);
-              }}"#,
+              }}",
         mutability = if method.mutable { "" } else { " const" },
         func_ident = method.name.cxx_unqualified(),
         wrapper_ident = method.wrapper_ident(),

@@ -29,23 +29,23 @@ mod tests {
 
     #[test]
     fn indent_string() {
-        let multiline_string = indoc! { r#"
+        let multiline_string = indoc! { r"
             A,
             B,
-        "#};
+        "};
 
         assert_str_eq!(
-            formatdoc! { r#"
+            formatdoc! { r"
             enum Test {{
             {multiline_string}
             }}
-        "#, multiline_string = multiline_string.indented(2) },
-            indoc! { r#"
+        ", multiline_string = multiline_string.indented(2) },
+            indoc! { r"
             enum Test {
               A,
               B,
             }
-        "#}
+        "}
         );
     }
 }

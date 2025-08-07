@@ -362,12 +362,12 @@ pub mod tests {
 
         assert_str_eq!(
             header,
-            indoc! {r#"
+            indoc! {r"
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
             MyObject_trivialPropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlertrivialPropertyChanged closure, ::Qt::ConnectionType type);
             } // namespace rust::cxxqtgen1
-            "#}
+            "}
         );
         assert_str_eq!(
             source,
@@ -418,12 +418,12 @@ pub mod tests {
 
         assert_str_eq!(
             header,
-            indoc! {r#"
+            indoc! {r"
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
             MyObject_opaquePropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandleropaquePropertyChanged closure, ::Qt::ConnectionType type);
             } // namespace rust::cxxqtgen1
-            "#}
+            "}
         );
         assert_str_eq!(
             source,
@@ -521,12 +521,12 @@ pub mod tests {
         let (header, source) = require_pair(&generated.fragments[0]).unwrap();
         assert_str_eq!(
             header,
-            indoc! {r#"
+            indoc! {r"
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
             MyObject_mappedPropertyChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlermappedPropertyChanged closure, ::Qt::ConnectionType type);
             } // namespace rust::cxxqtgen1
-            "#}
+            "}
         );
         assert_str_eq!(
             source,

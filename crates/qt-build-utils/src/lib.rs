@@ -390,10 +390,10 @@ public:
                 file: None,
                 init_call: None,
                 init_declaration: Some(format!(
-                    r#"
+                    r"
 #include <QtPlugin>
 Q_IMPORT_PLUGIN({plugin_class_name});
-"#
+"
                 )),
             };
 

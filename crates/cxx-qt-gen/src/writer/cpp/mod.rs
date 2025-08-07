@@ -17,11 +17,11 @@ pub fn namespaced(namespace: &str, cpp_code: &str) -> String {
     if namespace.is_empty() {
         cpp_code.to_owned()
     } else {
-        formatdoc! {r#"
+        formatdoc! {r"
             namespace {namespace} {{
             {cpp_code}
             }} // namespace {namespace}
-            "# }
+            " }
     }
 }
 
@@ -127,68 +127,68 @@ mod tests {
                         methods: vec![
                             CppFragment::Pair {
                                 header: "int count() const;".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     int
                                     MyObject::count() const
                                     {
                                       // getter
                                     }
-                                "#}
+                                "}
                                 .to_owned(),
                             },
                             CppFragment::Pair {
                                 header: "bool toggle() const;".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     bool
                                     MyObject::toggle() const
                                     {
                                       // getter
                                     }
-                                "#}
+                                "}
                                 .to_owned(),
                             },
                             CppFragment::Pair {
                                 header: "Q_INVOKABLE void invokable();".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     void
                                     MyObject::invokable()
                                     {
                                       // invokable method
                                     }
-                                "#}
+                                "}
                                 .to_owned(),
                             },
                             CppFragment::Pair {
                                 header: "void cppMethod();".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     void
                                     MyObject::cppMethod()
                                     {
                                       // cpp method
                                     }
-                                "#}
+                                "}
                                 .to_owned(),
                             },
                             CppFragment::Pair {
                                 header: "Q_SLOT void setCount(int count);".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     void
                                     MyObject::setCount(int count) const
                                     {
                                       // setter
                                     }
-                                    "#}
+                                    "}
                                 .to_owned(),
                             },
                             CppFragment::Pair {
                                 header: "Q_SLOT void setToggle(bool toggle);".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     void
                                     MyObject::setToggle(bool toggle) const
                                     {
                                       // setter
                                     }
-                                    "#}
+                                    "}
                                 .to_owned(),
                             },
                             CppFragment::Header (
@@ -200,20 +200,20 @@ mod tests {
                         ],
                         private_methods: vec![CppFragment::Pair{
                                 header: "void privateMethod() const;".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     void MyObject::privateMethod() const {
                                         // private method
                                     }
-                                    "#}.to_owned(),
+                                    "}.to_owned(),
                             },
                         CppFragment::Pair{
                                 header: "void privateMethod();".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     void MyObject::privateMethod()
                                     {
                                         // non-const private method
                                     }
-                                    "#}.to_owned(),
+                                    "}.to_owned(),
                             }],
                             ..Default::default()
                     }
@@ -247,24 +247,24 @@ mod tests {
                         ],
                         methods: vec![CppFragment::Pair {
                             header: "int count() const;".to_owned(),
-                            source: indoc! {r#"
+                            source: indoc! {r"
                                     int
                                     FirstObject::count() const
                                     {
                                       // getter
                                     }
-                                "#}
+                                "}
                             .to_owned(),
                         },
                         CppFragment::Pair {
                             header: "Q_SLOT void setCount(int count);".to_owned(),
-                            source: indoc! {r#"
+                            source: indoc! {r"
                                     void
                                     FirstObject::setCount(int count) const
                                     {
                                       // setter
                                     }
-                                "#}
+                                "}
                             .to_owned(),
                         },
                         CppFragment::Header("Q_SIGNAL void countChanged();".to_owned()),
@@ -290,24 +290,24 @@ mod tests {
                         ],
                         methods: vec![CppFragment::Pair {
                             header: "int count() const;".to_owned(),
-                            source: indoc! {r#"
+                            source: indoc! {r"
                                     int
                                     SecondObject::count() const
                                     {
                                       // getter
                                     }
-                                "#}
+                                "}
                             .to_owned(),
                         },
                         CppFragment::Pair {
                             header: "Q_SLOT void setCount(int count);".to_owned(),
-                            source: indoc! {r#"
+                            source: indoc! {r"
                                 void
                                 SecondObject::setCount(int count) const
                                 {
                                   // setter
                                 }
-                                "#}
+                                "}
                             .to_owned(),
                         },
                         CppFragment::Header("Q_SIGNAL void countChanged();".to_owned()),
@@ -315,11 +315,11 @@ mod tests {
                         private_methods: vec![
                             CppFragment::Pair{
                                 header: "void privateMethod() const;".to_owned(),
-                                source: indoc! {r#"
+                                source: indoc! {r"
                                     void SecondObject::privateMethod() const {
                                         // private method
                                     }
-                                    "#}.to_owned(),
+                                    "}.to_owned(),
                             }],
                         ..Default::default()
                     },
@@ -675,12 +675,12 @@ mod tests {
         let namespaced_code = namespaced("my_namespace", cpp_code);
 
         assert_str_eq!(
-            indoc! {r#"
+            indoc! {r"
             namespace my_namespace {
             // My C++ Code
               // with multi-line
             } // namespace my_namespace
-            "#
+            "
             },
             namespaced_code
         );
@@ -688,9 +688,9 @@ mod tests {
 
     #[test]
     fn namespacing_with_empty_namespace() {
-        let cpp_code = indoc! {r#"
+        let cpp_code = indoc! {r"
             // My C++ Code
-            "#};
+            "};
         let namespaced_code = namespaced("", cpp_code);
         assert_str_eq!(cpp_code, namespaced_code);
     }

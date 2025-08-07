@@ -125,11 +125,11 @@ pub fn generate_cpp_signal(
     let signal_handler_type = format!("SignalHandler<::{namespace}::{param_struct} *>");
 
     generated.forward_declares.push(formatdoc! {
-        r#"
+        r"
         namespace {namespace} {{
         using {signal_handler_alias} = ::rust::cxxqt1::SignalHandler<struct {param_struct} *>;
         }} // namespace {namespace}
-        "#
+        "
     });
 
     // Generate the Q_SIGNAL if this is not an existing signal
@@ -141,12 +141,12 @@ pub fn generate_cpp_signal(
 
     generated.fragments.push(CppFragment::Pair {
         header: formatdoc! {
-        r#"
+        r"
             namespace {namespace} {{
             ::QMetaObject::Connection
             {free_connect_ident_cpp}({qobject_ident_namespaced}& self, {signal_handler_alias_namespaced} closure, ::Qt::ConnectionType type);
             }} // namespace {namespace}
-            "#
+            "
         },
         source: formatdoc! {
             r#"
@@ -282,12 +282,12 @@ mod tests {
 
         assert_str_eq!(
             header,
-            indoc! {r#"
+            indoc! {r"
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
             MyObject_dataChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdataChanged closure, ::Qt::ConnectionType type);
             } // namespace rust::cxxqtgen1
-            "#}
+            "}
         );
         assert_str_eq!(
             source,
@@ -365,12 +365,12 @@ mod tests {
 
         assert_str_eq!(
             header,
-            indoc! {r#"
+            indoc! {r"
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
             MyObject_dataChangedConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerdataChanged closure, ::Qt::ConnectionType type);
             } // namespace rust::cxxqtgen1
-            "#}
+            "}
         );
         assert_str_eq!(
             source,
@@ -445,12 +445,12 @@ mod tests {
         let (header, source) = require_pair(&generated.fragments[0]).unwrap();
         assert_str_eq!(
             header,
-            indoc! {r#"
+            indoc! {r"
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
             MyObject_baseNameConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlerbaseName closure, ::Qt::ConnectionType type);
             } // namespace rust::cxxqtgen1
-            "#}
+            "}
         );
         assert_str_eq!(
             source,
@@ -524,12 +524,12 @@ mod tests {
         assert_str_eq!(
             header,
             indoc! {
-            r#"
+            r"
             namespace rust::cxxqtgen1 {
             ::QMetaObject::Connection
             MyObject_signalRustNameConnect(MyObject& self, ::rust::cxxqtgen1::MyObjectCxxQtSignalHandlersignalRustName closure, ::Qt::ConnectionType type);
             } // namespace rust::cxxqtgen1
-            "#}
+            "}
         );
         assert_str_eq!(
             source,
@@ -603,12 +603,12 @@ mod tests {
         assert_str_eq!(
             header,
             indoc! {
-            r#"
+            r"
             namespace mynamespace::rust::cxxqtgen1 {
             ::QMetaObject::Connection
             ObjCpp_signalCxxNameConnect(mynamespace::ObjCpp& self, ::mynamespace::rust::cxxqtgen1::MyObjectCxxQtSignalHandlersignalCxxName closure, ::Qt::ConnectionType type);
             } // namespace mynamespace::rust::cxxqtgen1
-            "#}
+            "}
         );
         assert_str_eq!(
             source,

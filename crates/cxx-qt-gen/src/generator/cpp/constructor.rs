@@ -23,12 +23,12 @@ fn default_constructor(
         CppFragment::Pair {
             header: format!("explicit {class_name}(QObject* parent = nullptr);",),
             source: formatdoc!(
-                r#"
+                r"
             {class_name}::{class_name}(QObject* parent)
               : {base_class}(parent)
               , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::createRs()){initializers}
             {{ }}
-            "#,
+            ",
                 namespace_internals = qobject.namespace_internals,
             ),
         }
@@ -36,12 +36,12 @@ fn default_constructor(
         CppFragment::Pair {
             header: format!("explicit {class_name}();"),
             source: formatdoc!(
-                r#"
+                r"
             {class_name}::{class_name}()
               {base_class_line}
               , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::createRs()){initializers}
             {{ }}
-            "#,
+            ",
                 base_class_line = if base_class.is_empty() {
                     // CODECOV_EXCLUDE_START
                     unreachable!(
@@ -107,11 +107,11 @@ pub fn generate(
         generated.methods.push(CppFragment::Pair {
             header: format!("explicit {class_name}({argument_list});"),
             source: formatdoc! {
-                r#"
+                r"
                 {class_name}::{class_name}({argument_list})
                   : {class_name}(::{namespace_internals}::routeArguments{index}({move_arguments}))
                 {{ }}
-                "#,
+                ",
                 move_arguments = constructor_argument_names.iter().map(|arg| format!("::std::move({arg})")).collect::<Vec<_>>().join(", "),
             },
         });
@@ -137,14 +137,14 @@ pub fn generate(
                 "explicit {class_name}(::{namespace_internals}::CxxQtConstructorArguments{index}&& args);"
             ),
             source: formatdoc! {
-                r#"
+                r"
                 {class_name}::{class_name}(::{namespace_internals}::CxxQtConstructorArguments{index}&& args)
                   : {base_class}({base_args})
                   , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::newRs{index}(::std::move(args.new_))){initializers}
                 {{
                   ::{namespace_internals}::initialize{index}(*this, ::std::move(args.initialize));
                 }}
-                "#,
+                ",
             },
         });
     }

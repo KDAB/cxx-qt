@@ -14,10 +14,10 @@ fn create_block(block: &str, items: &[String]) -> String {
     if items.is_empty() {
         String::new()
     } else {
-        formatdoc! {r#"
+        formatdoc! {r"
         {block}:
           {items}
-        "#,
+        ",
             block = block,
             items = items
                 .iter()
@@ -40,19 +40,19 @@ fn forward_declare(generated: &GeneratedCppBlocks) -> Vec<String> {
         .map(|qobject| {
             let forward_declares = namespaced(
                 qobject.name.namespace().unwrap_or_default(),
-                &formatdoc! {r#"
+                &formatdoc! {r"
                     class {ident};
                     {forward_declares}
-                "#,
+                ",
                 ident = &qobject.name.cxx_unqualified(),
                 forward_declares = qobject.blocks.forward_declares.join("\n"),
                 },
             );
             let forward_declares_namespaced = qobject.blocks.forward_declares_namespaced.join("\n");
-            formatdoc! {r#"
+            formatdoc! {r"
                 {forward_declares}
                 {forward_declares_namespaced}
-            "#}
+            "}
         })
         .chain(generated.forward_declares.iter().cloned())
         .chain(
@@ -80,7 +80,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         };
         let class_definition = namespaced(
             qobject.name.namespace().unwrap_or_default(),
-            &formatdoc! { r#"
+            &formatdoc! { r"
                 class {ident} : {base_classes}
                 {{
                   {qobject_macro}
@@ -93,7 +93,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
                 {private_methods}
                 }};
 
-                {qobject_assert}"#,
+                {qobject_assert}",
             // Note that there is always a base class as we always have CxxQtType
             base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {base}")).collect::<Vec<String>>().join(", "),
             metaobjects = qobject.blocks.metaobjects.join("\n  "),
@@ -116,12 +116,12 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             String::new()
         };
 
-        formatdoc! {r#"
+        formatdoc! {r"
             {fragments}
             {class_definition}
 
             {declare_metatype}
-            "#
+            "
         }
     }).collect::<Vec<String>>()
 }

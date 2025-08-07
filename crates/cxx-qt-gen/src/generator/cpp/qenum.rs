@@ -26,11 +26,11 @@ fn generate_definition(qenum: &ParsedQEnum) -> String {
         .collect::<Vec<_>>()
         .join(",\n");
 
-    formatdoc! { r#"
+    formatdoc! { r"
         enum class {enum_name} : ::std::int32_t {{
         {enum_values}
         }};
-        "#, enum_values = enum_values.indented(2) }
+        ", enum_values = enum_values.indented(2) }
 }
 
 pub fn generate_declaration(
@@ -57,10 +57,10 @@ pub fn generate_declaration(
         // This is redundant with `qnamespace!`, which is now only required if you want to specify
         // it as QML_ELEMENT.
         &if is_standalone {
-            formatdoc! {r#"
+            formatdoc! {r"
                 Q_NAMESPACE
                 {enum_definition}
-                Q_ENUM_NS({enum_name}) "# }
+                Q_ENUM_NS({enum_name}) " }
         } else {
             enum_definition
         },
@@ -90,7 +90,7 @@ pub fn generate_on_qobject<'a>(
 
         generated.includes.insert("#include <cstdint>".to_owned());
         let enum_definition = generate_definition(qenum);
-        generated.metaobjects.push(formatdoc! {r#"
+        generated.metaobjects.push(formatdoc! {r"
             #ifdef Q_MOC_RUN
             {enum_definition}
               Q_ENUM({enum_name})
@@ -98,7 +98,7 @@ pub fn generate_on_qobject<'a>(
               using {enum_name} = {qualified_name};
               Q_ENUM({enum_name})
             #endif
-        "#, enum_definition = enum_definition.indented(2)});
+        ", enum_definition = enum_definition.indented(2)});
     }
 
     Ok(generated)
@@ -156,7 +156,7 @@ mod tests {
         assert!(generated.includes.contains("#include <cstdint>"));
         assert_eq!(generated.metaobjects.len(), 1);
         assert_str_eq!(
-            indoc! {r#"
+            indoc! {r"
                 #ifdef Q_MOC_RUN
                   enum class MyEnum : ::std::int32_t {
                     A,
@@ -168,7 +168,7 @@ mod tests {
                   using MyEnum = ::MyEnum;
                   Q_ENUM(MyEnum)
                 #endif
-            "#},
+            "},
             generated.metaobjects[0],
         );
         assert_eq!(generated.forward_declares.len(), 0);
