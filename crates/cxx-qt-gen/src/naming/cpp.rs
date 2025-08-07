@@ -65,19 +65,12 @@ pub(crate) fn syn_type_to_cpp_return_type(
             }
 
             let arg = args.pop().unwrap();
-            // Map void to None
-            if arg == "void" {
-                return Ok(None);
-            }
-            return Ok(Some(arg));
+            return Ok(unless_void(arg));
         }
     }
 
     let v = syn_type_to_cpp_type(ty, type_names)?;
-    if v == "void" {
-        return Ok(None);
-    }
-    Ok(Some(v))
+    Ok(unless_void(v))
 }
 
 /// For a given Rust type attempt to generate a C++ string
@@ -176,6 +169,15 @@ pub(crate) fn syn_type_to_cpp_type(ty: &Type, type_names: &TypeNames) -> Result<
         }
         Type::Tuple(tuple) if tuple.elems.is_empty() => Ok("void".to_owned()),
         _others => Err(err_unsupported_type(ty)),
+    }
+}
+
+// Map void to None
+fn unless_void(arg: String) -> Option<String> {
+    if arg == "void" {
+        None
+    } else {
+        Some(arg)
     }
 }
 
