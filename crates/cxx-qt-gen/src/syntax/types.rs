@@ -152,16 +152,16 @@ mod tests {
         assert!(!super::is_pin_of_self(&parse_quote! { *mut T }));
     }
 
-    fn assert_qobject_ident(ty: Type, expected_ident: &str, expected_mutability: bool) {
-        let (ident, mutability) = super::extract_qobject_ident(&ty).unwrap();
+    fn assert_qobject_ident(ty: &Type, expected_ident: &str, expected_mutability: bool) {
+        let (ident, mutability) = super::extract_qobject_ident(ty).unwrap();
         assert_eq!(ident.to_string(), expected_ident);
         assert_eq!(mutability.is_some(), expected_mutability);
     }
 
     #[test]
     fn test_extract_qobject_ident() {
-        assert_qobject_ident(parse_quote! { &Foo }, "Foo", false);
-        assert_qobject_ident(parse_quote! { Pin<&mut Foo> }, "Foo", true);
+        assert_qobject_ident(&parse_quote! { &Foo }, "Foo", false);
+        assert_qobject_ident(&parse_quote! { Pin<&mut Foo> }, "Foo", true);
 
         assert_parse_errors! {
             |ty| super::extract_qobject_ident(&ty) =>

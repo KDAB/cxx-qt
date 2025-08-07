@@ -98,7 +98,7 @@ mod tests {
     use crate::{generator::UnsupportedCfgEvaluator, tests::CfgEvaluatorTest};
     use syn::{parse_quote, ItemMod};
 
-    fn assert_eval_insert(module: ItemMod, cfgs: &[&str], [before, after]: [bool; 2]) {
+    fn assert_eval_insert(module: &ItemMod, cfgs: &[&str], [before, after]: [bool; 2]) {
         let mut cfg_evaluator = Box::new(CfgEvaluatorTest::default());
         assert_eq!(
             try_eval_attributes(cfg_evaluator.as_ref(), &module.attrs).unwrap(),
@@ -122,14 +122,14 @@ mod tests {
         );
     }
 
-    fn assert_eval_insert_false_true(module: ItemMod, cfgs: &[&str]) {
+    fn assert_eval_insert_false_true(module: &ItemMod, cfgs: &[&str]) {
         assert_eval_insert(module, cfgs, [false, true]);
     }
 
     #[test]
     fn test_try_eval_attributes_eq() {
         assert_eval_insert_false_true(
-            parse_quote! {
+            &parse_quote! {
                 #[cfg(a = "1")]
                 #[cfg(b = "2")]
                 mod module;
@@ -141,7 +141,7 @@ mod tests {
     #[test]
     fn test_try_eval_attributes_any() {
         assert_eval_insert_false_true(
-            parse_quote! {
+            &parse_quote! {
                 #[cfg(any(a = "1", b = "2"))]
                 mod module;
             },
@@ -152,7 +152,7 @@ mod tests {
     #[test]
     fn test_try_eval_attributes_all() {
         assert_eval_insert_false_true(
-            parse_quote! {
+            &parse_quote! {
                 #[cfg(all(a = "1", b = "2"))]
                 mod module;
             },
@@ -163,7 +163,7 @@ mod tests {
     #[test]
     fn test_try_eval_attributes_not() {
         assert_eval_insert(
-            parse_quote! {
+            &parse_quote! {
                 #[cfg(not(a = "1"))]
                 mod module;
             },

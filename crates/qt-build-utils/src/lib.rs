@@ -319,7 +319,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
             metatypes_json,
             qmltypes_path,
             uri,
-            Version::new(version_major as u64, version_minor as u64, 0),
+            &Version::new(version_major as u64, version_minor as u64, 0),
         );
 
         // Generate QQmlEngineExtensionPlugin

@@ -31,7 +31,7 @@ impl QtToolQmlTypeRegistrar {
         metatypes_json: &[impl AsRef<Path>],
         qmltypes: impl AsRef<Path>,
         uri: &str,
-        version: Version,
+        version: &Version,
     ) -> Option<PathBuf> {
         // Filter out empty jsons
         let metatypes_json: Vec<_> = metatypes_json

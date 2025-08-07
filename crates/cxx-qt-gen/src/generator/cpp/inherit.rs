@@ -19,7 +19,7 @@ use syn::Result;
 
 pub fn generate(
     inherited_methods: &[&ParsedInheritedMethod],
-    base_class: &Option<String>,
+    base_class: Option<&str>,
     type_names: &TypeNames,
     opt: &GeneratedOpt,
 ) -> Result<GeneratedCppQObjectBlocks> {
@@ -35,7 +35,7 @@ pub fn generate(
         // Note that no qobject macro with no base class is an error
         //
         // So a default of QObject is fine here
-        let base_class = base_class.as_deref().unwrap_or("QObject");
+        let base_class = base_class.unwrap_or("QObject");
 
         result.methods.push(CppFragment::Header(formatdoc! {
         r#"
@@ -72,10 +72,9 @@ mod tests {
     ) -> Result<GeneratedCppQObjectBlocks> {
         let method = ParsedInheritedMethod::parse(method, CaseConversion::none())?;
         let inherited_methods = vec![&method];
-        let base_class = base_class.map(|s| s.to_owned());
         generate(
             &inherited_methods,
-            &base_class,
+            base_class,
             &TypeNames::default(),
             &GeneratedOpt::default(),
         )
@@ -95,12 +94,12 @@ mod tests {
         };
         let method = ParsedInheritedMethod::parse(method, CaseConversion::none()).unwrap();
         let inherited_methods = vec![&method];
-        let base_class = Some("TestBaseClass".to_owned());
+        let base_class = Some("TestBaseClass");
         let opt = GeneratedOpt {
             cfg_evaluator: Box::new(CfgEvaluatorTest::default()),
         };
         let generated =
-            generate(&inherited_methods, &base_class, &TypeNames::default(), &opt).unwrap();
+            generate(&inherited_methods, base_class, &TypeNames::default(), &opt).unwrap();
 
         assert!(generated.methods.is_empty());
     }

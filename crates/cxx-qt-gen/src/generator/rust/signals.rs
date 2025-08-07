@@ -20,6 +20,7 @@ use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
 use syn::{parse_quote, parse_quote_spanned, FnArg, Ident, Result, Type};
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn generate_rust_signal(
     signal: &ParsedSignal,
     qobject_name: &Name,

@@ -258,7 +258,7 @@ pub mod tests {
         assert_eq!(properties[1].ty, f64_type());
     }
 
-    fn assert_qml_name(obj: ParsedQObject, str_name: &str) {
+    fn assert_qml_name(obj: &ParsedQObject, str_name: &str) {
         assert_eq!(
             obj.qml_metadata,
             Some(QmlElementMetadata {
@@ -276,7 +276,7 @@ pub mod tests {
             #[qml_element]
             type MyObject = super::MyObjectRust;
         };
-        assert_qml_name(qobject, "MyObject");
+        assert_qml_name(&qobject, "MyObject");
     }
 
     #[test]
@@ -286,7 +286,7 @@ pub mod tests {
             #[qml_element = "OtherName"]
             type MyObject = super::MyObjectRust;
         };
-        assert_qml_name(qobject, "OtherName");
+        assert_qml_name(&qobject, "OtherName");
     }
 
     #[test]
@@ -304,7 +304,7 @@ pub mod tests {
             CaseConversion::none(),
         )
         .unwrap();
-        assert_qml_name(qobject, "RenamedObject");
+        assert_qml_name(&qobject, "RenamedObject");
     }
 
     #[test]

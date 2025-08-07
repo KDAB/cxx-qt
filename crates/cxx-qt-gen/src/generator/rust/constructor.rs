@@ -33,7 +33,7 @@ fn map_types<F: FnMut((usize, &Type)) -> TokenStream>(args: &[Type], f: F) -> Ve
     args.iter().enumerate().map(f).collect()
 }
 
-fn extract_arguments_from_tuple(args: &[Type], tuple_name: Ident) -> Vec<TokenStream> {
+fn extract_arguments_from_tuple(args: &[Type], tuple_name: &Ident) -> Vec<TokenStream> {
     map_types(args, |(index, _ty)| {
         let arg_name = format_ident!("arg{index}");
         let index = syn::LitInt::new(index.to_string().as_str(), Span::call_site());
@@ -43,7 +43,7 @@ fn extract_arguments_from_tuple(args: &[Type], tuple_name: Ident) -> Vec<TokenSt
     })
 }
 
-fn extract_arguments_from_struct(args: &[Type], struct_name: Ident) -> Vec<TokenStream> {
+fn extract_arguments_from_struct(args: &[Type], struct_name: &Ident) -> Vec<TokenStream> {
     map_types(args, |(index, _ty)| {
         let arg_name = format_ident!("arg{index}");
         quote! {
@@ -128,7 +128,7 @@ fn generate_arguments_struct(
 
 fn generate_arguments_initialization(
     struct_name: &Ident,
-    instance_name: Ident,
+    instance_name: &Ident,
     argument_list: &[Type],
     cfgs: &[Attribute],
 ) -> Expr {
@@ -326,31 +326,31 @@ pub fn generate(
 
         let init_new_arguments = generate_arguments_initialization(
             &new_arguments_rust,
-            format_ident!("new_arguments"),
+            &format_ident!("new_arguments"),
             &constructor.new_arguments,
             cfgs,
         );
         let init_initalize_arguments = generate_arguments_initialization(
             &initialize_arguments_rust,
-            format_ident!("initialize_arguments"),
+            &format_ident!("initialize_arguments"),
             &constructor.initialize_arguments,
             cfgs,
         );
         let init_base_arguments = generate_arguments_initialization(
             &base_arguments_rust,
-            format_ident!("base_arguments"),
+            &format_ident!("base_arguments"),
             &constructor.base_arguments,
             cfgs,
         );
 
         let extract_new_arguments = extract_arguments_from_struct(
             &constructor.new_arguments,
-            format_ident!("new_arguments"),
+            &format_ident!("new_arguments"),
         );
 
         let extract_initialize_arguments = extract_arguments_from_struct(
             &constructor.initialize_arguments,
-            format_ident!("initialize_arguments"),
+            &format_ident!("initialize_arguments"),
         );
 
         result.cxx_mod_contents.append(&mut vec![
@@ -472,7 +472,7 @@ mod tests {
     }
 
     fn mock_name() -> QObjectNames {
-        QObjectNames::from_idents(format_ident!("MyObject"), format_ident!("MyObjectRust"))
+        QObjectNames::from_idents(&format_ident!("MyObject"), &format_ident!("MyObjectRust"))
     }
 
     fn mock_namespace() -> NamespaceName {

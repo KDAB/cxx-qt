@@ -14,8 +14,8 @@ use syn::{Result, Type};
 
 fn default_constructor(
     qobject: &GeneratedCppQObject,
-    base_class: String,
-    initializers: String,
+    base_class: &str,
+    initializers: &str,
 ) -> GeneratedCppQObjectBlocks {
     let class_name = qobject.name.cxx_unqualified();
     let rust_obj = qobject.rust_struct.cxx_qualified();
@@ -82,7 +82,7 @@ fn expand_arguments(arguments: &[Type], type_names: &TypeNames) -> Result<String
 pub fn generate(
     qobject: &GeneratedCppQObject,
     constructors: &[&Constructor],
-    base_class: String,
+    base_class: &str,
     class_initializers: &[String],
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
@@ -93,7 +93,7 @@ pub fn generate(
         .join("");
 
     if constructors.is_empty() {
-        return Ok(default_constructor(qobject, base_class, initializers));
+        return Ok(default_constructor(qobject, base_class, &initializers));
     }
 
     let mut generated = GeneratedCppQObjectBlocks::default();
@@ -228,7 +228,7 @@ mod tests {
         let blocks = generate(
             &qobject_for_testing(),
             &[],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &[],
             &type_names_with_qobject(),
         )
@@ -256,14 +256,7 @@ mod tests {
     fn default_constructor_no_qobject_macro() {
         let mut qobject = qobject_for_testing();
         qobject.has_qobject_macro = false;
-        let blocks = generate(
-            &qobject,
-            &[],
-            "BaseClass".to_owned(),
-            &[],
-            &type_names_with_qobject(),
-        )
-        .unwrap();
+        let blocks = generate(&qobject, &[], "BaseClass", &[], &type_names_with_qobject()).unwrap();
 
         assert_empty_blocks(&blocks);
         assert!(blocks.private_methods.is_empty());
@@ -291,7 +284,7 @@ mod tests {
                 arguments: vec![parse_quote! { i32 }, parse_quote! { *mut QObject }],
                 ..mock_constructor()
             }],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &[],
             &type_names_with_qobject(),
         )
@@ -341,7 +334,7 @@ mod tests {
                 lifetime: Some(parse_quote! { 'a_lifetime }),
                 ..mock_constructor()
             }],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &["initializer".to_owned()],
             &type_names_with_qobject(),
         )
@@ -395,7 +388,7 @@ mod tests {
                     ..mock_constructor()
                 },
             ],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &["initializer".to_owned()],
             &type_names_with_qobject(),
         )

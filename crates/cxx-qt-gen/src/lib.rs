@@ -39,13 +39,7 @@ mod tests {
     use pretty_assertions::assert_str_eq;
     use proc_macro2::TokenStream;
     use quote::{quote, ToTokens};
-    use std::{
-        collections::HashMap,
-        env,
-        fs::OpenOptions,
-        io::Write,
-        path::{Path, PathBuf},
-    };
+    use std::{collections::HashMap, env, fs::OpenOptions, io::Write, path::Path};
     use writer::{cpp::write_cpp, rust::write_rust};
 
     #[derive(Default)]
@@ -64,6 +58,7 @@ mod tests {
     }
 
     /// Helper to ensure that a given syn item is the same as the given TokenStream
+    #[allow(clippy::needless_pass_by_value)]
     pub fn assert_tokens_eq<T: ToTokens>(item: &T, tokens: TokenStream) {
         // For understanding what's going on, it is nicer to use format_rs_source
         // So that the TokenStream is actually legible.
@@ -127,7 +122,7 @@ mod tests {
     }
 
     // CODECOV_EXCLUDE_START
-    fn update_expected_file(path: PathBuf, source: &str) {
+    fn update_expected_file(path: &Path, source: &str) {
         println!("Updating expected file: {path:?}");
 
         let mut file = OpenOptions::new()
@@ -155,7 +150,7 @@ mod tests {
 
             let update = |file_ending, contents| {
                 update_expected_file(
-                    output_folder.join(format!("{test_name}.{file_ending}")),
+                    &output_folder.join(format!("{test_name}.{file_ending}")),
                     contents,
                 );
             };

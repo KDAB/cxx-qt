@@ -115,26 +115,29 @@ impl QPropertyNames {
     }
 }
 
-fn capitalise_first(str: String) -> String {
-    let mut out = "".to_owned();
-    if let Some(first) = str.chars().next() {
-        out.push(first.to_ascii_uppercase());
-        out.push_str(&str[1..]);
+fn capitalise_first(s: &mut str) -> &mut str {
+    if !s.is_empty() {
+        s[0..1].make_ascii_uppercase();
     }
-    out
+    s
 }
 
 /// For a given property name generate the getter name
 pub fn getter_name_from_property(name: &Name) -> Name {
-    name.clone()
-        .with_cxx_name(format!("get{}", capitalise_first(name.cxx_unqualified())))
+    name.clone().with_cxx_name(format!(
+        "get{}",
+        capitalise_first(&mut name.cxx_unqualified())
+    ))
 }
 
 /// For a given property name generate the setter name
 pub fn setter_name_from_property(name: &Name) -> Name {
     name.clone()
         .with_rust_name(format_ident!("set_{}", name.rust_unqualified()))
-        .with_cxx_name(format!("set{}", capitalise_first(name.cxx_unqualified())))
+        .with_cxx_name(format!(
+            "set{}",
+            capitalise_first(&mut name.cxx_unqualified())
+        ))
 }
 
 /// For a given property name generate the notify signal name
@@ -208,8 +211,8 @@ pub mod tests {
 
     #[test]
     fn test_capitalise_first() {
-        assert_eq!(capitalise_first("abc".to_owned()), "Abc".to_owned());
-        assert_eq!(capitalise_first(String::new()), String::new());
-        assert_eq!(capitalise_first("a".to_owned()), "A".to_owned());
+        assert_eq!(capitalise_first(&mut "abc".to_owned()), "Abc");
+        assert_eq!(capitalise_first(&mut String::new()), "");
+        assert_eq!(capitalise_first(&mut "a".to_owned()), "A");
     }
 }

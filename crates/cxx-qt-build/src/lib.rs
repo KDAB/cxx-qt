@@ -600,7 +600,7 @@ impl CxxQtBuilder {
         self
     }
 
-    fn define_cfg_variable(key: String, value: Option<&str>) {
+    fn define_cfg_variable(key: &str, value: Option<&str>) {
         if let Some(value) = value {
             println!("cargo::rustc-cfg={key}=\"{value}\"");
         } else {
@@ -610,7 +610,7 @@ impl CxxQtBuilder {
         env::set_var(variable_cargo, value.unwrap_or("true"));
     }
 
-    fn define_cfg_check_variable(key: String, values: Option<Vec<&str>>) {
+    fn define_cfg_check_variable(key: &str, values: Option<Vec<&str>>) {
         if let Some(values) = values {
             let values = values
                 .iter()
@@ -624,29 +624,26 @@ impl CxxQtBuilder {
         }
     }
 
-    fn define_qt_version_cfg_variables(version: Version) {
+    fn define_qt_version_cfg_variables(version: &Version) {
         // Allow for Qt 5 or Qt 6 as valid values
-        CxxQtBuilder::define_cfg_check_variable(
-            "cxxqt_qt_version_major".to_owned(),
-            Some(vec!["5", "6"]),
-        );
+        CxxQtBuilder::define_cfg_check_variable("cxxqt_qt_version_major", Some(vec!["5", "6"]));
         // Find the Qt version and tell the Rust compiler
         // this allows us to have conditional Rust code
         CxxQtBuilder::define_cfg_variable(
-            "cxxqt_qt_version_major".to_owned(),
+            "cxxqt_qt_version_major",
             Some(version.major.to_string().as_str()),
         );
 
         // Seed all values from Qt 5.0 through to Qt 7.99
         for major in 5..=7 {
             CxxQtBuilder::define_cfg_check_variable(
-                format!("cxxqt_qt_version_at_least_{major}"),
+                &format!("cxxqt_qt_version_at_least_{major}"),
                 None,
             );
 
             for minor in 0..=99 {
                 CxxQtBuilder::define_cfg_check_variable(
-                    format!("cxxqt_qt_version_at_least_{major}_{minor}"),
+                    &format!("cxxqt_qt_version_at_least_{major}_{minor}"),
                     None,
                 );
             }
@@ -655,13 +652,13 @@ impl CxxQtBuilder {
         for minor in 0..=version.minor {
             let qt_version_at_least =
                 format!("cxxqt_qt_version_at_least_{}_{}", version.major, minor);
-            CxxQtBuilder::define_cfg_variable(qt_version_at_least, None);
+            CxxQtBuilder::define_cfg_variable(&qt_version_at_least, None);
         }
 
         // We don't support Qt < 5
         for major in 5..=version.major {
             let at_least_qt_major_version = format!("cxxqt_qt_version_at_least_{major}");
-            CxxQtBuilder::define_cfg_variable(at_least_qt_major_version, None);
+            CxxQtBuilder::define_cfg_variable(&at_least_qt_major_version, None);
         }
     }
 
@@ -752,9 +749,9 @@ impl CxxQtBuilder {
     fn export_object_file(
         mut obj_builder: cc::Build,
         file_path: impl AsRef<Path>,
-        export_path: PathBuf,
+        export_path: &Path,
     ) {
-        obj_builder.file(file_path.as_ref());
+        obj_builder.file(file_path);
 
         // We only expect a single file, so destructure the vec.
         // If there's 0 or > 1 file, we panic in the `else` branch, because then the builder is
@@ -1026,7 +1023,7 @@ extern "C" bool {init_fun}() {{
         std::fs::write(&init_file, init_call).expect("Could not write initializers call file!");
 
         if let Some(export_path) = export_path {
-            Self::export_object_file(init_call_builder, init_file, export_path);
+            Self::export_object_file(init_call_builder, init_file, &export_path);
         } else {
             // Link the call-init-lib with +whole-archive to ensure that the static initializers are not discarded.
             // We previously used object files that we linked directly into the final binary, but this caused
@@ -1073,6 +1070,8 @@ extern "C" bool {init_fun}() {{
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
     /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) -> Interface {
+        const MAX_INCLUDE_DEPTH: usize = 6;
+
         dir::clean(dir::crate_target()).expect("Failed to clean crate export directory!");
 
         // We will do these two steps first, as setting up the dependencies can modify flags we
@@ -1094,7 +1093,7 @@ extern "C" bool {init_fun}() {{
         let mut qtbuild = qt_build_utils::QtBuild::new(qt_modules.iter().cloned().collect())
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
-        Self::define_qt_version_cfg_variables(qtbuild.version());
+        Self::define_qt_version_cfg_variables(&qtbuild.version());
 
         // Ensure that Qt modules and apple framework are linked and searched correctly
         let mut include_paths = qtbuild.include_paths();
@@ -1106,7 +1105,6 @@ extern "C" bool {init_fun}() {{
         // to the generated files without any namespacing.
         include_paths.push(header_root.join(&self.include_prefix));
 
-        const MAX_INCLUDE_DEPTH: usize = 6;
         let crate_header_dir = self.crate_include_root.as_ref().map(|subdir| {
             dir::manifest()
                 .expect("Could not find crate directory!")
