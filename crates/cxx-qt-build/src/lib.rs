@@ -892,7 +892,7 @@ impl CxxQtBuilder {
                 if let Some(dir) = qobject_header.parent() {
                     moc_include_paths.insert(dir.to_path_buf());
                 }
-                let moc_products = qtbuild.moc(
+                let moc_products = qtbuild.moc().compile(
                     qobject_header,
                     MocArguments::default().uri(qml_module.uri.clone()),
                 );
