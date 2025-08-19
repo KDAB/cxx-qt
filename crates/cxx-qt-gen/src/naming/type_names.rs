@@ -350,11 +350,11 @@ impl TypeNames {
         parent_namespace: Option<&str>,
         module_ident: &Ident,
     ) -> Result<()> {
+        // CODECOV_EXCLUDE_START
         self.populate_or_else(ident, attrs, parent_namespace, module_ident, |_, name| {
-            // CODECOV_EXCLUDE_START
             Err(Self::err_duplicate_type(&name.rust))
-            // CODECOV_EXCLUDE_STOP
         })
+        // CODECOV_EXCLUDE_STOP
     }
 
     fn populate_or_else(

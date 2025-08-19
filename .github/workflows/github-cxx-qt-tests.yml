@@ -426,12 +426,12 @@ jobs:
     - name: "Clone Git repository"
       uses: actions/checkout@v5
     # Ensure clippy and rustfmt is installed, they should come from github runner
-    # clippy version needs to be 1.83.0 for all lints
+    # clippy version needs to be 1.87.0 for all lints
     #
     # Note we still need rustfmt for the cxx-qt-gen tests
     - name: "Install Rust toolchain"
       run: |
-        rustup toolchain add 1.83.0 --component clippy
+        rustup toolchain add 1.87.0 --component clippy
         rustup default 1.77.2
         rustup component add rustfmt
 

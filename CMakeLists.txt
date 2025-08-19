@@ -151,8 +151,8 @@ if(BUILD_TESTING)
     # Add CMake tests for `cargo test/clippy/fmt/doc`.
     add_test(NAME cargo_tests COMMAND cargo test --locked --release --all-features --target-dir ${CARGO_TARGET_DIR})
     add_test(NAME cargo_doc COMMAND cargo doc --locked --release --all-features --target-dir ${CARGO_TARGET_DIR})
-    # Minimum clippy version for all lints is 1.83.0
-    add_test(NAME cargo_clippy COMMAND cargo +1.83.0 clippy --locked --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
+    # Minimum clippy version for all lints is 1.87.0
+    add_test(NAME cargo_clippy COMMAND cargo +1.87.0 clippy --locked --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
 
     set_tests_properties(cargo_tests cargo_clippy PROPERTIES
         ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
