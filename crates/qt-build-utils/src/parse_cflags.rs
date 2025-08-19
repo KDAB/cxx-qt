@@ -186,6 +186,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                     {
                         if is_object_file(path) {
                             #[cfg(feature = "link_qt_object_files")]
+                            #[allow(clippy::used_underscore_binding)]
                             {
                                 // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
                                 // Many of Qt's .prl files repeat listing .o files that other .prl files also list.

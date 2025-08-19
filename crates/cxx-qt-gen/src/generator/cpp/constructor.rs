@@ -89,8 +89,7 @@ pub fn generate(
     let initializers = class_initializers
         .iter()
         .map(|initializer| format!("\n  , {initializer}"))
-        .collect::<Vec<_>>()
-        .join("");
+        .collect::<String>();
 
     if constructors.is_empty() {
         return Ok(default_constructor(qobject, base_class, &initializers));
@@ -198,7 +197,7 @@ mod tests {
         let blocks = generate(
             &qobject_for_testing(),
             &[],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &["member1(1)".to_owned(), "member2{ 2 }".to_owned()],
             &type_names_with_qobject(),
         )

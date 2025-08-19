@@ -766,7 +766,7 @@ impl CxxQtBuilder {
                     )
                 });
             }
-            std::fs::copy(obj_file, &export_path).unwrap_or_else(|_| {
+            std::fs::copy(obj_file, export_path).unwrap_or_else(|_| {
                 panic!("Failed to export object file to {}!", export_path.display())
             });
         } else {
