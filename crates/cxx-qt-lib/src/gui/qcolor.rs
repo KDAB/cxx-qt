@@ -596,7 +596,7 @@ impl fmt::Debug for QColor {
 #[cfg(feature = "rgb")]
 impl From<&rgb::RGB8> for QColor {
     fn from(value: &rgb::RGB8) -> Self {
-        Self::from_rgb(value.r as i32, value.g as i32, value.b as i32)
+        Self::from_rgb(value.r.into(), value.g.into(), value.b.into())
     }
 }
 
@@ -604,10 +604,10 @@ impl From<&rgb::RGB8> for QColor {
 impl From<&rgb::RGBA8> for QColor {
     fn from(value: &rgb::RGBA8) -> Self {
         Self::from_rgba(
-            value.r as i32,
-            value.g as i32,
-            value.b as i32,
-            value.a as i32,
+            value.r.into(),
+            value.g.into(),
+            value.b.into(),
+            value.a.into(),
         )
     }
 }

@@ -9,12 +9,12 @@ use crate::{
     parser::method::ParsedMethod,
 };
 use quote::quote;
-use syn::{parse_quote_spanned, spanned::Spanned, Result};
+use syn::{parse_quote_spanned, spanned::Spanned};
 
 pub fn generate_rust_methods(
     invokables: &[&ParsedMethod],
     qobject_names: &QObjectNames,
-) -> Result<GeneratedRustFragment> {
+) -> GeneratedRustFragment {
     let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
     let generated = invokables
@@ -75,7 +75,7 @@ pub fn generate_rust_methods(
         })
         .collect::<Vec<_>>();
 
-    Ok(GeneratedRustFragment::flatten(generated))
+    GeneratedRustFragment::flatten(generated)
 }
 
 #[cfg(test)]
@@ -113,7 +113,7 @@ mod tests {
         let qobject_names = create_qobjectname();
 
         let generated =
-            generate_rust_methods(&invokables.iter().collect::<Vec<_>>(), &qobject_names).unwrap();
+            generate_rust_methods(&invokables.iter().collect::<Vec<_>>(), &qobject_names);
 
         assert_eq!(generated.cxx_mod_contents.len(), 4);
         assert_eq!(generated.cxx_qt_mod_contents.len(), 0);

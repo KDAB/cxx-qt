@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#![allow(clippy::trivially_copy_pass_by_ref)]
 
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
@@ -199,7 +200,7 @@ where
     /// The original `QList` can still be used after constructing the `Vec`.
     fn from(qlist: &QList<T>) -> Self {
         let mut vec = Vec::with_capacity(qlist.len().try_into().unwrap());
-        for element in qlist.iter() {
+        for element in qlist {
             vec.push(element.clone());
         }
         vec

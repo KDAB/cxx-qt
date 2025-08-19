@@ -46,7 +46,7 @@ where
 {
     /// Destroys the map.
     fn drop(&mut self) {
-        T::drop(self)
+        T::drop(self);
     }
 }
 
@@ -85,7 +85,7 @@ where
 {
     /// Removes all items from the map.
     pub fn clear(&mut self) {
-        T::clear(self)
+        T::clear(self);
     }
 
     /// Returns `true` if the map contains an item with key `key`; otherwise returns `false`.
@@ -114,7 +114,7 @@ where
     /// The key and value are references here so they can be opaque or trivial.
     /// Note that the key and value are cloned before inserting into the map.
     pub fn insert_clone(&mut self, key: &T::Key, value: &T::Value) {
-        T::insert_clone(self, key, value)
+        T::insert_clone(self, key, value);
     }
 
     /// Returns `true` if the map contains no items; otherwise returns `false`.
@@ -152,7 +152,7 @@ where
 {
     /// Inserts a new item with the key `key` and a value of `value`.
     pub fn insert(&mut self, key: T::Key, value: T::Value) {
-        T::insert(self, key, value)
+        T::insert(self, key, value);
     }
 }
 

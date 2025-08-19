@@ -81,9 +81,10 @@ impl Interface {
         }
 
         // Ensure that a link name has been set
-        if self.manifest.link_name.is_empty() {
-            panic!("The links key must be set when exporting with CXX-Qt-build");
-        }
+        assert!(
+            !self.manifest.link_name.is_empty(),
+            "The links key must be set when exporting with CXX-Qt-build"
+        );
 
         // We automatically reexport all qt_modules and downstream dependencies
         // as they will always need to be enabled in the final binary.

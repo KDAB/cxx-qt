@@ -77,7 +77,7 @@ impl Clone for QPersistentModelIndex {
 impl Drop for QPersistentModelIndex {
     /// Destroys the persistent model index.
     fn drop(&mut self) {
-        ffi::qpersistentmodelindex_drop(self)
+        ffi::qpersistentmodelindex_drop(self);
     }
 }
 

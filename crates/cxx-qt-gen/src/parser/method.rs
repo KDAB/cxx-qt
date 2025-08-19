@@ -33,7 +33,7 @@ impl ParsedQInvokableSpecifiers {
         }
     }
 
-    fn from_attrs(attrs: BTreeMap<&str, &Attribute>) -> HashSet<ParsedQInvokableSpecifiers> {
+    fn from_attrs(attrs: &BTreeMap<&str, &Attribute>) -> HashSet<ParsedQInvokableSpecifiers> {
         let mut output = HashSet::new();
         for specifier in [
             ParsedQInvokableSpecifiers::Final,
@@ -127,7 +127,7 @@ impl ParsedMethod {
         // Determine if the method is invokable
         let is_qinvokable = attrs.contains_key("qinvokable");
         let is_pure = attrs.contains_key("cxx_pure");
-        let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs);
+        let specifiers = ParsedQInvokableSpecifiers::from_attrs(&attrs);
 
         Ok(Self {
             method_fields: fields,

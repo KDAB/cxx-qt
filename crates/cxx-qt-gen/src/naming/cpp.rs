@@ -17,7 +17,7 @@ pub(crate) fn err_unsupported_item(item: &impl ToTokens) -> Error {
 }
 
 /// For a given Rust return type determine if the C++ header should have noexcept
-pub(crate) fn syn_return_type_to_cpp_except(return_ty: &ReturnType) -> &str {
+pub(crate) fn syn_return_type_to_cpp_except(return_ty: &ReturnType) -> &'static str {
     if let ReturnType::Type(_, ty) = return_ty {
         // If we are a Result<T> then we can have an exception
         if let Type::Path(ty_path) = &**ty {
