@@ -49,7 +49,7 @@ if(NOT USE_QT5)
 endif()
 if(NOT Qt6_FOUND)
     if(BUILD_WASM)
-        message(FATAL_ERROR 
+        message(FATAL_ERROR
             "CXX-Qt for WebAssembly only currently supports Qt 6 builds."
         )
     endif()
@@ -151,8 +151,8 @@ if(BUILD_TESTING)
     # Add CMake tests for `cargo test/clippy/fmt/doc`.
     add_test(NAME cargo_tests COMMAND cargo test --locked --release --all-features --target-dir ${CARGO_TARGET_DIR})
     add_test(NAME cargo_doc COMMAND cargo doc --locked --release --all-features --target-dir ${CARGO_TARGET_DIR})
-    # Minimum clippy version for the incompatible_msrv lint is 1.78.0
-    add_test(NAME cargo_clippy COMMAND cargo +1.78.0 clippy --locked --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
+    # Minimum clippy version for all lints is 1.83.0
+    add_test(NAME cargo_clippy COMMAND cargo +1.83.0 clippy --locked --release --all-features --target-dir ${CARGO_TARGET_DIR} -- -D warnings)
 
     set_tests_properties(cargo_tests cargo_clippy PROPERTIES
         ENVIRONMENT_MODIFICATION "${CARGO_ENV}"
@@ -160,16 +160,16 @@ if(BUILD_TESTING)
     set_tests_properties(cargo_doc PROPERTIES
         ENVIRONMENT_MODIFICATION "${CARGO_ENV};RUSTDOCFLAGS=set:--deny=warnings"
     )
-    
+
     # Ensure test inputs and outputs are formatted
     file(GLOB CXX_QT_GEN_TEST_INPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_inputs/*.rs)
     file(GLOB CXX_QT_GEN_TEST_OUTPUTS ${CMAKE_CURRENT_SOURCE_DIR}/crates/cxx-qt-gen/test_outputs/*.rs)
     add_test(NAME cxx_qt_gen_test_inputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_INPUTS})
     add_test(NAME cxx_qt_gen_test_outputs_gen COMMAND rustfmt --check ${CXX_QT_GEN_TEST_OUTPUTS})
-    
+
     # Add test which checks that a build rerun doesn't recompile and uses caches instead
     add_test(NAME cargo_build_rerun COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/scripts/check_cargo_build_rerun.sh" "${CMAKE_CURRENT_SOURCE_DIR}" "${CARGO_TARGET_DIR}")
-    
+
     # Ensure that cargo_build_rerun doesn't run while we are already building
     set_tests_properties(cargo_build_rerun PROPERTIES RUN_SERIAL TRUE)
 endif()

@@ -159,7 +159,7 @@ jobs:
         # cargo install --locked --no-default-features --version 0.9.1 sccache
         run: |
           cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
-          cargo install --locked --version 0.4.36 mdbook 
+          cargo install --locked --version 0.4.36 mdbook
           cargo install --locked --version 0.7.7 mdbook-linkcheck
       # We want our compiler cache to always update to the newest state.
       # The best way for us to achieve this is to **always** update the cache after every landed commit.
@@ -203,7 +203,7 @@ jobs:
           ./emsdk/emsdk install 2.0.14
           ./emsdk/emsdk activate 2.0.14
       - name: "Install Dependencies"
-        run: | 
+        run: |
           sudo apt-get update && sudo apt-get install -y ninja-build
           pip install --user --break-system-packages clang-format==18.1.8
           test -x ~/.local/bin/clang-format
@@ -426,12 +426,12 @@ jobs:
     - name: "Clone Git repository"
       uses: actions/checkout@v5
     # Ensure clippy and rustfmt is installed, they should come from github runner
-    # clippy version needs to be 1.78.0 for the MSRV lint
+    # clippy version needs to be 1.83.0 for all lints
     #
     # Note we still need rustfmt for the cxx-qt-gen tests
     - name: "Install Rust toolchain"
       run: |
-        rustup toolchain add 1.78.0 --component clippy
+        rustup toolchain add 1.83.0 --component clippy
         rustup default 1.77.2
         rustup component add rustfmt
 
@@ -450,7 +450,7 @@ jobs:
       # cargo install --locked --no-default-features --version 0.9.1 sccache
       run: |
         cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
-        cargo install --locked --version 0.4.36 mdbook 
+        cargo install --locked --version 0.4.36 mdbook
         cargo install --locked --version 0.7.7 mdbook-linkcheck
 
     # We want our compiler cache to always update to the newest state.
