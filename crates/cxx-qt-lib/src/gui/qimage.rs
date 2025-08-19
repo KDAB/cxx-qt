@@ -478,11 +478,10 @@ impl QImage {
     /// If `format` is `None`, the format will be quessed from the image header.
     pub fn from_data(data: &[u8], format: Option<&str>) -> Option<Self> {
         let image = ffi::qimage_init_from_data(data, format.unwrap_or(""));
-
-        if !image.is_null() {
-            Some(image)
-        } else {
+        if image.is_null() {
             None
+        } else {
+            Some(image)
         }
     }
 

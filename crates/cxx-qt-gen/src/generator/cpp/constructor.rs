@@ -117,14 +117,14 @@ pub fn generate(
             },
         });
 
-        let base_args = if !constructor.base_arguments.is_empty() {
+        let base_args = if constructor.base_arguments.is_empty() {
+            String::new()
+        } else {
             argument_names(&constructor.base_arguments)
                 .into_iter()
                 .map(|arg| format!("::std::move(args.base.{arg})"))
                 .collect::<Vec<_>>()
                 .join(", ")
-        } else {
-            String::new()
         };
         // For each constructor defined in CXX-Qt we need a pair of one public and one private
         // constructor.
