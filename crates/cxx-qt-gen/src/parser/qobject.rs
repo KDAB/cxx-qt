@@ -5,12 +5,13 @@
 
 use crate::{
     naming::Name,
-    parser::{extract_cfgs, property::ParsedQProperty, require_attributes},
+    parser::property::ParsedQProperty,
     syntax::{expr::expr_to_string, foreignmod::ForeignTypeIdentAlias, path::path_compare_str},
 };
 #[cfg(test)]
 use quote::format_ident;
 
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
 use crate::parser::{parse_base_type, CaseConversion};
 use syn::{Attribute, Error, Ident, Meta, Result};
 
@@ -47,19 +48,20 @@ pub struct ParsedQObject {
 }
 
 impl ParsedQObject {
-    const ALLOWED_ATTRS: [&'static str; 11] = [
-        "cxx_name",
-        "rust_name",
-        "namespace",
-        "cfg",
-        "doc",
-        "qobject",
-        "base",
-        "qml_element",
-        "qml_uncreatable",
-        "qml_singleton",
-        "qproperty",
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 11] = [
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "namespace"),
+        (AttributeConstraint::Duplicate, "cfg"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Unique, "qobject"),
+        (AttributeConstraint::Unique, "base"),
+        (AttributeConstraint::Unique, "qml_element"),
+        (AttributeConstraint::Unique, "qml_uncreatable"),
+        (AttributeConstraint::Unique, "qml_singleton"),
+        (AttributeConstraint::Duplicate, "qproperty"),
     ];
+
     #[cfg(test)]
     pub fn mock() -> Self {
         ParsedQObject {
@@ -85,13 +87,16 @@ impl ParsedQObject {
         module: &Ident,
         auto_case: CaseConversion,
     ) -> Result<Self> {
-        let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
+        // TODO: ATTR Can this be done without clone
+        let attrs =
+            ParsedAttributes::require_attributes(declaration.attrs.clone(), &Self::ALLOWED_ATTRS)?;
+
         // TODO: handle docs through to generation
-        let cfgs = extract_cfgs(&declaration.attrs);
+        let cfgs = attrs.extract_cfgs();
 
-        let has_qobject_macro = attributes.contains_key("qobject");
+        let has_qobject_macro = attrs.contains_key("qobject");
 
-        let base_class = parse_base_type(&attributes)?;
+        let base_class = parse_base_type(&attrs)?;
 
         // Ensure that if there is no qobject macro that a base class is specificed
         if !has_qobject_macro && base_class.is_none() {
@@ -103,18 +108,18 @@ impl ParsedQObject {
 
         let name = Name::from_ident_and_attrs(
             &declaration.ident_left,
-            &declaration.attrs,
+            &attrs.clone_attrs(),
             namespace,
             Some(module),
             CaseConversion::none(),
         )?;
 
         // Find any QML metadata
-        let qml_metadata = Self::parse_qml_metadata(&name, &declaration.attrs)?;
+        let qml_metadata = Self::parse_qml_metadata(&name, attrs.clone_attrs())?;
 
         // Parse any properties in the type
         // and remove the #[qproperty] attribute
-        let properties = Self::parse_property_attributes(&declaration.attrs, auto_case)?;
+        let properties = Self::parse_property_attributes(&attrs.clone_attrs(), auto_case)?;
         let inner = declaration.ident_right.clone();
 
         Ok(Self {
@@ -129,9 +134,12 @@ impl ParsedQObject {
         })
     }
 
-    fn parse_qml_metadata(name: &Name, attrs: &[Attribute]) -> Result<Option<QmlElementMetadata>> {
-        let attributes = require_attributes(attrs, &Self::ALLOWED_ATTRS)?;
-        if let Some(attr) = attributes.get("qml_element") {
+    fn parse_qml_metadata(
+        name: &Name,
+        attrs: Vec<Attribute>,
+    ) -> Result<Option<QmlElementMetadata>> {
+        let attributes = ParsedAttributes::require_attributes(attrs, &Self::ALLOWED_ATTRS)?;
+        if let Some(attr) = attributes.get_one("qml_element") {
             // Extract the name of the qml_element from macro, else use the c++ name
             // This will use the name provided by cxx_name if that attr was present
             let name = match &attr.meta {
@@ -349,6 +357,13 @@ pub mod tests {
             |input |ParsedQObject::parse(input, None, &format_ident!("qobject"), CaseConversion::none()) =>
 
             {
+                #[qobject]
+                #[base = ""]
+                type MyObject = super::T;
+            }
+            // Duplicate attribute should fail
+            {
+                #[qobject]
                 #[qobject]
                 #[base = ""]
                 type MyObject = super::T;

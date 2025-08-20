@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+pub mod attribute;
 pub mod constructor;
 pub mod cxxqtdata;
 pub mod externcxxqt;
@@ -18,13 +19,10 @@ pub mod qobject;
 pub mod signals;
 pub mod trait_impl;
 
-use crate::{
-    naming::TypeNames,
-    syntax::{expr::expr_to_string, path::path_compare_str},
-};
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
+use crate::{naming::TypeNames, syntax::expr::expr_to_string};
 use convert_case::Case;
 use cxxqtdata::ParsedCxxQtData;
-use std::collections::BTreeMap;
 use syn::{
     punctuated::Punctuated,
     spanned::Spanned,
@@ -73,36 +71,18 @@ impl CaseConversion {
 
     /// Create a CaseConversion object from a Map of attributes, collected using `require_attributes`
     /// Parses both `auto_cxx_name` and `auto_cxx_name = Camel`
-    pub fn from_attrs(attrs: &BTreeMap<&str, &Attribute>) -> Result<Self> {
+    pub fn from_attrs(attrs: &ParsedAttributes) -> Result<Self> {
         let rust = attrs
-            .get("auto_rust_name")
+            .get_one("auto_rust_name")
             .map(|attr| meta_to_case(attr, Case::Snake))
             .transpose()?;
         let cxx = attrs
-            .get("auto_cxx_name")
+            .get_one("auto_cxx_name")
             .map(|attr| meta_to_case(attr, Case::Camel))
             .transpose()?;
 
         Ok(Self { rust, cxx })
     }
-}
-
-/// Iterate the attributes of the method to extract cfg attributes
-pub fn extract_cfgs(attrs: &[Attribute]) -> Vec<Attribute> {
-    attrs
-        .iter()
-        .filter(|attr| path_compare_str(attr.meta.path(), &["cfg"]))
-        .cloned()
-        .collect()
-}
-
-/// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
-pub fn extract_docs(attrs: &[Attribute]) -> Vec<Attribute> {
-    attrs
-        .iter()
-        .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
-        .cloned()
-        .collect()
 }
 
 /// Splits a path by :: separators e.g. "cxx_qt::bridge" becomes ["cxx_qt", "bridge"]
@@ -115,36 +95,10 @@ fn split_path(path_str: &str) -> Vec<&str> {
     path
 }
 
-/// Collects a Map of all attributes found from the allowed list
-/// Will error if an attribute which is not in the allowed list is found
-pub fn require_attributes<'a>(
-    attrs: &'a [Attribute],
-    allowed: &'a [&str],
-) -> Result<BTreeMap<&'a str, &'a Attribute>> {
-    let mut output = BTreeMap::default();
-    for attr in attrs {
-        let index = allowed
-            .iter()
-            .position(|string| path_compare_str(attr.meta.path(), &split_path(string)));
-        if let Some(index) = index {
-            output.insert(allowed[index], attr); // Doesn't error on duplicates
-        } else {
-            return Err(Error::new(
-                attr.span(),
-                format!(
-                    "Unsupported attribute! The only attributes allowed on this item are\n{}",
-                    allowed.join(", ")
-                ),
-            ));
-        }
-    }
-    Ok(output)
-}
-
 // Extract base identifier from attribute
-pub fn parse_base_type(attributes: &BTreeMap<&str, &Attribute>) -> Result<Option<Ident>> {
+pub fn parse_base_type(attributes: &ParsedAttributes) -> Result<Option<Ident>> {
     attributes
-        .get("base")
+        .get_one("base")
         .map(|attr| -> Result<Ident> {
             let expr = &attr.meta.require_name_value()?.value;
             if let Expr::Path(path_expr) = expr {
@@ -152,7 +106,7 @@ pub fn parse_base_type(attributes: &BTreeMap<&str, &Attribute>) -> Result<Option
             } else {
                 Err(Error::new_spanned(
                     expr,
-                    "Base must be a identifier and cannot be empty!",
+                    "There must be a single base identifier, not string, and cannot be empty!",
                 ))
             }
         })
@@ -174,7 +128,7 @@ impl PassthroughMod {
 
         Self {
             items,
-            docs: extract_docs(&module.attrs),
+            docs: attribute::extract_docs(&module.attrs),
             module_ident: module.ident,
             vis: module.vis,
         }
@@ -196,11 +150,18 @@ pub struct Parser {
 
 impl Parser {
     fn parse_mod_attributes(module: &mut ItemMod) -> Result<Option<String>> {
-        let attrs = require_attributes(&module.attrs, &["doc", "cxx_qt::bridge"])?;
+        // TODO: ATTR Can this be done without clone
+        let attrs = ParsedAttributes::require_attributes(
+            module.attrs.clone(),
+            &[
+                (AttributeConstraint::Duplicate, "doc"),
+                (AttributeConstraint::Unique, "cxx_qt::bridge"),
+            ],
+        )?;
         let mut namespace = None;
 
         // Check for the cxx_qt::bridge attribute
-        if let Some(attr) = attrs.get("cxx_qt::bridge") {
+        if let Some(attr) = attrs.get_one("cxx_qt::bridge") {
             // If we are not #[cxx_qt::bridge] but #[cxx_qt::bridge(A = B)] then process
             if !matches!(attr.meta, Meta::Path(_)) {
                 let nested =

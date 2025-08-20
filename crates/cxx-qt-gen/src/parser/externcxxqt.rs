@@ -3,11 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::attribute::{AttributeConstraint, ParsedAttributes};
 use crate::{
-    parser::{
-        externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
-        CaseConversion,
-    },
+    parser::{externqobject::ParsedExternQObject, signals::ParsedSignal, CaseConversion},
     syntax::{attribute::attribute_get_path, expr::expr_to_string},
 };
 use syn::{
@@ -36,18 +34,20 @@ impl ParsedExternCxxQt {
         parent_namespace: Option<&str>,
     ) -> Result<Self> {
         // TODO: support cfg on foreign mod blocks
-        let attrs = require_attributes(
-            &foreign_mod.attrs,
-            &["namespace", "auto_cxx_name", "auto_rust_name"],
+        let attrs = ParsedAttributes::require_attributes(
+            foreign_mod.attrs,
+            &[
+                (AttributeConstraint::Unique, "namespace"),
+                (AttributeConstraint::Unique, "auto_cxx_name"),
+                (AttributeConstraint::Unique, "auto_rust_name"),
+            ],
         )?;
 
         let auto_case = CaseConversion::from_attrs(&attrs)?;
 
         let namespace = attrs
-            .get("namespace")
-            .map(|attr| -> Result<String> {
-                expr_to_string(&attr.meta.require_name_value()?.value)
-            })
+            .get_one("namespace")
+            .map(|attr| expr_to_string(&attr.meta.require_name_value()?.value))
             .transpose()?;
 
         let mut extern_cxx_block = ParsedExternCxxQt {
@@ -218,6 +218,26 @@ mod tests {
             // All types in "C++Qt" blocks must be marked as QObjects
             {
                 unsafe extern "C++Qt" {
+                    type QPushButton;
+                }
+            }
+
+            // Duplicate base attr is an error
+            {
+                extern "C++Qt" {
+                    #[base = QPushButton]
+                    #[base = QPushButton]
+                    #[qobject]
+                    type QPushButtonChild;
+                }
+            }
+
+            // All types in "C++Qt" blocks must be marked as QObjects
+            {
+                #[namespace = "My namespace"]
+                #[namespace = "My other namespace"]
+                unsafe extern "C++Qt" {
+                    #[qobject]
                     type QPushButton;
                 }
             }

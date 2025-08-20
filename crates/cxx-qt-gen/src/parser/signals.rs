@@ -2,11 +2,9 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+use crate::parser::attribute::AttributeConstraint;
 use crate::parser::CaseConversion;
-use crate::{
-    parser::{extract_cfgs, extract_docs, method::MethodFields, require_attributes},
-    syntax::path::path_compare_str,
-};
+use crate::{parser::method::MethodFields, syntax::path::path_compare_str};
 use core::ops::Deref;
 use std::ops::DerefMut;
 use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
@@ -27,8 +25,14 @@ pub struct ParsedSignal {
 }
 
 impl ParsedSignal {
-    const ALLOWED_ATTRS: [&'static str; 6] =
-        ["cfg", "cxx_name", "rust_name", "inherit", "doc", "qsignal"];
+    const ALLOWED_ATTRS: [(AttributeConstraint, &'static str); 6] = [
+        (AttributeConstraint::Duplicate, "cfg"),
+        (AttributeConstraint::Unique, "cxx_name"),
+        (AttributeConstraint::Unique, "rust_name"),
+        (AttributeConstraint::Unique, "inherit"),
+        (AttributeConstraint::Duplicate, "doc"),
+        (AttributeConstraint::Unique, "qsignal"),
+    ];
 
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
@@ -37,10 +41,9 @@ impl ParsedSignal {
     }
 
     pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
-        let docs = extract_docs(&method.attrs);
-        let cfgs = extract_cfgs(&method.attrs);
-        let fields = MethodFields::parse(method, auto_case)?;
-        let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
+        let fields = MethodFields::parse(method, auto_case, &Self::ALLOWED_ATTRS)?;
+        let cfgs = fields.attrs.extract_cfgs();
+        let docs = fields.attrs.extract_docs();
 
         if !fields.mutable {
             return Err(Error::new(
@@ -49,7 +52,7 @@ impl ParsedSignal {
             ));
         }
 
-        let inherit = attrs.contains_key("inherit");
+        let inherit = fields.attrs.contains_key("inherit");
 
         let private = if let Visibility::Restricted(vis_restricted) = &fields.method.vis {
             path_compare_str(&vis_restricted.path, &["self"])
