@@ -61,13 +61,12 @@ impl QtToolRcc {
             .output()
             .unwrap_or_else(|_| panic!("rcc failed for {}", input_path.display()));
 
-        if !cmd.status.success() {
-            panic!(
-                "rcc failed for {}:\n{}",
-                input_path.display(),
-                String::from_utf8_lossy(&cmd.stderr)
-            );
-        }
+        assert!(
+            cmd.status.success(),
+            "rcc failed for {}:\n{}",
+            input_path.display(),
+            String::from_utf8_lossy(&cmd.stderr)
+        );
 
         let qt_6_5 = Version::new(6, 5, 0);
         let init_header = if self.qt_version >= qt_6_5 {
@@ -92,13 +91,12 @@ impl QtToolRcc {
             .output()
             .unwrap_or_else(|_| panic!("rcc --list failed for {}", input_path.display()));
 
-        if !cmd_list.status.success() {
-            panic!(
-                "rcc --list failed for {}:\n{}",
-                input_path.display(),
-                String::from_utf8_lossy(&cmd_list.stderr)
-            );
-        }
+        assert!(
+            cmd_list.status.success(),
+            "rcc --list failed for {}:\n{}",
+            input_path.display(),
+            String::from_utf8_lossy(&cmd_list.stderr)
+        );
 
         String::from_utf8_lossy(&cmd_list.stdout)
             .split('\n')

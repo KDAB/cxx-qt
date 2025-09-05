@@ -291,7 +291,7 @@ impl std::ops::Add for QString {
 impl Drop for QString {
     /// Destroys the string.
     fn drop(&mut self) {
-        ffi::qstring_drop(self)
+        ffi::qstring_drop(self);
     }
 }
 

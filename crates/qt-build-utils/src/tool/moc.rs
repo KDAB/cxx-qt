@@ -106,13 +106,12 @@ impl QtToolMoc {
             .output()
             .unwrap_or_else(|_| panic!("moc failed for {}", input_path.display()));
 
-        if !cmd.status.success() {
-            panic!(
-                "moc failed for {}:\n{}",
-                input_path.display(),
-                String::from_utf8_lossy(&cmd.stderr)
-            );
-        }
+        assert!(
+            cmd.status.success(),
+            "moc failed for {}:\n{}",
+            input_path.display(),
+            String::from_utf8_lossy(&cmd.stderr)
+        );
 
         MocProducts {
             cpp: output_path,

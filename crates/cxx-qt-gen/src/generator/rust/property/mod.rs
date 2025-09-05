@@ -33,14 +33,14 @@ pub fn generate_rust_properties(
 
         if let Some(getter) = getter::generate(&idents, qobject_names, &property.ty, type_names)? {
             generated.append(getter);
-        };
+        }
 
         if let Some(setter) = setter::generate(&idents, qobject_names, &property.ty, type_names)? {
             generated.append(setter);
         }
 
         if let Some(notify) = signal::generate(&idents, qobject_names) {
-            signals.push(notify)
+            signals.push(notify);
         }
     }
 

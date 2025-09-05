@@ -130,7 +130,7 @@ impl GeneratedCppQObject {
         // Add the CxxQtType rust and rust_mut methods
         generated
             .blocks
-            .append(&mut cxxqttype::generate(&qobject_idents)?);
+            .append(&mut cxxqttype::generate(&qobject_idents));
 
         // Generate methods for the properties, invokables, signals
         generated.blocks.append(&mut generate_cpp_properties(
@@ -154,12 +154,16 @@ impl GeneratedCppQObject {
 
         generated.blocks.append(&mut inherit::generate(
             &structured_qobject.inherited_methods,
-            &qobject.base_class.as_ref().map(|ident| ident.to_string()),
+            qobject
+                .base_class
+                .as_ref()
+                .map(ToString::to_string)
+                .as_deref(),
             type_names,
             opt,
         )?);
         generated.blocks.append(&mut qenum::generate_on_qobject(
-            structured_qobject.qenums.iter().cloned(),
+            structured_qobject.qenums.iter().copied(),
             opt,
         )?);
 
@@ -169,7 +173,7 @@ impl GeneratedCppQObject {
         //
         // Note that threading also includes locking C++ generation
         if structured_qobject.threading {
-            let (initializer, mut blocks) = threading::generate(&qobject_idents)?;
+            let (initializer, mut blocks) = threading::generate(&qobject_idents);
             generated.blocks.append(&mut blocks);
             class_initializers.push(initializer);
         }
@@ -183,7 +187,7 @@ impl GeneratedCppQObject {
         generated.blocks.append(&mut constructor::generate(
             &generated,
             &structured_qobject.constructors,
-            base_class,
+            &base_class,
             &class_initializers,
             type_names,
         )?);

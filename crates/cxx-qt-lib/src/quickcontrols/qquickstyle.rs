@@ -51,13 +51,13 @@ impl QQuickStyle {
     ///
     /// The fallback style can be also specified by setting the `QT_QUICK_CONTROLS_FALLBACK_STYLE` [environment variable](https://doc.qt.io/qt/qtquickcontrols-environment.html).
     pub fn set_fallback_style(style: &QString) {
-        ffi::qquickstyle_set_fallback_style(style)
+        ffi::qquickstyle_set_fallback_style(style);
     }
 
     /// Sets the application style to `style`.
     ///
     /// Note: The style must be configured before loading QML that imports Qt Quick Controls. It is not possible to change the style after the QML types have been registered.
     pub fn set_style(style: &QString) {
-        ffi::qquickstyle_set_style(style)
+        ffi::qquickstyle_set_style(style);
     }
 }

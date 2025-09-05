@@ -2,6 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#![allow(clippy::trivially_copy_pass_by_ref)]
 
 #[cfg(feature = "qt_gui")]
 use crate::QColor;
@@ -197,7 +198,7 @@ where
     /// The original `QVector` can still be used after constructing the `Vec`.
     fn from(qvec: &QVector<T>) -> Self {
         let mut vec = Vec::with_capacity(qvec.len().try_into().unwrap());
-        for element in qvec.iter() {
+        for element in qvec {
             vec.push(element.clone());
         }
         vec

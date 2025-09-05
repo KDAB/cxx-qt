@@ -3,8 +3,11 @@
 // SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 #![deny(missing_docs)]
+#![allow(clippy::format_collect)]
+#![allow(clippy::missing_panics_doc)]
+#![allow(clippy::ref_option)]
+#![allow(clippy::missing_errors_doc)]
 
 //! The cxx-qt-gen crate provides methods for generated C++ and Rust code from a TokenStream.
 
@@ -39,13 +42,7 @@ mod tests {
     use pretty_assertions::assert_str_eq;
     use proc_macro2::TokenStream;
     use quote::{quote, ToTokens};
-    use std::{
-        collections::HashMap,
-        env,
-        fs::OpenOptions,
-        io::Write,
-        path::{Path, PathBuf},
-    };
+    use std::{collections::HashMap, env, fs::OpenOptions, io::Write, path::Path};
     use writer::{cpp::write_cpp, rust::write_rust};
 
     #[derive(Default)]
@@ -53,7 +50,7 @@ mod tests {
         pub cfgs: HashMap<&'a str, Option<&'a str>>,
     }
 
-    impl<'a> CfgEvaluator for CfgEvaluatorTest<'a> {
+    impl CfgEvaluator for CfgEvaluatorTest<'_> {
         fn eval(&self, name: &str, query_value: Option<&str>) -> CfgResult {
             if self.cfgs.get(name) == Some(&query_value) {
                 CfgResult::True
@@ -64,6 +61,7 @@ mod tests {
     }
 
     /// Helper to ensure that a given syn item is the same as the given TokenStream
+    #[allow(clippy::needless_pass_by_value)]
     pub fn assert_tokens_eq<T: ToTokens>(item: &T, tokens: TokenStream) {
         // For understanding what's going on, it is nicer to use format_rs_source
         // So that the TokenStream is actually legible.
@@ -127,7 +125,7 @@ mod tests {
     }
 
     // CODECOV_EXCLUDE_START
-    fn update_expected_file(path: PathBuf, source: &str) {
+    fn update_expected_file(path: &Path, source: &str) {
         println!("Updating expected file: {path:?}");
 
         let mut file = OpenOptions::new()
@@ -155,7 +153,7 @@ mod tests {
 
             let update = |file_ending, contents| {
                 update_expected_file(
-                    output_folder.join(format!("{test_name}.{file_ending}")),
+                    &output_folder.join(format!("{test_name}.{file_ending}")),
                     contents,
                 );
             };
@@ -262,6 +260,6 @@ mod tests {
         assert_tokens_eq(
             &quote! { struct MyStruct; },
             quote! { struct MyOtherStruct; },
-        )
+        );
     }
 }

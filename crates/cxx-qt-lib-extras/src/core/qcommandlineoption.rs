@@ -103,7 +103,7 @@ impl Clone for QCommandLineOption {
 impl Drop for QCommandLineOption {
     /// Destroys the `QCommandLineOption`.
     fn drop(&mut self) {
-        ffi::qcommandlineoption_drop(self)
+        ffi::qcommandlineoption_drop(self);
     }
 }
 

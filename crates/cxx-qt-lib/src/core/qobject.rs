@@ -95,7 +95,7 @@ impl QObjectExt for QObject {
     }
 
     fn set_object_name(self: Pin<&mut Self>, name: &QString) {
-        cast_pin(self).set_object_name(name)
+        cast_pin(self).set_object_name(name);
     }
 
     fn object_name(&self) -> QString {
@@ -103,7 +103,7 @@ impl QObjectExt for QObject {
     }
 
     fn parent(&self) -> *mut Self {
-        cast(self).parent() as *mut Self
+        cast(self).parent().cast()
     }
 
     fn set_parent<T>(self: Pin<&mut Self>, parent: Pin<&mut T>)
@@ -112,7 +112,7 @@ impl QObjectExt for QObject {
     {
         unsafe {
             let parent = ptr::from_mut(parent.get_unchecked_mut().upcast_mut()).cast();
-            cast_pin(self).set_parent(parent)
+            cast_pin(self).set_parent(parent);
         }
     }
 

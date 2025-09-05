@@ -90,13 +90,12 @@ impl QtToolQmlCacheGen {
                     file.as_ref().display()
                 )
             });
-        if !cmd.status.success() {
-            panic!(
-                "qmlcachegen failed for {} in QML module {uri}:\n{}",
-                file.as_ref().display(),
-                String::from_utf8_lossy(&cmd.stderr)
-            );
-        }
+        assert!(
+            cmd.status.success(),
+            "qmlcachegen failed for {} in QML module {uri}:\n{}",
+            file.as_ref().display(),
+            String::from_utf8_lossy(&cmd.stderr)
+        );
 
         QmlCacheProducts {
             qml_cache_path,
@@ -142,12 +141,11 @@ impl QtToolQmlCacheGen {
             )
             .output()
             .unwrap_or_else(|_| panic!("qmlcachegen failed for QML module {uri}"));
-        if !cmd.status.success() {
-            panic!(
-                "qmlcachegen failed for QML module {uri}:\n{}",
-                String::from_utf8_lossy(&cmd.stderr)
-            );
-        }
+        assert!(
+            cmd.status.success(),
+            "qmlcachegen failed for QML module {uri}:\n{}",
+            String::from_utf8_lossy(&cmd.stderr)
+        );
 
         qmlcachegen_loader
     }

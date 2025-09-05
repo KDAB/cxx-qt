@@ -45,6 +45,6 @@ mod tests {
                 header: String::new(),
                 source: String::new()
             }
-        )
+        );
     }
 }
