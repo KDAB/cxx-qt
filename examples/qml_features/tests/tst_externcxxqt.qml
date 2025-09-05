@@ -46,11 +46,16 @@ TestCase {
             signalName: "triggeredPrivateSignal",
             target: obj,
         });
+        const triggeredConstSpy = createTemporaryObject(componentSpy, null, {
+            signalName: "triggeredConstSignal",
+            target: obj,
+        });
 
         helper.connectToExternal(obj);
 
         compare(triggeredSpy.count, 0);
         compare(triggeredPrivateSpy.count, 0);
+        compare(triggeredConstSpy.count, 0);
         compare(helper.count, 0);
         compare(helper.privateCount, 0);
 
@@ -58,6 +63,7 @@ TestCase {
 
         tryCompare(triggeredSpy, "count", 2);
         tryCompare(triggeredPrivateSpy, "count", 2);
+        tryCompare(triggeredConstSpy, "count", 2);
         tryCompare(helper, "count", 2);
         tryCompare(helper, "privateCount", 2);
     }

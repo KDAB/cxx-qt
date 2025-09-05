@@ -224,6 +224,38 @@ mod ffi {
             self_value: Pin<&mut QTimer>,
         );
     }
+    unsafe extern "C++" {
+        #[cxx_name = "const_ready"]
+        #[doc = " A constant signal for when the timer is ready"]
+        #[namespace = "cxx_qt::my_object"]
+        fn const_ready(self: &QTimer);
+    }
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        type QTimerCxxQtSignalHandlerconst_ready<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<
+            'a,
+            super::QTimerCxxQtSignalClosureconst_ready,
+        >;
+        #[doc(hidden)]
+        #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+        #[cxx_name = "QTimer_const_readyConnect"]
+        fn QTimer_connect_const_ready(
+            self_value: &QTimer,
+            signal_handler: QTimerCxxQtSignalHandlerconst_ready,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_QTimer_signal_handler_const_ready(handler: QTimerCxxQtSignalHandlerconst_ready);
+        #[doc(hidden)]
+        fn call_QTimer_signal_handler_const_ready(
+            handler: &mut QTimerCxxQtSignalHandlerconst_ready,
+            self_value: &QTimer,
+        );
+    }
     extern "C++" {
         #[doc(hidden)]
         #[namespace = ""]
@@ -557,5 +589,64 @@ cxx_qt::static_assertions::assert_eq_align!(
 );
 cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosuretimeout>,
+    [usize; 2]
+);
+impl ffi::QTimer {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "const_ready"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    pub fn connect_const_ready<'a, F: FnMut(&ffi::QTimer) + 'a + Send>(
+        self: &ffi::QTimer,
+        closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QTimer_connect_const_ready(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosureconst_ready>::new(
+                Box::new(closure),
+            ),
+            conn_type,
+        ))
+    }
+}
+impl ffi::QTimer {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "const_ready"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    pub fn on_const_ready<'a, F: FnMut(&ffi::QTimer) + 'a + Send>(
+        self: &ffi::QTimer,
+        closure: F,
+    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
+        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QTimer_connect_const_ready(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosureconst_ready>::new(
+                Box::new(closure),
+            ),
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
+    }
+}
+#[doc(hidden)]
+pub struct QTimerCxxQtSignalClosureconst_ready {}
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QTimerCxxQtSignalClosureconst_ready {
+    type Id =
+        cxx::type_id!("::cxx_qt::my_object::rust::cxxqtgen1::QTimerCxxQtSignalHandlerconst_ready");
+    type FnType<'a> = dyn FnMut(&ffi::QTimer) + 'a + Send;
+}
+use core::mem::drop as drop_QTimer_signal_handler_const_ready;
+fn call_QTimer_signal_handler_const_ready(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosureconst_ready>,
+    self_value: &ffi::QTimer,
+) {
+    handler.closure()(self_value);
+}
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosureconst_ready>,
+    usize
+);
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosureconst_ready>,
     [usize; 2]
 );

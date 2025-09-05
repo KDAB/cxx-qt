@@ -3,6 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::parser::signals::ImmutabilityConstraint;
 use crate::{
     parser::{
         externqobject::ParsedExternQObject, require_attributes, signals::ParsedSignal,
@@ -108,7 +109,11 @@ impl ParsedExternCxxQt {
             if attribute_get_path(&foreign_fn.attrs, &["inherit"]).is_some() {
                 return Err(Error::new(foreign_fn.span(), "#[inherit] is not allowed or necessary in extern \"C++Qt\" blocks, as all signals are inherited by default"));
             }
-            let mut signal = ParsedSignal::parse(foreign_fn, auto_case)?;
+            let mut signal = ParsedSignal::parse_with_mutability(
+                foreign_fn,
+                auto_case,
+                ImmutabilityConstraint::Allowed,
+            )?;
             // extern "C++Qt" signals are always inherit = true
             // as they always exist on an existing QObject
             signal.inherit = true;

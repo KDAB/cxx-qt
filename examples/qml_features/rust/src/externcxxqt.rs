@@ -22,6 +22,11 @@ pub mod ffi {
         #[qsignal]
         fn triggered(self: Pin<&mut Self>);
 
+        /// const signal that is emitted when trigger is fired
+        #[qsignal]
+        #[rust_name = "triggered_const_signal"]
+        fn triggeredConstSignal(&self);
+
         /// Private signal that is emitted when trigger is fired
         #[qsignal]
         #[rust_name = "triggered_private_signal"]
@@ -86,6 +91,19 @@ impl ffi::ExternalCxxQtHelper {
                         .queue(|mut qobject| {
                             let new_private_count = qobject.as_ref().private_count() + 1;
                             qobject.as_mut().set_private_count(new_private_count);
+                        })
+                        .unwrap();
+                })
+                .release();
+
+            let qt_thread = self.qt_thread();
+            pinned_external
+                .as_mut()
+                .on_triggered_const_signal(move |_| {
+                    qt_thread
+                        .queue(|qobject| {
+                            let const_count = qobject.count();
+                            println!("count from const signal: {}", const_count);
                         })
                         .unwrap();
                 })
