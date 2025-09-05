@@ -217,7 +217,7 @@ pub trait Threading: Sized {
 }
 
 #[doc(hidden)]
-pub trait ConstructorDeclared {}
+pub trait ConstructorDeclared<Arguments> {}
 
 /// This trait can be implemented on any [CxxQtType] to define a
 /// custom constructor in C++ for the QObject.
@@ -310,7 +310,7 @@ pub trait ConstructorDeclared {}
 ///
 /// If a QObject implements the `Initialize` trait, and the inner Rust struct is [Default]-constructible it will automatically implement `cxx_qt::Constructor<()>`.
 /// Additionally, implementing `impl cxx_qt::Initialize` will act as shorthand for `cxx_qt::Constructor<()>`.
-pub trait Constructor<Arguments>: CxxQtType + ConstructorDeclared {
+pub trait Constructor<Arguments>: CxxQtType + ConstructorDeclared<Arguments> {
     /// The arguments that are passed to the [`new()`](Self::new) function to construct the inner Rust struct.
     /// This must be a tuple of CXX compatible types.
     ///
@@ -397,7 +397,7 @@ pub trait Constructor<Arguments>: CxxQtType + ConstructorDeclared {
 /// ```
 // TODO: Once the QObject type is available in the cxx-qt crate, also auto-generate a default
 // constructor that takes QObject and passes it to the parent.
-pub trait Initialize: CxxQtType + ConstructorDeclared {
+pub trait Initialize: CxxQtType + ConstructorDeclared<()> {
     /// This function is called to initialize the QObject after construction.
     fn initialize(self: core::pin::Pin<&mut Self>);
 }
