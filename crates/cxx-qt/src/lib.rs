@@ -118,7 +118,7 @@ pub trait Threading: Sized {
     fn threading_clone(cxx_qt_thread: &CxxQtThread<Self>) -> CxxQtThread<Self>;
 
     #[doc(hidden)]
-    fn threading_drop(cxx_qt_thread: &mut CxxQtThread<Self>);
+    fn threading_drop(cxx_qt_thread: core::pin::Pin<&mut CxxQtThread<Self>>);
 }
 
 /// Placeholder for upcasting objects, suppresses dead code warning
