@@ -213,7 +213,7 @@ pub trait Threading: Sized {
     fn threading_clone(cxx_qt_thread: &CxxQtThread<Self>) -> CxxQtThread<Self>;
 
     #[doc(hidden)]
-    fn threading_drop(cxx_qt_thread: &mut CxxQtThread<Self>);
+    fn threading_drop(cxx_qt_thread: core::pin::Pin<&mut CxxQtThread<Self>>);
 }
 
 /// This trait can be implemented on any [CxxQtType] to define a

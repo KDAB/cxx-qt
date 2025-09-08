@@ -79,7 +79,7 @@ where
     T: Threading,
 {
     fn drop(&mut self) {
-        T::threading_drop(self);
+        T::threading_drop(unsafe { core::pin::Pin::new_unchecked(self) });
     }
 }
 
