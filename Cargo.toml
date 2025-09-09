@@ -21,10 +21,11 @@ members = [
     "examples/qml_multi_crates/rust/main",
     "examples/qml_multi_crates/rust/sub1",
     "examples/qml_multi_crates/rust/sub2",
+    "examples/span-inspector",
 
     "tests/basic_cxx_only/rust",
     "tests/basic_cxx_qt/rust",
-    "tests/qt_types_standalone/rust", "examples/span-inspector",
+    "tests/qt_types_standalone/rust",
 ]
 resolver = "2"
 
