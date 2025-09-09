@@ -109,12 +109,7 @@ impl qobject::SpanInspector {
         let input = unsafe { Pin::new_unchecked(&mut *self.input) };
         let cursor_position = self.cursor_position.clone();
         let qt_thread = self.qt_thread();
-        qt_thread
-            .queue(|this| {
-                unsafe { this.output_document() }
-                    .set_html(&QString::from(String::from("expanding...")))
-            })
-            .ok();
+        unsafe { self.output_document() }.set_html(&QString::from(String::from("expanding...")));
 
         let text = unsafe { Pin::new_unchecked(&mut *input.text_document()) }
             .to_plain_text()
