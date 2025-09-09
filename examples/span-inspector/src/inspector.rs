@@ -6,10 +6,7 @@
 
 use cxx_qt_gen::{write_rust, Parser};
 use proc_macro2::{Span, TokenStream, TokenTree};
-use std::{
-    str::FromStr,
-    sync::{Arc, Mutex},
-};
+use std::str::FromStr;
 use syn::{parse2, ItemMod};
 
 #[cxx_qt::bridge]
@@ -58,7 +55,7 @@ mod qobject {
 
         #[qinvokable]
         #[cxx_name = "rebuildOutput"]
-        fn rebuild_output(self: Pin<&mut SpanInspector>, pos: i32);
+        fn rebuild_output(self: Pin<&mut SpanInspector>, cursor_position: i32);
     }
 
     impl UniquePtr<QTextDocument> {}
@@ -70,7 +67,6 @@ use qobject::{QQuickTextDocument, QString, QTextDocument};
 use std::{pin::Pin, ptr};
 
 pub struct SpanInspectorRust {
-    cursor_position: Arc<Mutex<i32>>,
     input: *mut QQuickTextDocument,
     output: *mut QQuickTextDocument,
 }
@@ -78,7 +74,6 @@ pub struct SpanInspectorRust {
 impl Default for SpanInspectorRust {
     fn default() -> Self {
         Self {
-            cursor_position: Arc::new(Mutex::new(3)),
             input: ptr::null_mut(),
             output: ptr::null_mut(),
         }
@@ -99,43 +94,29 @@ impl qobject::SpanInspector {
         self.as_mut().input_changed();
     }
 
-    fn rebuild_output(self: Pin<&mut Self>, pos: i32) {
-        let mut cursor_position = match self.cursor_position.lock() {
-            Ok(mutex) => mutex,
-            Err(poison_error) => poison_error.into_inner(),
-        };
-        *cursor_position = pos;
-
+    fn rebuild_output(self: Pin<&mut Self>, cursor_position: i32) {
         let input = unsafe { Pin::new_unchecked(&mut *self.input) };
-        let cursor_position = self.cursor_position.clone();
         let qt_thread = self.qt_thread();
         unsafe { self.output_document() }.set_html(&QString::from(String::from("expanding...")));
 
-        let text = unsafe { Pin::new_unchecked(&mut *input.text_document()) }
-            .to_plain_text()
-            .to_string();
+        let text = unsafe { Pin::new_unchecked(&mut *input.text_document()) }.to_plain_text();
 
         std::thread::spawn(move || {
-            let cursor_position = match cursor_position.lock() {
-                Ok(mutex) => mutex,
-                Err(poison_error) => poison_error.into_inner(),
-            };
-
-            let output = match Self::expand(&text, *cursor_position as usize) {
-                Ok((expanded, span_data)) => {
-                    let Ok(file) = syn::parse_file(expanded.as_str())
-                        .map_err(|err| eprintln!("Parsing error: {err}"))
-                    else {
-                        return;
-                    };
-                    Self::build_html(&prettyplease::unparse(&file), span_data)
-                }
-                Err(error) => Self::build_error_html(&error),
-            };
+            let output = QString::from(
+                match Self::expand(&text.to_string(), cursor_position as usize) {
+                    Ok((expanded, span_data)) => {
+                        let Ok(file) = syn::parse_file(expanded.as_str())
+                            .map_err(|err| eprintln!("Parsing error: {err}"))
+                        else {
+                            return;
+                        };
+                        Self::build_html(&prettyplease::unparse(&file), span_data)
+                    }
+                    Err(error) => Self::build_error_html(&error),
+                },
+            );
             qt_thread
-                .queue(move |this| {
-                    unsafe { this.output_document() }.set_html(&QString::from(output))
-                })
+                .queue(move |this| unsafe { this.output_document() }.set_html(&output))
                 .ok();
         });
     }
