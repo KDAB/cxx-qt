@@ -7,7 +7,7 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
     let qml_module: QmlModule<'static, &str, &str> = QmlModule {
-        uri: "com.kdab.cxx_qt.demo",
+        uri: "com.kdab.cxx_qt.span_inspector",
         rust_files: &["src/inspector.rs"],
         qml_files: &["qml/main.qml"],
         ..Default::default()
