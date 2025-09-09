@@ -80,6 +80,18 @@ impl Default for SpanInspectorRust {
     }
 }
 
+// This Trait is necessary because `prettyplease` seems to add certain characters in some situations.
+// By simply ignoring these characters, we can work around the problem.
+impl<I> FilterPrettyPlease for I where I: Iterator<Item = TokenTree> + Sized {}
+trait FilterPrettyPlease: Iterator<Item = TokenTree> + Sized {
+    fn filter_pretty_please(self) -> impl Iterator<Item = TokenTree> {
+        self.filter(|token| {
+            let string = token.to_string();
+            !matches!(string.as_str(), "," | "}" | "{")
+        })
+    }
+}
+
 impl qobject::SpanInspector {
     unsafe fn output_document(&self) -> Pin<&mut QTextDocument> {
         if self.output.is_null() {
@@ -146,17 +158,12 @@ impl qobject::SpanInspector {
 
         let span_data: Vec<(bool, bool)> = Self::flatten_tokenstream(output_stream.clone())
             .into_iter()
-            // prettyplease may insert extra tokens.
-            // This filter simply ignores them.
-            .filter(|token| {
-                let string = token.to_string();
-                !matches!(string.as_str(), "," | "}" | "{")
-            })
+            .filter_pretty_please()
             .map(|token| {
                 (
                     target_span
                         .map(|s| s.byte_range().eq(token.span().byte_range()))
-                        .unwrap_or_else(|| false),
+                        .unwrap_or_default(),
                     token.span().byte_range().start == 0,
                 )
             })
@@ -207,13 +214,8 @@ impl qobject::SpanInspector {
         let mut highlighted_string = input.to_string();
 
         let mut token_position = span_data.len();
-        for token in flat_tokenstream.into_iter().rev() {
-            // prettyplease may insert extra tokens.
-            // This `if` statement simply ignores them.
-            let token_string = token.to_string();
-            if !matches!(token_string.as_str(), "," | "{" | "}") {
-                token_position -= 1;
-            }
+        for token in flat_tokenstream.into_iter().rev().filter_pretty_please() {
+            token_position -= 1;
             if span_data.get(token_position).unwrap().0 {
                 highlighted_string.replace_range(
                     token.span().byte_range(),
