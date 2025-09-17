@@ -16,10 +16,6 @@ mod ffi {
         ///
         /// Qt Documentation: [QObject](https://doc.qt.io/qt/qobject.html#details)
         type QObject;
-
-        #[cxx_name = "dumpObjectInfo"]
-        /// Dumps information about signal connections, etc. for this object to the debug output.
-        fn dump_object_info(&self);
     }
 }
 
