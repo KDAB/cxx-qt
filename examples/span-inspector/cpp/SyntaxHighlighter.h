@@ -1,16 +1,24 @@
 // clang-format off
-// SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // clang-format on
-// SPDX-FileContributor: Andrew Hayzen <quentin.weber@kdab.com>
+// SPDX-FileContributor: Quentin Weber <quentin.weber@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #pragma once
+#include <QColor>
 #include <QQuickTextDocument>
 #include <QRegularExpression>
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 #include <QVector>
+#include <vector>
+
+struct HighlightRule
+{
+  QString regex;
+  QColor color;
+};
 
 class SyntaxHighlighter : public QSyntaxHighlighter
 {
@@ -18,6 +26,9 @@ class SyntaxHighlighter : public QSyntaxHighlighter
 public:
   explicit SyntaxHighlighter(QTextDocument* doc);
   void highlightBlock(const QString& text) override;
+
+private:
+  std::vector<HighlightRule> highlightRules;
 };
 
 std::unique_ptr<SyntaxHighlighter>
