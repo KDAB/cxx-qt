@@ -14,6 +14,13 @@ mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
+
+        include!("SyntaxHighlighter.h");
+        type SyntaxHighlighter;
+
+        unsafe fn new_syntax_highlighter(
+            text_document: *mut QQuickTextDocument,
+        ) -> UniquePtr<SyntaxHighlighter>;
     }
 
     unsafe extern "C++Qt" {
@@ -48,10 +55,11 @@ mod qobject {
         #[qobject]
         #[qml_element]
         #[qproperty(*mut QQuickTextDocument, input, READ, NOTIFY, WRITE=set_input)]
-        #[qproperty(*mut QQuickTextDocument, output)]
+        #[qproperty(*mut QQuickTextDocument, output, READ, NOTIFY, WRITE=set_output)]
         type SpanInspector = super::SpanInspectorRust;
 
         unsafe fn set_input(self: Pin<&mut SpanInspector>, input: *mut QQuickTextDocument);
+        unsafe fn set_output(self: Pin<&mut SpanInspector>, output: *mut QQuickTextDocument);
 
         #[qinvokable]
         #[cxx_name = "rebuildOutput"]
@@ -62,14 +70,17 @@ mod qobject {
     impl cxx_qt::Threading for SpanInspector {}
 }
 
+use cxx::UniquePtr;
 use cxx_qt::{CxxQtType, Threading};
-use qobject::{QQuickTextDocument, QString, QTextDocument};
+use qobject::{QQuickTextDocument, QString, QTextDocument, SyntaxHighlighter};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{pin::Pin, ptr};
 
 pub struct SpanInspectorRust {
     input: *mut QQuickTextDocument,
     output: *mut QQuickTextDocument,
+    input_highlighter: UniquePtr<SyntaxHighlighter>,
+    output_highlighter: UniquePtr<SyntaxHighlighter>,
 }
 
 impl Default for SpanInspectorRust {
@@ -77,6 +88,8 @@ impl Default for SpanInspectorRust {
         Self {
             input: ptr::null_mut(),
             output: ptr::null_mut(),
+            input_highlighter: UniquePtr::null(),
+            output_highlighter: UniquePtr::null(),
         }
     }
 }
@@ -111,7 +124,18 @@ impl qobject::SpanInspector {
 
     fn set_input(mut self: Pin<&mut Self>, input: *mut QQuickTextDocument) {
         self.as_mut().rust_mut().input = input;
+        unsafe {
+            self.as_mut().rust_mut().input_highlighter = qobject::new_syntax_highlighter(input);
+        }
         self.as_mut().input_changed();
+    }
+
+    fn set_output(mut self: Pin<&mut Self>, output: *mut QQuickTextDocument) {
+        self.as_mut().rust_mut().output = output;
+        unsafe {
+            self.as_mut().rust_mut().output_highlighter = qobject::new_syntax_highlighter(output);
+        }
+        self.as_mut().output_changed();
     }
 
     fn rebuild_output(self: Pin<&mut Self>, cursor_position: i32) {

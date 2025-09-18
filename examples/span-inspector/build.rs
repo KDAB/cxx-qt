@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+// SPDX-FileContributor: Quentin Weber <quentin.weber@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -21,5 +22,12 @@ fn main() {
         .qt_module("Network")
         .qt_module("Quick")
         .qml_module(qml_module)
+        .qobject_header("cpp/SyntaxHighlighter.h")
+        .cc_builder(|cc| {
+            cc.include("cpp");
+            cc.file("cpp/SyntaxHighlighter.cpp");
+        })
         .build();
+    println!("cargo:rerun-if-changed=cpp/SyntaxHighlighter.cpp");
+    println!("cargo:rerun-if-changed=cpp/SyntaxHighlighter.h");
 }
