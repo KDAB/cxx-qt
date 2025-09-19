@@ -12,7 +12,6 @@
 #include <QSyntaxHighlighter>
 #include <QTextCharFormat>
 #include <QVector>
-#include <vector>
 
 struct HighlightRule
 {

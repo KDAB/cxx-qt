@@ -6,6 +6,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #include "SyntaxHighlighter.h"
+#include <deque>
 
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
   : QSyntaxHighlighter(doc)
@@ -18,8 +19,9 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
         "2})(?!\\w)",
         "#ff7b72" },
       { "\\->|=>|\\+=|-=|!|&|=|<|>|&|\\*", "#407ecf" },
-      { "\".*\"|(?<=fn\\s)\\w*|", "#6fc0f4" },
+      { "(?<=fn\\s)\\w*|", "#6fc0f4" },
       { "//.*", "#6784b5" } });
+  setCurrentBlockState(0);
 }
 
 void
@@ -37,53 +39,86 @@ SyntaxHighlighter::highlightBlock(const QString& text)
     }
   }
 
-  QRegularExpression regCommentStart("/\\*");
-  QRegularExpression regCommentEnd("\\*/");
+  std::deque<QRegularExpressionMatch> matches;
 
-  QRegularExpressionMatchIterator startMatches =
-    QRegularExpression(regCommentStart).globalMatch(text);
-  QRegularExpressionMatchIterator endMatches =
-    QRegularExpression(regCommentEnd).globalMatch(text);
-
-  QTextCharFormat charFormat;
-  charFormat.setForeground(QColor("#6784b5"));
-
-  setCurrentBlockState(-1);
-
-  if (previousBlockState() == 0) {
-    if (endMatches.hasNext()) {
-      QRegularExpressionMatch match = endMatches.next();
-      setFormat(0, match.capturedEnd(), charFormat);
-    } else {
-      setFormat(0, text.length(), charFormat);
-      setCurrentBlockState(0);
-    }
+  for (QRegularExpressionMatch match :
+       QRegularExpression("(?<!\\\\)/\\*|\\*/|(?<!\\\\)\"").globalMatch(text)) {
+    matches.push_back(match);
   }
 
-  QRegularExpressionMatch start;
-  QRegularExpressionMatch end;
+  std::sort(matches.begin(), matches.end(), [](const auto& a, const auto& b) {
+    return a.capturedStart() < b.capturedStart();
+  });
 
-  while (startMatches.hasNext()) {
-    start = startMatches.next();
+  QTextCharFormat charFormatComment, charFormatLiteral;
+  charFormatComment.setForeground(QColor("#6784b5"));
+  charFormatLiteral.setForeground(QColor("#6fc0f4"));
 
-    if (endMatches.hasNext()) {
-      end = endMatches.next();
-    } else {
-      setCurrentBlockState(0);
-    }
+  enum class State
+  {
+    Default,
+    Comment,
+    Literal
+  };
 
-    while (start.capturedStart() >= end.capturedEnd()) {
-      if (!startMatches.hasNext()) {
+  State currentState = (previousBlockState() == -1)
+                         ? State::Default
+                         : static_cast<State>(previousBlockState());
+
+  int highlightStart = 0;
+
+  while (!matches.empty()) {
+    const QRegularExpressionMatch match = matches.front();
+    matches.pop_front();
+
+    const QString capture = match.captured(0);
+    int capturedStart = match.capturedStart();
+    int capturedEnd = match.capturedEnd();
+
+    switch (currentState) {
+      case State::Default:
+        if (capture == "/*") {
+          currentState = State::Comment;
+          highlightStart = capturedStart;
+        } else if (capture == "\"") {
+          currentState = State::Literal;
+          highlightStart = capturedStart;
+        }
         break;
-      }
-      startMatches.next();
+
+      case State::Comment:
+        if (capture == "*/") {
+          currentState = State::Default;
+          setFormat(
+            highlightStart, capturedEnd - highlightStart, charFormatComment);
+        }
+        break;
+
+      case State::Literal:
+        if (capture == "\"") {
+          currentState = State::Default;
+          setFormat(
+            highlightStart, capturedEnd - highlightStart, charFormatLiteral);
+        }
+        break;
     }
-
-    int endPos = (currentBlockState() == 0) ? text.length() : end.capturedEnd();
-
-    setFormat(
-      start.capturedStart(), endPos - start.capturedStart(), charFormat);
   }
+
+  switch (currentState) {
+    case State::Comment:
+      setFormat(
+        highlightStart, text.length() - highlightStart, charFormatComment);
+      break;
+
+    case State::Literal:
+      setFormat(
+        highlightStart, text.length() - highlightStart, charFormatLiteral);
+      break;
+    case State::Default:
+      break;
+  }
+
+  setCurrentBlockState(static_cast<int>(currentState));
 }
 
 std::unique_ptr<SyntaxHighlighter>
