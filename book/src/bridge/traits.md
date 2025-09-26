@@ -26,6 +26,7 @@ For further documentation, refer to the documentation of the individual traits:
 - [Constructor](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) - custom constructor
 - [Initialize](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Initialize.html) - execute Rust code when the object is constructed, or as shorthand for an empty constructor
 - [Threading](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Threading.html) - marker trait whether CXX-Qt threading should be enabled
+- [AsQobject](https://docs.rs/cxx-qt/latest/cxx_qt/trait.AsQobject.html) - Trait to allow methods of QObject to be called on anything which can be turned into a qobject, e.g. via casting traits (see below)
 
 > ⚠️ These traits should only be implemented if you are sure you need to, they are automatically implemented for RustQt types.
 
