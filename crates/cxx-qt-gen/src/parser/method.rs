@@ -2,7 +2,7 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-use crate::parser::CaseConversion;
+use crate::parser::{extract_docs, CaseConversion};
 use crate::{
     naming::Name,
     parser::{extract_cfgs, parameter::ParsedFunctionParameter, require_attributes},
@@ -59,16 +59,18 @@ pub struct ParsedMethod {
     pub is_qinvokable: bool,
     /// Whether the method is a pure virtual method
     pub is_pure: bool,
-    // No docs field since the docs should be on the method implementation outside the bridge
-    // This means any docs on the bridge declaration would be ignored
+    /// Whether to auto generate a wrapper for this method outside the bridge
+    pub wrap: bool,
     /// Cfgs for the method
     pub cfgs: Vec<Attribute>,
+    /// Docs for the method, for passing onto the auto_wrap generated methods
+    pub docs: Vec<Attribute>,
     /// Whether the block containing the method is safe or unsafe
     pub unsafe_block: bool,
 }
 
 impl ParsedMethod {
-    const ALLOWED_ATTRS: [&'static str; 9] = [
+    const ALLOWED_ATTRS: [&'static str; 10] = [
         "cxx_name",
         "rust_name",
         "qinvokable",
@@ -76,6 +78,7 @@ impl ParsedMethod {
         "cxx_override",
         "cxx_virtual",
         "cxx_pure",
+        "auto_wrap",
         "doc",
         "cfg",
     ];
@@ -123,10 +126,12 @@ impl ParsedMethod {
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&fields.method.attrs);
+        let docs = extract_docs(&fields.method.attrs);
 
         // Determine if the method is invokable
         let is_qinvokable = attrs.contains_key("qinvokable");
         let is_pure = attrs.contains_key("cxx_pure");
+        let wrap = attrs.contains_key("auto_wrap");
         let specifiers = ParsedQInvokableSpecifiers::from_attrs(attrs);
 
         Ok(Self {
@@ -134,7 +139,9 @@ impl ParsedMethod {
             specifiers,
             is_qinvokable,
             is_pure,
+            wrap,
             cfgs,
+            docs,
             unsafe_block,
         })
     }

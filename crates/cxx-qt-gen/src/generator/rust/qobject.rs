@@ -35,7 +35,7 @@ impl GeneratedRustFragment {
                 type_names,
                 structured_qobject,
             )?,
-            generate_rust_methods(&structured_qobject.methods, &qobject_names)?,
+            generate_rust_methods(&structured_qobject.methods, &qobject_names, type_names)?,
             inherit::generate(&qobject_names, &structured_qobject.inherited_methods)?,
             generate_rust_signals(&structured_qobject.signals, &qobject_names, type_names)?,
         ];
