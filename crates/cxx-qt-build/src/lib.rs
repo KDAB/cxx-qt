@@ -1096,7 +1096,7 @@ extern "C" bool {init_fun}() {{
         let qt_modules = self.qt_modules(&dependencies);
 
         // Ensure that the linker is setup correctly for Cargo builds
-        qt_build_utils::setup_linker();
+        qt_build_utils::QtPlatformLinker::init();
 
         let header_root = dir::header_root();
 
