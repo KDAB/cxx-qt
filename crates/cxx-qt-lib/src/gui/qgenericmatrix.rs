@@ -39,13 +39,13 @@ impl<const N: usize, const M: usize> QGenericMatrix<N, M> {
     /// Returns a reference to the raw data of this matrix.
     pub const fn data(&self) -> &[f32] {
         // TODO: Replace with `array::as_flattened` once MSRV is 1.80.0.
-        unsafe { *self.data.as_ptr().cast() }
+        unsafe { slice::from_raw_parts(self.data.as_ptr().cast(), N * M) }
     }
 
     /// Returns a mutable reference to the raw data of this matrix.
     pub fn data_mut(&mut self) -> &mut [f32] {
         // TODO: Replace with `array::as_flattened_mut` once MSRV is 1.80.0.
-        unsafe { *self.data.as_mut_ptr().cast() }
+        unsafe { slice::from_raw_parts_mut(self.data.as_mut_ptr().cast(), N * M) }
     }
 
     /// Retrieves the N * M items in this matrix and copies them to `values` in row-major order.
