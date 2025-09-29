@@ -83,7 +83,7 @@ impl<const N: usize, const M: usize> QGenericMatrix<N, M> {
 
     /// Returns `true` if this matrix is the identity; `false` otherwise.
     pub fn is_identity(&self) -> bool {
-        self == Self::identity()
+        self == &Self::identity()
     }
 
     /// Constructs a two-dimensional array from the matrix in row-major order.
@@ -218,16 +218,21 @@ impl<const N: usize, const M: usize> std::ops::Neg for QGenericMatrix<N, M> {
     }
 }
 
-impl<const N: usize, const M: usize> From<&[f32]> for QGenericMatrix<N, M> {
+impl<const N: usize, const M: usize> TryFrom<&[f32]> for QGenericMatrix<N, M> {
+    type Error = &'static str;
+
     /// Constructs a matrix from the given N * M floating-point `values`. The contents of the array `values` is assumed to be in row-major order.
-    fn from(values: &[f32]) -> Self {
+    fn try_from(values: &[f32]) -> Result<Self, Self::Error> {
+        if values.len() != M * N {
+            return Err("invalid array length");
+        }
         let mut matrix = [[0.0; M]; N];
         for (col, data) in matrix.iter_mut().enumerate() {
             for (row, value) in data.iter_mut().enumerate() {
                 *value = values[row * N + col];
             }
         }
-        Self { data: matrix }
+        Ok(Self { data: matrix })
     }
 }
 
@@ -351,5 +356,27 @@ mod test {
     fn transposed() {
         let rows = MATRIX.transposed().rows();
         assert_eq!(rows, [[5.0, 6.0], [4.0, 7.0], [3.0, 8.0], [2.0, 9.0]]);
+    }
+
+    #[test]
+    fn try_from_valid() {
+        let matrix =
+            QGenericMatrix::<4, 2>::try_from([5.0, 6.0, 4.0, 7.0, 3.0, 8.0, 2.0, 9.0].as_slice());
+        assert_eq!(matrix, Ok(*MATRIX));
+    }
+
+    #[test]
+    fn try_from_too_short() {
+        let matrix =
+            QGenericMatrix::<4, 2>::try_from([5.0, 6.0, 4.0, 7.0, 3.0, 8.0, 2.0].as_slice());
+        matrix.expect_err("Expected error, got");
+    }
+
+    #[test]
+    fn try_from_too_long() {
+        let matrix = QGenericMatrix::<4, 2>::try_from(
+            [5.0, 6.0, 4.0, 7.0, 3.0, 8.0, 2.0, 9.0, 1.0].as_slice(),
+        );
+        matrix.expect_err("Expected error, got");
     }
 }
