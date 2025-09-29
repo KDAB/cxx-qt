@@ -228,7 +228,7 @@ impl fmt::Debug for QByteArray {
 impl Drop for QByteArray {
     /// Destroys the byte array.
     fn drop(&mut self) {
-        ffi::qbytearray_drop(self)
+        ffi::qbytearray_drop(self);
     }
 }
 
@@ -303,10 +303,14 @@ impl QByteArray {
     /// If `size` is different from -1,
     /// the byte array is resized to size `size` beforehand.
     pub fn fill(&mut self, ch: u8, size: isize) {
-        ffi::qbytearray_fill(self, ch, size)
+        ffi::qbytearray_fill(self, ch, size);
     }
 
     /// Decodes the Base64 array `base64`, using the options defined by `options`.
+    ///
+    /// # Errors
+    ///
+    /// This function will return an error if the contents of `base64` are not Base64 encoded.
     pub fn from_base64_encoding(
         base64: &Self,
         options: QByteArrayBase64Options,
@@ -433,7 +437,6 @@ unsafe impl ExternType for QByteArrayFromBase64Result {
     type Kind = cxx::kind::Trivial;
 }
 
-#[allow(clippy::enum_variant_names)]
 #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
 pub enum QByteArrayFromBase64Error {
     IllegalInputLength = 1,
@@ -484,9 +487,9 @@ impl<'de> serde::Deserialize<'de> for QByteArray {
 
             fn visit_seq<A: SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
                 let mut values = Self::Value::default();
-                if let Some(size_hint) = seq.size_hint() {
-                    if size_hint != 0 && size_hint <= isize::MAX as usize {
-                        values.reserve(size_hint as isize);
+                if let Some(size_hint) = seq.size_hint().and_then(|hint| hint.try_into().ok()) {
+                    if size_hint != 0 {
+                        values.reserve(size_hint);
                     }
                 }
                 while let Some(value) = seq.next_element()? {
@@ -517,7 +520,7 @@ mod tests {
     #[test]
     fn qbytearray_serde() {
         let qbytearray = QByteArray::from("KDAB");
-        assert_eq!(crate::serde_impl::roundtrip(&qbytearray), qbytearray)
+        assert_eq!(crate::serde_impl::roundtrip(&qbytearray), qbytearray);
     }
 
     #[test]
@@ -546,12 +549,12 @@ mod tests {
         assert_eq!(bytes.as_ref(), qbytearray.as_ref());
 
         let bytes_bytes = bytes::Bytes::from(&qbytearray);
-        assert_eq!(bytes, bytes_bytes)
+        assert_eq!(bytes, bytes_bytes);
     }
 
     #[test]
     fn test_display_fmt() {
         let qbytearray = QByteArray::from("KDAB");
-        assert_eq!(format!("{qbytearray:-<8}"), "KDAB----")
+        assert_eq!(format!("{qbytearray:-<8}"), "KDAB----");
     }
 }

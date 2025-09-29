@@ -123,13 +123,13 @@ mod tests {
 
         let parameters =
             ParsedFunctionParameter::parse_remaining(function.sig.inputs.iter()).unwrap();
-        assert_eq!(parameters.len(), 0)
+        assert_eq!(parameters.len(), 0);
     }
 
     #[test]
     fn test_parse_non_ident_type_pat() {
         let type_pattern: PatType = parse_quote!( (a, b): (i32, i32) );
-        assert!(ParsedFunctionParameter::parse(&type_pattern).is_err())
+        assert!(ParsedFunctionParameter::parse(&type_pattern).is_err());
     }
 
     #[test]
@@ -170,6 +170,6 @@ mod tests {
             fn foo();
         };
 
-        assert!(ParsedFunctionParameter::parse_all_ignoring_receiver(&function.sig).is_err())
+        assert!(ParsedFunctionParameter::parse_all_ignoring_receiver(&function.sig).is_err());
     }
 }

@@ -55,12 +55,12 @@ impl QObjectNames {
 
     // Only for mocking in tests
     #[cfg(test)]
-    pub fn from_idents(ident_left: Ident, ident_right: Ident) -> Self {
+    pub fn from_idents(ident_left: &Ident, ident_right: &Ident) -> Self {
         Self {
             name: Name::mock(&ident_left.to_string()),
             rust_struct: Name::mock(&ident_right.to_string()),
-            cxx_qt_thread_class: cxx_qt_thread_class_from_ident(&ident_left),
-            cxx_qt_thread_queued_fn_struct: cxx_qt_thread_queued_fn_struct_from_ident(&ident_left),
+            cxx_qt_thread_class: cxx_qt_thread_class_from_ident(ident_left),
+            cxx_qt_thread_queued_fn_struct: cxx_qt_thread_queued_fn_struct_from_ident(ident_left),
         }
     }
 

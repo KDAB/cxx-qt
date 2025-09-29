@@ -15,9 +15,9 @@ pub fn generate(qnamespace: &ParsedQNamespace, includes: &mut BTreeSet<String>) 
     let mut result = "Q_NAMESPACE".to_owned();
     if qnamespace.qml_element {
         includes.insert("#include <QtQml/QQmlEngine>".to_owned());
-        result = formatdoc! { r#"
+        result = formatdoc! { r"
             {result}
-            QML_ELEMENT"#};
+            QML_ELEMENT"};
     }
     namespaced(&qnamespace.namespace, &result)
 }

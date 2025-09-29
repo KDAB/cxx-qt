@@ -252,6 +252,6 @@ mod test {
         let mut qstringlist = QStringList::default();
         qstringlist.append(QString::from("element 1"));
         qstringlist.append(QString::from("element 2"));
-        assert_eq!(crate::serde_impl::roundtrip(&qstringlist), qstringlist)
+        assert_eq!(crate::serde_impl::roundtrip(&qstringlist), qstringlist);
     }
 }

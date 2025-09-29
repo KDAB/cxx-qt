@@ -14,8 +14,8 @@ use syn::{Result, Type};
 
 fn default_constructor(
     qobject: &GeneratedCppQObject,
-    base_class: String,
-    initializers: String,
+    base_class: &str,
+    initializers: &str,
 ) -> GeneratedCppQObjectBlocks {
     let class_name = qobject.name.cxx_unqualified();
     let rust_obj = qobject.rust_struct.cxx_qualified();
@@ -23,12 +23,12 @@ fn default_constructor(
         CppFragment::Pair {
             header: format!("explicit {class_name}(QObject* parent = nullptr);",),
             source: formatdoc!(
-                r#"
+                r"
             {class_name}::{class_name}(QObject* parent)
               : {base_class}(parent)
               , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::createRs()){initializers}
             {{ }}
-            "#,
+            ",
                 namespace_internals = qobject.namespace_internals,
             ),
         }
@@ -36,12 +36,12 @@ fn default_constructor(
         CppFragment::Pair {
             header: format!("explicit {class_name}();"),
             source: formatdoc!(
-                r#"
+                r"
             {class_name}::{class_name}()
               {base_class_line}
               , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::createRs()){initializers}
             {{ }}
-            "#,
+            ",
                 base_class_line = if base_class.is_empty() {
                     // CODECOV_EXCLUDE_START
                     unreachable!(
@@ -82,18 +82,17 @@ fn expand_arguments(arguments: &[Type], type_names: &TypeNames) -> Result<String
 pub fn generate(
     qobject: &GeneratedCppQObject,
     constructors: &[&Constructor],
-    base_class: String,
+    base_class: &str,
     class_initializers: &[String],
     type_names: &TypeNames,
 ) -> Result<GeneratedCppQObjectBlocks> {
     let initializers = class_initializers
         .iter()
         .map(|initializer| format!("\n  , {initializer}"))
-        .collect::<Vec<_>>()
-        .join("");
+        .collect::<String>();
 
     if constructors.is_empty() {
-        return Ok(default_constructor(qobject, base_class, initializers));
+        return Ok(default_constructor(qobject, base_class, &initializers));
     }
 
     let mut generated = GeneratedCppQObjectBlocks::default();
@@ -108,11 +107,11 @@ pub fn generate(
         generated.methods.push(CppFragment::Pair {
             header: format!("explicit {class_name}({argument_list});"),
             source: formatdoc! {
-                r#"
+                r"
                 {class_name}::{class_name}({argument_list})
                   : {class_name}(::{namespace_internals}::routeArguments{index}({move_arguments}))
                 {{ }}
-                "#,
+                ",
                 move_arguments = constructor_argument_names.iter().map(|arg| format!("::std::move({arg})")).collect::<Vec<_>>().join(", "),
             },
         });
@@ -138,16 +137,16 @@ pub fn generate(
                 "explicit {class_name}(::{namespace_internals}::CxxQtConstructorArguments{index}&& args);"
             ),
             source: formatdoc! {
-                r#"
+                r"
                 {class_name}::{class_name}(::{namespace_internals}::CxxQtConstructorArguments{index}&& args)
                   : {base_class}({base_args})
                   , ::rust::cxxqt1::CxxQtType<{rust_obj}>(::{namespace_internals}::newRs{index}(::std::move(args.new_))){initializers}
                 {{
                   ::{namespace_internals}::initialize{index}(*this, ::std::move(args.initialize));
                 }}
-                "#,
+                ",
             },
-        })
+        });
     }
 
     Ok(generated)
@@ -198,7 +197,7 @@ mod tests {
         let blocks = generate(
             &qobject_for_testing(),
             &[],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &["member1(1)".to_owned(), "member2{ 2 }".to_owned()],
             &type_names_with_qobject(),
         )
@@ -228,7 +227,7 @@ mod tests {
         let blocks = generate(
             &qobject_for_testing(),
             &[],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &[],
             &type_names_with_qobject(),
         )
@@ -256,14 +255,7 @@ mod tests {
     fn default_constructor_no_qobject_macro() {
         let mut qobject = qobject_for_testing();
         qobject.has_qobject_macro = false;
-        let blocks = generate(
-            &qobject,
-            &[],
-            "BaseClass".to_owned(),
-            &[],
-            &type_names_with_qobject(),
-        )
-        .unwrap();
+        let blocks = generate(&qobject, &[], "BaseClass", &[], &type_names_with_qobject()).unwrap();
 
         assert_empty_blocks(&blocks);
         assert!(blocks.private_methods.is_empty());
@@ -291,7 +283,7 @@ mod tests {
                 arguments: vec![parse_quote! { i32 }, parse_quote! { *mut QObject }],
                 ..mock_constructor()
             }],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &[],
             &type_names_with_qobject(),
         )
@@ -341,7 +333,7 @@ mod tests {
                 lifetime: Some(parse_quote! { 'a_lifetime }),
                 ..mock_constructor()
             }],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &["initializer".to_owned()],
             &type_names_with_qobject(),
         )
@@ -395,7 +387,7 @@ mod tests {
                     ..mock_constructor()
                 },
             ],
-            "BaseClass".to_owned(),
+            "BaseClass",
             &["initializer".to_owned()],
             &type_names_with_qobject(),
         )

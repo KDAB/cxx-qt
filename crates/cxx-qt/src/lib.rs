@@ -2,7 +2,6 @@
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-
 #![deny(missing_docs)]
 
 //! This crate and its associated crates provide a framework for generating QObjects from Rust.

@@ -148,7 +148,6 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
             "-F" => {
                 println!("cargo::rustc-link-search=framework={val}");
             }
-            "-I" => (),
             "-l" => {
                 // These are provided by the CRT with MSVC
                 if is_msvc && ["m", "c", "pthread"].contains(&val) {
@@ -157,8 +156,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
 
                 println!("cargo::rustc-link-lib={val}");
             }
-            "-D" => (),
-            _ => {}
+            _ => (),
         }
     }
 
@@ -188,6 +186,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                     {
                         if is_object_file(path) {
                             #[cfg(feature = "link_qt_object_files")]
+                            #[allow(clippy::used_underscore_binding)]
                             {
                                 // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
                                 // Many of Qt's .prl files repeat listing .o files that other .prl files also list.

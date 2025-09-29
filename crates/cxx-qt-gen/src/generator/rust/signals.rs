@@ -20,6 +20,7 @@ use quote::{quote, quote_spanned};
 use syn::spanned::Spanned;
 use syn::{parse_quote, parse_quote_spanned, FnArg, Ident, Result, Type};
 
+#[allow(clippy::needless_pass_by_value)]
 pub fn generate_rust_signal(
     signal: &ParsedSignal,
     qobject_name: &Name,
@@ -28,7 +29,7 @@ pub fn generate_rust_signal(
 ) -> Result<GeneratedRustFragment> {
     let span = signal.method.span();
     let idents = QSignalNames::from(signal);
-    let idents_helper = QSignalHelperNames::new(&idents, qobject_name)?;
+    let idents_helper = QSignalHelperNames::new(&idents, qobject_name);
 
     let qobject_name_rust = qobject_name.rust_unqualified();
 
@@ -282,7 +283,7 @@ mod tests {
     use quote::{format_ident, quote};
     use syn::{parse_quote, ForeignItemFn, Item};
 
-    fn common_asserts(cxx_mod_contents: &Vec<Item>, cxx_qt_mod_contents: &Vec<Item>) {
+    fn common_asserts(cxx_mod_contents: &[Item], cxx_qt_mod_contents: &[Item]) {
         assert_eq!(cxx_mod_contents.len(), 2);
         assert_eq!(cxx_qt_mod_contents.len(), 8);
 
@@ -434,7 +435,7 @@ mod tests {
         );
 
         common_asserts(
-            &generated.cxx_mod_contents[1..].into(),
+            &generated.cxx_mod_contents[1..],
             &generated.cxx_qt_mod_contents,
         );
     }

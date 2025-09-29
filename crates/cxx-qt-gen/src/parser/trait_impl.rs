@@ -135,7 +135,7 @@ mod tests {
         };
         let marker = TraitImpl::parse(imp).unwrap();
         assert_eq!(marker.qobject, format_ident!("MyObject"));
-        assert!(matches!(marker.kind, TraitKind::Constructor(_)))
+        assert!(matches!(marker.kind, TraitKind::Constructor(_)));
     }
 
     #[test]

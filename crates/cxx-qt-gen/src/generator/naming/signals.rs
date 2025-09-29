@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{naming::Name, parser::signals::ParsedSignal};
 use quote::format_ident;
-use syn::{Ident, Result};
+use syn::Ident;
 
 /// Names for parts of a Q_SIGNAL
 pub struct QSignalNames {
@@ -47,7 +47,7 @@ pub struct QSignalHelperNames {
 }
 
 impl QSignalHelperNames {
-    pub fn new(idents: &QSignalNames, qobject_name: &Name) -> Result<Self> {
+    pub fn new(idents: &QSignalNames, qobject_name: &Name) -> Self {
         let signal_ident = &idents.name.cxx_unqualified();
         let qobject_ident = qobject_name.rust_unqualified().to_string();
         let handler_alias = format_ident!("{qobject_ident}CxxQtSignalHandler{signal_ident}");
@@ -85,7 +85,7 @@ impl QSignalHelperNames {
 
         // TODO: in the future we might improve the naming of the methods
         // to avoid collisions (maybe use a separator similar to how CXX uses $?)
-        Ok(Self {
+        Self {
             connect_name,
             function_drop: format_ident!("drop_{qobject_ident}_signal_handler_{signal_ident}"),
             function_call: format_ident!("call_{qobject_ident}_signal_handler_{signal_ident}"),
@@ -94,7 +94,7 @@ impl QSignalHelperNames {
             struct_param: format_ident!("{qobject_ident}CxxQtSignalParams{signal_ident}"),
             namespace,
             handler_alias,
-        })
+        }
     }
 }
 

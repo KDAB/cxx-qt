@@ -2,6 +2,8 @@
 // SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
+#![allow(clippy::trivially_copy_pass_by_ref)]
+
 #[cfg(not(target_os = "emscripten"))]
 use crate::QDateTime;
 use crate::{QByteArray, QDate, QPersistentModelIndex, QString, QTime, QUrl, QUuid};
@@ -373,6 +375,6 @@ mod test {
         set.insert(0);
         set.insert(1);
         set.insert(2);
-        assert_eq!(crate::serde_impl::roundtrip(&set), set)
+        assert_eq!(crate::serde_impl::roundtrip(&set), set);
     }
 }

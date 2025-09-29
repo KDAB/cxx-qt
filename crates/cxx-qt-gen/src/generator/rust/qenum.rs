@@ -105,6 +105,6 @@ mod tests {
                     type MyEnum;
                 }
             },
-        )
+        );
     }
 }
