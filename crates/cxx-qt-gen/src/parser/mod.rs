@@ -34,12 +34,12 @@ use syn::{
 
 #[derive(Copy, Clone)]
 pub struct CaseConversion {
-    pub cxx: Option<Case>,
-    pub rust: Option<Case>,
+    pub cxx: Option<Case<'static>>,
+    pub rust: Option<Case<'static>>,
 }
 
 /// Used to match the auto_case attributes and turn it into a Case to convert to
-fn meta_to_case(attr: &Attribute, default: Case) -> Result<Case> {
+fn meta_to_case(attr: &Attribute, default: Case<'static>) -> Result<Case<'static>> {
     match &attr.meta {
         Meta::Path(_) => Ok(default),
         Meta::NameValue(case) => match &case.value {
