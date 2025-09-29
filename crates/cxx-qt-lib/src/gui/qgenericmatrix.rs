@@ -7,7 +7,11 @@ use std::slice;
 
 use cxx::{type_id, ExternType};
 
-/// The QGenericMatrix class represents a quaternion consisting of a vector and scalar.
+/// The QGenericMatrix class is a template class that represents a NxM
+/// transformation matrix with N columns and M rows.
+///
+/// Note: CXX-Qt currently only supports QGenericMatrix of f32, while the C++
+/// QGenericMatrix is generic over the contained type. 
 ///
 /// Qt Documentation: [QGenericMatrix](https://doc.qt.io/qt/qgenericmatrix.html#details)
 #[repr(transparent)]
