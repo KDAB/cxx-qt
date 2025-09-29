@@ -11,7 +11,7 @@ use cxx::{type_id, ExternType};
 /// transformation matrix with N columns and M rows.
 ///
 /// Note: CXX-Qt currently only supports QGenericMatrix of f32, while the C++
-/// QGenericMatrix is generic over the contained type. 
+/// QGenericMatrix is generic over the contained type.
 ///
 /// Qt Documentation: [QGenericMatrix](https://doc.qt.io/qt/qgenericmatrix.html#details)
 #[repr(transparent)]
