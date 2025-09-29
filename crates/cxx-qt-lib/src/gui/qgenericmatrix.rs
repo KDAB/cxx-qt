@@ -83,14 +83,7 @@ impl<const N: usize, const M: usize> QGenericMatrix<N, M> {
 
     /// Returns `true` if this matrix is the identity; `false` otherwise.
     pub fn is_identity(&self) -> bool {
-        for (col, data) in self.data.iter().enumerate() {
-            for (row, &value) in data.iter().enumerate() {
-                if value != (if row == col { 1.0 } else { 0.0 }) {
-                    return false;
-                }
-            }
-        }
-        true
+        self == Self::identity()
     }
 
     /// Constructs a two-dimensional array from the matrix in row-major order.
