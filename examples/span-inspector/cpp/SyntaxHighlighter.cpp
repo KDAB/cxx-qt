@@ -14,7 +14,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
   highlightRules.assign(
     { { "\\w*::|None|Some|\\d", "#f99853" },
       { "(?<!\\w)(use|struct|pub|impl|fn|Self|if|let|else|ref|"
-        "mut|while|for|in|extern|"
+        "mut|while|for|in|extern|type|unsafe|"
         "crate|match|loop|break|str|mod|usize|isize|char|bool|(u|i|f)\\d{1, "
         "2})(?!\\w)",
         "#ff7b72" },
@@ -41,8 +41,9 @@ SyntaxHighlighter::highlightBlock(const QString& text)
 
   std::deque<QRegularExpressionMatch> matches;
 
-  for (QRegularExpressionMatch match :
-       QRegularExpression("(?<!\\\\)/\\*|\\*/|(?<!\\\\)\"").globalMatch(text)) {
+  //                              /*     | */ |     "     | #[ | ]
+  QRegularExpression regex("(?<!\\\\)/\\*|\\*/|(?<!\\\\)\"|#\\[|\\]");
+  for (QRegularExpressionMatch match : regex.globalMatch(text)) {
     matches.push_back(match);
   }
 
@@ -50,15 +51,17 @@ SyntaxHighlighter::highlightBlock(const QString& text)
     return a.capturedStart() < b.capturedStart();
   });
 
-  QTextCharFormat charFormatComment, charFormatLiteral;
+  QTextCharFormat charFormatComment, charFormatLiteral, charFormatMacro;
   charFormatComment.setForeground(QColor("#6784b5"));
   charFormatLiteral.setForeground(QColor("#6fc0f4"));
+  charFormatMacro.setForeground(QColor("#b0b30b"));
 
   enum class State
   {
     Default,
     Comment,
-    Literal
+    Literal,
+    Macro,
   };
 
   State currentState = (previousBlockState() == -1)
@@ -83,6 +86,9 @@ SyntaxHighlighter::highlightBlock(const QString& text)
         } else if (capture == "\"") {
           currentState = State::Literal;
           highlightStart = capturedStart;
+        } else if (capture == "#[") {
+          currentState = State::Macro;
+          highlightStart = capturedStart;
         }
         break;
 
@@ -101,22 +107,29 @@ SyntaxHighlighter::highlightBlock(const QString& text)
             highlightStart, capturedEnd - highlightStart, charFormatLiteral);
         }
         break;
+
+      case State::Macro:
+        if (capture == "]") {
+          currentState = State::Default;
+          setFormat(
+            highlightStart, capturedEnd - highlightStart, charFormatMacro);
+        }
+        break;
     }
   }
 
-  switch (currentState) {
-    case State::Comment:
-      setFormat(
-        highlightStart, text.length() - highlightStart, charFormatComment);
-      break;
+  QTextCharFormat charFormat;
 
-    case State::Literal:
-      setFormat(
-        highlightStart, text.length() - highlightStart, charFormatLiteral);
-      break;
-    case State::Default:
-      break;
+  if (currentState == State::Comment) {
+    charFormat = charFormatComment;
+  } else if (currentState == State::Literal) {
+    charFormat = charFormatLiteral;
+  } else if (currentState == State::Macro) {
+    charFormat = charFormatMacro;
   }
+
+  if (!(currentState == State::Default))
+    setFormat(highlightStart, text.length() - highlightStart, charFormatMacro);
 
   setCurrentBlockState(static_cast<int>(currentState));
 }

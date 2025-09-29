@@ -18,6 +18,9 @@ mod qobject {
         include!("SyntaxHighlighter.h");
         type SyntaxHighlighter;
 
+        #[cxx_name = "setRenderError"]
+        fn set_render_error(self: Pin<&mut SyntaxHighlighter>, b: bool);
+
         unsafe fn new_syntax_highlighter(
             text_document: *mut QQuickTextDocument,
         ) -> UniquePtr<SyntaxHighlighter>;

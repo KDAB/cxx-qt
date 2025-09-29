@@ -25,6 +25,8 @@ class SyntaxHighlighter : public QSyntaxHighlighter
 public:
   explicit SyntaxHighlighter(QTextDocument* doc);
   void highlightBlock(const QString& text) override;
+  bool renderError;
+  void setRenderError(bool b) { renderError = b; }
 
 private:
   std::vector<HighlightRule> highlightRules;
