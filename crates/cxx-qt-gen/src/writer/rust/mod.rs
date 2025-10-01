@@ -12,7 +12,7 @@ use syn::{parse_quote_spanned, spanned::Spanned};
 pub fn write_rust(generated: &GeneratedRustBlocks, include_path: Option<&str>) -> TokenStream {
     // Retrieve the module contents and namespace
     let mut cxx_mod = generated.cxx_mod.clone();
-    let mut cxx_mod_contents = generated.cxx_mod_contents.clone();
+    let mut cxx_mod_contents = vec![];
     let mut cxx_qt_mod_contents = vec![];
 
     // Add common includes for all objects
@@ -99,7 +99,6 @@ mod tests {
                 #[cxx::bridge(namespace = "cxx_qt::my_object")]
                 mod ffi {}
             },
-            cxx_mod_contents: vec![],
             namespace: "cxx_qt::my_object".to_owned(),
             fragments: vec![GeneratedRustFragment {
                 cxx_mod_contents: vec![
@@ -138,7 +137,6 @@ mod tests {
                 #[cxx::bridge(namespace = "cxx_qt")]
                 mod ffi {}
             },
-            cxx_mod_contents: vec![],
             namespace: "cxx_qt".to_owned(),
             fragments: vec![
                 GeneratedRustFragment {
