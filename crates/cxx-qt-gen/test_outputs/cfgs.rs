@@ -18,42 +18,6 @@ mod ffi {
     unsafe extern "C++" {
         include!("directory/file_ident.cxxqt.h");
     }
-    #[repr(i32)]
-    #[cfg(not(enabled))]
-    enum EnumDisabled1 {
-        A,
-    }
-    extern "C++" {
-        #[cfg(not(enabled))]
-        type EnumDisabled1;
-    }
-    #[repr(i32)]
-    #[cfg(enabled)]
-    enum EnumEnabled1 {
-        A,
-    }
-    extern "C++" {
-        #[cfg(enabled)]
-        type EnumEnabled1;
-    }
-    #[repr(i32)]
-    #[cfg(not(enabled))]
-    enum EnumDisabled2 {
-        A,
-    }
-    extern "C++" {
-        #[cfg(not(enabled))]
-        type EnumDisabled2;
-    }
-    #[repr(i32)]
-    #[cfg(enabled)]
-    enum EnumEnabled2 {
-        A,
-    }
-    extern "C++" {
-        #[cfg(enabled)]
-        type EnumEnabled2;
-    }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]
         #[doc = "QObjectEnabledRust"]
@@ -526,6 +490,26 @@ mod ffi {
         #[doc(hidden)]
         #[namespace = ""]
         type QObject = cxx_qt::QObject;
+    }
+    #[cfg(not(enabled))]
+    extern "C++" {
+        #[allow(private_interfaces)]
+        type EnumDisabled1 = super::cxx_qt_private_qenum_EnumDisabled1::EnumDisabled1;
+    }
+    #[cfg(enabled)]
+    extern "C++" {
+        #[allow(private_interfaces)]
+        type EnumEnabled1 = super::cxx_qt_private_qenum_EnumEnabled1::EnumEnabled1;
+    }
+    #[cfg(not(enabled))]
+    extern "C++" {
+        #[allow(private_interfaces)]
+        type EnumDisabled2 = super::cxx_qt_private_qenum_EnumDisabled2::EnumDisabled2;
+    }
+    #[cfg(enabled)]
+    extern "C++" {
+        #[allow(private_interfaces)]
+        type EnumEnabled2 = super::cxx_qt_private_qenum_EnumEnabled2::EnumEnabled2;
     }
 }
 #[cfg(not(enabled))]
@@ -1251,3 +1235,75 @@ cxx_qt::static_assertions::assert_eq_size!(
     >,
     [usize; 2]
 );
+#[cfg(not(enabled))]
+mod cxx_qt_private_qenum_EnumDisabled1 {
+    #[derive(PartialEq, Eq, Clone, Copy)]
+    #[repr(transparent)]
+    pub(super) struct EnumDisabled1 {
+        #[allow(missing_docs)]
+        pub repr: i32,
+    }
+    #[allow(non_upper_case_globals)]
+    impl EnumDisabled1 {
+        pub const A: EnumDisabled1 = EnumDisabled1 { repr: 0i32 };
+    }
+    #[automatically_derived]
+    unsafe impl ::cxx::ExternType for EnumDisabled1 {
+        type Id = ::cxx::type_id!("EnumDisabled1");
+        type Kind = ::cxx::kind::Trivial;
+    }
+}
+#[cfg(enabled)]
+mod cxx_qt_private_qenum_EnumEnabled1 {
+    #[derive(PartialEq, Eq, Clone, Copy)]
+    #[repr(transparent)]
+    pub(super) struct EnumEnabled1 {
+        #[allow(missing_docs)]
+        pub repr: i32,
+    }
+    #[allow(non_upper_case_globals)]
+    impl EnumEnabled1 {
+        pub const A: EnumEnabled1 = EnumEnabled1 { repr: 0i32 };
+    }
+    #[automatically_derived]
+    unsafe impl ::cxx::ExternType for EnumEnabled1 {
+        type Id = ::cxx::type_id!("EnumEnabled1");
+        type Kind = ::cxx::kind::Trivial;
+    }
+}
+#[cfg(not(enabled))]
+mod cxx_qt_private_qenum_EnumDisabled2 {
+    #[derive(PartialEq, Eq, Clone, Copy)]
+    #[repr(transparent)]
+    pub(super) struct EnumDisabled2 {
+        #[allow(missing_docs)]
+        pub repr: i32,
+    }
+    #[allow(non_upper_case_globals)]
+    impl EnumDisabled2 {
+        pub const A: EnumDisabled2 = EnumDisabled2 { repr: 0i32 };
+    }
+    #[automatically_derived]
+    unsafe impl ::cxx::ExternType for EnumDisabled2 {
+        type Id = ::cxx::type_id!("EnumDisabled2");
+        type Kind = ::cxx::kind::Trivial;
+    }
+}
+#[cfg(enabled)]
+mod cxx_qt_private_qenum_EnumEnabled2 {
+    #[derive(PartialEq, Eq, Clone, Copy)]
+    #[repr(transparent)]
+    pub(super) struct EnumEnabled2 {
+        #[allow(missing_docs)]
+        pub repr: i32,
+    }
+    #[allow(non_upper_case_globals)]
+    impl EnumEnabled2 {
+        pub const A: EnumEnabled2 = EnumEnabled2 { repr: 0i32 };
+    }
+    #[automatically_derived]
+    unsafe impl ::cxx::ExternType for EnumEnabled2 {
+        type Id = ::cxx::type_id!("EnumEnabled2");
+        type Kind = ::cxx::kind::Trivial;
+    }
+}

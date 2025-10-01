@@ -13,16 +13,6 @@ using QObjectEnabledCxxQtSignalHandlersignal_enabled =
     struct QObjectEnabledCxxQtSignalParamssignal_enabled*>;
 } // namespace rust::cxxqtgen1
 
-enum class EnumEnabled1 : ::std::int32_t
-{
-  A
-};
-
-enum class EnumEnabled2 : ::std::int32_t
-{
-  A
-};
-
 namespace rust::cxxqtgen1 {
 using QObjectExternEnabledCxxQtSignalHandlersignal_enabled1 =
   ::rust::cxxqt1::SignalHandler<
@@ -69,13 +59,11 @@ class QObjectEnabled
 {
   Q_OBJECT
 public:
-#ifdef Q_MOC_RUN
-  enum class EnumEnabled1 : ::std::int32_t{ A };
+  enum class EnumEnabled1 : ::std::int32_t
+  {
+    A = 0
+  };
   Q_ENUM(EnumEnabled1)
-#else
-  using EnumEnabled1 = ::EnumEnabled1;
-  Q_ENUM(EnumEnabled1)
-#endif
 
   virtual ~QObjectEnabled() = default;
 
@@ -92,5 +80,6 @@ public:
 
 static_assert(::std::is_base_of<QObject, QObjectEnabled>::value,
               "QObjectEnabled must inherit from QObject");
+using EnumEnabled1 = ::QObjectEnabled::EnumEnabled1;
 
 Q_DECLARE_METATYPE(QObjectEnabled*)
