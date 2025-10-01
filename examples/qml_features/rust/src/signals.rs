@@ -109,7 +109,7 @@ impl cxx_qt::Initialize for qobject::RustSignals {
                     // ANCHOR: book_signals_connect
                     let connections = [
                         qobject.as_mut().on_connected(|_, url| {
-                            println!("Connected: {}", url);
+                            println!("Connected: {url}");
                         }),
                         qobject.as_mut().on_disconnected(|_| {
                             println!("Disconnected");
@@ -117,7 +117,7 @@ impl cxx_qt::Initialize for qobject::RustSignals {
                         // Demonstration of connecting with a different connection type
                         qobject.as_mut().connect_error(
                             |_, message| {
-                                println!("Error: {}", message);
+                                println!("Error: {message}");
                             },
                             ConnectionType::QueuedConnection,
                         ),

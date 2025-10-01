@@ -19,7 +19,7 @@ mod qanystringview_cxx {
     }
 
     extern "Rust" {
-        fn construct_qanystringview(str: &str) -> QAnyStringView;
+        fn construct_qanystringview(str: &str) -> QAnyStringView<'_>;
     }
 
     // This method must be unsafe otherwise we hit

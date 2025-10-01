@@ -107,7 +107,7 @@ mod tests {
 
     // CODECOV_EXCLUDE_START
     fn update_expected_file(path: PathBuf, source: &str) {
-        println!("Updating expected file: {:?}", path);
+        println!("Updating expected file: {path:?}");
 
         let mut file = OpenOptions::new()
             .write(true)

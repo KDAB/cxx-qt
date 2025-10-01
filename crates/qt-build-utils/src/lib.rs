@@ -419,10 +419,7 @@ impl QtBuild {
         qt_module: &str,
     ) -> String {
         for arch in ["", "_arm64-v8a", "_armeabi-v7a", "_x86", "_x86_64"] {
-            let prl_path = format!(
-                "{}/{}Qt{}{}{}.prl",
-                lib_path, prefix, version_major, qt_module, arch
-            );
+            let prl_path = format!("{lib_path}/{prefix}Qt{version_major}{qt_module}{arch}.prl");
             match Path::new(&prl_path).try_exists() {
                 Ok(exists) => {
                     if exists {
@@ -430,18 +427,12 @@ impl QtBuild {
                     }
                 }
                 Err(e) => {
-                    println!(
-                        "cargo::warning=failed checking for existence of {}: {}",
-                        prl_path, e
-                    );
+                    println!("cargo::warning=failed checking for existence of {prl_path}: {e}");
                 }
             }
         }
 
-        format!(
-            "{}/{}Qt{}{}.prl",
-            lib_path, prefix, version_major, qt_module
-        )
+        format!("{lib_path}/{prefix}Qt{version_major}{qt_module}.prl")
     }
 
     /// Tell Cargo to link each Qt module.
@@ -775,7 +766,7 @@ prefer :/qt/qml/{qml_uri_dirs}/
                     "    <file alias=\"{}\">{}</file>\n",
                     path_display,
                     std::fs::canonicalize(file_path)
-                        .unwrap_or_else(|_| panic!("Could not canonicalize path {}", path_display))
+                        .unwrap_or_else(|_| panic!("Could not canonicalize path {path_display}"))
                         .display()
                 )
             }

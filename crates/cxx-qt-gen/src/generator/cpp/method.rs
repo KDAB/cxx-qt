@@ -46,10 +46,11 @@ pub fn generate_cpp_methods(
                 ParsedQInvokableSpecifiers::Virtual => is_virtual = "virtual ",
             });
 
-        let is_qinvokable = invokable
-            .is_qinvokable
-            .then_some("Q_INVOKABLE ")
-            .unwrap_or_default();
+        let is_qinvokable = if invokable.is_qinvokable {
+            "Q_INVOKABLE "
+        } else {
+            Default::default()
+        };
 
         // Matching return type or void
         let return_cxx_ty = if let Some(return_cxx_ty) = &return_cxx_ty {
