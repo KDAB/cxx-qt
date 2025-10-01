@@ -18,42 +18,6 @@ mod ffi {
     unsafe extern "C++" {
         include!("directory/file_ident.cxxqt.h");
     }
-    #[repr(i32)]
-    #[cfg(not(enabled))]
-    enum EnumDisabled1 {
-        A,
-    }
-    extern "C++" {
-        #[cfg(not(enabled))]
-        type EnumDisabled1;
-    }
-    #[repr(i32)]
-    #[cfg(enabled)]
-    enum EnumEnabled1 {
-        A,
-    }
-    extern "C++" {
-        #[cfg(enabled)]
-        type EnumEnabled1;
-    }
-    #[repr(i32)]
-    #[cfg(not(enabled))]
-    enum EnumDisabled2 {
-        A,
-    }
-    extern "C++" {
-        #[cfg(not(enabled))]
-        type EnumDisabled2;
-    }
-    #[repr(i32)]
-    #[cfg(enabled)]
-    enum EnumEnabled2 {
-        A,
-    }
-    extern "C++" {
-        #[cfg(enabled)]
-        type EnumEnabled2;
-    }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]
         #[doc = "QObjectEnabledRust"]
@@ -526,6 +490,42 @@ mod ffi {
         #[doc(hidden)]
         #[namespace = ""]
         type QObject = cxx_qt::QObject;
+    }
+    #[repr(i32)]
+    #[cfg(not(enabled))]
+    enum EnumDisabled1 {
+        A,
+    }
+    extern "C++" {
+        #[cfg(not(enabled))]
+        type EnumDisabled1;
+    }
+    #[repr(i32)]
+    #[cfg(enabled)]
+    enum EnumEnabled1 {
+        A,
+    }
+    extern "C++" {
+        #[cfg(enabled)]
+        type EnumEnabled1;
+    }
+    #[repr(i32)]
+    #[cfg(not(enabled))]
+    enum EnumDisabled2 {
+        A,
+    }
+    extern "C++" {
+        #[cfg(not(enabled))]
+        type EnumDisabled2;
+    }
+    #[repr(i32)]
+    #[cfg(enabled)]
+    enum EnumEnabled2 {
+        A,
+    }
+    extern "C++" {
+        #[cfg(enabled)]
+        type EnumEnabled2;
     }
 }
 #[cfg(not(enabled))]

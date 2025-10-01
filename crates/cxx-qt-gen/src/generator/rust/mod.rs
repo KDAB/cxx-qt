@@ -20,14 +20,12 @@ use crate::parser::cxxqtdata::ParsedCxxQtData;
 use crate::parser::{parameter::ParsedFunctionParameter, Parser};
 use proc_macro2::{Ident, TokenStream};
 use quote::quote;
-use syn::{parse_quote, Item, ItemMod, Result};
+use syn::{parse_quote, ItemMod, Result};
 
 /// Representation of the generated Rust code for a QObject
 pub struct GeneratedRustBlocks {
     /// Module for the CXX bridge with passthrough items
     pub cxx_mod: ItemMod,
-    /// Any global extra items for the CXX bridge
-    pub cxx_mod_contents: Vec<Item>,
     /// Ident of the namespace of the QObject
     pub namespace: String,
     /// Rust fragments
@@ -91,9 +89,13 @@ impl GeneratedRustBlocks {
             #module
         };
 
+        let qenums = &parser.cxx_qt_data.qenums;
+        if !qenums.is_empty() {
+            fragments.extend(qenum::generate(qenums));
+        }
+
         Ok(GeneratedRustBlocks {
             cxx_mod,
-            cxx_mod_contents: qenum::generate_cxx_mod_contents(&parser.cxx_qt_data.qenums),
             namespace,
             fragments,
         })
@@ -166,7 +168,6 @@ mod tests {
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
         assert!(rust.cxx_mod.content.is_none());
-        assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "");
         assert_eq!(rust.fragments.len(), 2);
     }
@@ -186,7 +187,6 @@ mod tests {
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
         assert!(rust.cxx_mod.content.is_none());
-        assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "cxx_qt");
         assert_eq!(rust.fragments.len(), 2);
     }
@@ -206,7 +206,6 @@ mod tests {
 
         let rust = GeneratedRustBlocks::from(&parser).unwrap();
         assert!(rust.cxx_mod.content.is_none());
-        assert_eq!(rust.cxx_mod_contents.len(), 0);
         assert_eq!(rust.namespace, "");
         assert_eq!(rust.fragments.len(), 2);
     }

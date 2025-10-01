@@ -18,58 +18,6 @@ mod ffi {
     unsafe extern "C++" {
         include!("directory/file_ident.cxxqt.h");
     }
-    #[repr(i32)]
-    #[namespace = "cxx_qt::my_object"]
-    enum MyEnum {
-        A,
-    }
-    extern "C++" {
-        #[namespace = "cxx_qt::my_object"]
-        type MyEnum;
-    }
-    #[repr(i32)]
-    #[namespace = "my_namespace"]
-    enum MyOtherEnum {
-        X,
-        Y,
-        Z,
-    }
-    extern "C++" {
-        #[namespace = "my_namespace"]
-        type MyOtherEnum;
-    }
-    #[repr(i32)]
-    #[namespace = "cxx_qt::my_object"]
-    enum MyNamespacedEnum {
-        A,
-        B,
-        C,
-    }
-    extern "C++" {
-        #[namespace = "cxx_qt::my_object"]
-        type MyNamespacedEnum;
-    }
-    #[repr(i32)]
-    #[namespace = "other_namespace"]
-    enum MyOtherNamespacedEnum {
-        Variant1,
-        Variant2,
-    }
-    extern "C++" {
-        #[namespace = "other_namespace"]
-        type MyOtherNamespacedEnum;
-    }
-    #[repr(i32)]
-    #[namespace = "cxx_qt::my_object"]
-    enum MyRenamedEnum {
-        A,
-        B,
-        C,
-    }
-    extern "C++" {
-        #[namespace = "cxx_qt::my_object"]
-        type MyRenamedEnum;
-    }
     unsafe extern "C++" {
         #[doc = "The C++ type for the QObject "]
         #[doc = "MyObjectRust"]
@@ -167,6 +115,58 @@ mod ffi {
         #[doc(hidden)]
         #[namespace = ""]
         type QObject = cxx_qt::QObject;
+    }
+    #[repr(i32)]
+    #[namespace = "cxx_qt::my_object"]
+    enum MyEnum {
+        A,
+    }
+    extern "C++" {
+        #[namespace = "cxx_qt::my_object"]
+        type MyEnum;
+    }
+    #[repr(i32)]
+    #[namespace = "my_namespace"]
+    enum MyOtherEnum {
+        X,
+        Y,
+        Z,
+    }
+    extern "C++" {
+        #[namespace = "my_namespace"]
+        type MyOtherEnum;
+    }
+    #[repr(i32)]
+    #[namespace = "cxx_qt::my_object"]
+    enum MyNamespacedEnum {
+        A,
+        B,
+        C,
+    }
+    extern "C++" {
+        #[namespace = "cxx_qt::my_object"]
+        type MyNamespacedEnum;
+    }
+    #[repr(i32)]
+    #[namespace = "other_namespace"]
+    enum MyOtherNamespacedEnum {
+        Variant1,
+        Variant2,
+    }
+    extern "C++" {
+        #[namespace = "other_namespace"]
+        type MyOtherNamespacedEnum;
+    }
+    #[repr(i32)]
+    #[namespace = "cxx_qt::my_object"]
+    enum MyRenamedEnum {
+        A,
+        B,
+        C,
+    }
+    extern "C++" {
+        #[namespace = "cxx_qt::my_object"]
+        type MyRenamedEnum;
     }
 }
 unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::MyObject {
