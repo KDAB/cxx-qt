@@ -93,7 +93,7 @@ mod tests {
           #[cxx::bridge]
           mod ffi {}
         };
-        let debug_formatted = format!("{:?}", cxx);
+        let debug_formatted = format!("{cxx:?}");
         assert!(debug_formatted.starts_with("Cxx(ItemMod"))
     }
 
@@ -103,7 +103,7 @@ mod tests {
           #[cxx_qt::bridge]
           mod ffi {}
         };
-        let debug_formatted = format!("{:?}", cxx_qt);
+        let debug_formatted = format!("{cxx_qt:?}");
         assert!(debug_formatted.starts_with("CxxQt(ItemMod"))
     }
 
@@ -113,7 +113,7 @@ mod tests {
             #[attr]
             mod ffi {}
         };
-        let debug_formatted = format!("{:?}", cxx);
+        let debug_formatted = format!("{cxx:?}");
         assert!(debug_formatted.starts_with("Item(Item::Mod"))
     }
 
@@ -124,7 +124,7 @@ mod tests {
                 name: &str
           }
         };
-        let debug_formatted = format!("{:?}", rust);
+        let debug_formatted = format!("{rust:?}");
         assert!(debug_formatted.starts_with("Item(Item::Struct"))
     }
 }

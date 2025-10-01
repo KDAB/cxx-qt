@@ -95,7 +95,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
 
                 {qobject_assert}"#,
             // Note that there is always a base class as we always have CxxQtType
-            base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {}", base)).collect::<Vec<String>>().join(", "),
+            base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {base}")).collect::<Vec<String>>().join(", "),
             metaobjects = qobject.blocks.metaobjects.join("\n  "),
             public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
             private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
