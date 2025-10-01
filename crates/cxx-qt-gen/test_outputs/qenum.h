@@ -25,28 +25,12 @@ Q_NAMESPACE
 } // namespace other_namespace
 
 namespace cxx_qt::my_object {
-enum class MyEnum : ::std::int32_t
-{
-  A
-};
-} // namespace cxx_qt::my_object
-
-namespace my_namespace {
-enum class MyOtherEnum : ::std::int32_t
-{
-  X,
-  Y,
-  Z
-};
-} // namespace my_namespace
-
-namespace cxx_qt::my_object {
 Q_NAMESPACE
 enum class MyNamespacedEnum : ::std::int32_t
 {
-  A,
-  B,
-  C
+  A = 0,
+  B = 1,
+  C = 2
 };
 Q_ENUM_NS(MyNamespacedEnum)
 } // namespace cxx_qt::my_object
@@ -55,20 +39,11 @@ namespace other_namespace {
 Q_NAMESPACE
 enum class MyOtherNamespacedEnum : ::std::int32_t
 {
-  Variant1,
-  Variant2
+  Variant1 = 0,
+  Variant2 = 1
 };
 Q_ENUM_NS(MyOtherNamespacedEnum)
 } // namespace other_namespace
-
-namespace cxx_qt::my_object {
-enum class MyRenamedEnum : ::std::int32_t
-{
-  A,
-  B,
-  C
-};
-} // namespace cxx_qt::my_object
 
 #include "directory/file_ident.cxx.h"
 
@@ -79,21 +54,18 @@ class MyObject
 {
   Q_OBJECT
 public:
-#ifdef Q_MOC_RUN
-  enum class MyEnum : ::std::int32_t{ A };
+  enum class MyEnum : ::std::int32_t
+  {
+    A = 0
+  };
   Q_ENUM(MyEnum)
-#else
-  using MyEnum = ::cxx_qt::my_object::MyEnum;
-  Q_ENUM(MyEnum)
-#endif
-
-#ifdef Q_MOC_RUN
-  enum class MyOtherEnum : ::std::int32_t{ X, Y, Z };
+  enum class MyOtherEnum : ::std::int32_t
+  {
+    X = 0,
+    Y = 1,
+    Z = 2
+  };
   Q_ENUM(MyOtherEnum)
-#else
-  using MyOtherEnum = ::my_namespace::MyOtherEnum;
-  Q_ENUM(MyOtherEnum)
-#endif
 
   virtual ~MyObject() = default;
 
@@ -108,6 +80,14 @@ static_assert(::std::is_base_of<QObject, MyObject>::value,
               "MyObject must inherit from QObject");
 } // namespace cxx_qt::my_object
 
+namespace cxx_qt::my_object {
+using MyEnum = ::cxx_qt::my_object::MyObject::MyEnum;
+} // namespace cxx_qt::my_object
+
+namespace my_namespace {
+using MyOtherEnum = ::cxx_qt::my_object::MyObject::MyOtherEnum;
+} // namespace my_namespace
+
 Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
 
 namespace cxx_qt::my_object {
@@ -117,13 +97,13 @@ class CxxName
 {
   Q_OBJECT
 public:
-#ifdef Q_MOC_RUN
-  enum class MyRenamedEnum : ::std::int32_t{ A, B, C };
+  enum class MyRenamedEnum : ::std::int32_t
+  {
+    A = 0,
+    B = 1,
+    C = 2
+  };
   Q_ENUM(MyRenamedEnum)
-#else
-  using MyRenamedEnum = ::cxx_qt::my_object::MyRenamedEnum;
-  Q_ENUM(MyRenamedEnum)
-#endif
 
   virtual ~CxxName() = default;
 
@@ -133,6 +113,10 @@ public:
 
 static_assert(::std::is_base_of<QObject, CxxName>::value,
               "CxxName must inherit from QObject");
+} // namespace cxx_qt::my_object
+
+namespace cxx_qt::my_object {
+using MyRenamedEnum = ::cxx_qt::my_object::CxxName::MyRenamedEnum;
 } // namespace cxx_qt::my_object
 
 Q_DECLARE_METATYPE(cxx_qt::my_object::CxxName*)

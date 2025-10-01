@@ -91,25 +91,15 @@ mod ffi {
             outer: Pin<&mut MyRenamedObject>,
         ) -> Pin<&mut InternalObject>;
     }
-    #[repr(i32)]
-    #[namespace = "cxx_qt::my_object"]
-    enum MyEnum {
-        A,
-    }
     extern "C++" {
+        #[allow(private_interfaces)]
         #[namespace = "cxx_qt::my_object"]
-        type MyEnum;
-    }
-    #[repr(i32)]
-    #[namespace = "my_namespace"]
-    enum MyOtherEnum {
-        X,
-        Y,
-        Z,
+        type MyEnum = super::cxx_qt_private_qenum_MyEnum::MyEnum;
     }
     extern "C++" {
+        #[allow(private_interfaces)]
         #[namespace = "my_namespace"]
-        type MyOtherEnum;
+        type MyOtherEnum = super::cxx_qt_private_qenum_MyOtherEnum::MyOtherEnum;
     }
     #[repr(i32)]
     #[namespace = "cxx_qt::my_object"]
@@ -132,16 +122,10 @@ mod ffi {
         #[namespace = "other_namespace"]
         type MyOtherNamespacedEnum;
     }
-    #[repr(i32)]
-    #[namespace = "cxx_qt::my_object"]
-    enum MyRenamedEnum {
-        A,
-        B,
-        C,
-    }
     extern "C++" {
+        #[allow(private_interfaces)]
         #[namespace = "cxx_qt::my_object"]
-        type MyRenamedEnum;
+        type MyRenamedEnum = super::cxx_qt_private_qenum_MyRenamedEnum::MyRenamedEnum;
     }
 }
 #[doc(hidden)]
@@ -182,5 +166,60 @@ impl ::cxx_qt::CxxQtType for ffi::MyRenamedObject {
     }
     fn rust_mut(self: core::pin::Pin<&mut Self>) -> core::pin::Pin<&mut Self::Rust> {
         ffi::cxx_qt_ffi_CxxName_unsafeRustMut(self)
+    }
+}
+mod cxx_qt_private_qenum_MyEnum {
+    #[derive(PartialEq, Eq, Clone, Copy)]
+    #[repr(transparent)]
+    pub(super) struct MyEnum {
+        #[allow(missing_docs)]
+        pub repr: i32,
+    }
+    #[allow(non_upper_case_globals)]
+    impl MyEnum {
+        pub const A: MyEnum = MyEnum { repr: 0i32 };
+    }
+    #[automatically_derived]
+    unsafe impl ::cxx::ExternType for MyEnum {
+        type Id = ::cxx::type_id!("MyEnum");
+        type Kind = ::cxx::kind::Trivial;
+    }
+}
+mod cxx_qt_private_qenum_MyOtherEnum {
+    #[derive(PartialEq, Eq, Clone, Copy)]
+    #[repr(transparent)]
+    pub(super) struct MyOtherEnum {
+        #[allow(missing_docs)]
+        pub repr: i32,
+    }
+    #[allow(non_upper_case_globals)]
+    impl MyOtherEnum {
+        pub const X: MyOtherEnum = MyOtherEnum { repr: 0i32 };
+        pub const Y: MyOtherEnum = MyOtherEnum { repr: 1i32 };
+        pub const Z: MyOtherEnum = MyOtherEnum { repr: 2i32 };
+    }
+    #[automatically_derived]
+    unsafe impl ::cxx::ExternType for MyOtherEnum {
+        type Id = ::cxx::type_id!("MyOtherEnum");
+        type Kind = ::cxx::kind::Trivial;
+    }
+}
+mod cxx_qt_private_qenum_MyRenamedEnum {
+    #[derive(PartialEq, Eq, Clone, Copy)]
+    #[repr(transparent)]
+    pub(super) struct MyRenamedEnum {
+        #[allow(missing_docs)]
+        pub repr: i32,
+    }
+    #[allow(non_upper_case_globals)]
+    impl MyRenamedEnum {
+        pub const A: MyRenamedEnum = MyRenamedEnum { repr: 0i32 };
+        pub const B: MyRenamedEnum = MyRenamedEnum { repr: 1i32 };
+        pub const C: MyRenamedEnum = MyRenamedEnum { repr: 2i32 };
+    }
+    #[automatically_derived]
+    unsafe impl ::cxx::ExternType for MyRenamedEnum {
+        type Id = ::cxx::type_id!("MyRenamedEnum");
+        type Kind = ::cxx::kind::Trivial;
     }
 }
