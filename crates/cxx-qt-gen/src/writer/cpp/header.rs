@@ -108,6 +108,13 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             .filter_map(pair_as_header)
             .collect::<Vec<String>>()
             .join("\n");
+        let post_fragments = qobject
+            .blocks
+            .post_fragments
+            .iter()
+            .filter_map(pair_as_header)
+            .collect::<Vec<String>>()
+            .join("\n");
 
         let declare_metatype = if qobject.has_qobject_macro {
             let ty = qobject.name.cxx_qualified();
@@ -119,6 +126,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         formatdoc! {r#"
             {fragments}
             {class_definition}
+            {post_fragments}
 
             {declare_metatype}
             "#

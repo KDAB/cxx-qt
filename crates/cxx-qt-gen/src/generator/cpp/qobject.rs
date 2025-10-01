@@ -33,6 +33,8 @@ pub struct GeneratedCppQObjectBlocks {
     pub forward_declares_namespaced: Vec<String>,
     /// List of fragments which are outside of the QObject namespace
     pub fragments: Vec<CppFragment>,
+    /// List of fragments which are outside of the QObject namespace and after the class
+    pub post_fragments: Vec<CppFragment>,
     /// Base class of the QObject
     pub base_classes: Vec<String>,
     /// List of Qt Meta Object items (eg Q_PROPERTY)
@@ -50,6 +52,7 @@ impl GeneratedCppQObjectBlocks {
         self.forward_declares_namespaced
             .append(&mut other.forward_declares_namespaced);
         self.fragments.append(&mut other.fragments);
+        self.post_fragments.append(&mut other.post_fragments);
         self.base_classes.append(&mut other.base_classes);
         self.metaobjects.append(&mut other.metaobjects);
         self.methods.append(&mut other.methods);
@@ -154,6 +157,7 @@ impl GeneratedCppQObject {
         )?);
         generated.blocks.append(&mut qenum::generate_on_qobject(
             structured_qobject.qenums.iter().cloned(),
+            &generated.name,
         )?);
 
         let mut class_initializers = vec![];
