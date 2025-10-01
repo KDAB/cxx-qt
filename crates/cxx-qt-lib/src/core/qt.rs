@@ -238,6 +238,16 @@ mod ffi {
         ExtraButton24 = 0x04000000,
     }
 
+    #[derive(Debug)]
+    #[repr(u32)]
+    /// This type is used to signify an object's orientation.
+    enum Orientation {
+        /// Horizontal orientation
+        Horizontal = 0x1,
+        /// Vertical orientation
+        Vertical = 0x2,
+    }
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -256,13 +266,14 @@ mod ffi {
         type SizeMode;
         type MouseButton;
         type KeyboardModifier;
+        type Orientation;
     }
 }
 
 pub use ffi::{
     AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, FillRule,
-    KeyboardModifier, LayoutDirection, MouseButton, PenCapStyle, PenJoinStyle, PenStyle, SizeMode,
-    SplitBehaviorFlags, TimeSpec, TransformationMode,
+    KeyboardModifier, LayoutDirection, MouseButton, Orientation, PenCapStyle, PenJoinStyle,
+    PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
 
 // Reexport ConnectionType from cxx-qt
@@ -272,6 +283,9 @@ pub use cxx_qt::ConnectionType;
 pub type MouseButtons = QFlags<MouseButton>;
 /// [`QFlags`] of [`KeyboardModifier`].
 pub type KeyboardModifiers = QFlags<KeyboardModifier>;
+/// [`QFlags`] of [`Orientation`].
+pub type Orientations = QFlags<Orientation>;
 
 unsafe_impl_qflag!(MouseButton, "Qt::MouseButtons", u32);
 unsafe_impl_qflag!(KeyboardModifier, "Qt::KeyboardModifiers", u32);
+unsafe_impl_qflag!(Orientation, "Qt::Orientations", u32);
