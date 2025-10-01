@@ -86,8 +86,9 @@ pub use qstringlist::QStringList;
 mod qt;
 pub use qt::{
     AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, FillRule,
-    KeyboardModifier, KeyboardModifiers, LayoutDirection, MouseButton, MouseButtons, PenCapStyle,
-    PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    KeyboardModifier, KeyboardModifiers, LayoutDirection, MouseButton, MouseButtons, Orientation,
+    Orientations, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
+    TransformationMode,
 };
 
 mod qtime;
