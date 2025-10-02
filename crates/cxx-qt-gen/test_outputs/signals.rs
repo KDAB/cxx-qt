@@ -232,10 +232,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
-        type QTimerCxxQtSignalHandlerconst_ready<'a> = cxx_qt::signalhandler::CxxQtSignalHandler<
-            'a,
-            super::QTimerCxxQtSignalClosureconst_ready,
-        >;
+        type QTimerCxxQtSignalHandlerconst_ready =
+            cxx_qt::signalhandler::CxxQtSignalHandler<super::QTimerCxxQtSignalClosureconst_ready>;
         #[doc(hidden)]
         #[namespace = "cxx_qt::my_object::rust::cxxqtgen1"]
         #[cxx_name = "QTimer_const_readyConnect"]
@@ -586,12 +584,12 @@ impl ffi::QTimer {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "const_ready"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
-    pub fn connect_const_ready<'a, F: FnMut(&ffi::QTimer) + 'a + Send>(
+    pub fn connect_const_ready<F: FnMut(&ffi::QTimer) + 'static + Send>(
         self: &ffi::QTimer,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QTimer_connect_const_ready(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_const_ready(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosureconst_ready>::new(
                 Box::new(closure),
@@ -606,11 +604,11 @@ impl ffi::QTimer {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_const_ready<'a, F: FnMut(&ffi::QTimer) + 'a + Send>(
+    pub fn on_const_ready<F: FnMut(&ffi::QTimer) + 'static + Send>(
         self: &ffi::QTimer,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QTimer_connect_const_ready(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QTimer_connect_const_ready(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<QTimerCxxQtSignalClosureconst_ready>::new(
                 Box::new(closure),
@@ -624,7 +622,7 @@ pub struct QTimerCxxQtSignalClosureconst_ready {}
 impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QTimerCxxQtSignalClosureconst_ready {
     type Id =
         cxx::type_id!("::cxx_qt::my_object::rust::cxxqtgen1::QTimerCxxQtSignalHandlerconst_ready");
-    type FnType<'a> = dyn FnMut(&ffi::QTimer) + 'a + Send;
+    type FnType = dyn FnMut(&ffi::QTimer) + Send;
 }
 use core::mem::drop as drop_QTimer_signal_handler_const_ready;
 fn call_QTimer_signal_handler_const_ready(
