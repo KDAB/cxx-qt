@@ -238,7 +238,7 @@ mod ffi {
         #[cfg(all(
             cxxqt_qt_version_at_least_6,
             not(cxxqt_qt_version_at_least_6_13),
-            not(cxxqt_qt_version_qt_least_7)
+            not(cxxqt_qt_version_at_least_7)
         ))]
         fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
 
