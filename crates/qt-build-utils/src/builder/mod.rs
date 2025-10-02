@@ -6,6 +6,9 @@
 mod qmldir;
 pub use qmldir::QmlDirBuilder;
 
+mod qmlplugincpp;
+pub use qmlplugincpp::QmlPluginCppBuilder;
+
 mod qmluri;
 pub use qmluri::QmlUri;
 
