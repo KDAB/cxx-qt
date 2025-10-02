@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 /// A builder for representing a QML uri
+#[derive(Clone)]
 pub struct QmlUriBuilder {
     uri: Vec<String>,
 }
