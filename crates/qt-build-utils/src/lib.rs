@@ -16,7 +16,7 @@
 #![allow(clippy::too_many_arguments)]
 
 mod builder;
-pub use builder::{QmlDirBuilder, QmlUri};
+pub use builder::{QResource, QResourceFile, QResources, QmlDirBuilder, QmlUri};
 
 mod error;
 pub use error::QtBuildError;
@@ -47,7 +47,6 @@ mod utils;
 use std::{
     env,
     fs::File,
-    io::Write,
     path::{Path, PathBuf},
 };
 
@@ -184,41 +183,41 @@ impl QtBuild {
         let qrc_path =
             qml_module_dir.join(format!("qml_module_resources_{qml_uri_underscores}.qrc"));
         {
-            fn qrc_file_line(file_path: &impl AsRef<Path>) -> String {
-                let path_display = file_path.as_ref().display();
-                format!(
-                    "    <file alias=\"{}\">{}</file>\n",
-                    path_display,
-                    std::fs::canonicalize(file_path)
-                        .unwrap_or_else(|_| panic!("Could not canonicalize path {path_display}"))
-                        .display()
-                )
-            }
-
-            let mut qml_files_qrc = String::new();
-            for file_path in qml_files {
-                qml_files_qrc.push_str(&qrc_file_line(file_path));
-            }
-            for file_path in qrc_files {
-                qml_files_qrc.push_str(&qrc_file_line(file_path));
-            }
-
-            let mut qrc = File::create(&qrc_path).expect("Could not create qrc file");
             let qml_module_dir_str = qml_module_dir.to_str().unwrap();
-            write!(
-                qrc,
-                r#"<RCC>
-<qresource prefix="/">
-    <file alias="/qt/qml/{qml_uri_dirs}">{qml_module_dir_str}</file>
-</qresource>
-<qresource prefix="/qt/qml/{qml_uri_dirs}">
-{qml_files_qrc}
-    <file alias="qmldir">{qml_module_dir_str}/qmldir</file>
-</qresource>
-</RCC>
-"#
-            )
-            .expect("Could note write qrc file");
+            let qml_uri_dirs_prefix = format!("/qt/qml/{qml_uri_dirs}");
+            let mut qrc = File::create(&qrc_path).expect("Could not create qrc file");
+            QResources::new()
+                .resource(QResource::new().prefix("/".to_string()).file(
+                    QResourceFile::new(qml_module_dir_str).alias(qml_uri_dirs_prefix.clone()),
+                ))
+                .resource({
+                    let mut resource = QResource::new().prefix(qml_uri_dirs_prefix.clone()).file(
+                        QResourceFile::new(format!("{qml_module_dir_str}/qmldir"))
+                            .alias("qmldir".to_string()),
+                    );
+
+                    fn resource_add_path(resource: QResource, path: &Path) -> QResource {
+                        let resolved = std::fs::canonicalize(path)
+                            .unwrap_or_else(|_| {
+                                panic!("Could not canonicalize path {}", path.display())
+                            })
+                            .display()
+                            .to_string();
+                        resource
+                            .file(QResourceFile::new(resolved).alias(path.display().to_string()))
+                    }
+
+                    for path in qml_files {
+                        resource = resource_add_path(resource, path.as_ref());
+                    }
+                    for path in qrc_files {
+                        resource = resource_add_path(resource, path.as_ref());
+                    }
+
+                    resource
+                })
+                .write(&mut qrc)
+                .expect("Could note write qrc file");
         }
 
         // Run qmlcachegen

@@ -8,3 +8,6 @@ pub use qmldir::QmlDirBuilder;
 
 mod qmluri;
 pub use qmluri::QmlUri;
+
+mod qresource;
+pub use qresource::{QResource, QResourceFile, QResources};
