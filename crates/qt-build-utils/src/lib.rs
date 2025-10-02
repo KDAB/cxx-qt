@@ -15,6 +15,9 @@
 
 #![allow(clippy::too_many_arguments)]
 
+mod builder;
+pub use builder::{QmlDirBuilder, QmlUri};
+
 mod error;
 pub use error::QtBuildError;
 
@@ -150,7 +153,11 @@ impl QtBuild {
         qml_files: &[impl AsRef<Path>],
         qrc_files: &[impl AsRef<Path>],
     ) -> QmlModuleRegistrationFiles {
-        let qml_uri_dirs = uri.replace('.', "/");
+        let qml_uri = QmlUri::new(uri.split('.'));
+        let qml_uri_dirs = qml_uri.as_dirs();
+        let qml_uri_underscores = qml_uri.as_underscores();
+        let plugin_type_info = "plugin.qmltypes";
+        let plugin_class_name = format!("{}_plugin", qml_uri_underscores);
 
         let out_dir = env::var("OUT_DIR").unwrap();
         let qt_build_utils_dir = PathBuf::from(format!("{out_dir}/qt-build-utils"));
@@ -159,24 +166,18 @@ impl QtBuild {
         let qml_module_dir = qt_build_utils_dir.join("qml_modules").join(&qml_uri_dirs);
         std::fs::create_dir_all(&qml_module_dir).expect("Could not create QML module directory");
 
-        let qml_uri_underscores = uri.replace('.', "_");
-        let qmltypes_path = qml_module_dir.join("plugin.qmltypes");
-        let plugin_class_name = format!("{qml_uri_underscores}_plugin");
+        let qmltypes_path = qml_module_dir.join(plugin_type_info);
 
         // Generate qmldir file
         let qmldir_file_path = qml_module_dir.join("qmldir");
         {
-            let mut qmldir = File::create(&qmldir_file_path).expect("Could not create qmldir file");
-            write!(
-                qmldir,
-                "module {uri}
-optional plugin {plugin_name}
-classname {plugin_class_name}
-typeinfo plugin.qmltypes
-prefer :/qt/qml/{qml_uri_dirs}/
-"
-            )
-            .expect("Could not write qmldir file");
+            let mut file = File::create(&qmldir_file_path).expect("Could not create qmldir file");
+            QmlDirBuilder::new(qml_uri)
+                .plugin(plugin_name, true)
+                .class_name(&plugin_class_name)
+                .type_info(plugin_type_info)
+                .write(&mut file)
+                .expect("Could not write qmldir file");
         }
 
         // Generate .qrc file and run rcc on it
