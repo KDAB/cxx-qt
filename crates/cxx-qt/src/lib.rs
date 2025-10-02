@@ -116,7 +116,7 @@ pub use cxx_qt_macro::qobject;
 pub use qobject::QObject;
 
 pub use connection::{ConnectionType, QMetaObjectConnection};
-pub use connectionguard::{QMetaObjectConnectionGuard, QScopedMetaObjectConnectionGuard};
+pub use connectionguard::QMetaObjectConnectionGuard;
 pub use threading::{CxxQtThread, ThreadingQueueError};
 
 // Export static assertions that can then be used in cxx-qt-gen generation

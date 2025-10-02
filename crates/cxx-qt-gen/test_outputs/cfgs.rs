@@ -63,9 +63,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectEnabledCxxQtSignalHandlersignal_disabled<'a> =
+        type QObjectEnabledCxxQtSignalHandlersignal_disabled =
             cxx_qt::signalhandler::CxxQtSignalHandler<
-                'a,
                 super::QObjectEnabledCxxQtSignalClosuresignal_disabled,
             >;
         #[doc(hidden)]
@@ -99,9 +98,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectEnabledCxxQtSignalHandlersignal_enabled<'a> =
+        type QObjectEnabledCxxQtSignalHandlersignal_enabled =
             cxx_qt::signalhandler::CxxQtSignalHandler<
-                'a,
                 super::QObjectEnabledCxxQtSignalClosuresignal_enabled,
             >;
         #[doc(hidden)]
@@ -207,9 +205,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectDisabledCxxQtSignalHandlersignal_disabled<'a> =
+        type QObjectDisabledCxxQtSignalHandlersignal_disabled =
             cxx_qt::signalhandler::CxxQtSignalHandler<
-                'a,
                 super::QObjectDisabledCxxQtSignalClosuresignal_disabled,
             >;
         #[doc(hidden)]
@@ -243,9 +240,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectDisabledCxxQtSignalHandlersignal_enabled<'a> =
+        type QObjectDisabledCxxQtSignalHandlersignal_enabled =
             cxx_qt::signalhandler::CxxQtSignalHandler<
-                'a,
                 super::QObjectDisabledCxxQtSignalClosuresignal_enabled,
             >;
         #[doc(hidden)]
@@ -333,9 +329,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectExternEnabledCxxQtSignalHandlersignal_disabled1<'a> =
+        type QObjectExternEnabledCxxQtSignalHandlersignal_disabled1 =
             cxx_qt::signalhandler::CxxQtSignalHandler<
-                'a,
                 super::QObjectExternEnabledCxxQtSignalClosuresignal_disabled1,
             >;
         #[doc(hidden)]
@@ -369,9 +364,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectExternEnabledCxxQtSignalHandlersignal_enabled1<'a> =
+        type QObjectExternEnabledCxxQtSignalHandlersignal_enabled1 =
             cxx_qt::signalhandler::CxxQtSignalHandler<
-                'a,
                 super::QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
             >;
         #[doc(hidden)]
@@ -423,9 +417,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectExternDisabledCxxQtSignalHandlersignal_disabled2<'a> =
+        type QObjectExternDisabledCxxQtSignalHandlersignal_disabled2 =
             cxx_qt::signalhandler::CxxQtSignalHandler<
-                'a,
                 super::QObjectExternDisabledCxxQtSignalClosuresignal_disabled2,
             >;
         #[doc(hidden)]
@@ -459,9 +452,8 @@ mod ffi {
     unsafe extern "C++" {
         #[doc(hidden)]
         #[namespace = "rust::cxxqtgen1"]
-        type QObjectExternDisabledCxxQtSignalHandlersignal_enabled2<'a> =
+        type QObjectExternDisabledCxxQtSignalHandlersignal_enabled2 =
             cxx_qt::signalhandler::CxxQtSignalHandler<
-                'a,
                 super::QObjectExternDisabledCxxQtSignalClosuresignal_enabled2,
             >;
         #[doc(hidden)]
@@ -518,14 +510,13 @@ impl ffi::QObjectEnabled {
     #[doc = "signal_disabled"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_signal_disabled<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectEnabledCxxQtSignalClosuresignal_disabled,
@@ -542,13 +533,12 @@ impl ffi::QObjectEnabled {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_signal_disabled<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_disabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectEnabledCxxQtSignalClosuresignal_disabled,
@@ -565,7 +555,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     for QObjectEnabledCxxQtSignalClosuresignal_disabled
 {
     type Id = cxx::type_id!("::rust::cxxqtgen1::QObjectEnabledCxxQtSignalHandlersignal_disabled");
-    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'a + Send;
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + Send;
 }
 #[cfg(not(enabled))]
 use core::mem::drop as drop_QObjectEnabled_signal_handler_signal_disabled;
@@ -594,14 +584,13 @@ impl ffi::QObjectEnabled {
     #[doc = "signal_enabled"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_signal_enabled<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectEnabledCxxQtSignalClosuresignal_enabled,
@@ -617,11 +606,13 @@ impl ffi::QObjectEnabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
-    pub fn on_signal_enabled<'a, F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'a + Send>(
+    pub fn on_signal_enabled<
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
+    >(
         self: core::pin::Pin<&mut ffi::QObjectEnabled>,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectEnabled_connect_signal_enabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectEnabledCxxQtSignalClosuresignal_enabled,
@@ -638,7 +629,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     for QObjectEnabledCxxQtSignalClosuresignal_enabled
 {
     type Id = cxx::type_id!("::rust::cxxqtgen1::QObjectEnabledCxxQtSignalHandlersignal_enabled");
-    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'a + Send;
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + Send;
 }
 #[cfg(enabled)]
 use core::mem::drop as drop_QObjectEnabled_signal_handler_signal_enabled;
@@ -698,22 +689,19 @@ impl ffi::QObjectDisabled {
     #[doc = "signal_disabled"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_signal_disabled<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
-            ffi::QObjectDisabled_connect_signal_disabled(
-                self,
-                cxx_qt::signalhandler::CxxQtSignalHandler::<
-                    QObjectDisabledCxxQtSignalClosuresignal_disabled,
-                >::new(Box::new(closure)),
-                conn_type,
-            ),
-        )
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_disabled(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                QObjectDisabledCxxQtSignalClosuresignal_disabled,
+            >::new(Box::new(closure)),
+            conn_type,
+        ))
     }
 }
 #[cfg(not(enabled))]
@@ -724,21 +712,18 @@ impl ffi::QObjectDisabled {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_signal_disabled<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
-            ffi::QObjectDisabled_connect_signal_disabled(
-                self,
-                cxx_qt::signalhandler::CxxQtSignalHandler::<
-                    QObjectDisabledCxxQtSignalClosuresignal_disabled,
-                >::new(Box::new(closure)),
-                cxx_qt::ConnectionType::AutoConnection,
-            ),
-        )
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_disabled(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                QObjectDisabledCxxQtSignalClosuresignal_disabled,
+            >::new(Box::new(closure)),
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
     }
 }
 #[cfg(not(enabled))]
@@ -749,7 +734,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     for QObjectDisabledCxxQtSignalClosuresignal_disabled
 {
     type Id = cxx::type_id!("::rust::cxxqtgen1::QObjectDisabledCxxQtSignalHandlersignal_disabled");
-    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'a + Send;
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + Send;
 }
 #[cfg(not(enabled))]
 use core::mem::drop as drop_QObjectDisabled_signal_handler_signal_disabled;
@@ -778,14 +763,13 @@ impl ffi::QObjectDisabled {
     #[doc = "signal_enabled"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_signal_enabled<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectDisabledCxxQtSignalClosuresignal_enabled,
@@ -802,13 +786,12 @@ impl ffi::QObjectDisabled {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_signal_enabled<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectDisabled>,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectDisabled_connect_signal_enabled(
             self,
             cxx_qt::signalhandler::CxxQtSignalHandler::<
                 QObjectDisabledCxxQtSignalClosuresignal_enabled,
@@ -825,7 +808,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     for QObjectDisabledCxxQtSignalClosuresignal_enabled
 {
     type Id = cxx::type_id!("::rust::cxxqtgen1::QObjectDisabledCxxQtSignalHandlersignal_enabled");
-    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'a + Send;
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + Send;
 }
 #[cfg(enabled)]
 use core::mem::drop as drop_QObjectDisabled_signal_handler_signal_enabled;
@@ -893,14 +876,13 @@ impl ffi::QObjectExternEnabled {
     #[doc = "signal_disabled1"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_signal_disabled1<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternEnabled_connect_signal_disabled1(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -919,13 +901,12 @@ impl ffi::QObjectExternEnabled {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_signal_disabled1<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternEnabled_connect_signal_disabled1(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -945,7 +926,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 {
     type Id =
         cxx::type_id!("::rust::cxxqtgen1::QObjectExternEnabledCxxQtSignalHandlersignal_disabled1");
-    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'a + Send;
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + Send;
 }
 #[cfg(not(enabled))]
 use core::mem::drop as drop_QObjectExternEnabled_signal_handler_signal_disabled1;
@@ -978,22 +959,19 @@ impl ffi::QObjectExternEnabled {
     #[doc = "signal_enabled1"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_signal_enabled1<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
-            ffi::QObjectExternEnabled_connect_signal_enabled1(
-                self,
-                cxx_qt::signalhandler::CxxQtSignalHandler::<
-                    QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
-                >::new(Box::new(closure)),
-                conn_type,
-            ),
-        )
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectExternEnabled_connect_signal_enabled1(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
+            >::new(Box::new(closure)),
+            conn_type,
+        ))
     }
 }
 #[cfg(enabled)]
@@ -1004,21 +982,18 @@ impl ffi::QObjectExternEnabled {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_signal_enabled1<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternEnabled>,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
-            ffi::QObjectExternEnabled_connect_signal_enabled1(
-                self,
-                cxx_qt::signalhandler::CxxQtSignalHandler::<
-                    QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
-                >::new(Box::new(closure)),
-                cxx_qt::ConnectionType::AutoConnection,
-            ),
-        )
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(ffi::QObjectExternEnabled_connect_signal_enabled1(
+            self,
+            cxx_qt::signalhandler::CxxQtSignalHandler::<
+                QObjectExternEnabledCxxQtSignalClosuresignal_enabled1,
+            >::new(Box::new(closure)),
+            cxx_qt::ConnectionType::AutoConnection,
+        ))
     }
 }
 #[cfg(enabled)]
@@ -1030,7 +1005,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 {
     type Id =
         cxx::type_id!("::rust::cxxqtgen1::QObjectExternEnabledCxxQtSignalHandlersignal_enabled1");
-    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'a + Send;
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + Send;
 }
 #[cfg(enabled)]
 use core::mem::drop as drop_QObjectExternEnabled_signal_handler_signal_enabled1;
@@ -1071,14 +1046,13 @@ impl ffi::QObjectExternDisabled {
     #[doc = "signal_disabled2"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_signal_disabled2<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_disabled2(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -1097,13 +1071,12 @@ impl ffi::QObjectExternDisabled {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_signal_disabled2<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_disabled2(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -1123,7 +1096,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 {
     type Id =
         cxx::type_id!("::rust::cxxqtgen1::QObjectExternDisabledCxxQtSignalHandlersignal_disabled2");
-    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'a + Send;
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + Send;
 }
 #[cfg(not(enabled))]
 use core::mem::drop as drop_QObjectExternDisabled_signal_handler_signal_disabled2;
@@ -1156,14 +1129,13 @@ impl ffi::QObjectExternDisabled {
     #[doc = "signal_enabled2"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     pub fn connect_signal_enabled2<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
         closure: F,
         conn_type: cxx_qt::ConnectionType,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_enabled2(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -1182,13 +1154,12 @@ impl ffi::QObjectExternDisabled {
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
     pub fn on_signal_enabled2<
-        'a,
-        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'a + Send,
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
         self: core::pin::Pin<&mut ffi::QObjectExternDisabled>,
         closure: F,
-    ) -> cxx_qt::QScopedMetaObjectConnectionGuard<'a> {
-        cxx_qt::QScopedMetaObjectConnectionGuard::from(
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
             ffi::QObjectExternDisabled_connect_signal_enabled2(
                 self,
                 cxx_qt::signalhandler::CxxQtSignalHandler::<
@@ -1208,7 +1179,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 {
     type Id =
         cxx::type_id!("::rust::cxxqtgen1::QObjectExternDisabledCxxQtSignalHandlersignal_enabled2");
-    type FnType<'a> = dyn FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'a + Send;
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + Send;
 }
 #[cfg(enabled)]
 use core::mem::drop as drop_QObjectExternDisabled_signal_handler_signal_enabled2;
