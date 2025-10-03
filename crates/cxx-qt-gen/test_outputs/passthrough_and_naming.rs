@@ -261,7 +261,7 @@ pub mod ffi {
         #[cxx_name = "myRenamedFunction"]
         #[namespace = "second_object"]
         #[doc(hidden)]
-        unsafe fn my_function(self: &SecondObject);
+        unsafe fn my_function(self: &SecondObject, param: i32);
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
@@ -763,6 +763,18 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<SecondObjectCxxQtSignalClosurepropertyNameChanged>,
     [usize; 2]
 );
+impl ffi::SecondObject {
+    pub fn invokable_name(self: Pin<&mut ffi::SecondObject>) {
+        use cxx_qt::CxxQtType;
+        self.rust_mut().invokable_name()
+    }
+}
+impl ffi::SecondObject {
+    pub fn my_function(self: &ffi::SecondObject, param: i32) {
+        use cxx_qt::CxxQtType;
+        self.rust().my_function(param)
+    }
+}
 impl ffi::SecondObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "ready"]
