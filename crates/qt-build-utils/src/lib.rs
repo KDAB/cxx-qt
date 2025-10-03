@@ -15,6 +15,9 @@
 
 #![allow(clippy::too_many_arguments)]
 
+mod cfg;
+pub use cfg::CfgGenerator;
+
 mod error;
 pub use error::QtBuildError;
 

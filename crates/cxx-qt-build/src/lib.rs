@@ -36,7 +36,6 @@ pub use qml_modules::QmlModule;
 
 pub use qt_build_utils::MocArguments;
 use quote::ToTokens;
-use semver::Version;
 use std::{
     collections::HashSet,
     env,
@@ -608,71 +607,6 @@ impl CxxQtBuilder {
         self
     }
 
-    fn define_cfg_variable(key: String, value: Option<&str>) {
-        if let Some(value) = value {
-            println!("cargo::rustc-cfg={key}=\"{value}\"");
-        } else {
-            println!("cargo::rustc-cfg={key}");
-        }
-        let variable_cargo = format!("CARGO_CFG_{key}");
-        env::set_var(variable_cargo, value.unwrap_or("true"));
-    }
-
-    fn define_cfg_check_variable(key: String, values: Option<Vec<&str>>) {
-        if let Some(values) = values {
-            let values = values
-                .iter()
-                // Escape and add quotes
-                .map(|value| format!("\"{}\"", value.escape_default()))
-                .collect::<Vec<_>>()
-                .join(", ");
-            println!("cargo::rustc-check-cfg=cfg({key}, values({values}))");
-        } else {
-            println!("cargo::rustc-check-cfg=cfg({key})");
-        }
-    }
-
-    fn define_qt_version_cfg_variables(version: Version) {
-        // Allow for Qt 5 or Qt 6 as valid values
-        CxxQtBuilder::define_cfg_check_variable(
-            "cxxqt_qt_version_major".to_owned(),
-            Some(vec!["5", "6"]),
-        );
-        // Find the Qt version and tell the Rust compiler
-        // this allows us to have conditional Rust code
-        CxxQtBuilder::define_cfg_variable(
-            "cxxqt_qt_version_major".to_owned(),
-            Some(version.major.to_string().as_str()),
-        );
-
-        // Seed all values from Qt 5.0 through to Qt 7.99
-        for major in 5..=7 {
-            CxxQtBuilder::define_cfg_check_variable(
-                format!("cxxqt_qt_version_at_least_{major}"),
-                None,
-            );
-
-            for minor in 0..=99 {
-                CxxQtBuilder::define_cfg_check_variable(
-                    format!("cxxqt_qt_version_at_least_{major}_{minor}"),
-                    None,
-                );
-            }
-        }
-
-        for minor in 0..=version.minor {
-            let qt_version_at_least =
-                format!("cxxqt_qt_version_at_least_{}_{}", version.major, minor);
-            CxxQtBuilder::define_cfg_variable(qt_version_at_least, None);
-        }
-
-        // We don't support Qt < 5
-        for major in 5..=version.major {
-            let at_least_qt_major_version = format!("cxxqt_qt_version_at_least_{major}");
-            CxxQtBuilder::define_cfg_variable(at_least_qt_major_version, None);
-        }
-    }
-
     fn write_common_headers() {
         let header_root = dir::header_root();
         // Write cxx headers
@@ -1103,7 +1037,14 @@ extern "C" bool {init_fun}() {{
         let mut qtbuild = qt_build_utils::QtBuild::new(qt_modules.iter().cloned().collect())
             .expect("Could not find Qt installation");
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
-        Self::define_qt_version_cfg_variables(qtbuild.version());
+
+        // Define the Qt cfg to cargo
+        //
+        // TODO: do we have this as a helper on QtBuild too?
+        qt_build_utils::CfgGenerator::new(qtbuild.version())
+            .prefix("cxxqt_")
+            .range_major(5..=7)
+            .build();
 
         // Ensure that Qt modules and apple framework are linked and searched correctly
         let mut include_paths = qtbuild.include_paths();
