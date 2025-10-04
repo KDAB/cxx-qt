@@ -361,21 +361,21 @@ mod test {
     #[test]
     fn try_from_valid() {
         let matrix =
-            QGenericMatrix::<4, 2>::try_from([5.0, 6.0, 4.0, 7.0, 3.0, 8.0, 2.0, 9.0].as_slice());
+            QGenericMatrix::<4, 2>::try_from([5.0, 4.0, 3.0, 2.0, 6.0, 7.0, 8.0, 9.0].as_slice());
         assert_eq!(matrix, Ok(*MATRIX));
     }
 
     #[test]
     fn try_from_too_short() {
         let matrix =
-            QGenericMatrix::<4, 2>::try_from([5.0, 6.0, 4.0, 7.0, 3.0, 8.0, 2.0].as_slice());
+            QGenericMatrix::<4, 2>::try_from([5.0, 4.0, 3.0, 2.0, 6.0, 7.0, 8.0].as_slice());
         matrix.expect_err("Expected error, got");
     }
 
     #[test]
     fn try_from_too_long() {
         let matrix = QGenericMatrix::<4, 2>::try_from(
-            [5.0, 6.0, 4.0, 7.0, 3.0, 8.0, 2.0, 9.0, 1.0].as_slice(),
+            [5.0, 4.0, 3.0, 2.0, 6.0, 7.0, 8.0, 9.0, 1.0].as_slice(),
         );
         matrix.expect_err("Expected error, got");
     }
