@@ -324,15 +324,6 @@ fn qml_module_init_key(module_uri: &str) -> String {
     format!("qml_module_{}", module_name_from_uri(module_uri))
 }
 
-fn panic_duplicate_file_and_qml_module(
-    path: impl AsRef<Path>,
-    uri: &str,
-    version_major: usize,
-    version_minor: usize,
-) {
-    panic!("CXX-Qt bridge Rust file {} specified in QML module {uri} (version {version_major}.{version_minor}), but also specified via CxxQtBuilder::file. Bridge files must be specified via CxxQtBuilder::file or CxxQtBuilder::qml_module, but not both.", path.as_ref().display());
-}
-
 /// Run cxx-qt's C++ code generator on Rust modules marked with the `cxx_qt::bridge` macro, compile
 /// the code, and link to Qt. This is the complement of the `cxx_qt::bridge` macro, which the Rust
 /// compiler uses to generate the corresponding Rust code. No dependencies besides Qt, a C++17 compiler,
@@ -372,7 +363,7 @@ pub struct CxxQtBuilder {
     qrc_files: Vec<PathBuf>,
     init_files: Vec<qt_build_utils::Initializer>,
     qt_modules: HashSet<String>,
-    qml_modules: Vec<OwningQmlModule>,
+    qml_module: Option<OwningQmlModule>,
     cc_builder: cc::Build,
     include_prefix: String,
     crate_include_root: Option<String>,
@@ -413,7 +404,7 @@ impl CxxQtBuilder {
             qrc_files: vec![],
             init_files: vec![],
             qt_modules,
-            qml_modules: vec![],
+            qml_module: None,
             cc_builder: cc::Build::new(),
             include_prefix: crate_name(),
             crate_include_root: Some(String::new()),
@@ -425,16 +416,6 @@ impl CxxQtBuilder {
     /// Relative paths are treated as relative to the path of your crate's Cargo.toml file
     pub fn file(mut self, rust_source: impl AsRef<Path>) -> Self {
         let rust_source = rust_source.as_ref().to_path_buf();
-        for qml_module in &self.qml_modules {
-            if qml_module.rust_files.contains(&rust_source) {
-                panic_duplicate_file_and_qml_module(
-                    &rust_source,
-                    &qml_module.uri,
-                    qml_module.version_major,
-                    qml_module.version_minor,
-                );
-            }
-        }
         println!("cargo::rerun-if-changed={}", rust_source.display());
         self.rust_sources.push(rust_source);
         self
@@ -564,18 +545,17 @@ impl CxxQtBuilder {
         mut self,
         qml_module: QmlModule<A, B>,
     ) -> CxxQtBuilder {
-        let qml_module = OwningQmlModule::from(qml_module);
-        for path in &qml_module.rust_files {
-            if self.rust_sources.contains(path) {
-                panic_duplicate_file_and_qml_module(
-                    path,
-                    &qml_module.uri,
-                    qml_module.version_major,
-                    qml_module.version_minor,
-                );
-            }
+        if let Some(module) = &self.qml_module {
+            panic!(
+                "Duplicate QML module registration!\n\
+                The QML module with URI '{}' (version {}.{}) was already registered.\n\
+                Only one QML module can be registered per crate.",
+                module.uri, module.version_major, module.version_minor
+            );
         }
-        self.qml_modules.push(qml_module);
+
+        let qml_module = OwningQmlModule::from(qml_module);
+        self.qml_module = Some(qml_module);
         self
     }
 
@@ -797,8 +777,7 @@ impl CxxQtBuilder {
         let mut initializer_functions = Vec::new();
         // Extract qml_modules out of self so we don't have to hold onto `self` for the duration of
         // the loop.
-        let qml_modules: Vec<_> = self.qml_modules.drain(..).collect();
-        for qml_module in qml_modules {
+        if let Some(qml_module) = self.qml_module.take() {
             dir::clean(dir::module_target(&qml_module.uri))
                 .expect("Failed to clean qml module export directory!");
 
