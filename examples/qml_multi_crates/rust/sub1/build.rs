@@ -8,11 +8,11 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 fn main() {
     CxxQtBuilder::new()
         .qt_module("Network")
-        .qml_module(QmlModule::<_, &str> {
+        .qml_module(QmlModule::<&str, &str> {
             uri: "com.kdab.cxx_qt.demo.sub1",
-            rust_files: &["src/sub1_object.rs"],
             ..Default::default()
         })
+        .files(["src/sub1_object.rs"])
         .build()
         .export();
 }

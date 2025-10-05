@@ -6,12 +6,12 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 fn main() {
     CxxQtBuilder::new()
-        .qml_module(QmlModule {
+        .qml_module(QmlModule::<&str, &str> {
             uri: "com.kdab.todo",
             qml_files: &["qml/main.qml"],
-            rust_files: &["src/todo_list.rs"],
             ..Default::default()
         })
+        .files(["src/todo_list.rs"])
         .qt_module("Network")
         .build();
 }

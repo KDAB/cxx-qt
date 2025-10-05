@@ -33,6 +33,11 @@ impl MocArguments {
         self
     }
 
+    /// Returns the assigned URI, if any.
+    pub fn get_uri(&self) -> Option<&str> {
+        self.uri.as_deref()
+    }
+
     /// Additional include path to pass to moc
     pub fn include_path(mut self, include_path: PathBuf) -> Self {
         self.include_paths.push(include_path);
