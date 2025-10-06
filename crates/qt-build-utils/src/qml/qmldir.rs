@@ -18,7 +18,7 @@ pub struct QmlDirBuilder {
 }
 
 impl QmlDirBuilder {
-    /// Construct a [QmlDirBuilder] using the give [QmlUriBuilder] for the
+    /// Construct a [QmlDirBuilder] using the give [QmlUri] for the
     /// module identifier
     pub fn new(uri: QmlUri) -> Self {
         Self {

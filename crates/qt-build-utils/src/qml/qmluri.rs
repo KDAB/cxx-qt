@@ -16,7 +16,7 @@ impl From<&str> for QmlUri {
 }
 
 impl QmlUri {
-    /// Construct a [QmlUriBuilder] from a given string
+    /// Construct a [QmlUri] from a given string
     ///
     /// If the uri segments are not alphanumeric this will panic
     pub fn new(uri: impl IntoIterator<Item = impl Into<String>>) -> Self {
