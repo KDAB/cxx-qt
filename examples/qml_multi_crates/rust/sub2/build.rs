@@ -7,11 +7,11 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
     CxxQtBuilder::new()
-        .qml_module(QmlModule::<_, &str> {
+        .qml_module(QmlModule::<&str, &str> {
             uri: "com.kdab.cxx_qt.demo.sub2",
-            rust_files: &["src/sub2_object.rs"],
             ..Default::default()
         })
+        .files(["src/sub2_object.rs"])
         .build()
         .export();
 }

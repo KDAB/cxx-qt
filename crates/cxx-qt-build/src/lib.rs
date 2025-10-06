@@ -35,6 +35,7 @@ use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
 pub use qt_build_utils::MocArguments;
+use qt_build_utils::MocProducts;
 use quote::ToTokens;
 use semver::Version;
 use std::{
@@ -324,15 +325,6 @@ fn qml_module_init_key(module_uri: &str) -> String {
     format!("qml_module_{}", module_name_from_uri(module_uri))
 }
 
-fn panic_duplicate_file_and_qml_module(
-    path: impl AsRef<Path>,
-    uri: &str,
-    version_major: usize,
-    version_minor: usize,
-) {
-    panic!("CXX-Qt bridge Rust file {} specified in QML module {uri} (version {version_major}.{version_minor}), but also specified via CxxQtBuilder::file. Bridge files must be specified via CxxQtBuilder::file or CxxQtBuilder::qml_module, but not both.", path.as_ref().display());
-}
-
 /// Run cxx-qt's C++ code generator on Rust modules marked with the `cxx_qt::bridge` macro, compile
 /// the code, and link to Qt. This is the complement of the `cxx_qt::bridge` macro, which the Rust
 /// compiler uses to generate the corresponding Rust code. No dependencies besides Qt, a C++17 compiler,
@@ -372,7 +364,7 @@ pub struct CxxQtBuilder {
     qrc_files: Vec<PathBuf>,
     init_files: Vec<qt_build_utils::Initializer>,
     qt_modules: HashSet<String>,
-    qml_modules: Vec<OwningQmlModule>,
+    qml_module: Option<OwningQmlModule>,
     cc_builder: cc::Build,
     include_prefix: String,
     crate_include_root: Option<String>,
@@ -413,7 +405,7 @@ impl CxxQtBuilder {
             qrc_files: vec![],
             init_files: vec![],
             qt_modules,
-            qml_modules: vec![],
+            qml_module: None,
             cc_builder: cc::Build::new(),
             include_prefix: crate_name(),
             crate_include_root: Some(String::new()),
@@ -425,18 +417,21 @@ impl CxxQtBuilder {
     /// Relative paths are treated as relative to the path of your crate's Cargo.toml file
     pub fn file(mut self, rust_source: impl AsRef<Path>) -> Self {
         let rust_source = rust_source.as_ref().to_path_buf();
-        for qml_module in &self.qml_modules {
-            if qml_module.rust_files.contains(&rust_source) {
-                panic_duplicate_file_and_qml_module(
-                    &rust_source,
-                    &qml_module.uri,
-                    qml_module.version_major,
-                    qml_module.version_minor,
-                );
-            }
-        }
         println!("cargo::rerun-if-changed={}", rust_source.display());
         self.rust_sources.push(rust_source);
+        self
+    }
+
+    /// Specify multiple rust file paths to parse through the cxx-qt marco.
+    ///
+    /// See also: [Self::file]
+    pub fn files(mut self, rust_source: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
+        let rust_sources = rust_source.into_iter().map(|p| {
+            let p = p.as_ref().to_path_buf();
+            println!("cargo::rerun-if-changed={}", p.display());
+            p
+        });
+        self.rust_sources.extend(rust_sources);
         self
     }
 
@@ -552,30 +547,29 @@ impl CxxQtBuilder {
     /// use cxx_qt_build::{CxxQtBuilder, QmlModule};
     ///
     /// CxxQtBuilder::new()
-    ///     .qml_module(QmlModule {
+    ///     .qml_module(QmlModule::<&str, &str> {
     ///         uri: "com.kdab.cxx_qt.demo",
-    ///         rust_files: &["src/cxxqt_object.rs"],
     ///         qml_files: &["qml/main.qml"],
     ///         ..Default::default()
     ///     })
+    ///     .files(["src/cxxqt_object.rs"])
     ///     .build();
     /// ```
     pub fn qml_module<A: AsRef<Path>, B: AsRef<Path>>(
         mut self,
         qml_module: QmlModule<A, B>,
     ) -> CxxQtBuilder {
-        let qml_module = OwningQmlModule::from(qml_module);
-        for path in &qml_module.rust_files {
-            if self.rust_sources.contains(path) {
-                panic_duplicate_file_and_qml_module(
-                    path,
-                    &qml_module.uri,
-                    qml_module.version_major,
-                    qml_module.version_minor,
-                );
-            }
+        if let Some(module) = &self.qml_module {
+            panic!(
+                "Duplicate QML module registration!\n\
+                The QML module with URI '{}' (version {}.{}) was already registered.\n\
+                Only one QML module can be registered per crate.",
+                module.uri, module.version_major, module.version_minor
+            );
         }
-        self.qml_modules.push(qml_module);
+
+        let qml_module = OwningQmlModule::from(qml_module);
+        self.qml_module = Some(qml_module);
         self
     }
 
@@ -728,19 +722,42 @@ impl CxxQtBuilder {
         }
     }
 
-    fn moc_qobject_headers(&mut self, qtbuild: &mut qt_build_utils::QtBuild) {
-        for QObjectHeaderOpts {
+    /// Returns the list of Moc products. Especially the qml_metatypes.json files are needed for
+    /// the QML module generation later
+    fn moc_qobject_headers(&mut self, qtbuild: &mut qt_build_utils::QtBuild) -> Vec<MocProducts> {
+        self.qobject_headers.iter().map(|QObjectHeaderOpts {
             path,
             moc_arguments,
-        } in &self.qobject_headers
+        }|
         {
-            let moc_products = qtbuild.moc().compile(path, moc_arguments.clone());
+
+            let mut moc_arguments = moc_arguments.clone();
+            if let Some(qml_module) = &self.qml_module {
+                // Ensure that the generated QObject header is in the include path
+                // so that qmltyperegistar can include them later
+                if let Some(dir) = path.parent() {
+                    self.cc_builder.include(dir);
+                }
+
+                if let Some(uri) = moc_arguments.get_uri() {
+                    if uri != qml_module.uri {
+                        panic!(
+                            "URI for QObject header {path} ({uri}) conflicts with QML Module URI ({qml_module_uri})",
+                            path = path.display(),
+                            qml_module_uri = qml_module.uri);
+                    }
+                }
+                moc_arguments = moc_arguments.uri(qml_module.uri.clone());
+            }
+            let moc_products = qtbuild.moc().compile(path, moc_arguments);
             // Include the moc folder
             if let Some(dir) = moc_products.cpp.parent() {
                 self.cc_builder.include(dir);
             }
-            self.cc_builder.file(moc_products.cpp);
-        }
+            self.cc_builder.file(moc_products.cpp.clone());
+            moc_products
+        })
+        .collect()
     }
 
     fn generate_cpp_files_from_cxxqt_bridges(
@@ -791,18 +808,14 @@ impl CxxQtBuilder {
     fn build_qml_modules(
         &mut self,
         qtbuild: &mut qt_build_utils::QtBuild,
-        generated_header_dir: impl AsRef<Path>,
-        header_prefix: &str,
+        moc_products: &[MocProducts],
     ) -> Vec<qt_build_utils::Initializer> {
         let mut initializer_functions = Vec::new();
         // Extract qml_modules out of self so we don't have to hold onto `self` for the duration of
         // the loop.
-        let qml_modules: Vec<_> = self.qml_modules.drain(..).collect();
-        for qml_module in qml_modules {
+        if let Some(qml_module) = self.qml_module.take() {
             dir::clean(dir::module_target(&qml_module.uri))
                 .expect("Failed to clean qml module export directory!");
-
-            let mut qml_metatypes_json = Vec::new();
 
             // Check that all rust files are within the same directory
             //
@@ -813,8 +826,8 @@ impl CxxQtBuilder {
             // This can also be observed when using qt_add_qml_module, if a class
             // has a QML_ELEMENT the file must be in the same directory as the
             // CMakeLists and cannot be a relative path to a sub directory.
-            let dirs = qml_module
-                .rust_files
+            let dirs = self
+                .rust_sources
                 .iter()
                 .map(|file| {
                     if let Some(parent) = file.parent() {
@@ -840,34 +853,10 @@ impl CxxQtBuilder {
             let cc_builder = &mut self.cc_builder;
             qtbuild.cargo_link_libraries(cc_builder);
 
-            let mut moc_include_paths = HashSet::new();
-            for files in generate_cxxqt_cpp_files(
-                &qml_module.rust_files,
-                &generated_header_dir,
-                header_prefix,
-            ) {
-                cc_builder.file(files.plain_cpp);
-                if let (Some(qobject), Some(qobject_header)) = (files.qobject, files.qobject_header)
-                {
-                    // Ensure that the generated QObject header is in the include path
-                    // so that qmltyperegistar can include them later
-                    if let Some(dir) = qobject_header.parent() {
-                        moc_include_paths.insert(dir.to_path_buf());
-                    }
-
-                    cc_builder.file(&qobject);
-                    let moc_products = qtbuild.moc().compile(
-                        qobject_header,
-                        MocArguments::default().uri(qml_module.uri.clone()),
-                    );
-                    // Include the moc folder
-                    if let Some(dir) = moc_products.cpp.parent() {
-                        moc_include_paths.insert(dir.to_path_buf());
-                    }
-                    cc_builder.file(moc_products.cpp);
-                    qml_metatypes_json.push(moc_products.metatypes_json);
-                }
-            }
+            let qml_metatypes_json: Vec<PathBuf> = moc_products
+                .iter()
+                .map(|products| products.metatypes_json.clone())
+                .collect();
 
             let qml_module_registration_files = qtbuild.register_qml_module(
                 &qml_metatypes_json,
@@ -895,11 +884,6 @@ impl CxxQtBuilder {
             // Add any include paths the qml module registration needs
             // this is most likely the moc folder for the plugin
             if let Some(include_path) = qml_module_registration_files.include_path {
-                moc_include_paths.insert(include_path);
-            }
-
-            // Ensure that all include paths from moc folders that are required
-            for include_path in &moc_include_paths {
                 cc_builder.include(include_path);
             }
 
@@ -910,12 +894,11 @@ impl CxxQtBuilder {
             cc_builder.define("QT_STATICPLUGIN", None);
 
             // If any of the files inside the qml module change, then trigger a rerun
-            for path in qml_module.qml_files.iter().chain(
-                qml_module
-                    .rust_files
-                    .iter()
-                    .chain(qml_module.qrc_files.iter()),
-            ) {
+            for path in qml_module
+                .qml_files
+                .iter()
+                .chain(qml_module.qrc_files.iter())
+            {
                 println!("cargo::rerun-if-changed={}", path.display());
             }
 
@@ -1149,12 +1132,11 @@ extern "C" bool {init_fun}() {{
         // Generate files
         self.generate_cpp_files_from_cxxqt_bridges(&header_root, &self.include_prefix.clone());
 
-        self.moc_qobject_headers(&mut qtbuild);
+        let moc_products = self.moc_qobject_headers(&mut qtbuild);
 
         // Bridges for QML modules are handled separately because
         // the metatypes_json generated by moc needs to be passed to qmltyperegistrar
-        let module_initializers =
-            self.build_qml_modules(&mut qtbuild, &header_root, &self.include_prefix.clone());
+        let module_initializers = self.build_qml_modules(&mut qtbuild, &moc_products);
 
         let qrc_files = self.generate_cpp_from_qrc_files(&mut qtbuild);
 

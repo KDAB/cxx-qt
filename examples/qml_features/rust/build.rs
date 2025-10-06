@@ -9,26 +9,8 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
     CxxQtBuilder::new()
-        .qml_module(QmlModule {
+        .qml_module(QmlModule::<&str, &str> {
             uri: "com.kdab.cxx_qt.demo",
-            rust_files: &[
-                "src/containers.rs",
-                "src/custom_base_class.rs",
-                "src/custom_parent_class.rs",
-                "src/empty_bridge.rs",
-                "src/externcxxqt.rs",
-                "src/invokables.rs",
-                "src/multiple_qobjects.rs",
-                "src/naming.rs",
-                "src/nested_qobjects.rs",
-                "src/serialisation.rs",
-                "src/signals.rs",
-                "src/singleton.rs",
-                "src/properties.rs",
-                "src/threading.rs",
-                "src/types.rs",
-                "src/uncreatable.rs",
-            ],
             qml_files: &[
                 "../qml/main.qml",
                 "../qml/pages/ContainersPage.qml",
@@ -48,6 +30,24 @@ fn main() {
             ],
             ..Default::default()
         })
+        .files([
+            "src/containers.rs",
+            "src/custom_base_class.rs",
+            "src/custom_parent_class.rs",
+            "src/empty_bridge.rs",
+            "src/externcxxqt.rs",
+            "src/invokables.rs",
+            "src/multiple_qobjects.rs",
+            "src/naming.rs",
+            "src/nested_qobjects.rs",
+            "src/serialisation.rs",
+            "src/signals.rs",
+            "src/singleton.rs",
+            "src/properties.rs",
+            "src/threading.rs",
+            "src/types.rs",
+            "src/uncreatable.rs",
+        ])
         // custom_object.cpp/h need to be handled here rather than CMakeLists.txt,
         // otherwise linking cargo tests fails because the symbols from those files are not found.
         .cc_builder(|cc| {

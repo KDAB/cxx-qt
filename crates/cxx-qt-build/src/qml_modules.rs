@@ -20,8 +20,6 @@ where
     pub version_major: usize,
     /// The minor version of the QML module
     pub version_minor: usize,
-    /// The `.rs` files containing a `#[cxx_qt::bridge]` module with at least one QObject type annotated with `#[qml_element]`
-    pub rust_files: &'a [A],
     /// `.qml` files included in the module
     pub qml_files: &'a [B],
     /// Other QRC resources (such as images) included in the module
@@ -45,7 +43,6 @@ where
             uri: "com.example.cxx_qt_module",
             version_major: 1,
             version_minor: 0,
-            rust_files: &[],
             qml_files: &[],
             qrc_files: &[],
         }
@@ -59,7 +56,6 @@ pub(crate) struct OwningQmlModule {
     pub uri: String,
     pub version_major: usize,
     pub version_minor: usize,
-    pub rust_files: Vec<PathBuf>,
     pub qml_files: Vec<PathBuf>,
     pub qrc_files: Vec<PathBuf>,
 }
@@ -74,7 +70,6 @@ impl<A: AsRef<Path>, B: AsRef<Path>> From<QmlModule<'_, A, B>> for OwningQmlModu
             uri: other.uri.to_owned(),
             version_major: other.version_major,
             version_minor: other.version_minor,
-            rust_files: collect_pathbuf_vec(other.rust_files),
             qml_files: collect_pathbuf_vec(other.qml_files),
             qrc_files: collect_pathbuf_vec(other.qrc_files),
         }

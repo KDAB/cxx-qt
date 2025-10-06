@@ -8,7 +8,6 @@ fn main() {
     CxxQtBuilder::new()
         .qml_module(QmlModule {
             uri: "com.kdab.energy",
-            rust_files: &["src/lib.rs"],
             qml_files: &[
                 "../qml/Button.qml",
                 "../qml/MainWindow.qml",
@@ -46,5 +45,6 @@ fn main() {
             ],
             ..Default::default()
         })
+        .files(["src/lib.rs"])
         .build();
 }
