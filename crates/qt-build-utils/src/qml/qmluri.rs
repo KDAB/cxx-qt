@@ -23,11 +23,11 @@ impl QmlUri {
         let uri: Vec<_> = uri.into_iter().map(Into::into).collect();
 
         // Only allow alphanumeric uri parts for now
-        if uri
-            .iter()
-            .any(|part| part.chars().any(|c| !c.is_ascii_alphanumeric()))
-        {
-            panic!("QML uri parts must be alphanumeric");
+        if uri.iter().any(|part| {
+            part.chars()
+                .any(|c| !(c.is_ascii_alphanumeric() || c == '_'))
+        }) {
+            panic!("QML uri parts must be alphanumeric: {uri:?}");
         }
 
         Self { uri }
@@ -67,9 +67,9 @@ mod test {
 
     #[test]
     fn as_n() {
-        let uri = QmlUri::new(["a", "b", "c"]);
-        assert_eq!(uri.as_dirs(), "a/b/c");
-        assert_eq!(uri.as_dots(), "a.b.c");
-        assert_eq!(uri.as_underscores(), "a_b_c");
+        let uri = QmlUri::new(["a", "b", "c_d"]);
+        assert_eq!(uri.as_dirs(), "a/b/c_d");
+        assert_eq!(uri.as_dots(), "a.b.c_d");
+        assert_eq!(uri.as_underscores(), "a_b_c_d");
     }
 }
