@@ -15,11 +15,6 @@
 
 #![allow(clippy::too_many_arguments)]
 
-mod builder;
-pub use builder::{
-    QResource, QResourceFile, QResources, QmlDirBuilder, QmlPluginCppBuilder, QmlUri,
-};
-
 mod error;
 pub use error::QtBuildError;
 
@@ -37,6 +32,12 @@ mod parse_cflags;
 
 mod platform;
 pub use platform::QtPlatformLinker;
+
+mod qml;
+pub use qml::{QmlDirBuilder, QmlPluginCppBuilder, QmlUri};
+
+mod qrc;
+pub use qrc::{QResource, QResourceFile, QResources};
 
 mod tool;
 pub use tool::{

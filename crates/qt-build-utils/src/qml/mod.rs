@@ -11,6 +11,3 @@ pub use qmlplugincpp::QmlPluginCppBuilder;
 
 mod qmluri;
 pub use qmluri::QmlUri;
-
-mod qresource;
-pub use qresource::{QResource, QResourceFile, QResources};

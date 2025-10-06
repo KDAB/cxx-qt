@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::builder::qmluri::QmlUri;
+use crate::QmlUri;
 
 use std::io;
 
