@@ -9,7 +9,7 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
     CxxQtBuilder::new()
-        .qml_module(QmlModule::<&str, &str> {
+        .qml_module(QmlModule {
             uri: "com.kdab.cxx_qt.demo",
             qml_files: &[
                 "../qml/main.qml",

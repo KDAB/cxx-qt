@@ -8,11 +8,10 @@
 use std::path::{Path, PathBuf};
 
 /// Metadata for registering a QML module with [crate::CxxQtBuilder::qml_module]
-pub struct QmlModule<'a, A, B>
+pub struct QmlModule<'a, A>
 where
-    A: AsRef<Path>,
     // Use a separate generic to allow using different types that impl AsRef<Path>
-    B: AsRef<Path>,
+    A: AsRef<Path>,
 {
     /// The URI of the QML module
     pub uri: &'a str,
@@ -21,22 +20,12 @@ where
     /// The minor version of the QML module
     pub version_minor: usize,
     /// `.qml` files included in the module
-    pub qml_files: &'a [B],
-    /// Other QRC resources (such as images) included in the module
-    //
-    // Reuse the `A` generic from rust_files to allow the compiler to infer the
-    // type when constructing the struct with Default::default. Using a separate
-    // generic for this field would be more flexible, but it would require users
-    // to explicitly specify the type even for an empty slice (like `&[] as &[&str; 0]`)
-    // and an empty slice is likely desired in most cases; most users probably don't
-    // care about this field.
-    pub qrc_files: &'a [A],
+    pub qml_files: &'a [A],
 }
 
-impl<A, B> Default for QmlModule<'_, A, B>
+impl<A> Default for QmlModule<'_, A>
 where
     A: AsRef<Path>,
-    B: AsRef<Path>,
 {
     fn default() -> Self {
         QmlModule {
@@ -44,7 +33,6 @@ where
             version_major: 1,
             version_minor: 0,
             qml_files: &[],
-            qrc_files: &[],
         }
     }
 }
@@ -57,21 +45,19 @@ pub(crate) struct OwningQmlModule {
     pub version_major: usize,
     pub version_minor: usize,
     pub qml_files: Vec<PathBuf>,
-    pub qrc_files: Vec<PathBuf>,
 }
 
 fn collect_pathbuf_vec(asref: &[impl AsRef<Path>]) -> Vec<PathBuf> {
     asref.iter().map(|p| p.as_ref().to_path_buf()).collect()
 }
 
-impl<A: AsRef<Path>, B: AsRef<Path>> From<QmlModule<'_, A, B>> for OwningQmlModule {
-    fn from(other: QmlModule<'_, A, B>) -> Self {
+impl<A: AsRef<Path>> From<QmlModule<'_, A>> for OwningQmlModule {
+    fn from(other: QmlModule<'_, A>) -> Self {
         OwningQmlModule {
             uri: other.uri.to_owned(),
             version_major: other.version_major,
             version_minor: other.version_minor,
             qml_files: collect_pathbuf_vec(other.qml_files),
-            qrc_files: collect_pathbuf_vec(other.qrc_files),
         }
     }
 }

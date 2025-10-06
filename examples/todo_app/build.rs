@@ -6,7 +6,7 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 fn main() {
     CxxQtBuilder::new()
-        .qml_module(QmlModule::<&str, &str> {
+        .qml_module(QmlModule {
             uri: "com.kdab.todo",
             qml_files: &["qml/main.qml"],
             ..Default::default()

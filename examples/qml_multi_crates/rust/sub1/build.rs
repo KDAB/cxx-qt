@@ -8,7 +8,7 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 fn main() {
     CxxQtBuilder::new()
         .qt_module("Network")
-        .qml_module(QmlModule::<&str, &str> {
+        .qml_module(QmlModule::<&str> {
             uri: "com.kdab.cxx_qt.demo.sub1",
             ..Default::default()
         })
