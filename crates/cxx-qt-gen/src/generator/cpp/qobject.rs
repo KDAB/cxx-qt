@@ -62,11 +62,9 @@ impl GeneratedCppQObjectBlocks {
 
     pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {
         let mut qml_specifiers = Vec::new();
-        let mut includes = BTreeSet::new();
         if let Some(qml_metadata) = &qobject.qml_metadata {
-            // When specifying the QML declarative macros moc needs the header to be
-            // included, otherwise it does not understand what these expand to.
-            includes.insert("#include <QtQml/QQmlEngine>".to_string());
+            // Note ensure that the header moc processes has QtQml/QQmlEngine
+            // this is done via generator/rust/qobject
 
             qml_specifiers.push(format!("QML_NAMED_ELEMENT({})", qml_metadata.name));
 
@@ -79,7 +77,6 @@ impl GeneratedCppQObjectBlocks {
             }
         }
         GeneratedCppQObjectBlocks {
-            includes,
             metaobjects: qml_specifiers,
             ..Default::default()
         }
