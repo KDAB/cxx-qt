@@ -37,7 +37,7 @@ mod platform;
 pub use platform::QtPlatformLinker;
 
 mod qml;
-pub use qml::{QmlDirBuilder, QmlFile, QmlPluginCppBuilder, QmlUri};
+pub use qml::{QmlDirBuilder, QmlFile, QmlLsIniBuilder, QmlPluginCppBuilder, QmlUri};
 
 mod qrc;
 pub use qrc::{QResource, QResourceFile, QResources};
