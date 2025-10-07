@@ -9,6 +9,7 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -16,7 +17,7 @@ Page {
             ToolButton {
                 text: qsTr("Reset")
 
-                onClicked: rustContainers.reset()
+                onClicked: root.rustContainers.reset()
             }
 
             Item {
@@ -25,8 +26,7 @@ Page {
         }
     }
 
-    RustContainers {
-        id: rustContainers
+    readonly property RustContainers rustContainers: RustContainers {
     }
 
     ColumnLayout {
@@ -54,14 +54,14 @@ Page {
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("QHash<QString, QVariant> values: %1").arg(rustContainers.stringHash || "Empty")
+                text: qsTr("QHash<QString, QVariant> values: %1").arg(root.rustContainers.stringHash || "Empty")
                 wrapMode: Text.Wrap
             }
 
             Button {
                 text: qsTr("Insert")
 
-                onClicked: rustContainers.insertHash("Key" + spinBox.value, spinBox.value)
+                onClicked: root.rustContainers.insertHash("Key" + spinBox.value, spinBox.value)
             }
         }
 
@@ -69,14 +69,14 @@ Page {
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("QList<i32> values: %1").arg(rustContainers.stringList || "Empty")
+                text: qsTr("QList<i32> values: %1").arg(root.rustContainers.stringList || "Empty")
                 wrapMode: Text.Wrap
             }
 
             Button {
                 text: qsTr("Append")
 
-                onClicked: rustContainers.appendList(spinBox.value)
+                onClicked: root.rustContainers.appendList(spinBox.value)
             }
         }
 
@@ -84,14 +84,14 @@ Page {
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("QMap<QString, QVariant> values: %1").arg(rustContainers.stringMap || "Empty")
+                text: qsTr("QMap<QString, QVariant> values: %1").arg(root.rustContainers.stringMap || "Empty")
                 wrapMode: Text.Wrap
             }
 
             Button {
                 text: qsTr("Insert")
 
-                onClicked: rustContainers.insertMap("Key" + spinBox.value, spinBox.value)
+                onClicked: root.rustContainers.insertMap("Key" + spinBox.value, spinBox.value)
             }
         }
 
@@ -99,14 +99,14 @@ Page {
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("QSet<i32> values: %1").arg(rustContainers.stringSet || "Empty")
+                text: qsTr("QSet<i32> values: %1").arg(root.rustContainers.stringSet || "Empty")
                 wrapMode: Text.Wrap
             }
 
             Button {
                 text: qsTr("Insert")
 
-                onClicked: rustContainers.insertSet(spinBox.value)
+                onClicked: root.rustContainers.insertSet(spinBox.value)
             }
         }
 
@@ -114,14 +114,14 @@ Page {
             Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignHCenter
-                text: qsTr("QVector<i32> values: %1").arg(rustContainers.stringVector || "Empty")
+                text: qsTr("QVector<i32> values: %1").arg(root.rustContainers.stringVector || "Empty")
                 wrapMode: Text.Wrap
             }
 
             Button {
                 text: qsTr("Append")
 
-                onClicked: rustContainers.appendVector(spinBox.value)
+                onClicked: root.rustContainers.appendVector(spinBox.value)
             }
         }
     }
