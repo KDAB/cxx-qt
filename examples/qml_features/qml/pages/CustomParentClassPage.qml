@@ -43,6 +43,7 @@ Page {
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
 
+        // TODO: qmllint fails here possibly needs a dependency in the qmldir on QtQuick?
         CustomParentClass {
             id: customPainter
             color: "red"
