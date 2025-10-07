@@ -31,6 +31,8 @@ where
     // and an empty slice is likely desired in most cases; most users probably don't
     // care about this field.
     pub qrc_files: &'a [A],
+    /// Dependencies of the QML module
+    pub depends: &'a [&'a str],
 }
 
 impl<A, B> Default for QmlModule<'_, A, B>
@@ -45,6 +47,7 @@ where
             version_minor: 0,
             qml_files: &[],
             qrc_files: &[],
+            depends: &[],
         }
     }
 }
@@ -58,6 +61,7 @@ pub(crate) struct OwningQmlModule {
     pub version_minor: usize,
     pub qml_files: Vec<PathBuf>,
     pub qrc_files: Vec<PathBuf>,
+    pub depends: Vec<String>,
 }
 
 fn collect_pathbuf_vec(asref: &[impl AsRef<Path>]) -> Vec<PathBuf> {
@@ -72,6 +76,11 @@ impl<A: AsRef<Path>, B: AsRef<Path>> From<QmlModule<'_, A, B>> for OwningQmlModu
             version_minor: other.version_minor,
             qml_files: collect_pathbuf_vec(other.qml_files),
             qrc_files: collect_pathbuf_vec(other.qrc_files),
+            depends: other
+                .depends
+                .into_iter()
+                .map(|depend| depend.to_string())
+                .collect(),
         }
     }
 }

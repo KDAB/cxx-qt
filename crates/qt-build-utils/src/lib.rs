@@ -160,6 +160,7 @@ impl QtBuild {
         plugin_name: &str,
         qml_files: &[impl AsRef<Path>],
         qrc_files: &[impl AsRef<Path>],
+        depends: impl IntoIterator<Item = impl Into<String>>,
     ) -> QmlModuleRegistrationFiles {
         let qml_uri = QmlUri::new(uri.split('.'));
         let qml_uri_dirs = qml_uri.as_dirs();
@@ -181,6 +182,7 @@ impl QtBuild {
         {
             let mut file = File::create(&qmldir_file_path).expect("Could not create qmldir file");
             QmlDirBuilder::new(qml_uri.clone())
+                .depends(depends)
                 .plugin(plugin_name, true)
                 .class_name(&plugin_class_name)
                 .type_info(plugin_type_info)

@@ -28,6 +28,8 @@ fn main() {
                 "../qml/pages/ThreadingPage.qml",
                 "../qml/pages/TypesPage.qml",
             ],
+            // Need to depend on QtQuick for QColor to work with qmllint/qmlls
+            depends: &["QtQuick"],
             ..Default::default()
         })
         .files([
