@@ -17,7 +17,7 @@ pub fn generate(qobject_idents: &QObjectNames) -> Result<GeneratedCppQObjectBloc
 
     result
         .base_classes
-        .push(format!("::rust::cxxqt1::CxxQtType<{rust_struct}>"));
+        .push(format!("private ::rust::cxxqt1::CxxQtType<{rust_struct}>"));
 
     Ok(result)
 }
@@ -42,7 +42,7 @@ mod tests {
         assert_eq!(generated.base_classes.len(), 1);
         assert_eq!(
             generated.base_classes[0],
-            "::rust::cxxqt1::CxxQtType<MyObjectRust>"
+            "private ::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
     }
 }

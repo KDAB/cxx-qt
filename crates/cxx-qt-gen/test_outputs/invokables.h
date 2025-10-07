@@ -15,7 +15,7 @@ using MyObjectCxxQtThread = ::rust::cxxqt1::CxxQtThread<MyObject>;
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
-  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , private ::rust::cxxqt1::CxxQtType<MyObjectRust>
   , public ::rust::cxxqt1::CxxQtThreading<MyObject>
 {
   Q_OBJECT
@@ -46,6 +46,13 @@ private:
     ::cxx_qt::my_object::cxx_qt_MyObject::CxxQtConstructorArguments0&& args);
   explicit MyObject(
     ::cxx_qt::my_object::cxx_qt_MyObject::CxxQtConstructorArguments1&& args);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

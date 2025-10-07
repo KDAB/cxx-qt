@@ -82,7 +82,7 @@ MyObject_newDataConnect(
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
-  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , private ::rust::cxxqt1::CxxQtType<MyObjectRust>
 {
   Q_OBJECT
 public:
@@ -96,6 +96,13 @@ public:
                              QPoint third,
                              QPoint const& fourth);
   explicit MyObject(QObject* parent = nullptr);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,

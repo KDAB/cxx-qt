@@ -51,7 +51,7 @@ Q_ENUM_NS(MyOtherNamespacedEnum)
 namespace cxx_qt::my_object {
 class MyObject
   : public QObject
-  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , private ::rust::cxxqt1::CxxQtType<MyObjectRust>
 {
   Q_OBJECT
 public:
@@ -75,6 +75,13 @@ public:
     cxx_qt::my_object::MyEnum qenum,
     my_namespace::MyOtherEnum other_qenum) const noexcept;
   explicit MyObject(QObject* parent = nullptr);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
@@ -94,7 +101,7 @@ Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
 namespace cxx_qt::my_object {
 class CxxName
   : public QObject
-  , public ::rust::cxxqt1::CxxQtType<InternalObject>
+  , private ::rust::cxxqt1::CxxQtType<InternalObject>
 {
   Q_OBJECT
 public:
@@ -110,6 +117,13 @@ public:
 
 public:
   explicit CxxName(QObject* parent = nullptr);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, CxxName>::value,

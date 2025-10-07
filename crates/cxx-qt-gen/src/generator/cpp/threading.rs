@@ -32,9 +32,10 @@ pub fn generate(qobject_idents: &QObjectNames) -> Result<(String, GeneratedCppQO
         .includes
         .insert("#include <cxx-qt/threading.h>".to_owned());
 
-    result
-        .base_classes
-        .push(format!("::rust::cxxqt1::CxxQtThreading<{cpp_class}>"));
+    // TODO: this should probably be private too?
+    result.base_classes.push(format!(
+        "public ::rust::cxxqt1::CxxQtThreading<{cpp_class}>"
+    ));
 
     let class_initializer = format!("::rust::cxxqt1::CxxQtThreading<{cpp_class}>(this)");
 
@@ -90,7 +91,7 @@ mod tests {
         assert_eq!(generated.base_classes.len(), 1);
         assert_eq!(
             generated.base_classes[0],
-            "::rust::cxxqt1::CxxQtThreading<MyObject>"
+            "public ::rust::cxxqt1::CxxQtThreading<MyObject>"
         );
     }
 }
