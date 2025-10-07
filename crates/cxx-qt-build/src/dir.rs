@@ -76,10 +76,16 @@ pub(crate) fn module_target(module_uri: &qt_build_utils::QmlUri) -> PathBuf {
 pub(crate) fn module_export(module_uri: &qt_build_utils::QmlUri) -> Option<PathBuf> {
     // In contrast to crate_export, we don't need to check for the specific crate here.
     // QML modules should always be exported.
+    module_export_qml_modules().map(|dir| dir.join(module_uri.as_dirs()))
+}
+
+pub(crate) fn module_export_qml_modules() -> Option<PathBuf> {
+    // In contrast to crate_export, we don't need to check for the specific crate here.
+    // QML modules should always be exported.
     env::var("CXX_QT_EXPORT_DIR")
         .ok()
         .map(PathBuf::from)
-        .map(|dir| dir.join("qml_modules").join(module_uri.as_dirs()))
+        .map(|dir| dir.join("qml_modules"))
 }
 
 /// The target directory or another directory where we can write files that will be shared
