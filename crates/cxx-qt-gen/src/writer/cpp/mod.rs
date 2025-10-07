@@ -111,7 +111,7 @@ mod tests {
                     },
                     has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
-                        base_classes: vec!["QStringListModel".to_owned()],
+                        base_classes: vec!["public QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
                           includes.insert("#include <test>".to_owned());
@@ -233,7 +233,7 @@ mod tests {
                     namespace_internals: "cxx_qt::cxx_qt_first_object".to_owned(),
                     has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
-                        base_classes: vec!["QStringListModel".to_owned()],
+                        base_classes: vec!["public QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
                           includes.insert("#include <test>".to_owned());
@@ -276,7 +276,7 @@ mod tests {
                     namespace_internals: "cxx_qt::cxx_qt_second_object".to_owned(),
                     has_qobject_macro: true,
                     blocks: GeneratedCppQObjectBlocks {
-                        base_classes: vec!["QStringListModel".to_owned()],
+                        base_classes: vec!["public QStringListModel".to_owned()],
                         includes: {
                           let mut includes = BTreeSet::<String>::default();
                           includes.insert("#include <test>".to_owned());
@@ -374,6 +374,13 @@ mod tests {
           void privateMethod() const;
           void privateMethod();
 
+
+        private:
+          template<typename Inner, typename Outer>
+          friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+          template<typename Inner, typename Outer>
+          friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
@@ -428,6 +435,13 @@ mod tests {
           Q_SIGNAL void countChanged();
 
 
+
+        private:
+          template<typename Inner, typename Outer>
+          friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+          template<typename Inner, typename Outer>
+          friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
         };
 
         static_assert(::std::is_base_of<QObject, FirstObject>::value, "FirstObject must inherit from QObject");
@@ -455,6 +469,13 @@ mod tests {
         private:
           void privateMethod() const;
 
+
+        private:
+          template<typename Inner, typename Outer>
+          friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+          template<typename Inner, typename Outer>
+          friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
         };
 
         static_assert(::std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
@@ -506,6 +527,13 @@ mod tests {
           void privateMethod() const;
           void privateMethod();
 
+
+        private:
+          template<typename Inner, typename Outer>
+          friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+          template<typename Inner, typename Outer>
+          friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
