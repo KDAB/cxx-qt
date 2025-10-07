@@ -814,8 +814,14 @@ impl CxxQtBuilder {
         // Extract qml_modules out of self so we don't have to hold onto `self` for the duration of
         // the loop.
         if let Some(qml_module) = self.qml_module.take() {
-            dir::clean(dir::module_target(&qml_module.uri))
-                .expect("Failed to clean qml module export directory!");
+            // TODO: likely qml_module will have a QmlUri already
+            let qml_uri = qt_build_utils::QmlUri::from(qml_module.uri.as_str());
+
+            // TODO: clean the old module target
+            // however if there is a sub uri this cleans that too
+            // so we should only remove files and not sub folders?
+            // dir::clean(dir::module_target(&qml_uri))
+            //     .expect("Failed to clean qml module export directory!");
 
             // Check that all rust files are within the same directory
             //
@@ -915,7 +921,7 @@ impl CxxQtBuilder {
 
             // Export the .qmltypes and qmldir files into a stable path, so that tools like
             // qmllint/qmlls can find them.
-            let plugin_dir = dir::module_export(&qml_module.uri);
+            let plugin_dir = dir::module_export(&qml_uri);
             if let Some(plugin_dir) = &plugin_dir {
                 std::fs::create_dir_all(plugin_dir).expect("Could not create plugin directory");
                 std::fs::copy(
