@@ -5,20 +5,15 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new()
-        .file("src/lib.rs")
-        .qrc("../images/images.qrc")
-        .qml_module(QmlModule {
-            uri: "com.kdab.energy",
-            qml_files: &[
-                "../qml/Button.qml",
-                "../qml/MainWindow.qml",
-                "../qml/Panel.qml",
-                "../qml/SensorUI.qml",
-                "../qml/SideText.qml",
-            ],
-            ..Default::default()
-        })
-        .files(["src/lib.rs"])
-        .build();
+    CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.energy").qml_files([
+        "../qml/Button.qml",
+        "../qml/MainWindow.qml",
+        "../qml/Panel.qml",
+        "../qml/SensorUI.qml",
+        "../qml/SideText.qml",
+    ]))
+    .file("src/lib.rs")
+    .qrc("../images/images.qrc")
+    .files(["src/lib.rs"])
+    .build();
 }

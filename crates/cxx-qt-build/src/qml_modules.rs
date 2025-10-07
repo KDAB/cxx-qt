@@ -7,57 +7,57 @@
 
 use std::path::{Path, PathBuf};
 
-/// Metadata for registering a QML module with [crate::CxxQtBuilder::qml_module]
-pub struct QmlModule<'a, A>
-where
-    // Use a separate generic to allow using different types that impl AsRef<Path>
-    A: AsRef<Path>,
-{
-    /// The URI of the QML module
-    pub uri: &'a str,
-    /// The major version of the QML module
-    pub version_major: usize,
-    /// The minor version of the QML module
-    pub version_minor: usize,
-    /// `.qml` files included in the module
-    pub qml_files: &'a [A],
+/// This is a description of a QML module for building by the [crate::CxxQtBuilder].
+///
+/// It allows registering QML files that will be included in the QML module.
+/// For further resources such as images, these can be added to the Qt resources
+/// system via the appropriate CxxQtBuilder functions.
+#[must_use = "The QML module only does anything if it is passed to CxxQtBuilder::qml_module"]
+pub struct QmlModule {
+    pub(crate) uri: String,
+    pub(crate) version_major: usize,
+    pub(crate) version_minor: usize,
+    pub(crate) qml_files: Vec<PathBuf>,
 }
 
-impl<A> Default for QmlModule<'_, A>
-where
-    A: AsRef<Path>,
-{
-    fn default() -> Self {
-        QmlModule {
-            uri: "com.example.cxx_qt_module",
+impl QmlModule {
+    /// Create a new [QmlModule] with the given URI.
+    ///
+    /// The default version is 1.0.
+    pub fn new(uri: impl Into<String>) -> Self {
+        Self {
+            uri: uri.into(),
             version_major: 1,
             version_minor: 0,
-            qml_files: &[],
+            qml_files: Vec::new(),
         }
     }
-}
 
-/// Same as [QmlModule], but this struct owns the data instead of referencing it.
-/// This avoids needing to specify generics to instantiate a [crate::CxxQtBuilder], which
-/// contains a `Vec<OwningQmlModule>` member.
-pub(crate) struct OwningQmlModule {
-    pub uri: String,
-    pub version_major: usize,
-    pub version_minor: usize,
-    pub qml_files: Vec<PathBuf>,
-}
+    /// Add a version to the QML module.
+    pub fn version(mut self, version_major: usize, version_minor: usize) -> Self {
+        self.version_major = version_major;
+        self.version_minor = version_minor;
+        self
+    }
 
-fn collect_pathbuf_vec(asref: &[impl AsRef<Path>]) -> Vec<PathBuf> {
-    asref.iter().map(|p| p.as_ref().to_path_buf()).collect()
-}
+    /// Add a single QML file to the module.
+    ///
+    /// The [crate::CxxQtBuilder] will register the file with the [Qt Resource System](https://doc.qt.io/qt-6/resources.html) in
+    /// the [default QML import path](https://doc.qt.io/qt-6/qtqml-syntax-imports.html#qml-import-path) `qrc:/qt/qml/uri/of/module/`.
+    ///
+    /// When using Qt 6, the [crate::CxxQtBuilder] will [run qmlcachegen](https://doc.qt.io/qt-6/qtqml-qtquick-compiler-tech.html)
+    /// to compile the specified `.qml` file ahead-of-time.
+    ///
+    /// Additional resources such as images can be added to the Qt resources for the QML module by specifying
+    /// the `qrc_files` field.
+    pub fn qml_file(self, file: impl AsRef<Path>) -> Self {
+        self.qml_files([file])
+    }
 
-impl<A: AsRef<Path>> From<QmlModule<'_, A>> for OwningQmlModule {
-    fn from(other: QmlModule<'_, A>) -> Self {
-        OwningQmlModule {
-            uri: other.uri.to_owned(),
-            version_major: other.version_major,
-            version_minor: other.version_minor,
-            qml_files: collect_pathbuf_vec(other.qml_files),
-        }
+    /// Add multiple QML files to the module, see [Self::qml_file].
+    pub fn qml_files(mut self, files: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
+        self.qml_files
+            .extend(files.into_iter().map(|p| p.as_ref().to_path_buf()));
+        self
     }
 }

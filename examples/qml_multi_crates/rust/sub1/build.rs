@@ -8,10 +8,7 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 fn main() {
     CxxQtBuilder::new()
         .qt_module("Network")
-        .qml_module(QmlModule::<&str> {
-            uri: "com.kdab.cxx_qt.demo.sub1",
-            ..Default::default()
-        })
+        .qml_module(QmlModule::new("com.kdab.cxx_qt.demo.sub1"))
         .files(["src/sub1_object.rs"])
         .build()
         .export();

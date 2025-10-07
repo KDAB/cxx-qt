@@ -10,11 +10,7 @@ use cxx_qt_build::{CxxQtBuilder, QmlModule};
 fn main() {
     CxxQtBuilder::new()
         // ANCHOR: book_qml_module
-        .qml_module(QmlModule {
-            uri: "com.kdab.cxx_qt.demo",
-            qml_files: &["../qml/main.qml"],
-            ..Default::default()
-        })
+        .qml_module(QmlModule::new("com.kdab.cxx_qt.demo").qml_file("../qml/main.qml"))
         .files(["src/cxxqt_object.rs"])
         // ANCHOR_END: book_qml_module
         .build();

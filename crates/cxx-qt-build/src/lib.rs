@@ -31,7 +31,6 @@ pub use opts::CxxQtBuildersOpts;
 pub use opts::QObjectHeaderOpts;
 
 mod qml_modules;
-use qml_modules::OwningQmlModule;
 pub use qml_modules::QmlModule;
 
 pub use qt_build_utils::MocArguments;
@@ -364,7 +363,7 @@ pub struct CxxQtBuilder {
     qrc_files: Vec<PathBuf>,
     init_files: Vec<qt_build_utils::Initializer>,
     qt_modules: HashSet<String>,
-    qml_module: Option<OwningQmlModule>,
+    qml_module: Option<QmlModule>,
     cc_builder: cc::Build,
     include_prefix: String,
     crate_include_root: Option<String>,
@@ -547,15 +546,11 @@ impl CxxQtBuilder {
     /// use cxx_qt_build::{CxxQtBuilder, QmlModule};
     ///
     /// CxxQtBuilder::new()
-    ///     .qml_module(QmlModule::<&str, &str> {
-    ///         uri: "com.kdab.cxx_qt.demo",
-    ///         qml_files: &["qml/main.qml"],
-    ///         ..Default::default()
-    ///     })
+    ///     .qml_module(QmlModule::new("com.kdab.cxx_qt.demo").qml_files(["qml/main.qml"]))
     ///     .files(["src/cxxqt_object.rs"])
     ///     .build();
     /// ```
-    pub fn qml_module<A: AsRef<Path>>(mut self, qml_module: QmlModule<A>) -> CxxQtBuilder {
+    pub fn qml_module(mut self, qml_module: QmlModule) -> CxxQtBuilder {
         if let Some(module) = &self.qml_module {
             panic!(
                 "Duplicate QML module registration!\n\
@@ -565,7 +560,6 @@ impl CxxQtBuilder {
             );
         }
 
-        let qml_module = OwningQmlModule::from(qml_module);
         self.qml_module = Some(qml_module);
         self
     }
