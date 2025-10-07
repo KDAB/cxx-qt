@@ -9,6 +9,7 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
     background: Rectangle {
         color: privateState.color
     }
@@ -36,7 +37,7 @@ Page {
 
                 onClicked: {
                     timerSync.running = false;
-                    rustInvokables.reset();
+                    root.rustInvokables.reset();
                     privateState.load();
                 }
             }
@@ -44,18 +45,18 @@ Page {
             // ANCHOR: book_namespaced_qenum
             ToolButton {
                 text: qsTr("Red")
-                onClicked: rustInvokables.storeColorWithEnum(Colors.Red);
+                onClicked: root.rustInvokables.storeColorWithEnum(Colors.Red);
             }
             // ANCHOR_END: book_namespaced_qenum
 
             ToolButton {
                 text: qsTr("Green")
-                onClicked: rustInvokables.storeColorWithEnum(Colors.Green);
+                onClicked: root.rustInvokables.storeColorWithEnum(Colors.Green);
             }
 
             ToolButton {
                 text: qsTr("Blue")
-                onClicked: rustInvokables.storeColorWithEnum(Colors.Blue);
+                onClicked: root.rustInvokables.storeColorWithEnum(Colors.Blue);
             }
 
             Item {
@@ -64,8 +65,7 @@ Page {
         }
     }
 
-    RustInvokables {
-        id: rustInvokables
+    readonly property RustInvokables rustInvokables: RustInvokables {
     }
 
     QtObject {
@@ -75,7 +75,7 @@ Page {
         property bool loaded: false
 
         function load() {
-            color = rustInvokables.loadColor();
+            color = root.rustInvokables.loadColor();
         }
 
         Component.onCompleted: {
@@ -99,7 +99,7 @@ Page {
             if (!privateState.loaded) {
                 return;
             }
-            rustInvokables.storeColor(sliderRed.value, sliderGreen.value, sliderBlue.value);
+            root.rustInvokables.storeColor(sliderRed.value, sliderGreen.value, sliderBlue.value);
         }
 
         Slider {

@@ -16,16 +16,16 @@ import com.kdab.cxx_qt.demo 1.0
 // ANCHOR_END: book_qml_import
 
 ApplicationWindow {
+    id: root
     height: 480
     title: qsTr("Hello World")
     visible: true
     width: 640
     color: palette.window
 
-    MyObject {
-        id: myObject
+    readonly property MyObject myObject: MyObject {
         number: 1
-        string: qsTr("My String with my number: %1").arg(myObject.number)
+        string: qsTr("My String with my number: %1").arg(number)
     }
 
     Column {
@@ -34,25 +34,25 @@ ApplicationWindow {
         spacing: 10
 
         Label {
-            text: qsTr("Number: %1").arg(myObject.number)
+            text: qsTr("Number: %1").arg(root.myObject.number)
             color: palette.text
         }
 
         Label {
-            text: qsTr("String: %1").arg(myObject.string)
+            text: qsTr("String: %1").arg(root.myObject.string)
             color: palette.text
         }
 
         Button {
             text: qsTr("Increment Number")
 
-            onClicked: myObject.incrementNumber()
+            onClicked: root.myObject.incrementNumber()
         }
 
         Button {
             text: qsTr("Say Hi!")
 
-            onClicked: myObject.sayHi(myObject.string, myObject.number)
+            onClicked: root.myObject.sayHi(root.myObject.string, root.myObject.number)
         }
 
         Button {
