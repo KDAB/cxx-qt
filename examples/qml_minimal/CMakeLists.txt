@@ -65,10 +65,12 @@ if(NOT CxxQt_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         CxxQt
-        GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
+        # GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
         # ANCHOR_END: book_cmake_find_cxx_qt_start
-        GIT_TAG main
+        # GIT_TAG main
         # ANCHOR: book_cmake_find_cxx_qt_end
+        GIT_REPOSITORY https://github.com/ahayzen-kdab/cxx-qt-cmake.git
+        GIT_TAG c353833f2e88655bf264ae16e10fad645ec6a721
     )
 
     FetchContent_MakeAvailable(CxxQt)
