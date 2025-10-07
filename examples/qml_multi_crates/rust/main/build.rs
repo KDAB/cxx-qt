@@ -6,9 +6,10 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new()
-        .qt_module("Network")
-        .qml_module(QmlModule::new("com.kdab.cxx_qt.demo").qml_file("../../qml/main.qml"))
-        .files(["src/main_object.rs"])
-        .build();
+    CxxQtBuilder::new_qml_module(
+        QmlModule::new("com.kdab.cxx_qt.demo").qml_file("../../qml/main.qml"),
+    )
+    .qt_module("Network")
+    .files(["src/main_object.rs"])
+    .build();
 }

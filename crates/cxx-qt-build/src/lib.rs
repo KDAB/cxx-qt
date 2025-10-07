@@ -412,6 +412,28 @@ impl CxxQtBuilder {
         }
     }
 
+    /// Create a new CxxQtBuilder for building the specified [QmlModule].
+    ///
+    /// The QmlModule struct's `qml_files` are registered with the [Qt Resource System](https://doc.qt.io/qt-6/resources.html) in
+    /// the [default QML import path](https://doc.qt.io/qt-6/qtqml-syntax-imports.html#qml-import-path) `qrc:/qt/qml/uri/of/module/`.
+    /// Additional resources such as images can be added to the Qt resources for the QML module by using the appropriate functions on CxxQtBuilder.
+    ///
+    /// When using Qt 6, this will [run qmlcachegen](https://doc.qt.io/qt-6/qtqml-qtquick-compiler-tech.html)
+    /// to compile the specified `.qml` files ahead-of-time.
+    ///
+    /// ```no_run
+    /// use cxx_qt_build::{CxxQtBuilder, QmlModule};
+    ///
+    /// CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.cxx_qt.demo").qml_files(["qml/main.qml"]))
+    ///     .files(["src/cxxqt_object.rs"])
+    ///     .build();
+    /// ```
+    pub fn new_qml_module(module: QmlModule) -> Self {
+        let mut builder = Self::new();
+        builder.qml_module = Some(module);
+        builder
+    }
+
     /// Specify rust file paths to parse through the cxx-qt marco
     /// Relative paths are treated as relative to the path of your crate's Cargo.toml file
     pub fn file(mut self, rust_source: impl AsRef<Path>) -> Self {
@@ -528,39 +550,6 @@ impl CxxQtBuilder {
     /// Instead of generating files under the crate name, generate files under the given prefix.
     pub fn include_prefix(mut self, prefix: &str) -> Self {
         prefix.clone_into(&mut self.include_prefix);
-        self
-    }
-
-    /// Register a QML module at build time. The `rust_files` of the [QmlModule] struct
-    /// should contain `#[cxx_qt::bridge]` modules with QObject types annotated with `#[qml_element]`.
-    ///
-    /// The QmlModule struct's `qml_files` are registered with the [Qt Resource System](https://doc.qt.io/qt-6/resources.html) in
-    /// the [default QML import path](https://doc.qt.io/qt-6/qtqml-syntax-imports.html#qml-import-path) `qrc:/qt/qml/uri/of/module/`.
-    /// Additional resources such as images can be added to the Qt resources for the QML module by specifying
-    /// the `qrc_files` field.
-    ///
-    /// When using Qt 6, this will [run qmlcachegen](https://doc.qt.io/qt-6/qtqml-qtquick-compiler-tech.html)
-    /// to compile the specified `.qml` files ahead-of-time.
-    ///
-    /// ```no_run
-    /// use cxx_qt_build::{CxxQtBuilder, QmlModule};
-    ///
-    /// CxxQtBuilder::new()
-    ///     .qml_module(QmlModule::new("com.kdab.cxx_qt.demo").qml_files(["qml/main.qml"]))
-    ///     .files(["src/cxxqt_object.rs"])
-    ///     .build();
-    /// ```
-    pub fn qml_module(mut self, qml_module: QmlModule) -> CxxQtBuilder {
-        if let Some(module) = &self.qml_module {
-            panic!(
-                "Duplicate QML module registration!\n\
-                The QML module with URI '{}' (version {}.{}) was already registered.\n\
-                Only one QML module can be registered per crate.",
-                module.uri, module.version_major, module.version_minor
-            );
-        }
-
-        self.qml_module = Some(qml_module);
         self
     }
 
