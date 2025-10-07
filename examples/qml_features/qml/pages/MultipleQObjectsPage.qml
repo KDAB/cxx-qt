@@ -55,7 +55,6 @@ Page {
         }
 
         Label {
-            // TODO: QColor needs a dependency in qmldir on QtQuick
             color: root.first.color
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
