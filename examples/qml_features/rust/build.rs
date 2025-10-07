@@ -57,6 +57,8 @@ fn main() {
     .qt_module("Quick")
     // Import a Qt resource file
     .qrc("../qml/images/images.qrc")
+    // Import an image directly via a .qrc_resoures() call
+    .qrc_resources(["../qml/images/red.png"])
     .build();
 }
 // ANCHOR_END: book_build_rs
