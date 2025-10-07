@@ -297,9 +297,11 @@ fn generate_cxxqt_cpp_files(
     generated_file_paths
 }
 
-pub(crate) fn module_name_from_uri(module_uri: &str) -> String {
+pub(crate) fn module_name_from_uri(module_uri: &QmlUri) -> String {
     // Note: We need to make sure this matches the conversion done in CMake!
-    module_uri.replace('.', "_")
+    // TODO: Replace with as_dirs so qmlls/qmllint can resolve the path
+    // TODO: This needs an update to cxx-qt-cmake
+    module_uri.as_underscores()
 }
 
 pub(crate) fn crate_name() -> String {
@@ -322,7 +324,7 @@ fn crate_init_key() -> String {
     format!("crate_{}", crate_name().replace('-', "_"))
 }
 
-fn qml_module_init_key(module_uri: &str) -> String {
+fn qml_module_init_key(module_uri: &QmlUri) -> String {
     format!("qml_module_{}", module_name_from_uri(module_uri))
 }
 
@@ -555,8 +557,7 @@ impl CxxQtBuilder {
     pub fn qrc_resources(mut self, qrc_resources: impl Into<QResources>) -> Self {
         let mut qrc_resources = qrc_resources.into();
         if let Some(qml_module) = &self.qml_module {
-            let uri = QmlUri::from(&*qml_module.uri);
-            let prefix = format!("/qt/qml/{}", uri.as_dirs());
+            let prefix = format!("/qt/qml/{}", qml_module.uri.as_dirs());
             for resource in qrc_resources.get_resources_mut() {
                 if resource.get_prefix().is_none() {
                     *resource = resource.clone().prefix(prefix.clone());
@@ -767,7 +768,7 @@ impl CxxQtBuilder {
                 }
 
                 if let Some(uri) = moc_arguments.get_uri() {
-                    if uri != qml_module.uri {
+                    if *uri != qml_module.uri {
                         panic!(
                             "URI for QObject header {path} ({uri}) conflicts with QML Module URI ({qml_module_uri})",
                             path = path.display(),

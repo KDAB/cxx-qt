@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QtInstallation, QtTool};
+use crate::{QmlUri, QtInstallation, QtTool};
 use semver::Version;
 use std::{
     path::{Path, PathBuf},
@@ -30,7 +30,7 @@ impl QtToolQmlTypeRegistrar {
         &self,
         metatypes_json: &[impl AsRef<Path>],
         qmltypes: impl AsRef<Path>,
-        uri: &str,
+        uri: &QmlUri,
         version: Version,
     ) -> Option<PathBuf> {
         // Filter out empty jsons
@@ -50,7 +50,7 @@ impl QtToolQmlTypeRegistrar {
             return None;
         }
 
-        let qml_uri_underscores = uri.replace('.', "_");
+        let qml_uri_underscores = uri.as_underscores();
         // TODO: note before this was the plugin folder
         let output_folder = QtTool::QmlTypeRegistrar.writable_path();
         std::fs::create_dir_all(&output_folder).expect("Could not create qmltyperegistrar dir");

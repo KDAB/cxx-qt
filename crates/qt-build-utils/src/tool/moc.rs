@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QtInstallation, QtTool};
+use crate::{QmlUri, QtInstallation, QtTool};
 
 use std::{
     path::{Path, PathBuf},
@@ -22,20 +22,20 @@ pub struct MocProducts {
 /// See: [QtToolMoc::compile]
 #[derive(Default, Clone)]
 pub struct MocArguments {
-    uri: Option<String>,
+    uri: Option<QmlUri>,
     include_paths: Vec<PathBuf>,
 }
 
 impl MocArguments {
     /// Should be passed if the input_file is part of a QML module
-    pub fn uri(mut self, uri: String) -> Self {
-        self.uri = Some(uri);
+    pub fn uri(mut self, uri: impl Into<QmlUri>) -> Self {
+        self.uri = Some(uri.into());
         self
     }
 
     /// Returns the assigned URI, if any.
-    pub fn get_uri(&self) -> Option<&str> {
-        self.uri.as_deref()
+    pub fn get_uri(&self) -> Option<&QmlUri> {
+        self.uri.as_ref()
     }
 
     /// Additional include path to pass to moc
@@ -99,7 +99,7 @@ impl QtToolMoc {
         let mut cmd = Command::new(&self.executable);
 
         if let Some(uri) = arguments.uri {
-            cmd.arg(format!("-Muri={uri}"));
+            cmd.arg(format!("-Muri={uri}", uri = uri.as_dots()));
         }
 
         cmd.args(include_args);

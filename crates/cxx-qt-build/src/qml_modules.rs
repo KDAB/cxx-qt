@@ -7,6 +7,8 @@
 
 use std::path::{Path, PathBuf};
 
+use qt_build_utils::QmlUri;
+
 /// This is a description of a QML module for building by the [crate::CxxQtBuilder].
 ///
 /// It allows registering QML files that will be included in the QML module.
@@ -14,7 +16,7 @@ use std::path::{Path, PathBuf};
 /// system via the appropriate CxxQtBuilder functions.
 #[must_use = "The QML module only does anything if it is passed to CxxQtBuilder::qml_module"]
 pub struct QmlModule {
-    pub(crate) uri: String,
+    pub(crate) uri: QmlUri,
     pub(crate) version_major: usize,
     pub(crate) version_minor: usize,
     pub(crate) qml_files: Vec<PathBuf>,
@@ -24,7 +26,7 @@ impl QmlModule {
     /// Create a new [QmlModule] with the given URI.
     ///
     /// The default version is 1.0.
-    pub fn new(uri: impl Into<String>) -> Self {
+    pub fn new(uri: impl Into<QmlUri>) -> Self {
         Self {
             uri: uri.into(),
             version_major: 1,

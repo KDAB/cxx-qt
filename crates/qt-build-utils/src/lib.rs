@@ -148,15 +148,14 @@ impl QtBuild {
     pub fn register_qml_module(
         &mut self,
         metatypes_json: &[impl AsRef<Path>],
-        uri: &str,
+        uri: &QmlUri,
         version_major: usize,
         version_minor: usize,
         plugin_name: &str,
         qml_files: &[impl AsRef<Path>],
     ) -> QmlModuleRegistrationFiles {
-        let qml_uri = QmlUri::new(uri.split('.'));
-        let qml_uri_dirs = qml_uri.as_dirs();
-        let qml_uri_underscores = qml_uri.as_underscores();
+        let qml_uri_dirs = uri.as_dirs();
+        let qml_uri_underscores = uri.as_underscores();
         let plugin_type_info = "plugin.qmltypes";
         let plugin_class_name = format!("{}_plugin", qml_uri_underscores);
 
@@ -173,7 +172,7 @@ impl QtBuild {
         let qmldir_file_path = qml_module_dir.join("qmldir");
         {
             let mut file = File::create(&qmldir_file_path).expect("Could not create qmldir file");
-            QmlDirBuilder::new(qml_uri.clone())
+            QmlDirBuilder::new(uri.clone())
                 .plugin(plugin_name, true)
                 .class_name(&plugin_class_name)
                 .type_info(plugin_type_info)
@@ -227,7 +226,7 @@ impl QtBuild {
         // qmlcachegen has a different CLI in Qt 5, so only support Qt >= 6
         if self.qt_installation.version().major >= 6 {
             let qml_cache_args = QmlCacheArguments {
-                uri: uri.to_owned(),
+                uri: uri.clone(),
                 qmldir_path: qmldir_file_path,
                 qmldir_qrc_path: qrc_path.clone(),
             };
@@ -265,7 +264,7 @@ impl QtBuild {
         {
             let mut file = File::create(&qml_plugin_cpp_path)
                 .expect("Could not create plugin definition file");
-            QmlPluginCppBuilder::new(qml_uri, plugin_class_name.clone())
+            QmlPluginCppBuilder::new(uri.clone(), plugin_class_name.clone())
                 .qml_cache(!qml_files.is_empty() && !qmlcachegen_file_paths.is_empty())
                 .write(&mut file)
                 .expect("Failed to write plugin definition");

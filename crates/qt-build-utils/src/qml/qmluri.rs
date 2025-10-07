@@ -3,8 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::fmt::Display;
+
 /// A builder for representing a QML uri
-#[derive(Clone)]
+#[derive(PartialEq, Eq, Clone)]
 pub struct QmlUri {
     uri: Vec<String>,
 }
@@ -12,6 +14,12 @@ pub struct QmlUri {
 impl From<&str> for QmlUri {
     fn from(value: &str) -> Self {
         Self::new(value.split('.'))
+    }
+}
+
+impl Display for QmlUri {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str(&self.as_dots())
     }
 }
 
