@@ -62,17 +62,16 @@ impl GeneratedCppQObjectBlocks {
 
     pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {
         let mut qml_specifiers = Vec::new();
+        let mut includes = BTreeSet::new();
         if let Some(qml_metadata) = &qobject.qml_metadata {
-            // Somehow moc doesn't include the info in metatypes.json that qmltyperegistrar needs
-            // when using the QML_ELEMENT/QML_NAMED_ELEMENT macros, but moc works when using what
-            // those macros expand to.
-            qml_specifiers.push(format!(
-                "Q_CLASSINFO(\"QML.Element\", \"{}\")",
-                qml_metadata.name
-            ));
+            // When specifying the QML declarative macros moc needs the header to be
+            // included, otherwise it does not understand what these expand to.
+            includes.insert("#include <QtQml/QQmlEngine>".to_string());
+
+            qml_specifiers.push(format!("QML_NAMED_ELEMENT({})", qml_metadata.name));
 
             if qml_metadata.uncreatable {
-                qml_specifiers.push("Q_CLASSINFO(\"QML.Creatable\", \"false\")".to_owned());
+                qml_specifiers.push("QML_UNCREATABLE(\"Not creatable\")".to_owned());
             }
 
             if qml_metadata.singleton {
@@ -80,6 +79,7 @@ impl GeneratedCppQObjectBlocks {
             }
         }
         GeneratedCppQObjectBlocks {
+            includes,
             metaobjects: qml_specifiers,
             ..Default::default()
         }
@@ -302,10 +302,7 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyNamedObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 1);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyQmlElement\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyQmlElement)");
     }
 
     #[test]
@@ -322,10 +319,7 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyObject\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyObject)");
         assert_eq!(cpp.blocks.metaobjects[1], "QML_SINGLETON");
     }
 
@@ -353,13 +347,10 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyObject\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyObject)");
         assert_eq!(
             cpp.blocks.metaobjects[1],
-            "Q_CLASSINFO(\"QML.Creatable\", \"false\")"
+            "QML_UNCREATABLE(\"Not creatable\")"
         );
     }
 }
