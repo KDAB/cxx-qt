@@ -295,13 +295,6 @@ fn generate_cxxqt_cpp_files(
     generated_file_paths
 }
 
-pub(crate) fn module_name_from_uri(module_uri: &QmlUri) -> String {
-    // Note: We need to make sure this matches the conversion done in CMake!
-    // TODO: Replace with as_dirs so qmlls/qmllint can resolve the path
-    // TODO: This needs an update to cxx-qt-cmake
-    module_uri.as_underscores()
-}
-
 pub(crate) fn crate_name() -> String {
     env::var("CARGO_PKG_NAME").unwrap()
 }
@@ -323,7 +316,7 @@ fn crate_init_key() -> String {
 }
 
 fn qml_module_init_key(module_uri: &QmlUri) -> String {
-    format!("qml_module_{}", module_name_from_uri(module_uri))
+    format!("qml_module_{}", module_uri.as_underscores())
 }
 
 /// Run cxx-qt's C++ code generator on Rust modules marked with the `cxx_qt::bridge` macro, compile
@@ -791,8 +784,14 @@ impl CxxQtBuilder {
         // Extract qml_modules out of self so we don't have to hold onto `self` for the duration of
         // the loop.
         if let Some(qml_module) = self.qml_module.take() {
-            dir::clean(dir::module_target(&qml_module.uri))
-                .expect("Failed to clean qml module export directory!");
+            // Clean the module export directory only once at the start of the build
+            // as we may have overlapping sub modules so cannot clean per module
+            //
+            // TODO: this does not work with a static atomic so for now
+            // do not clean similar to CMake
+            // if let Some(path) = dir::module_export_qml_modules() {
+            //     dir::clean(path).expect("Failed to clean qml module export directory!");
+            // }
 
             // Check that all rust files are within the same directory
             //
@@ -854,7 +853,7 @@ impl CxxQtBuilder {
                 // TODO: This will be passed to the `optional plugin ...` part of the qmldir
                 // We don't load any shared libraries, so the name shouldn't matter
                 // But make sure it still works
-                &module_name_from_uri(&qml_module.uri),
+                &qml_module.uri.as_underscores(),
                 &qml_module.qml_files,
                 &qml_module.depends,
             );
