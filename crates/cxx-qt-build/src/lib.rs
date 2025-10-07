@@ -36,7 +36,9 @@ pub use qml_modules::{QmlFile, QmlModule, QmlUri};
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::MocProducts;
 use qt_build_utils::QResources;
+use qt_build_utils::QmlLsIniBuilder;
 use quote::ToTokens;
+use std::fs::OpenOptions;
 use std::{
     collections::HashSet,
     env,
@@ -900,6 +902,37 @@ impl CxxQtBuilder {
                     plugin_dir.join("qmldir"),
                 )
                 .expect("Could not copy qmldir to export directory");
+            }
+
+            // Create a .qmlls.ini file with the source dir set similar to QT_QML_GENERATE_QMLLS_INI
+            if let (Some(qml_modules_dir), Some(manifest_dir)) =
+                (dir::module_export_qml_modules(), dir::manifest())
+            {
+                // Note that QT_QML_GENERATE_QMLLS_INI only generates the qmlls.ini file
+                // in the same folder as the CMakeLists where the qt_add_qml_module is called
+                //
+                // This means that not all scenarios of having QML files in sibling or parent directories work
+                let qmlls_ini_path = manifest_dir.parent().unwrap().join(".qmlls.ini");
+
+                // Only generate the qmlls.ini file if it does not already exist so that we do
+                // not overwrite any user define values and we do not collide if there are
+                // multiple QML modules.
+                let file = OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .open(&qmlls_ini_path);
+                match file {
+                    Ok(mut file) => {
+                        QmlLsIniBuilder::new()
+                            .build_dir(qml_modules_dir)
+                            .no_cmake_calls(true)
+                            .write(&mut file)
+                            .expect("Could not write qmlls.ini");
+                    }
+                    // Ignore if the file already exists
+                    Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => {}
+                    Err(_err) => panic!("Could not create qmlls.ini file: {qmlls_ini_path:?}"),
+                }
             }
 
             let module_init_key = qml_module_init_key(&qml_module.uri);
