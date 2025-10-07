@@ -921,6 +921,7 @@ impl CxxQtBuilder {
                 // But make sure it still works
                 &module_name_from_uri(&qml_module.uri),
                 &qml_module.qml_files,
+                &qml_module.depends,
             );
             if let Some(qmltyperegistrar) = qml_module_registration_files.qmltyperegistrar {
                 cc_builder.file(qmltyperegistrar);
