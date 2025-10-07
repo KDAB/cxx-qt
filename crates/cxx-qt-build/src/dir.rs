@@ -7,7 +7,7 @@
 
 use qt_build_utils::QmlUri;
 
-use crate::{crate_name, module_name_from_uri};
+use crate::crate_name;
 use std::io::Result;
 use std::{
     env, fs,
@@ -42,6 +42,18 @@ pub(crate) fn clean(path: impl AsRef<Path>) -> Result<()> {
     Ok(())
 }
 
+// Clean files from a directory but not folders
+pub(crate) fn clean_files(path: impl AsRef<Path>) -> Result<()> {
+    for entry in std::fs::read_dir(path)? {
+        let entry = entry?;
+        let path = entry.path();
+        if !path.is_dir() {
+            std::fs::remove_file(path)?;
+        }
+    }
+    Ok(())
+}
+
 /// The target directory, namespaced by crate
 pub(crate) fn crate_target() -> PathBuf {
     let path = target();
@@ -64,13 +76,13 @@ pub(crate) fn module_target(module_uri: &QmlUri) -> PathBuf {
         out()
             // Use a short name due to the Windows file path limit!
             .join("cxxqtqml")
-            .join(module_name_from_uri(module_uri))
+            .join(module_uri.as_dirs())
     })
 }
 
 /// The export directory, namespaced by QML module
 ///
-/// In conctrast to the crate_export directory, this is `Some` for downstream dependencies as well.
+/// In contrast to the crate_export directory, this is `Some` for downstream dependencies as well.
 /// This allows CMake to import QML modules from dependencies.
 ///
 /// TODO: This may conflict if two dependencies are building QML modules with the same name!
@@ -81,10 +93,7 @@ pub(crate) fn module_export(module_uri: &QmlUri) -> Option<PathBuf> {
     env::var("CXX_QT_EXPORT_DIR")
         .ok()
         .map(PathBuf::from)
-        .map(|dir| {
-            dir.join("qml_modules")
-                .join(module_name_from_uri(module_uri))
-        })
+        .map(|dir| dir.join("qml_modules").join(module_uri.as_dirs()))
 }
 
 /// The target directory or another directory where we can write files that will be shared
