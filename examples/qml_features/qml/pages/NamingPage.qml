@@ -9,8 +9,8 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
-    RenamedObject {
-        id: renamedObject
+    id: root
+    readonly property RenamedObject renamedObject: RenamedObject {
         numberProp: 1
     }
 
@@ -22,19 +22,19 @@ Page {
         Label {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            text: qsTr("Counter: %1").arg(renamedObject.numberProp)
+            text: qsTr("Counter: %1").arg(root.renamedObject.numberProp)
             wrapMode: Text.Wrap
         }
 
         Button {
             text: qsTr("Increment Counter")
-            onClicked: renamedObject.increment()
+            onClicked: root.renamedObject.increment()
         }
 
         Label {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            text: qsTr("Meaning of life: %1").arg(renamedObject.getNum())
+            text: qsTr("Meaning of life: %1").arg(root.renamedObject.getNum())
             wrapMode: Text.Wrap
         }
     }
