@@ -36,6 +36,7 @@ pub use qml_modules::QmlModule;
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::MocProducts;
 use qt_build_utils::QResources;
+use qt_build_utils::QmlLsIniBuilder;
 use qt_build_utils::QmlUri;
 use quote::ToTokens;
 use semver::Version;
@@ -961,6 +962,22 @@ impl CxxQtBuilder {
                     plugin_dir.join("qmldir"),
                 )
                 .expect("Could not copy qmldir to export directory");
+            }
+
+            // Create a .qmlls.ini file with the build dir set similar to QT_QML_GENERATE_QMLLS_INI
+            if let (Some(qml_modules_dir), Some(manifest_dir)) =
+                (dir::module_export_qml_modules(), dir::manifest())
+            {
+                // TODO: manifest dir is not enough as QML files might be in a parent
+                // so this should likely be an argument given to cxx-qt-build
+                // that optionally exports?
+                let mut file = File::create(manifest_dir.parent().unwrap().join(".qmlls.ini"))
+                    .expect("Could not create qmlls.ini file");
+                QmlLsIniBuilder::new()
+                    .build_dir(qml_modules_dir)
+                    .no_cmake_calls(true)
+                    .write(&mut file)
+                    .expect("Could not write qmlls.ini")
             }
 
             let module_init_key = qml_module_init_key(&qml_module.uri);
