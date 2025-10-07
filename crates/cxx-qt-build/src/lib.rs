@@ -853,10 +853,21 @@ impl CxxQtBuilder {
             let cc_builder = &mut self.cc_builder;
             qtbuild.cargo_link_libraries(cc_builder);
 
-            let qml_metatypes_json: Vec<PathBuf> = moc_products
+            let mut qml_metatypes_json: Vec<PathBuf> = moc_products
                 .iter()
                 .map(|products| products.metatypes_json.clone())
                 .collect();
+
+            // Inject CXX-Qt builtin meta types
+            let builtins_path = dir::out().join("builtins.h");
+            std::fs::write(&builtins_path, include_str!("../cpp/builtins.h"))
+                .expect("Failed to write builtins.h");
+            qml_metatypes_json.push(
+                qtbuild
+                    .moc()
+                    .compile(builtins_path, MocArguments::default())
+                    .metatypes_json,
+            );
 
             let qml_module_registration_files = qtbuild.register_qml_module(
                 &qml_metatypes_json,
