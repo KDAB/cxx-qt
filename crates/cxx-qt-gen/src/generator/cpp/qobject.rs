@@ -69,7 +69,8 @@ impl GeneratedCppQObjectBlocks {
             qml_specifiers.push(format!("QML_NAMED_ELEMENT({})", qml_metadata.name));
 
             if qml_metadata.uncreatable {
-                qml_specifiers.push("QML_UNCREATABLE(\"Not creatable\")".to_owned());
+                qml_specifiers
+                    .push("QML_UNCREATABLE(\"Type cannot be created in QML.\")".to_owned());
             }
 
             if qml_metadata.singleton {
@@ -347,7 +348,7 @@ mod tests {
         assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyObject)");
         assert_eq!(
             cpp.blocks.metaobjects[1],
-            "QML_UNCREATABLE(\"Not creatable\")"
+            "QML_UNCREATABLE(\"Type cannot be created in QML.\")"
         );
     }
 }
