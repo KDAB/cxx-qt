@@ -55,7 +55,7 @@ QObjectEnabled_signal_enabledConnect(
 
 class QObjectEnabled
   : public QObject
-  , public ::rust::cxxqt1::CxxQtType<QObjectEnabledRust>
+  , private ::rust::cxxqt1::CxxQtType<QObjectEnabledRust>
 {
   Q_OBJECT
 public:
@@ -76,6 +76,13 @@ public:
     return QObject::inherit_enabled(args...);
   }
   explicit QObjectEnabled(QObject* parent = nullptr);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, QObjectEnabled>::value,

@@ -63,16 +63,13 @@ impl GeneratedCppQObjectBlocks {
     pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {
         let mut qml_specifiers = Vec::new();
         if let Some(qml_metadata) = &qobject.qml_metadata {
-            // Somehow moc doesn't include the info in metatypes.json that qmltyperegistrar needs
-            // when using the QML_ELEMENT/QML_NAMED_ELEMENT macros, but moc works when using what
-            // those macros expand to.
-            qml_specifiers.push(format!(
-                "Q_CLASSINFO(\"QML.Element\", \"{}\")",
-                qml_metadata.name
-            ));
+            // Note ensure that the header moc processes has QtQml/QQmlEngine
+            // this is done via generator/rust/qobject
+
+            qml_specifiers.push(format!("QML_NAMED_ELEMENT({})", qml_metadata.name));
 
             if qml_metadata.uncreatable {
-                qml_specifiers.push("Q_CLASSINFO(\"QML.Creatable\", \"false\")".to_owned());
+                qml_specifiers.push("QML_UNCREATABLE(\"Not creatable\")".to_owned());
             }
 
             if qml_metadata.singleton {
@@ -128,7 +125,10 @@ impl GeneratedCppQObject {
             // CODECOV_EXCLUDE_STOP
         };
 
-        generated.blocks.base_classes.push(base_class.clone());
+        generated
+            .blocks
+            .base_classes
+            .push(format!("public {base_class}"));
 
         // Add the CxxQtType rust and rust_mut methods
         generated
@@ -229,10 +229,10 @@ mod tests {
         assert_eq!(cpp.namespace_internals, "cxx_qt_MyObject");
 
         assert_eq!(cpp.blocks.base_classes.len(), 2);
-        assert_eq!(cpp.blocks.base_classes[0], "QObject");
+        assert_eq!(cpp.blocks.base_classes[0], "public QObject");
         assert_eq!(
             cpp.blocks.base_classes[1],
-            "::rust::cxxqt1::CxxQtType<MyObjectRust>"
+            "private ::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
@@ -268,10 +268,10 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_MyObject");
         assert_eq!(cpp.blocks.base_classes.len(), 2);
-        assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
+        assert_eq!(cpp.blocks.base_classes[0], "public QStringListModel");
         assert_eq!(
             cpp.blocks.base_classes[1],
-            "::rust::cxxqt1::CxxQtType<MyObjectRust>"
+            "private ::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
@@ -302,10 +302,7 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyNamedObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 1);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyQmlElement\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyQmlElement)");
     }
 
     #[test]
@@ -322,10 +319,7 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyObject\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyObject)");
         assert_eq!(cpp.blocks.metaobjects[1], "QML_SINGLETON");
     }
 
@@ -353,13 +347,10 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyObject\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyObject)");
         assert_eq!(
             cpp.blocks.metaobjects[1],
-            "Q_CLASSINFO(\"QML.Creatable\", \"false\")"
+            "QML_UNCREATABLE(\"Not creatable\")"
         );
     }
 }

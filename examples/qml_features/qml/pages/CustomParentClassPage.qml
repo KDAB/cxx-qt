@@ -37,19 +37,31 @@ Page {
         }
     }
 
-
     ColumnLayout {
         anchors.left: parent.left
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
 
+        // TODO: qmllint fails here as in the qmltypes CustomParentClass
+        // is missing a prototype of QQuickPaintedItem it is not yet clear why
+        // this is missed.
+        //
+        // qmltyperegistrar claims the following
+        // QQuickPaintedItem is used as base type but cannot be found.
+        //
+        // The type QQuickPaintedItem is not embedded in the moc JSON,
+        // does it come from elsewhere?
+        //
+        // qmllint disable incompatible-type Quick.attached-property-type
         CustomParentClass {
             id: customPainter
             color: "red"
             Layout.alignment: Qt.AlignHCenter
-            height: 200
-            width: 200
+            Layout.preferredHeight: 200
+            Layout.preferredWidth: 200
         }
+
+        // qmllint enable incompatible-type Quick.attached-property-type
 
         Label {
             Layout.fillWidth: true
