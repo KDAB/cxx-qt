@@ -153,7 +153,6 @@ impl QtBuild {
         version_minor: usize,
         plugin_name: &str,
         qml_files: &[impl AsRef<Path>],
-        qrc_files: &[impl AsRef<Path>],
     ) -> QmlModuleRegistrationFiles {
         let qml_uri = QmlUri::new(uri.split('.'));
         let qml_uri_dirs = qml_uri.as_dirs();
@@ -183,6 +182,7 @@ impl QtBuild {
         }
 
         // Generate .qrc file and run rcc on it
+        // TODO: Replace with an equivalent of [qt_add_resources](https://doc.qt.io/qt-6/qt-add-resources.html)
         let qrc_path =
             qml_module_dir.join(format!("qml_module_resources_{qml_uri_underscores}.qrc"));
         {
@@ -213,10 +213,6 @@ impl QtBuild {
                     for path in qml_files {
                         resource = resource_add_path(resource, path.as_ref());
                     }
-                    for path in qrc_files {
-                        resource = resource_add_path(resource, path.as_ref());
-                    }
-
                     resource
                 })
                 .write(&mut qrc)

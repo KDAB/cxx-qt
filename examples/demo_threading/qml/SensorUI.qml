@@ -36,7 +36,7 @@ Item {
     }
 
     Image {
-        source: "../images/sensor.png"
+        source: "qrc:/images/sensor.png"
         anchors.verticalCenter: parent.verticalCenter
         x:-6
     }
@@ -48,7 +48,7 @@ Item {
         anchors.margins: -15
 
         Image {
-            source: "../images/sensorefect.png"
+            source: "qrc:/images/sensorefect.png"
             anchors.verticalCenter: parent.verticalCenter
             x:15
         }
