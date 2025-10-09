@@ -176,6 +176,9 @@ impl QtBuild {
                 .plugin(plugin_name, true)
                 .class_name(&plugin_class_name)
                 .type_info(plugin_type_info)
+                .qml_files(qml_files)
+                .version_major(version_major)
+                .version_minor(version_minor)
                 .write(&mut file)
                 .expect("Could not write qmldir file");
         }

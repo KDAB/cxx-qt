@@ -5,7 +5,8 @@
 
 use crate::QmlUri;
 
-use std::io;
+use std::{env, fs, io};
+use std::path::{Path, PathBuf};
 
 /// QML module definition files builder
 ///
@@ -16,6 +17,9 @@ pub struct QmlDirBuilder {
     plugin: Option<(bool, String)>,
     type_info: Option<String>,
     uri: QmlUri,
+    qml_files: Vec<PathBuf>,
+    version_major: usize,
+    version_minor: usize,
 }
 
 impl QmlDirBuilder {
@@ -27,6 +31,9 @@ impl QmlDirBuilder {
             depends: vec![],
             plugin: None,
             type_info: None,
+            qml_files: vec![],
+            version_major: 1,
+            version_minor: 0,
             uri,
         }
     }
@@ -58,7 +65,54 @@ impl QmlDirBuilder {
         }
 
         // Prefer is always specified for now
-        writeln!(writer, "prefer :/qt/qml/{}/", self.uri.as_dirs())
+        writeln!(writer, "prefer :/qt/qml/{}/", self.uri.as_dirs())?;
+
+        let qml_uri_dirs = self.uri.as_dirs().replace('.', "/");
+        let out_dir = env::var("OUT_DIR").unwrap();
+        let qt_build_utils_dir = PathBuf::from(format!("{out_dir}/qt-build-utils"));
+        std::fs::create_dir_all(&qt_build_utils_dir).expect("Could not create qt_build_utils dir");
+
+        let qml_module_dir = qt_build_utils_dir.join("qml_modules").join(&qml_uri_dirs);
+
+        for qml_file in &self.qml_files {
+
+            let version_major = self.version_major;
+            let version_minor = self.version_minor;
+            let ext = qml_file
+                .extension()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string()
+                .to_lowercase();
+
+            if ext != "qml" {
+                panic!("QML file must end with .qml: {} extension was: {} ", qml_file.to_str().unwrap() , ext);
+            }
+
+            if !qml_file.is_file() {
+                panic!("Could not find qml file: {}", qml_file.display());
+            }
+
+            let qml_file_name = qml_file
+                .file_name()
+                .unwrap()
+                .to_str()
+                .unwrap()
+                .to_string();
+
+            fs::copy(&qml_file, qml_module_dir.join(qml_file_name.clone()))
+                .expect(&format!("Could not copy qml file: {}", qml_file.display()).to_string());
+
+            let qml_component_name = qml_file_name.strip_suffix(".qml").unwrap().to_string();
+
+
+            writeln!( writer,
+                    "{qml_component_name} {version_major}.{version_minor} {qml_file_name}")
+                .expect("Could not write qmldir file");
+        }
+
+        Ok(())
     }
 
     /// Provides the class name of the C++ plugin used by the module.
@@ -107,6 +161,24 @@ impl QmlDirBuilder {
         }
 
         self.plugin = Some((optional, name.into()));
+        self
+    }
+
+    /// Declares a list of .qml files that are part of the module.
+    pub fn qml_files(mut self, qml_files: &[impl AsRef<Path>]) -> Self {
+        self.qml_files = qml_files.iter().map(|p| p.as_ref().to_owned()).collect();
+        self
+    }
+
+    /// Declares the version major of the qml-module
+    pub fn version_major(mut self, version_major: usize) -> Self {
+        self.version_major = version_major;
+        self
+    }
+
+    /// Declares the version minor of the qml-module
+    pub fn version_minor(mut self, version_minor: usize) -> Self {
+        self.version_minor = version_minor;
         self
     }
 
