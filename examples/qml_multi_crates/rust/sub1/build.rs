@@ -6,9 +6,11 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.cxx_qt.demo.sub1"))
-        .qt_module("Network")
-        .files(["src/sub1_object.rs"])
-        .build()
-        .export();
+    CxxQtBuilder::new_qml_module(
+        QmlModule::new("com.kdab.cxx_qt.demo.sub1").qml_file("qml/BlueRect.qml"),
+    )
+    .qt_module("Network")
+    .files(["src/sub1_object.rs"])
+    .build()
+    .export();
 }
