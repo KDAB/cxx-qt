@@ -10,6 +10,7 @@ fn main() {
         .qt_module("Network")
         .qml_module(QmlModule::<&str, &str> {
             uri: "com.kdab.cxx_qt.demo.sub1",
+            qml_files: &["qml/BlueRect.qml"],
             ..Default::default()
         })
         .files(["src/sub1_object.rs"])
