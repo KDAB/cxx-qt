@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QtInstallation, QtTool};
+use crate::{QmlUri, QtInstallation, QtTool};
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -13,7 +13,7 @@ use std::{
 #[derive(Clone)]
 pub struct QmlCacheArguments {
     /// The URI for the QML module
-    pub uri: String,
+    pub uri: QmlUri,
     /// The path to the qmldir
     pub qmldir_path: PathBuf,
     /// The path to the qrc file that contains a qmldir
@@ -50,7 +50,7 @@ impl QtToolQmlCacheGen {
         file: impl AsRef<Path>,
     ) -> QmlCacheProducts {
         let uri = common_args.uri;
-        let qml_uri_dirs = uri.replace('.', "/");
+        let qml_uri_dirs = uri.as_dirs();
 
         let qmlcachegen_dir = QtTool::QmlCacheGen.writable_path().join(&qml_uri_dirs);
         std::fs::create_dir_all(&qmlcachegen_dir)
@@ -111,8 +111,8 @@ impl QtToolQmlCacheGen {
         qml_resource_paths: &[String],
     ) -> PathBuf {
         let uri = common_args.uri;
-        let qml_uri_dirs = uri.replace('.', "/");
-        let qml_uri_underscores = uri.replace('.', "_");
+        let qml_uri_dirs = uri.as_dirs();
+        let qml_uri_underscores = uri.as_underscores();
 
         let qmlcachegen_dir = QtTool::QmlCacheGen.writable_path().join(qml_uri_dirs);
         std::fs::create_dir_all(&qmlcachegen_dir)

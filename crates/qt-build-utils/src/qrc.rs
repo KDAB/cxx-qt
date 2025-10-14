@@ -9,6 +9,7 @@ use std::{
 };
 
 /// An individial `<file>` line within a [QResource]
+#[derive(Debug, Clone)]
 pub struct QResourceFile {
     alias: Option<String>,
     // TODO: compression
@@ -37,17 +38,30 @@ impl QResourceFile {
         self
     }
 
+    /// Get the path of this file
+    pub fn get_path(&self) -> &Path {
+        &self.path
+    }
+
     fn write(self, writer: &mut impl io::Write) -> io::Result<()> {
         let alias = self
             .alias
-            .map(|alias| format!(" alias=\"{}\"", alias.escape_default()))
-            .unwrap_or_default();
-        let path = self.path.to_string_lossy();
-        write!(writer, "<file{alias}>{path}</file>")
+            .unwrap_or_else(|| self.path.to_string_lossy().to_string());
+        let alias = alias.escape_default();
+        #[cfg(test)]
+        let path = &self.path;
+        #[cfg(not(test))]
+        let path = std::fs::canonicalize(self.path)?;
+        writeln!(
+            writer,
+            "    <file alias=\"{alias}\">{path}</file>",
+            path = path.display()
+        )
     }
 }
 
 /// A `<qresource>` block within a [QResources]
+#[derive(Debug, Clone)]
 pub struct QResource {
     language: Option<String>,
     prefix: Option<String>,
@@ -90,6 +104,11 @@ impl QResource {
         self
     }
 
+    /// Get the files inside of this resource
+    pub fn get_files(&self) -> impl Iterator<Item = &QResourceFile> {
+        self.files.iter()
+    }
+
     /// Specify a language for the `<qresource>`
     pub fn language(mut self, language: impl Into<String>) -> Self {
         self.language = Some(language.into());
@@ -102,6 +121,11 @@ impl QResource {
         self
     }
 
+    /// Get the prefix, if set
+    pub fn get_prefix(&self) -> Option<&str> {
+        self.prefix.as_deref()
+    }
+
     fn write(self, writer: &mut impl io::Write) -> io::Result<()> {
         let language = self
             .language
@@ -112,15 +136,16 @@ impl QResource {
             .map(|prefix| format!(" prefix=\"{}\"", prefix.escape_default()))
             .unwrap_or_default();
 
-        write!(writer, "<qresource{language}{prefix}>")?;
+        writeln!(writer, "  <qresource{language}{prefix}>")?;
         for file in self.files.into_iter() {
             file.write(writer)?;
         }
-        write!(writer, "</qresource>")
+        writeln!(writer, "  </qresource>")
     }
 }
 
 /// A helper for building Qt resource collection files
+#[derive(Debug, Clone)]
 pub struct QResources {
     resources: Vec<QResource>,
 }
@@ -157,13 +182,23 @@ impl QResources {
         self
     }
 
+    /// Get the resources as mutable references
+    pub fn get_resources_mut(&mut self) -> impl Iterator<Item = &mut QResource> {
+        self.resources.iter_mut()
+    }
+
+    /// Get the resources
+    pub fn get_resources(&self) -> impl Iterator<Item = &QResource> {
+        self.resources.iter()
+    }
+
     /// Convert to a string representation
     pub fn write(self, writer: &mut impl io::Write) -> io::Result<()> {
-        write!(writer, "<RCC>")?;
+        writeln!(writer, "<RCC>")?;
         for resource in self.resources.into_iter() {
             resource.write(writer)?;
         }
-        write!(writer, "</RCC>")
+        writeln!(writer, "</RCC>")
     }
 }
 
@@ -180,7 +215,7 @@ mod test {
             .unwrap();
         assert_eq!(
             String::from_utf8(result).unwrap(),
-            "<file alias=\"alias\">path</file>"
+            "    <file alias=\"alias\">path</file>\n"
         );
     }
 
@@ -194,7 +229,7 @@ mod test {
             .unwrap();
         assert_eq!(
             String::from_utf8(result).unwrap(),
-            "<qresource language=\"language\" prefix=\"prefix\"></qresource>"
+            "  <qresource language=\"language\" prefix=\"prefix\">\n  </qresource>\n"
         );
     }
 
@@ -213,7 +248,20 @@ mod test {
             .unwrap();
         assert_eq!(
             String::from_utf8(result).unwrap(),
-            "<RCC><qresource><file>a</file></qresource><qresource><file>b</file></qresource><qresource prefix=\"prefix\"><file>c</file><file>d</file><file alias=\"alias\">e</file></qresource></RCC>"
+            "<RCC>
+  <qresource>
+    <file alias=\"a\">a</file>
+  </qresource>
+  <qresource>
+    <file alias=\"b\">b</file>
+  </qresource>
+  <qresource prefix=\"prefix\">
+    <file alias=\"c\">c</file>
+    <file alias=\"d\">d</file>
+    <file alias=\"alias\">e</file>
+  </qresource>
+</RCC>
+"
         );
     }
 
@@ -223,7 +271,15 @@ mod test {
         QResources::from(["a", "b"]).write(&mut result).unwrap();
         assert_eq!(
             String::from_utf8(result).unwrap(),
-            "<RCC><qresource><file>a</file><file>b</file></qresource></RCC>"
+            format!(
+                "<RCC>
+  <qresource>
+    <file alias=\"a\">a</file>
+    <file alias=\"b\">b</file>
+  </qresource>
+</RCC>
+",
+            )
         );
     }
 }
