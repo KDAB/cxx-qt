@@ -15,7 +15,6 @@ fn main() {
         // - Qt Qml requires linking Qt Network on macOS
         .qt_module("Network")
         .files(["src/cxxqt_object.rs"])
-        .qrc_resources(["./src/main.rs"])
         .build();
 }
 // ANCHOR_END: book_cargo_executable_build_rs
