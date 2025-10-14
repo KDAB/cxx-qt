@@ -442,18 +442,28 @@ impl CxxQtBuilder {
 
     /// Specify rust file paths to parse through the cxx-qt marco
     /// Relative paths are treated as relative to the path of your crate's Cargo.toml file
-    pub fn file(mut self, rust_source: impl AsRef<Path>) -> Self {
-        let rust_source = rust_source.as_ref().to_path_buf();
-        println!("cargo::rerun-if-changed={}", rust_source.display());
-        self.rust_sources.push(rust_source);
-        self
+    pub fn file(self, rust_source: impl AsRef<Path>) -> Self {
+        self.files(std::iter::once(rust_source))
     }
 
     /// Specify multiple rust file paths to parse through the cxx-qt marco.
     ///
     /// See also: [Self::file]
-    pub fn files(mut self, rust_source: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
-        let rust_sources = rust_source.into_iter().map(|p| {
+    pub fn files(mut self, rust_sources: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
+        let rust_sources = rust_sources.into_iter().collect::<Vec<_>>();
+        for source in rust_sources.iter() {
+            let source = source.as_ref().to_owned();
+            if self.rust_sources.contains(&source) {
+                // Duplicate rust files are likely to cause confusing linker errors later on
+                // Warn the user about it so that debugging may be easier.
+                println!(
+                    "cargo::warning=CxxQtBuilder::file(s): Duplicate rust file: {}",
+                    source.display()
+                );
+            }
+        }
+
+        let rust_sources = rust_sources.into_iter().map(|p| {
             let p = p.as_ref().to_path_buf();
             println!("cargo::rerun-if-changed={}", p.display());
             p

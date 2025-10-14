@@ -14,6 +14,5 @@ fn main() {
     ]))
     .file("src/lib.rs")
     .qrc("../images/images.qrc")
-    .files(["src/lib.rs"])
     .build();
 }
