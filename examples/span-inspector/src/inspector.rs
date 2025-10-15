@@ -70,7 +70,7 @@ use std::{pin::Pin, ptr};
 pub struct SpanInspectorRust {
     input: *mut QQuickTextDocument,
     output: *mut QQuickTextDocument,
-    thread_count: Arc<Mutex<u32>>,
+    thread_count: u32,
 }
 
 impl Default for SpanInspectorRust {
@@ -78,7 +78,7 @@ impl Default for SpanInspectorRust {
         Self {
             input: ptr::null_mut(),
             output: ptr::null_mut(),
-            thread_count: Arc::new(Mutex::new(0)),
+            thread_count: 0,
         }
     }
 }
@@ -114,16 +114,15 @@ impl qobject::SpanInspector {
         self.as_mut().input_changed();
     }
 
-    fn rebuild_output(self: Pin<&mut Self>, cursor_position: i32) {
+    fn rebuild_output(mut self: Pin<&mut Self>, cursor_position: i32) {
         let input = unsafe { Pin::new_unchecked(&mut *self.input) };
         let qt_thread = self.qt_thread();
         unsafe { self.output_document() }.set_html(&QString::from(String::from("expanding...")));
 
         let text = unsafe { Pin::new_unchecked(&mut *input.text_document()) }.to_plain_text();
 
-        let thread_count = Arc::clone(&self.thread_count);
-        *thread_count.lock().unwrap() += 1;
-        let thread_id = *thread_count.lock().unwrap();
+        self.as_mut().rust_mut().thread_count += 1;
+        let thread_id = self.thread_count;
 
         std::thread::spawn(move || {
             let output = QString::from(
@@ -141,7 +140,7 @@ impl qobject::SpanInspector {
             );
             qt_thread
                 .queue(move |this| {
-                    if thread_id == *thread_count.lock().unwrap() {
+                    if thread_id == this.thread_count {
                         unsafe { this.output_document() }.set_html(&output)
                     }
                 })
