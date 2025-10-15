@@ -19,8 +19,6 @@ pub struct QmlDirBuilder {
     type_info: Option<String>,
     uri: QmlUri,
     qml_files: Vec<PathBuf>,
-    version_major: Option<usize>,
-    version_minor: Option<usize>,
 }
 
 impl QmlDirBuilder {
@@ -33,8 +31,6 @@ impl QmlDirBuilder {
             plugin: None,
             type_info: None,
             qml_files: vec![],
-            version_major: None,
-            version_minor: None,
             uri,
         }
     }
@@ -68,9 +64,6 @@ impl QmlDirBuilder {
         // Prefer is always specified for now
         writeln!(writer, "prefer :/qt/qml/{}/", self.uri.as_dirs())?;
 
-        // Qt6 simply uses version 254 if no version is provided
-        let version_major = self.version_major.unwrap_or(254);
-        let version_minor = self.version_minor.unwrap_or_default();
         for qml_file in &self.qml_files {
             let is_qml_file = qml_file
                 .extension()
@@ -87,11 +80,10 @@ impl QmlDirBuilder {
                 .and_then(OsStr::to_str)
                 .expect("Could not get qml file stem");
 
-            writeln!(
-                writer,
-                "{qml_component_name} {version_major}.{version_minor} {path}",
-            )
-            .expect("Could not write qmldir file");
+            // Qt6 simply uses version 254.0 if no specific version is provided
+            // Until we support versions of individal qml files, we will use 254.0
+            writeln!(writer, "{qml_component_name} 254.0 {path}",)
+                .expect("Could not write qmldir file");
         }
 
         Ok(())
@@ -152,18 +144,6 @@ impl QmlDirBuilder {
             .into_iter()
             .map(|p| p.as_ref().to_owned())
             .collect();
-        self
-    }
-
-    /// Declares the version major of the qml-module
-    pub fn version_major(mut self, version_major: usize) -> Self {
-        self.version_major = Some(version_major);
-        self
-    }
-
-    /// Declares the version minor of the qml-module
-    pub fn version_minor(mut self, version_minor: usize) -> Self {
-        self.version_minor = Some(version_minor);
         self
     }
 
