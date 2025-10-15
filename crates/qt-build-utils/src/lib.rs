@@ -49,6 +49,7 @@ mod utils;
 
 use std::{
     env,
+    ffi::OsStr,
     fs::File,
     path::{Path, PathBuf},
 };
@@ -171,12 +172,22 @@ impl QtBuild {
         // Generate qmldir file
         let qmldir_file_path = qml_module_dir.join("qmldir");
         {
+            let qml_type_files = qml_files.iter().filter(|path| {
+                // Qt by default only includes uppercase files in the qmldir file.
+                // Mirror this behavior.
+                path.as_ref()
+                    .file_name()
+                    .and_then(OsStr::to_str)
+                    .and_then(|file_name| file_name.chars().next())
+                    .map(char::is_uppercase)
+                    .unwrap_or_default()
+            });
             let mut file = File::create(&qmldir_file_path).expect("Could not create qmldir file");
             QmlDirBuilder::new(uri.clone())
                 .plugin(plugin_name, true)
                 .class_name(&plugin_class_name)
                 .type_info(plugin_type_info)
-                .qml_files(qml_files)
+                .qml_files(qml_type_files)
                 .version_major(version_major)
                 .version_minor(version_minor)
                 .write(&mut file)
