@@ -40,15 +40,13 @@ impl GeneratedRustFragment {
             generate_rust_signals(&structured_qobject.signals, &qobject_names, type_names)?,
         ];
 
-        // If this type is a singleton then we need to add an include
-        if let Some(qml_metadata) = &qobject.qml_metadata {
-            if qml_metadata.singleton {
-                generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
-                    unsafe extern "C++" {
-                        include!(<QtQml/QQmlEngine>);
-                    }
-                }))
-            }
+        // If this type is using QML declarative macros then ensure we have the right include
+        if qobject.qml_metadata.is_some() {
+            generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
+                unsafe extern "C++" {
+                    include!(<QtQml/QQmlEngine>);
+                }
+            }))
         }
 
         // If this type has threading enabled then add generation

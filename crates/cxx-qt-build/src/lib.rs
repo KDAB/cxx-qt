@@ -770,6 +770,10 @@ impl CxxQtBuilder {
         {
 
             let mut moc_arguments = moc_arguments.clone();
+            // Ensure that header root is in the include path of moc
+            // otherwise it cannot read the .cxx.h paths
+            moc_arguments = moc_arguments.include_path(dir::header_root());
+
             if let Some(qml_module) = &self.qml_module {
                 // Ensure that the generated QObject header is in the include path
                 // so that qmltyperegistar can include them later
