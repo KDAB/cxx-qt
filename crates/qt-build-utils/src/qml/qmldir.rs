@@ -12,6 +12,7 @@ use std::io;
 /// A qmldir file is a plain-text file that contains the commands
 pub struct QmlDirBuilder {
     class_name: Option<String>,
+    depends: Vec<String>,
     plugin: Option<(bool, String)>,
     type_info: Option<String>,
     uri: QmlUri,
@@ -23,6 +24,7 @@ impl QmlDirBuilder {
     pub fn new(uri: QmlUri) -> Self {
         Self {
             class_name: None,
+            depends: vec![],
             plugin: None,
             type_info: None,
             uri,
@@ -51,6 +53,10 @@ impl QmlDirBuilder {
             writeln!(writer, "typeinfo {file}")?;
         }
 
+        for depend in self.depends {
+            writeln!(writer, "depends {depend}")?;
+        }
+
         // Prefer is always specified for now
         writeln!(writer, "prefer :/qt/qml/{}/", self.uri.as_dirs())
     }
@@ -65,6 +71,18 @@ impl QmlDirBuilder {
     // TODO: is required for C++ plugins, is it required when plugin?
     pub fn class_name(mut self, class_name: impl Into<String>) -> Self {
         self.class_name = Some(class_name.into());
+        self
+    }
+
+    /// Declares that this module depends on another
+    pub fn depend(mut self, depend: impl Into<String>) -> Self {
+        self.depends.push(depend.into());
+        self
+    }
+
+    /// Declares that this module depends on another
+    pub fn depends<T: Into<String>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
+        self.depends.extend(depends.into_iter().map(Into::into));
         self
     }
 
@@ -105,7 +123,6 @@ impl QmlDirBuilder {
     // object type declaration
     // internal object type declaration
     // javascript resource definition
-    // module dependencies declaration
     // module import declaration
     // designer support declaration
 }
@@ -119,6 +136,7 @@ mod test {
         let mut result = Vec::new();
         QmlDirBuilder::new(QmlUri::new(["com", "kdab"]))
             .class_name("C")
+            .depends(["QtQuick", "com.kdab.a"])
             .plugin("P", true)
             .type_info("T")
             .write(&mut result)
@@ -129,6 +147,8 @@ mod test {
 optional plugin P
 classname C
 typeinfo T
+depends QtQuick
+depends com.kdab.a
 prefer :/qt/qml/com/kdab/
 "
         );
