@@ -5,6 +5,7 @@
 
 use crate::QmlUri;
 
+use std::ffi::OsStr;
 use std::io;
 use std::path::{Path, PathBuf};
 
@@ -83,8 +84,8 @@ impl QmlDirBuilder {
             let path = qml_file.display();
             let qml_component_name = qml_file
                 .file_stem()
-                .expect("Could not get qml file stem")
-                .display();
+                .and_then(OsStr::to_str)
+                .expect("Could not get qml file stem");
 
             writeln!(
                 writer,
