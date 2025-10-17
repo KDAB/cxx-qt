@@ -20,6 +20,7 @@ pub struct QmlModule {
     pub(crate) version_major: usize,
     pub(crate) version_minor: usize,
     pub(crate) qml_files: Vec<PathBuf>,
+    pub(crate) depends: Vec<String>,
 }
 
 impl QmlModule {
@@ -32,7 +33,20 @@ impl QmlModule {
             version_major: 1,
             version_minor: 0,
             qml_files: Vec::new(),
+            depends: Vec::new(),
         }
+    }
+
+    /// Add a QML module dependency
+    pub fn depend(mut self, depend: impl Into<String>) -> Self {
+        self.depends.push(depend.into());
+        self
+    }
+
+    /// Add multiple QML module dependencies
+    pub fn depends<T: Into<String>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
+        self.depends.extend(depends.into_iter().map(Into::into));
+        self
     }
 
     /// Add a version to the QML module.
