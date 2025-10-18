@@ -287,6 +287,7 @@ jobs:
             cargo_dir: ~/.cargo
             rustc_wrapper: sccache
             build_type: Release
+            cargo_target: x86_64-unknown-linux-gnu
           - name: Ubuntu 24.04 (gcc) Qt6
             os: ubuntu-24.04
             qt_version: 6
@@ -308,6 +309,7 @@ jobs:
                 libgl1-mesa-dev
                 libvulkan-dev
                 libxkbcommon-dev
+            cargo_target: x86_64-unknown-linux-gnu
 
           - name: macOS 13 (clang) Qt5
             os: macos-13
@@ -331,6 +333,7 @@ jobs:
             cxx: clang++
             rustc_wrapper: sccache
             build_type: Release
+            cargo_target: x86_64-apple-darwin
           - name: macOS 14 (clang) Qt6
             os: macos-14
             qt_version: 6
@@ -353,6 +356,7 @@ jobs:
             cxx: clang++
             rustc_wrapper: sccache
             build_type: Release
+            cargo_target: aarch64-apple-darwin
 
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
@@ -372,6 +376,7 @@ jobs:
             cxx: cl
             rustc_wrapper: sccache
             build_type: Release
+            cargo_target: x86_64-pc-windows-msvc
           - name: Windows 2022 (MSVC2019) Qt6
             os: windows-2022
             qt_version: 6
@@ -390,6 +395,7 @@ jobs:
             cxx: cl
             rustc_wrapper: sccache
             build_type: Release
+            cargo_target: x86_64-pc-windows-msvc
             # Use a Debug build to ensure we can build and run tests in Debug mode with MSVC
           - name: Windows 2022 (MSVC2022) Qt6 Debug
             os: windows-2022
@@ -409,6 +415,7 @@ jobs:
             cxx: cl
             rustc_wrapper: sccache
             build_type: Debug
+            cargo_target: x86_64-pc-windows-msvc
 
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
@@ -421,6 +428,8 @@ jobs:
         # but still leave room for the tools cache
         SCCACHE_CACHE_SIZE: 600M
         SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
+        # Ensure that we share the same target sub folder
+        CARGO_BUILD_TARGET: ${{ matrix.cargo_target }}
 
     steps:
     - name: "Clone Git repository"
