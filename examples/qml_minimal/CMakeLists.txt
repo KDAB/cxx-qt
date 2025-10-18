@@ -65,10 +65,12 @@ if(NOT CxxQt_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         CxxQt
-        GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
+        # GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
         # ANCHOR_END: book_cmake_find_cxx_qt_start
-        GIT_TAG main
+        # GIT_TAG main
         # ANCHOR: book_cmake_find_cxx_qt_end
+        GIT_REPOSITORY https://github.com/ahayzen-kdab/cxx-qt-cmake.git
+        GIT_TAG c353833f2e88655bf264ae16e10fad645ec6a721
     )
 
     FetchContent_MakeAvailable(CxxQt)
@@ -161,6 +163,14 @@ if(BUILD_TESTING)
             )
         else()
             MESSAGE(STATUS "add_valgrind_test is defined in the top level of CXX-Qt. It will not executed")
+        endif()
+
+        find_program(QMLLINT_COMMAND qmllint PATHS "${QT_INSTALL_BINS}")
+        if("${QMLLINT_COMMAND}" STREQUAL "QMLLINT_COMMAND-NOTFOUND")
+            MESSAGE(STATUS "qmllint not found. Please install it")
+        else()
+            file(GLOB QMLLINT_QML_FILES ${CMAKE_CURRENT_SOURCE_DIR}/qml/*.qml)
+            add_test(NAME example_qml_minimal_qmllint_check COMMAND ${QMLLINT_COMMAND} --max-warnings 0 -I ${CMAKE_CURRENT_BINARY_DIR}/cxxqt/qml_modules ${QMLLINT_QML_FILES})
         endif()
     endfunction()
 

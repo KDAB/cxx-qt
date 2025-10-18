@@ -23,3 +23,5 @@ compile_commands.json
 
 # clangd cache
 .cache/
+
+*.qmlls.ini
