@@ -64,7 +64,6 @@ mod qobject {
 
 use cxx_qt::{CxxQtType, Threading};
 use qobject::{QQuickTextDocument, QString, QTextDocument};
-use std::sync::{Arc, Mutex};
 use std::{pin::Pin, ptr};
 
 pub struct SpanInspectorRust {
