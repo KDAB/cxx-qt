@@ -123,7 +123,7 @@ jobs:
           verbose: true
       - name: Upload GitHub Actions artifacts of lcov
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: lcov
           path: ./target/debug/lcov.info
@@ -596,7 +596,7 @@ jobs:
 
     - name: Upload GitHub Actions artifacts of sccache debug log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: sccache_log_${{ matrix.name }}
         path: ${{ matrix.sccache_log_path }}
