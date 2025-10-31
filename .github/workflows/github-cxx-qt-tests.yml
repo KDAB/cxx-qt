@@ -32,7 +32,7 @@ jobs:
   clang_format:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Note ensure that matrix runner is updated too
       - run: |
           pip install --user --break-system-packages clang-format==18.1.8
@@ -43,14 +43,14 @@ jobs:
   license_check:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: REUSE Compliance Check
-        uses: fsfe/reuse-action@v5
+        uses: fsfe/reuse-action@v6
 
   rust_format_check:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - run: rustup default 1.77.2
       - run: rustup component add rustfmt
       - run: cargo fmt --all --check --verbose
@@ -58,7 +58,7 @@ jobs:
   markdown_lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           globs: '**/*.md'
@@ -66,7 +66,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Shellcheck is likely already installed but lets ensure it is
       - name: install shellcheck
         run: sudo apt-get install -y shellcheck
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       # Note we need to match the LLVM and Rust versions
       #
       # See versions from the table in this link
@@ -123,7 +123,7 @@ jobs:
           verbose: true
       - name: Upload GitHub Actions artifacts of lcov
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: lcov
           path: ./target/debug/lcov.info
@@ -138,7 +138,7 @@ jobs:
       SCCACHE_CACHE_SIZE: 600M
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
       - name: Setup toolchain
         run: |
           rustup default 1.77.2
@@ -290,7 +290,7 @@ jobs:
           - name: Ubuntu 24.04 (gcc) Qt6
             os: ubuntu-24.04
             qt_version: 6
-            aqt_version: '6.9.0'
+            aqt_version: '6.9.3'
             aqt_arch: 'linux_gcc_64'
             aqt_host: 'linux'
             cores: 4
@@ -334,10 +334,10 @@ jobs:
           - name: macOS 14 (clang) Qt6
             os: macos-14
             qt_version: 6
-            aqt_version: '6.9.0'
+            aqt_version: '6.9.3'
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
-            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.9.0/macos/lib
+            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.9.3/macos/lib
             # https://doc.qt.io/qt-6.7/macos.html#target-platforms
             macosx_deployment_target: '13.0'
             cores: 3
@@ -347,7 +347,7 @@ jobs:
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
-            clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
+            clang_format_path: /Users/runner/Library/Python/3.14/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
@@ -394,7 +394,7 @@ jobs:
           - name: Windows 2022 (MSVC2022) Qt6 Debug
             os: windows-2022
             qt_version: 6
-            aqt_version: '6.9.0'
+            aqt_version: '6.9.3'
             aqt_arch: 'win64_msvc2022_64'
             aqt_host: 'windows'
             cores: 4
@@ -420,12 +420,11 @@ jobs:
         # Allow a larger cache size so that code in branches can be cached
         # but still leave room for the tools cache
         SCCACHE_CACHE_SIZE: 600M
-        SCCACHE_LOG: debug
         SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
 
     steps:
     - name: "Clone Git repository"
-      uses: actions/checkout@v4
+      uses: actions/checkout@v5
     # Ensure clippy and rustfmt is installed, they should come from github runner
     # clippy version needs to be 1.78.0 for the MSRV lint
     #
@@ -597,7 +596,7 @@ jobs:
 
     - name: Upload GitHub Actions artifacts of sccache debug log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: sccache_log_${{ matrix.name }}
         path: ${{ matrix.sccache_log_path }}

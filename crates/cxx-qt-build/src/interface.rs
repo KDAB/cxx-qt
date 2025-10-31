@@ -45,7 +45,7 @@ impl Interface {
         mut self,
         prefixes: impl IntoIterator<Item = &'a str>,
     ) -> Self {
-        let prefixes = prefixes.into_iter().map(|item| item.to_string()).collect();
+        let prefixes = prefixes.into_iter().map(str::to_owned).collect();
 
         self.exported_include_prefixes = prefixes;
         self
@@ -99,7 +99,7 @@ impl Interface {
         std::fs::write(&manifest_path, manifest_json).expect("Failed to write manifest.json!");
         println!(
             "cargo::metadata=CXX_QT_MANIFEST_PATH={}",
-            manifest_path.to_string_lossy()
+            manifest_path.display()
         );
     }
 }

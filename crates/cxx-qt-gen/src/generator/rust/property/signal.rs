@@ -28,7 +28,7 @@ pub fn generate(idents: &QPropertyNames, qobject_names: &QObjectNames) -> Option
             fn #notify_rust(self: Pin<&mut #cpp_class_rust>);
         };
 
-        Some(ParsedSignal::parse(method, CaseConversion::none()).unwrap())
+        Some(ParsedSignal::parse_rust_qt_signal(method, CaseConversion::none()).unwrap())
     } else {
         None
     }

@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
-use std::ffi::c_void;
 use std::mem::MaybeUninit;
 
 #[cxx::bridge]
@@ -67,7 +66,7 @@ mod ffi {
 /// Qt Documentation: [QMetaObject::Connection](https://doc.qt.io/qt/qmetaobject-connection.html#details)
 #[repr(C)]
 pub struct QMetaObjectConnection {
-    _space: MaybeUninit<*const c_void>,
+    _space: MaybeUninit<usize>,
 }
 
 impl Default for QMetaObjectConnection {

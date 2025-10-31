@@ -14,6 +14,8 @@ mod ffi {
         include!("cxx-qt-lib/qt.h");
         type TransformationMode = crate::TransformationMode;
         type AspectRatioMode = crate::AspectRatioMode;
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_9))]
+        type Orientations = crate::Orientations;
     }
 
     /// This enum type is used to describe how pixel values should be inverted in the [`QImage::invert_pixels`] function.
@@ -191,6 +193,12 @@ mod ffi {
         /// If the image depth is higher than 32bit the result is undefined.
         fn fill(self: &mut QImage, color: &QColor);
 
+        /// Flips or mirrors the image in the horizontal and/or the vertical direction depending on orient.
+        ///
+        /// This function was introduced in Qt 6.9.
+        #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_9))]
+        fn flip(self: &mut QImage, orient: Orientations);
+
         /// Returns the format of the image.
         fn format(self: &QImage) -> QImageFormat;
 
@@ -226,7 +234,12 @@ mod ffi {
         /// Mirrors of the image in the horizontal and/or the vertical direction depending on whether `horizontal` and `vertical` are set to `true` or `false`.
         ///
         /// This function was introduced in Qt 6.0.
-        #[cfg(cxxqt_qt_version_at_least_6)]
+        /// This function is scheduled for deprecation in version 6.13.
+        #[cfg(all(
+            cxxqt_qt_version_at_least_6,
+            not(cxxqt_qt_version_at_least_6_13),
+            not(cxxqt_qt_version_at_least_7)
+        ))]
         fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
 
         /// Swaps the values of the red and blue components of all pixels, effectively converting an RGB image to an BGR image.
@@ -478,11 +491,10 @@ impl QImage {
     /// If `format` is `None`, the format will be quessed from the image header.
     pub fn from_data(data: &[u8], format: Option<&str>) -> Option<Self> {
         let image = ffi::qimage_init_from_data(data, format.unwrap_or(""));
-
-        if !image.is_null() {
-            Some(image)
-        } else {
+        if image.is_null() {
             None
+        } else {
+            Some(image)
         }
     }
 

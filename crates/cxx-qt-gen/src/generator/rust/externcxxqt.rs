@@ -52,7 +52,7 @@ impl GeneratedRustFragment {
                 let cxx_name = if &rust_name.to_string() == cpp_name {
                     quote! {}
                 } else {
-                    let cxx_name = cpp_name.to_string();
+                    let cxx_name = cpp_name;
                     quote! {
                         #[cxx_name = #cxx_name]
                     }

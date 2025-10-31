@@ -34,8 +34,7 @@ fn construct_qbytearray(slice: bool) -> QByteArray {
 }
 
 fn read_qbytearray(s: &cxx_qt_lib::QByteArray) -> bool {
-    let rs = s.to_string();
-    rs == "String constructed by C++"
+    s.as_slice() == b"String constructed by C++"
 }
 
 fn modify_qbytearray(mut s: core::pin::Pin<&mut cxx_qt_lib::QByteArray>) {
@@ -43,16 +42,16 @@ fn modify_qbytearray(mut s: core::pin::Pin<&mut cxx_qt_lib::QByteArray>) {
 }
 
 fn can_handle_qbytearray_change() -> bool {
-    let long_s = "Very very long string that is hopefully long enough to allocate and get Valgrind's attention :)";
+    let long_s = b"Very very long string that is hopefully long enough to allocate and get Valgrind's attention :)";
     let long_s_ptr = QByteArray::from(long_s);
 
-    let short_s = "Short string";
+    let short_s = b"Short string";
     let mut short_s_ptr = QByteArray::from(short_s);
-    assert!(short_s_ptr.to_string() == short_s);
+    assert!(short_s_ptr.as_slice() == short_s);
 
     short_s_ptr = long_s_ptr;
 
-    short_s_ptr.to_string() == long_s
+    short_s_ptr.as_slice() == long_s
 }
 
 fn clone_qbytearray(s: &QByteArray) -> QByteArray {

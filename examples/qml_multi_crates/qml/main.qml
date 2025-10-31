@@ -18,6 +18,10 @@ ApplicationWindow {
     title: qsTr("CXX-Qt: Hello World")
     visible: true
 
+    BlueRect {
+        id: blueRect
+    }
+
     MainObject {
         id: main
     }

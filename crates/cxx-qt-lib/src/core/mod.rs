@@ -44,9 +44,7 @@ mod qmarginsf;
 pub use qmarginsf::QMarginsF;
 
 // Reexport QMetaObjectConnection and guard from cxx-qt
-pub use cxx_qt::{
-    QMetaObjectConnection, QMetaObjectConnectionGuard, QScopedMetaObjectConnectionGuard,
-};
+pub use cxx_qt::{QMetaObjectConnection, QMetaObjectConnectionGuard};
 
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;
@@ -86,8 +84,9 @@ pub use qstringlist::QStringList;
 mod qt;
 pub use qt::{
     AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, FillRule,
-    KeyboardModifier, KeyboardModifiers, LayoutDirection, MouseButton, MouseButtons, PenCapStyle,
-    PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    KeyboardModifier, KeyboardModifiers, LayoutDirection, MouseButton, MouseButtons, Orientation,
+    Orientations, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec,
+    TransformationMode,
 };
 
 mod qtime;

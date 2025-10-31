@@ -6,6 +6,10 @@
 #[cxx_qt::bridge]
 mod ffi {
     unsafe extern "C++" {
+        include!("cxx-qt-lib/qbytearray.h");
+        type QByteArray = crate::QByteArray;
+        include!("cxx-qt-lib/qmap.h");
+        type QMap_QString_QVariant = crate::QMap<crate::QMapPair_QString_QVariant>;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
@@ -33,6 +37,10 @@ mod ffi {
         /// Loads the root QML file located at `url`.
         fn load(self: Pin<&mut QQmlApplicationEngine>, url: &QUrl);
 
+        /// Loads the QML given in data. The object tree defined by data is instantiated immediately.
+        #[rust_name = "load_data"]
+        fn loadData(self: Pin<&mut QQmlApplicationEngine>, data: &QByteArray, url: &QUrl);
+
         /// Returns the directory for storing offline user data.
         #[rust_name = "offline_storage_path"]
         fn offlineStoragePath(self: &QQmlApplicationEngine) -> QString;
@@ -48,6 +56,13 @@ mod ffi {
         /// Sets `paths` as the list of directories where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "set_import_path_list"]
         fn setImportPathList(self: Pin<&mut QQmlApplicationEngine>, paths: &QStringList);
+
+        /// Sets the initialProperties with which the QML component gets initialized after it gets loaded.
+        #[rust_name = "set_initial_properties"]
+        fn setInitialProperties(
+            self: Pin<&mut QQmlApplicationEngine>,
+            properties: &QMap_QString_QVariant,
+        );
 
         /// Sets the list of directories where the engine searches for native plugins for imported modules (referenced in the `qmldir` file) to `paths`.
         #[rust_name = "set_plugin_path_list"]

@@ -51,6 +51,7 @@ fn parameter_types_and_values(
     parameters: &[ParsedFunctionParameter],
     type_names: &TypeNames,
     self_ty: &Name,
+    mutable: bool,
 ) -> Result<Parameters> {
     let mut parameter_named_types_with_self = vec![];
     let mut parameter_types_with_self = vec![];
@@ -66,10 +67,11 @@ fn parameter_types_and_values(
 
     let parameter_named_types = parameter_named_types_with_self.join(", ");
 
+    let is_const = if mutable { "" } else { " const" };
     // Insert the extra argument into the closure
     let self_ty = self_ty.cxx_qualified();
-    parameter_named_types_with_self.insert(0, format!("{self_ty}& self"));
-    parameter_types_with_self.insert(0, format!("{self_ty}&"));
+    parameter_named_types_with_self.insert(0, format!("{self_ty}{is_const}& self"));
+    parameter_types_with_self.insert(0, format!("{self_ty}{is_const}&"));
     parameter_values_with_self.insert(0, "self".to_owned());
 
     Ok(Parameters {
@@ -109,7 +111,8 @@ pub fn generate_cpp_signal(
     let free_connect_ident_cpp = idents_helper.connect_name.cxx_unqualified();
 
     // Retrieve the parameters for the signal
-    let parameters = parameter_types_and_values(&signal.parameters, type_names, qobject_name)?;
+    let parameters =
+        parameter_types_and_values(&signal.parameters, type_names, qobject_name, signal.mutable)?;
     let parameters_named_types = parameters.named_types;
     let parameters_named_types_with_self = parameters.named_types_with_self;
     let parameter_types_with_self = parameters.types_with_self;
@@ -121,6 +124,8 @@ pub fn generate_cpp_signal(
     let signal_handler_call = idents_helper.function_call;
     let signal_handler_drop = idents_helper.function_drop;
     let namespace = idents_helper.namespace;
+    let reference_type = if signal.mutable { "&" } else { " const &" };
+    let is_const = if signal.mutable { "" } else { " const" };
 
     let signal_handler_type = format!("SignalHandler<::{namespace}::{param_struct} *>");
 
@@ -135,7 +140,7 @@ pub fn generate_cpp_signal(
     // Generate the Q_SIGNAL if this is not an existing signal
     if !signal.inherit {
         generated.methods.push(CppFragment::Header(format!(
-            "Q_SIGNAL void {signal_ident}({parameters_named_types});"
+            "Q_SIGNAL void {signal_ident}({parameters_named_types}){is_const};"
         )));
     }
 
@@ -144,7 +149,7 @@ pub fn generate_cpp_signal(
         r#"
             namespace {namespace} {{
             ::QMetaObject::Connection
-            {free_connect_ident_cpp}({qobject_ident_namespaced}& self, {signal_handler_alias_namespaced} closure, ::Qt::ConnectionType type);
+            {free_connect_ident_cpp}({qobject_ident_namespaced}{reference_type} self, {signal_handler_alias_namespaced} closure, ::Qt::ConnectionType type);
             }} // namespace {namespace}
             "#
         },
@@ -177,7 +182,7 @@ pub fn generate_cpp_signal(
 
             namespace {namespace} {{
             ::QMetaObject::Connection
-            {free_connect_ident_cpp}({qobject_ident_namespaced}& self, {signal_handler_alias_namespaced} closure, ::Qt::ConnectionType type)
+            {free_connect_ident_cpp}({qobject_ident_namespaced}{reference_type} self, {signal_handler_alias_namespaced} closure, ::Qt::ConnectionType type)
             {{
                 return ::QObject::connect(
                     &self,

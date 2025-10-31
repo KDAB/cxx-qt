@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QtInstallation, QtTool};
+use crate::{QmlUri, QtInstallation, QtTool};
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -13,7 +13,7 @@ use std::{
 #[derive(Clone)]
 pub struct QmlCacheArguments {
     /// The URI for the QML module
-    pub uri: String,
+    pub uri: QmlUri,
     /// The path to the qmldir
     pub qmldir_path: PathBuf,
     /// The path to the qrc file that contains a qmldir
@@ -50,17 +50,17 @@ impl QtToolQmlCacheGen {
         file: impl AsRef<Path>,
     ) -> QmlCacheProducts {
         let uri = common_args.uri;
-        let qml_uri_dirs = uri.replace('.', "/");
+        let qml_uri_dirs = uri.as_dirs();
 
         let qmlcachegen_dir = QtTool::QmlCacheGen.writable_path().join(&qml_uri_dirs);
         std::fs::create_dir_all(&qmlcachegen_dir)
             .expect("Could not create qmlcachegen directory for QML module");
 
         let common_args = [
-            "-i".to_string(),
-            common_args.qmldir_path.to_string_lossy().to_string(),
-            "--resource".to_string(),
-            common_args.qmldir_qrc_path.to_string_lossy().to_string(),
+            "-i".to_owned(),
+            common_args.qmldir_path.to_string_lossy().into_owned(),
+            "--resource".to_owned(),
+            common_args.qmldir_qrc_path.to_string_lossy().into_owned(),
         ];
 
         let qml_cache_path = qmlcachegen_dir.join(format!(
@@ -71,14 +71,14 @@ impl QtToolQmlCacheGen {
         let qml_resource_path = format!("/qt/qml/{qml_uri_dirs}/{}", file.as_ref().display());
 
         let specific_args = vec![
-            "--resource-path".to_string(),
-            qml_resource_path.to_string(),
-            "-o".to_string(),
-            qml_cache_path.to_string_lossy().to_string(),
+            "--resource-path".to_owned(),
+            qml_resource_path.clone(),
+            "-o".to_owned(),
+            qml_cache_path.to_string_lossy().into_owned(),
             std::fs::canonicalize(&file)
                 .unwrap()
                 .to_string_lossy()
-                .to_string(),
+                .into_owned(),
         ];
 
         let cmd = Command::new(&self.executable)
@@ -111,26 +111,26 @@ impl QtToolQmlCacheGen {
         qml_resource_paths: &[String],
     ) -> PathBuf {
         let uri = common_args.uri;
-        let qml_uri_dirs = uri.replace('.', "/");
-        let qml_uri_underscores = uri.replace('.', "_");
+        let qml_uri_dirs = uri.as_dirs();
+        let qml_uri_underscores = uri.as_underscores();
 
         let qmlcachegen_dir = QtTool::QmlCacheGen.writable_path().join(qml_uri_dirs);
         std::fs::create_dir_all(&qmlcachegen_dir)
             .expect("Could not create qmlcachegen directory for QML module");
 
         let common_args = [
-            "-i".to_string(),
-            common_args.qmldir_path.to_string_lossy().to_string(),
-            "--resource".to_string(),
-            common_args.qmldir_qrc_path.to_string_lossy().to_string(),
+            "-i".to_owned(),
+            common_args.qmldir_path.to_string_lossy().into_owned(),
+            "--resource".to_owned(),
+            common_args.qmldir_qrc_path.to_string_lossy().into_owned(),
         ];
 
         let qmlcachegen_loader = qmlcachegen_dir.join("qmlcache_loader.cpp");
         let specific_args = vec![
-            "--resource-name".to_string(),
+            "--resource-name".to_owned(),
             format!("qmlcache_{qml_uri_underscores}"),
-            "-o".to_string(),
-            qmlcachegen_loader.to_string_lossy().to_string(),
+            "-o".to_owned(),
+            qmlcachegen_loader.to_string_lossy().into_owned(),
         ];
 
         let cmd = Command::new(&self.executable)

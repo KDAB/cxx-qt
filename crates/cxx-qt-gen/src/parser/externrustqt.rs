@@ -91,7 +91,8 @@ impl ParsedExternRustQt {
     ) -> Result<()> {
         // Test if the function is a signal
         if attribute_get_path(&foreign_fn.attrs, &["qsignal"]).is_some() {
-            let parsed_signal_method = ParsedSignal::parse(foreign_fn.clone(), auto_case)?;
+            let parsed_signal_method =
+                ParsedSignal::parse_rust_qt_signal(foreign_fn.clone(), auto_case)?;
             if parsed_signal_method.inherit
                 && foreign_fn.sig.unsafety.is_none()
                 && self.unsafety.is_none()

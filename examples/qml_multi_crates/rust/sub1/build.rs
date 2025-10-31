@@ -6,13 +6,11 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new()
-        .qt_module("Network")
-        .qml_module(QmlModule::<_, &str> {
-            uri: "com.kdab.cxx_qt.demo.sub1",
-            rust_files: &["src/sub1_object.rs"],
-            ..Default::default()
-        })
-        .build()
-        .export();
+    CxxQtBuilder::new_qml_module(
+        QmlModule::new("com.kdab.cxx_qt.demo.sub1").qml_file("qml/BlueRect.qml"),
+    )
+    .qt_module("Network")
+    .files(["src/sub1_object.rs"])
+    .build()
+    .export();
 }

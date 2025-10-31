@@ -9,7 +9,8 @@ use crate::{
 };
 use core::ops::Deref;
 use std::ops::DerefMut;
-use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Result, Visibility};
+use syn::spanned::Spanned;
+use syn::{Attribute, Error, ForeignItemFn, Result, Visibility};
 
 #[derive(Clone)]
 /// Describes an individual Signal
@@ -26,6 +27,11 @@ pub struct ParsedSignal {
     pub cfgs: Vec<Attribute>,
 }
 
+pub enum ImmutabilityConstraint {
+    Allowed,
+    Disallowed,
+}
+
 impl ParsedSignal {
     const ALLOWED_ATTRS: [&'static str; 6] =
         ["cfg", "cxx_name", "rust_name", "inherit", "doc", "qsignal"];
@@ -33,19 +39,23 @@ impl ParsedSignal {
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
     pub fn mock(method: &ForeignItemFn) -> Self {
-        Self::parse(method.clone(), CaseConversion::none()).unwrap()
+        Self::parse_rust_qt_signal(method.clone(), CaseConversion::none()).unwrap()
     }
 
-    pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
+    pub fn parse_with_mutability(
+        method: ForeignItemFn,
+        auto_case: CaseConversion,
+        immutability_allowed: ImmutabilityConstraint,
+    ) -> Result<Self> {
         let docs = extract_docs(&method.attrs);
         let cfgs = extract_cfgs(&method.attrs);
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
-        if !fields.mutable {
+        if matches!(immutability_allowed, ImmutabilityConstraint::Disallowed) && !fields.mutable {
             return Err(Error::new(
                 fields.method.span(),
-                "signals must be mutable, use Pin<&mut T> instead of T for the self type",
+                "immutable signals can only be used in `unsafe extern \"C++Qt\"` blocks, use Pin<&mut T> instead of T for the self type, or change the type of this extern block",
             ));
         }
 
@@ -64,6 +74,10 @@ impl ParsedSignal {
             docs,
             cfgs,
         })
+    }
+
+    pub fn parse_rust_qt_signal(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
+        Self::parse_with_mutability(method, auto_case, ImmutabilityConstraint::Disallowed)
     }
 }
 
@@ -94,20 +108,18 @@ mod tests {
     #[test]
     fn test_parse_signal_invalid() {
         assert_parse_errors! {
-            |input| ParsedSignal::parse(input, CaseConversion::none()) =>
+            |input| ParsedSignal::parse_rust_qt_signal(input, CaseConversion::none()) =>
 
-            // No immutable signals
-            { fn ready(self: &MyObject); }
+            // No namespaces
             {
-                // No namespaces
                 #[namespace = "disallowed_namespace"]
                 fn ready(self: Pin<&mut MyObject>);
             }
             // Missing self
             { fn ready(x: f64); }
-            // Self needs to be receiver like self: &T instead of &self
+            // Immutable signals must be in "C++Qt" blocks
             { fn ready(&self); }
-        }
+        };
     }
 
     #[test]
@@ -115,7 +127,8 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>);
         };
-        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
+        let signal =
+            ParsedSignal::parse_rust_qt_signal(method.clone(), CaseConversion::none()).unwrap();
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
@@ -132,7 +145,7 @@ mod tests {
             #[cxx_name = "cppReady"]
             fn ready(self: Pin<&mut MyObject>);
         };
-        let signal = ParsedSignal::parse(method, CaseConversion::none()).unwrap();
+        let signal = ParsedSignal::parse_rust_qt_signal(method, CaseConversion::none()).unwrap();
 
         let expected_method: ForeignItemFn = parse_quote! {
             #[cxx_name = "cppReady"]
@@ -154,7 +167,8 @@ mod tests {
             #[inherit]
             fn ready(self: Pin<&mut MyObject>);
         };
-        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
+        let signal =
+            ParsedSignal::parse_rust_qt_signal(method.clone(), CaseConversion::none()).unwrap();
 
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
@@ -171,7 +185,8 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             fn ready(self: Pin<&mut MyObject>, x: f64, y: f64);
         };
-        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
+        let signal =
+            ParsedSignal::parse_rust_qt_signal(method.clone(), CaseConversion::none()).unwrap();
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
@@ -191,7 +206,8 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             pub(self) fn ready(self: Pin<&mut MyObject>);
         };
-        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
+        let signal =
+            ParsedSignal::parse_rust_qt_signal(method.clone(), CaseConversion::none()).unwrap();
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);
@@ -207,7 +223,8 @@ mod tests {
         let method: ForeignItemFn = parse_quote! {
             unsafe fn ready(self: Pin<&mut MyObject>);
         };
-        let signal = ParsedSignal::parse(method.clone(), CaseConversion::none()).unwrap();
+        let signal =
+            ParsedSignal::parse_rust_qt_signal(method.clone(), CaseConversion::none()).unwrap();
         assert_eq!(signal.method, method);
         assert_eq!(signal.qobject_ident, format_ident!("MyObject"));
         assert!(signal.mutable);

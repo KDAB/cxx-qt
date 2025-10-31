@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx::{type_id, ExternType};
 use std::cmp::Ordering;
-use std::fmt;
+use std::fmt::{self, Write};
 use std::mem::MaybeUninit;
 
 use crate::{CaseSensitivity, QByteArray, QStringList, SplitBehaviorFlags};
@@ -141,8 +141,8 @@ mod ffi {
         fn operatorCmp(a: &QString, b: &QString) -> i8;
 
         #[doc(hidden)]
-        #[rust_name = "qstring_to_rust_string"]
-        fn qstringToRustString(string: &QString) -> String;
+        #[rust_name = "qstring_as_slice"]
+        fn qstringAsSlice(string: &QString) -> &[u16];
 
         #[doc(hidden)]
         #[rust_name = "qstring_arg"]
@@ -262,14 +262,20 @@ impl fmt::Display for QString {
     /// Format the `QString` as a Rust string.
     ///
     /// Note that this converts from UTF-16 to UTF-8.
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        f.pad(&String::from(self))
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if f.width().is_some() || f.precision().is_some() {
+            return f.pad(&String::from(self));
+        }
+        for c in char::decode_utf16(self.as_slice().iter().copied()) {
+            f.write_char(c.unwrap_or(char::REPLACEMENT_CHARACTER))?;
+        }
+        Ok(())
     }
 }
 
 impl fmt::Debug for QString {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.pad(&String::from(self))
+        String::from(self).fmt(f)
     }
 }
 
@@ -321,7 +327,7 @@ impl From<&QString> for String {
     ///
     /// Note that this converts from UTF-16 to UTF-8.
     fn from(qstring: &QString) -> Self {
-        ffi::qstring_to_rust_string(qstring)
+        String::from_utf16_lossy(qstring.as_slice())
     }
 }
 
@@ -330,7 +336,7 @@ impl From<QString> for String {
     ///
     /// Note that this converts from UTF-16 to UTF-8.
     fn from(qstring: QString) -> Self {
-        ffi::qstring_to_rust_string(&qstring)
+        String::from_utf16_lossy(qstring.as_slice())
     }
 }
 
@@ -340,6 +346,11 @@ impl QString {
     /// If there is no unreplaced place-marker remaining, a warning message is printed and the result is undefined. Place-marker numbers must be in the range 1 to 99.
     pub fn arg(&self, a: &QString) -> Self {
         ffi::qstring_arg(self, a)
+    }
+
+    /// Extracts a slice containing the entire UTF-16 array.
+    pub fn as_slice(&self) -> &[u16] {
+        ffi::qstring_as_slice(self)
     }
 
     /// Lexically compares this string with the `other` string.

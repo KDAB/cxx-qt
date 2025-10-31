@@ -477,7 +477,7 @@ mod tests {
         let qenum = &cxxqtdata.qenums[0];
         assert_eq!("my_namespace", qenum.name.namespace().unwrap());
 
-        cxxqtdata.namespace = Some("other_namespace".to_string());
+        cxxqtdata.namespace = Some("other_namespace".to_owned());
 
         assert_eq!(1, cxxqtdata.qenums.len());
     }

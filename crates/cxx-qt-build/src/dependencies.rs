@@ -41,8 +41,10 @@ impl Dependency {
     /// See also the internals "build system" section of our book.
     pub(crate) fn find_all() -> Vec<Dependency> {
         std::env::vars_os()
-            .map(|(var, value)| (var.to_string_lossy().to_string(), value))
-            .filter(|(var, _)| var.starts_with("DEP_") && var.ends_with("_CXX_QT_MANIFEST_PATH"))
+            .filter(|(var, _)| {
+                let var = var.to_string_lossy();
+                var.starts_with("DEP_") && var.ends_with("_CXX_QT_MANIFEST_PATH")
+            })
             .map(|(_, manifest_path)| {
                 let manifest_path = PathBuf::from(manifest_path);
                 let manifest: Manifest = serde_json::from_str(
@@ -54,7 +56,7 @@ impl Dependency {
                 println!(
                     "cxx-qt-build: Discovered dependency `{}` at: {}",
                     manifest.name,
-                    manifest_path.to_string_lossy()
+                    manifest_path.display(),
                 );
                 Dependency {
                     path: manifest_path.parent().unwrap().to_owned(),

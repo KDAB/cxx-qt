@@ -13,11 +13,12 @@ use std::env;
 #[cfg(feature = "link_qt_object_files")]
 use std::{
     collections::HashSet,
+    path::PathBuf,
     sync::{OnceLock, RwLock},
 };
 
 #[cfg(feature = "link_qt_object_files")]
-static LINKED_OBJECT_FILES: OnceLock<RwLock<HashSet<String>>> = OnceLock::new();
+static LINKED_OBJECT_FILES: OnceLock<RwLock<HashSet<PathBuf>>> = OnceLock::new();
 
 /// Extract the &str to pass to cargo::rustc-link-lib from a filename (just the file name, not including directories)
 /// using target-specific logic.
@@ -185,11 +186,9 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                     if let (Some(dir), Some(file_name), Ok(target)) =
                         (path.parent(), path.file_name(), &target)
                     {
-                        let file_name = file_name.to_string_lossy();
                         if is_object_file(path) {
                             #[cfg(feature = "link_qt_object_files")]
                             {
-                                let path_string = path.to_string_lossy().to_string();
                                 // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
                                 // Many of Qt's .prl files repeat listing .o files that other .prl files also list.
                                 let already_linked_object_files =
@@ -197,7 +196,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                                 if !already_linked_object_files
                                     .read()
                                     .expect("Lock poisoned")
-                                    .contains(&path_string)
+                                    .contains(path)
                                 {
                                     // Cargo doesn't have a means to directly specify an object to link,
                                     // so use the cc crate to specify it instead.
@@ -209,11 +208,11 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                                     already_linked_object_files
                                         .write()
                                         .expect("Lock poisoned!")
-                                        .insert(path_string.clone());
+                                        .insert(path.to_path_buf());
                                 }
                             }
                         } else {
-                            match extract_lib_from_filename(target, &file_name) {
+                            match extract_lib_from_filename(target, &file_name.to_string_lossy()) {
                                 Some(lib_basename) => {
                                     println!("cargo::rustc-link-search={}", dir.display());
                                     println!("cargo::rustc-link-lib={lib_basename}");

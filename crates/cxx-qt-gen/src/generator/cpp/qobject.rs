@@ -34,6 +34,8 @@ pub struct GeneratedCppQObjectBlocks {
     pub forward_declares_namespaced: Vec<String>,
     /// List of fragments which are outside of the QObject namespace
     pub fragments: Vec<CppFragment>,
+    /// List of fragments which are outside of the QObject namespace and after the class
+    pub post_fragments: Vec<CppFragment>,
     /// Base class of the QObject
     pub base_classes: Vec<String>,
     /// List of Qt Meta Object items (eg Q_PROPERTY)
@@ -51,6 +53,7 @@ impl GeneratedCppQObjectBlocks {
         self.forward_declares_namespaced
             .append(&mut other.forward_declares_namespaced);
         self.fragments.append(&mut other.fragments);
+        self.post_fragments.append(&mut other.post_fragments);
         self.base_classes.append(&mut other.base_classes);
         self.metaobjects.append(&mut other.metaobjects);
         self.methods.append(&mut other.methods);
@@ -60,16 +63,14 @@ impl GeneratedCppQObjectBlocks {
     pub fn from(qobject: &ParsedQObject) -> GeneratedCppQObjectBlocks {
         let mut qml_specifiers = Vec::new();
         if let Some(qml_metadata) = &qobject.qml_metadata {
-            // Somehow moc doesn't include the info in metatypes.json that qmltyperegistrar needs
-            // when using the QML_ELEMENT/QML_NAMED_ELEMENT macros, but moc works when using what
-            // those macros expand to.
-            qml_specifiers.push(format!(
-                "Q_CLASSINFO(\"QML.Element\", \"{}\")",
-                qml_metadata.name
-            ));
+            // Note ensure that the header moc processes has QtQml/QQmlEngine
+            // this is done via generator/rust/qobject
+
+            qml_specifiers.push(format!("QML_NAMED_ELEMENT({})", qml_metadata.name));
 
             if qml_metadata.uncreatable {
-                qml_specifiers.push("Q_CLASSINFO(\"QML.Creatable\", \"false\")".to_owned());
+                qml_specifiers
+                    .push("QML_UNCREATABLE(\"Type cannot be created in QML.\")".to_owned());
             }
 
             if qml_metadata.singleton {
@@ -118,7 +119,7 @@ impl GeneratedCppQObject {
         let base_class = if let Some(ident) = &qobject.base_class {
             type_names.lookup(ident)?.cxx_qualified()
         } else if qobject.has_qobject_macro {
-            "QObject".to_string()
+            "QObject".to_owned()
         } else {
             // CODECOV_EXCLUDE_START
             unreachable!("Cannot have an empty #[base] attribute  with no #[qobject] attribute");
@@ -160,6 +161,7 @@ impl GeneratedCppQObject {
         )?);
         generated.blocks.append(&mut qenum::generate_on_qobject(
             structured_qobject.qenums.iter().cloned(),
+            &generated.name,
             opt,
         )?);
 
@@ -298,10 +300,7 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyNamedObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 1);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyQmlElement\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyQmlElement)");
     }
 
     #[test]
@@ -318,10 +317,7 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyObject\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyObject)");
         assert_eq!(cpp.blocks.metaobjects[1], "QML_SINGLETON");
     }
 
@@ -349,13 +345,10 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.name.cxx_unqualified(), "MyObject");
         assert_eq!(cpp.blocks.metaobjects.len(), 2);
-        assert_eq!(
-            cpp.blocks.metaobjects[0],
-            "Q_CLASSINFO(\"QML.Element\", \"MyObject\")"
-        );
+        assert_eq!(cpp.blocks.metaobjects[0], "QML_NAMED_ELEMENT(MyObject)");
         assert_eq!(
             cpp.blocks.metaobjects[1],
-            "Q_CLASSINFO(\"QML.Creatable\", \"false\")"
+            "QML_UNCREATABLE(\"Type cannot be created in QML.\")"
         );
     }
 }

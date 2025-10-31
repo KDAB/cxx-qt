@@ -99,7 +99,7 @@ impl Name {
         let mut namespace = if let Some(attr) = attribute_get_path(attrs, &["namespace"]) {
             Some(expr_to_string(&attr.meta.require_name_value()?.value)?)
         } else {
-            parent_namespace.map(|namespace| namespace.to_owned())
+            parent_namespace.map(str::to_owned)
         };
 
         // This is an important check as it allows for the namespace to be cleared by assigning an
@@ -162,10 +162,10 @@ impl Name {
         // Use the cxx name if there is one or fallback to the original ident
         // But only if it is different to the resultant rust ident
         let cxx = cxx_name.or_else(|| {
-            if rust != self.rust {
-                Some(self.rust.to_string())
-            } else {
+            if rust == self.rust {
                 None
+            } else {
+                Some(self.rust.to_string())
             }
         });
 
@@ -309,7 +309,7 @@ impl Name {
     #[cfg(test)]
     /// Helper for creating cxx_named Names, usually for camelcase cxx names
     pub fn mock_name_with_cxx(name: &str, cxx: &str) -> Name {
-        Name::new(format_ident!("{name}")).with_cxx_name(cxx.to_string())
+        Name::new(format_ident!("{name}")).with_cxx_name(cxx.to_owned())
     }
 }
 
