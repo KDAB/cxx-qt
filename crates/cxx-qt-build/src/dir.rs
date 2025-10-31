@@ -5,6 +5,8 @@
 
 //! This modules contains information about the paths where artifacts are placed by cxx-qt-build.
 
+use qt_build_utils::QmlUri;
+
 use crate::{crate_name, module_name_from_uri};
 use std::io::Result;
 use std::{
@@ -57,7 +59,7 @@ pub(crate) fn crate_target() -> PathBuf {
 }
 
 /// The target directory, namespaced by QML module
-pub(crate) fn module_target(module_uri: &str) -> PathBuf {
+pub(crate) fn module_target(module_uri: &QmlUri) -> PathBuf {
     module_export(module_uri).unwrap_or_else(|| {
         out()
             // Use a short name due to the Windows file path limit!
@@ -73,7 +75,7 @@ pub(crate) fn module_target(module_uri: &str) -> PathBuf {
 ///
 /// TODO: This may conflict if two dependencies are building QML modules with the same name!
 /// We should probably include a lockfile here to avoid this.
-pub(crate) fn module_export(module_uri: &str) -> Option<PathBuf> {
+pub(crate) fn module_export(module_uri: &QmlUri) -> Option<PathBuf> {
     // In contrast to crate_export, we don't need to check for the specific crate here.
     // QML modules should always be exported.
     env::var("CXX_QT_EXPORT_DIR")

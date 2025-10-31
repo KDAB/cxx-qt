@@ -87,7 +87,6 @@ set(DEMO_THREADING_SOURCES
     cpp/main.cpp
     cpp/helpers/sensor.h
     cpp/helpers/sensor.cpp
-    images/images.qrc
     ${QML_COMPAT_RESOURCES}
 )
 

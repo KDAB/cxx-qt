@@ -6,11 +6,7 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new()
-        .qml_module(QmlModule::<&str, &str> {
-            uri: "com.kdab.cxx_qt.demo.sub2",
-            ..Default::default()
-        })
+    CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.cxx_qt.demo.sub2"))
         .files(["src/sub2_object.rs"])
         .build()
         .export();

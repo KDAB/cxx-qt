@@ -394,7 +394,6 @@ dependencies = [
  "proc-macro2",
  "qt-build-utils",
  "quote",
- "semver",
  "serde",
  "serde_json",
 ]

@@ -25,8 +25,8 @@ TestCase {
         } catch (error) {
             verify(error.qmlErrors !== undefined);
             compare(error.qmlErrors.length, 1);
-            // Check for Qt 5 or Qt 6 error message
-            verify(error.qmlErrors[0].message === "Element is not creatable." || error.qmlErrors[0].message === "Type cannot be created in QML.");
+            // Check for our QML_UNCREATABLE reason
+            compare(error.qmlErrors[0].message, "Type cannot be created in QML.");
         }
     }
 }

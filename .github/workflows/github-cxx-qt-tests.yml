@@ -45,7 +45,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: REUSE Compliance Check
-        uses: fsfe/reuse-action@v5
+        uses: fsfe/reuse-action@v6
 
   rust_format_check:
     runs-on: ubuntu-24.04
@@ -123,7 +123,7 @@ jobs:
           verbose: true
       - name: Upload GitHub Actions artifacts of lcov
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: lcov
           path: ./target/debug/lcov.info
@@ -347,7 +347,7 @@ jobs:
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
-            clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
+            clang_format_path: /Users/runner/Library/Python/3.14/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
@@ -596,7 +596,7 @@ jobs:
 
     - name: Upload GitHub Actions artifacts of sccache debug log
       if: always()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: sccache_log_${{ matrix.name }}
         path: ${{ matrix.sccache_log_path }}

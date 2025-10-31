@@ -5,16 +5,20 @@
 
 use crate::QmlUri;
 
+use std::ffi::OsStr;
 use std::io;
+use std::path::{Path, PathBuf};
 
 /// QML module definition files builder
 ///
 /// A qmldir file is a plain-text file that contains the commands
 pub struct QmlDirBuilder {
     class_name: Option<String>,
+    depends: Vec<String>,
     plugin: Option<(bool, String)>,
     type_info: Option<String>,
     uri: QmlUri,
+    qml_files: Vec<PathBuf>,
 }
 
 impl QmlDirBuilder {
@@ -23,8 +27,10 @@ impl QmlDirBuilder {
     pub fn new(uri: QmlUri) -> Self {
         Self {
             class_name: None,
+            depends: vec![],
             plugin: None,
             type_info: None,
+            qml_files: vec![],
             uri,
         }
     }
@@ -51,8 +57,36 @@ impl QmlDirBuilder {
             writeln!(writer, "typeinfo {file}")?;
         }
 
+        for depend in self.depends {
+            writeln!(writer, "depends {depend}")?;
+        }
+
         // Prefer is always specified for now
-        writeln!(writer, "prefer :/qt/qml/{}/", self.uri.as_dirs())
+        writeln!(writer, "prefer :/qt/qml/{}/", self.uri.as_dirs())?;
+
+        for qml_file in &self.qml_files {
+            let is_qml_file = qml_file
+                .extension()
+                .map(|ext| ext.eq_ignore_ascii_case("qml"))
+                .unwrap_or_default();
+
+            if !is_qml_file {
+                panic!("QML file does not end with .qml: {}", qml_file.display(),);
+            }
+
+            let path = qml_file.display();
+            let qml_component_name = qml_file
+                .file_stem()
+                .and_then(OsStr::to_str)
+                .expect("Could not get qml file stem");
+
+            // Qt6 simply uses version 254.0 if no specific version is provided
+            // Until we support versions of individal qml files, we will use 254.0
+            writeln!(writer, "{qml_component_name} 254.0 {path}",)
+                .expect("Could not write qmldir file");
+        }
+
+        Ok(())
     }
 
     /// Provides the class name of the C++ plugin used by the module.
@@ -65,6 +99,18 @@ impl QmlDirBuilder {
     // TODO: is required for C++ plugins, is it required when plugin?
     pub fn class_name(mut self, class_name: impl Into<String>) -> Self {
         self.class_name = Some(class_name.into());
+        self
+    }
+
+    /// Declares that this module depends on another
+    pub fn depend(mut self, depend: impl Into<String>) -> Self {
+        self.depends.push(depend.into());
+        self
+    }
+
+    /// Declares that this module depends on another
+    pub fn depends<T: Into<String>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
+        self.depends.extend(depends.into_iter().map(Into::into));
         self
     }
 
@@ -92,6 +138,15 @@ impl QmlDirBuilder {
         self
     }
 
+    /// Declares a list of .qml files that are part of the module.
+    pub fn qml_files(mut self, qml_files: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
+        self.qml_files = qml_files
+            .into_iter()
+            .map(|p| p.as_ref().to_owned())
+            .collect();
+        self
+    }
+
     /// Declares a type description file for the module that can be read by QML
     /// tools such as Qt Creator to access information about the types defined
     /// by the module's plugins. File is the (relative) file name of a
@@ -105,7 +160,6 @@ impl QmlDirBuilder {
     // object type declaration
     // internal object type declaration
     // javascript resource definition
-    // module dependencies declaration
     // module import declaration
     // designer support declaration
 }
@@ -119,8 +173,10 @@ mod test {
         let mut result = Vec::new();
         QmlDirBuilder::new(QmlUri::new(["com", "kdab"]))
             .class_name("C")
+            .depends(["QtQuick", "com.kdab.a"])
             .plugin("P", true)
             .type_info("T")
+            .qml_files(&["qml/Test.qml"])
             .write(&mut result)
             .unwrap();
         assert_eq!(
@@ -129,7 +185,10 @@ mod test {
 optional plugin P
 classname C
 typeinfo T
+depends QtQuick
+depends com.kdab.a
 prefer :/qt/qml/com/kdab/
+Test 254.0 qml/Test.qml
 "
         );
     }

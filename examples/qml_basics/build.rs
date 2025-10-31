@@ -5,12 +5,7 @@
 //
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 fn main() {
-    CxxQtBuilder::new()
-        .qml_module(QmlModule::<&str, &str> {
-            uri: "com.kdab.tutorial",
-            qml_files: &["qml/main.qml"],
-            ..Default::default()
-        })
+    CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.tutorial").qml_file("qml/main.qml"))
         .files(["src/main.rs"])
         .qt_module("Network")
         .build();
