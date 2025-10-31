@@ -7,6 +7,8 @@ use super::QFlagRepr;
 
 use cxx::ExternType;
 
+/// Trait implementation for an element in a [`QFlags`](crate::QFlags).
+///
 /// # Safety
 ///
 /// By writing the unsafe `QFlag` impl, the programmer asserts that the C++ namespace and type name

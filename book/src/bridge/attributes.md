@@ -43,3 +43,8 @@ For [`#[qproperty]`](./extern_rustqt.md#properties), a CXX or Rust name can be p
 The `#[auto_cxx_name]` and `#[auto_rust_name]` attributes can be used to automatically rename cxx and rust names.
 These are placed at a block level on `extern "RustQt"` or `extern "C++Qt"` blocks, and will automatically case convert the items inside, unless they specify either a `rust_name` or `cxx_name`.
 By default `#[auto_cxx_name]` will generate a camelCase conversion for`cxx_name` and `#[auto_rust_name]` will generate a snake_case conversion for `rust_name`.
+
+### Automatic wrapping
+
+A fairly common operation is calling a method on the inner rust type, via the `.rust()` accessor. This can be simplified
+with the `#[auto_wrap]` attribute. This will generate a wrapper for your function which accesses the rust method of that name.

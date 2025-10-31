@@ -25,53 +25,54 @@ mod ffi {
         #[allow(dead_code)]
         type QSizeF = crate::QSizeF;
 
-        /// Returns a size holding the minimum width and height of this size and the given otherSize.
+        /// Returns a size holding the minimum width and height of this size and the given `other_size`.
         #[rust_name = "bounded_to"]
         fn boundedTo(self: &QSize, other_size: &QSize) -> QSize;
 
-        /// Returns a size holding the maximum width and height of this size and the given otherSize.
+        /// Returns a size holding the maximum width and height of this size and the given `other_size`.
         #[rust_name = "expanded_to"]
         fn expandedTo(self: &QSize, other_size: &QSize) -> QSize;
 
         /// Returns the height.
         fn height(self: &QSize) -> i32;
 
-        /// Returns true if either of the width and height is less than or equal to 0; otherwise returns false.
+        /// Returns `true` if either of the width and height is less than or equal to 0; otherwise returns `false`.
         #[rust_name = "is_empty"]
         fn isEmpty(self: &QSize) -> bool;
 
-        /// Returns true if both the width and height is 0; otherwise returns false.
+        /// Returns `true` if both the width and height is 0; otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QSize) -> bool;
 
-        /// Returns true if both the width and height is equal to or greater than 0; otherwise returns false.
+        /// Returns `true` if both the width and height is equal to or greater than 0; otherwise returns `false`.
         #[rust_name = "is_valid"]
         fn isValid(self: &QSize) -> bool;
 
-        /// Returns the size that results from growing this size by margins.
+        /// Returns the size that results from growing this size by `margins`.
         #[rust_name = "grown_by"]
         fn grownBy(self: &QSize, margins: QMargins) -> QSize;
 
-        /// Scales the size to a rectangle with the given size, according to the specified mode.
+        /// Scales the size to a rectangle with the given `size`, according to the specified `mode`.
         fn scale(self: &mut QSize, size: &QSize, mode: AspectRatioMode);
 
-        /// Return a size scaled to a rectangle with the given size s, according to the specified mode.
+        /// Return a size scaled to a rectangle with the given size `s`, according to the specified `mode`.
         fn scaled(self: &QSize, s: &QSize, mode: AspectRatioMode) -> QSize;
 
-        /// Sets the height to the given height.
+        /// Sets the height to the given `height`.
         #[rust_name = "set_height"]
         fn setHeight(self: &mut QSize, height: i32);
 
-        /// Sets the width to the given width.
+        /// Sets the width to the given `width`.
         #[rust_name = "set_width"]
         fn setWidth(self: &mut QSize, width: i32);
 
-        /// Returns the size that results from shrinking this size by margins.
+        /// Returns the size that results from shrinking this size by `margins`.
         #[rust_name = "shrunk_by"]
         fn shrunkBy(self: &QSize, margins: QMargins) -> QSize;
 
         /// Returns this size as a size with floating point accuracy.
-        /// since 6.4
+        ///
+        /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_sizef"]
         fn toSizeF(self: &QSize) -> QSizeF;
@@ -79,7 +80,7 @@ mod ffi {
         /// Swaps the width and height values.
         fn transpose(self: &mut QSize);
 
-        /// Returns a QSize with width and height swapped.
+        /// Returns a `QSize` with width and height swapped.
         fn transposed(self: &QSize) -> QSize;
 
         /// Returns the width.
@@ -114,7 +115,9 @@ mod ffi {
     }
 }
 
-/// The QSize struct defines the size of a two-dimensional object using integer point precision.
+/// The `QSize` class defines the size of a two-dimensional object using integer point precision.
+///
+/// Qt Documentation: [QSize](https://doc.qt.io/qt/qsize.html#details)
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct QSize {
@@ -123,14 +126,14 @@ pub struct QSize {
 }
 
 impl QSize {
-    /// Constructs a size with the given width and height.
+    /// Constructs a size with the given `width` and `height`.
     pub fn new(width: i32, height: i32) -> Self {
         ffi::qsize_init(width, height)
     }
 }
 
 impl Default for QSize {
-    /// Constructs a size with an invalid width and height
+    /// Constructs a size with an invalid width and height.
     fn default() -> Self {
         ffi::qsize_init_default()
     }

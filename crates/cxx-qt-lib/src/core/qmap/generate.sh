@@ -79,7 +79,7 @@ pub mod ffi {
     unsafe extern "C++" {
         $INCLUDE_K $INCLUDE_V
 
-        include!("cxx-qt-lib/qmap_$SUFFIX.h");
+        include!("cxx-qt-lib/core/qmap/qmap_$SUFFIX.h");
         type $QMAP = crate::QMap<super::$QMAPPAIR>;
     }
 

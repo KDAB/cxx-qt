@@ -34,6 +34,22 @@ static_assert(!::std::is_trivially_destructible<QByteArray>::value);
 
 static_assert(QTypeInfo<QByteArray>::isRelocatable);
 
+using QByteArrayFromBase64Result = QByteArray::FromBase64Result;
+assert_alignment_and_size(QByteArrayFromBase64Result, {
+  QByteArray decoded;
+  QByteArray::Base64DecodingStatus decodingStatus;
+});
+
+static_assert(
+  !::std::is_trivially_copy_assignable<QByteArray::FromBase64Result>::value);
+static_assert(
+  !::std::is_trivially_copy_constructible<QByteArray::FromBase64Result>::value);
+
+static_assert(
+  !::std::is_trivially_destructible<QByteArray::FromBase64Result>::value);
+
+static_assert(QTypeInfo<QByteArray::FromBase64Result>::isRelocatable);
+
 namespace rust {
 namespace cxxqtlib1 {
 
@@ -102,6 +118,13 @@ qbytearrayFill(QByteArray& byteArray, ::std::uint8_t ch, ::rust::isize size)
 #else
   byteArray.fill(static_cast<char>(ch), static_cast<int>(size));
 #endif
+}
+
+QByteArray::FromBase64Result
+qbytearrayFromBase64Encoding(const QByteArray& base64,
+                             QByteArray::Base64Options options)
+{
+  return QByteArray::fromBase64Encoding(base64, options);
 }
 
 void

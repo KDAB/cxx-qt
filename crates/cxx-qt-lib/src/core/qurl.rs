@@ -6,6 +6,8 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
+use crate::{QByteArray, QString, QStringList};
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -18,71 +20,82 @@ mod ffi {
         include!("cxx-qt-lib/qurl.h");
         type QUrl = super::QUrl;
 
-        /// Resets the content of the QUrl. After calling this function,
-        /// the QUrl is equal to one that has been constructed with the default empty constructor.
+        /// Resets the content of the `QUrl`. After calling this function,
+        /// the `QUrl` is equal to one that has been constructed with the default empty constructor.
         fn clear(self: &mut QUrl);
 
-        /// Returns an error message if the last operation that modified this QUrl object ran into a parsing error.
-        /// If no error was detected, this function returns an empty string and isValid() returns true.
+        /// Returns an error message if the last operation that modified this `QUrl` object ran into a parsing error.
+        /// If no error was detected, this function returns an empty string and [`is_valid`](Self::is_valid) returns `true`.
         #[rust_name = "error_string"]
         fn errorString(self: &QUrl) -> QString;
 
-        /// Returns true if this URL contains a fragment (i.e., if # was seen on it).
+        /// Returns `true` if this URL contains a fragment (i.e., if # was seen on it).
         #[rust_name = "has_fragment"]
         fn hasFragment(self: &QUrl) -> bool;
 
-        /// Returns true if this URL contains a Query (i.e., if ? was seen on it).
+        /// Returns `true` if this URL contains a Query (i.e., if ? was seen on it).
         #[rust_name = "has_query"]
         fn hasQuery(self: &QUrl) -> bool;
 
-        /// Returns true if the URL has no data; otherwise returns false.
+        /// Returns `true` if the URL has no data; otherwise returns `false`.
         #[rust_name = "is_empty"]
         fn isEmpty(self: &QUrl) -> bool;
 
-        /// Returns true if this URL is pointing to a local file path. A URL is a local file path if the scheme is "file".
+        /// Returns `true` if this URL is pointing to a local file path. A URL is a local file path if the scheme is "file".
+        ///
+        /// Note that this function considers URLs with hostnames to be local file paths.
         #[rust_name = "is_local_file"]
         fn isLocalFile(self: &QUrl) -> bool;
 
-        /// Returns true if this URL is a parent of child_url.
-        /// childUrl is a child of this URL if the two URLs share the same scheme and authority,
-        /// and this URL's path is a parent of the path of child_url.
+        /// Returns `true` if this URL is a parent of `child_url`.
+        /// `child_url` is a child of this URL if the two URLs share the same scheme and authority,
+        /// and this URL's path is a parent of the path of `child_url`.
         #[rust_name = "is_parent_of"]
         fn isParentOf(self: &QUrl, child_url: &QUrl) -> bool;
 
-        /// Returns true if the URL is relative; otherwise returns false.
+        /// Returns `true` if the URL is relative; otherwise returns `false`.
         /// A URL is relative reference if its scheme is undefined;
-        /// this function is therefore equivalent to calling scheme().is_empty().
+        /// this function is therefore equivalent to calling `self.scheme().is_empty()`.
         #[rust_name = "is_relative"]
         fn isRelative(self: &QUrl) -> bool;
 
-        /// Returns true if the URL is non-empty and valid; otherwise returns false.
+        /// Returns `true` if the URL is non-empty and valid; otherwise returns `false`.
+        ///
+        /// The URL is run through a conformance test. Every part of the URL must conform to the standard encoding rules of the URI standard for the URL to be reported as valid.
         #[rust_name = "is_valid"]
         fn isValid(self: &QUrl) -> bool;
 
-        /// Returns the port of the URL, or defaultPort if the port is unspecified.
+        /// Returns the port of the URL, or `default_port` if the port is unspecified.
         #[rust_name = "port_or"]
-        fn port(self: &QUrl, port: i32) -> i32;
+        fn port(self: &QUrl, default_port: i32) -> i32;
 
-        /// Returns the result of the merge of this URL with relative. This URL is used as a base to convert relative to an absolute URL.
+        /// Returns the result of the merge of this URL with `relative`. This URL is used as a base to convert `relative` to an absolute URL.
+        ///
+        /// If `relative` is not a relative URL, this function will return `relative` directly. Otherwise, the paths of the two URLs are merged, and the new URL returned has the scheme and authority of the base URL, but with the merged path.
+        ///
+        /// Calling this function with `".."` returns a `QUrl` whose directory is one level higher than the original. Similarly, calling this function with `"../.."` removes two levels from the path. If `relative` is `"/"`, the path becomes `"/"`.
         fn resolved(self: &QUrl, relative: &QUrl) -> QUrl;
 
         /// Returns the scheme of the URL. If an empty string is returned,
         /// this means the scheme is undefined and the URL is then relative.
         ///
         /// The scheme can only contain US-ASCII letters or digits,
-        /// which means it cannot contain any character that would otherwise require encoding
+        /// which means it cannot contain any character that would otherwise require encoding.
         /// Additionally, schemes are always returned in lowercase form.
         #[rust_name = "scheme_or_default"]
         fn scheme(self: &QUrl) -> QString;
 
-        /// Sets the port of the URL to port.
+        /// Sets the port of the URL to `port`.
+        /// The port is part of the authority of the URL, as described in [`set_authority`](Self::set_authority).
         ///
-        /// port must be between 0 and 65535 inclusive. Setting the port to -1 indicates that the port is unspecified.
+        /// `port` must be between 0 and 65535 inclusive. Setting the port to -1 indicates that the port is unspecified.
         #[rust_name = "set_port"]
         fn setPort(self: &mut QUrl, port: i32);
 
         /// Returns the path of this URL formatted as a local file path.
         /// The path returned will use forward slashes, even if it was originally created from one with backslashes.
+        ///
+        /// If this URL contains a non-empty hostname, it will be encoded in the returned value in the form found on SMB networks (for example, `"//servername/path/to/file.txt"`).
         #[rust_name = "to_local_file_or_default"]
         fn toLocalFile(self: &QUrl) -> QString;
     }
@@ -182,7 +195,9 @@ mod ffi {
     }
 }
 
-/// The QUrl class provides a convenient interface for working with URLs.
+/// The `QUrl` class provides a convenient interface for working with URLs.
+///
+/// Qt Documentation: [QUrl](https://doc.qt.io/qt/qurl.html#details)
 #[repr(C)]
 pub struct QUrl {
     _space: MaybeUninit<usize>,
@@ -190,21 +205,23 @@ pub struct QUrl {
 
 impl QUrl {
     /// Returns the authority of the URL if it is defined; otherwise an empty string is returned.
-    pub fn authority_or_default(&self) -> ffi::QString {
+    ///
+    /// This function returns an unambiguous value, which may contain that characters still percent-encoded, plus some control sequences not representable in decoded form in `QString`.
+    pub fn authority_or_default(&self) -> QString {
         ffi::qurl_authority(self)
     }
 
     /// Returns the name of the file, excluding the directory path.
     ///
-    /// Note that, if this QUrl object is given a path ending in a slash, the name of the file is considered empty.
+    /// Note that, if this `QUrl` object is given a path ending in a slash, the name of the file is considered empty.
     ///
-    /// If the path doesn't contain any slash, it is fully returned as the fileName.
-    pub fn file_name(&self) -> ffi::QString {
+    /// If the path doesn't contain any slash, it is fully returned as the file name.
+    pub fn file_name(&self) -> QString {
         ffi::qurl_file_name(self)
     }
 
-    /// Returns the fragment of the URL.
-    pub fn fragment(&self) -> Option<ffi::QString> {
+    /// Returns the fragment of the URL, or `None` if the URL does not contain a fragment.
+    pub fn fragment(&self) -> Option<QString> {
         if self.has_fragment() {
             Some(self.fragment_or_default())
         } else {
@@ -213,55 +230,67 @@ impl QUrl {
     }
 
     /// Returns the fragment of the URL if it is defined; otherwise an empty string is returned.
-    pub fn fragment_or_default(&self) -> ffi::QString {
+    pub fn fragment_or_default(&self) -> QString {
         ffi::qurl_fragment(self)
     }
 
-    /// Parses input and returns the corresponding QUrl. input is assumed to be in encoded form, containing only ASCII characters.
-    pub fn from_encoded(input: &ffi::QByteArray) -> Self {
+    /// Parses `input` and returns the corresponding `QUrl`. `input` is assumed to be in encoded form, containing only ASCII characters.
+    pub fn from_encoded(input: &QByteArray) -> Self {
         ffi::qurl_from_encoded(input)
     }
 
-    /// Returns a QUrl representation of localFile, interpreted as a local file.
+    /// Returns a `QUrl` representation of `local_file`, interpreted as a local file.
     /// This function accepts paths separated by slashes as well as the native separator for this platform.
-    pub fn from_local_file(local_file: &ffi::QString) -> Self {
+    ///
+    /// This function also accepts paths with a doubled leading slash (or backslash) to indicate a remote file, as in `"//servername/path/to/file.txt"`.
+    pub fn from_local_file(local_file: &QString) -> Self {
         ffi::qurl_from_local_file(local_file)
     }
 
-    /// Returns a decoded copy of input. input is first decoded from percent encoding,
+    /// Returns a decoded copy of `input`. `input` is first decoded from percent encoding,
     /// then converted from UTF-8 to unicode.
-    pub fn from_percent_encoding(input: &ffi::QByteArray) -> ffi::QString {
+    ///
+    /// **Note:** Given invalid input (such as a string containing the sequence `"%G5"`, which is not a valid hexadecimal number) the output will be invalid as well. As an example: the sequence `"%G5"` could be decoded to `"W"`.
+    pub fn from_percent_encoding(input: &QByteArray) -> QString {
         ffi::qurl_from_percent_encoding(input)
     }
 
-    /// Returns a valid URL from a user supplied userInput string if one can be deduced.
-    /// In the case that is not possible, an invalid QUrl() is returned.
-    pub fn from_user_input(user_input: &ffi::QString, working_directory: &ffi::QString) -> Self {
+    /// Returns a valid URL from a user supplied `user_input` string if one can be deduced.
+    /// In the case that is not possible, an invalid `QUrl` is returned.
+    ///
+    /// This allows the user to input a URL or a local file path in the form of a plain string. This string can be manually typed into a location bar, obtained from the clipboard, or passed in via command line arguments.
+    ///
+    /// When the string is not already a valid URL, a best guess is performed, making various assumptions.
+    ///
+    /// In the case the string corresponds to a valid file path on the system, a `file://` URL is constructed, using [`from_local_file`](Self::from_local_file).
+    ///
+    /// In order to be able to handle relative paths, this method takes an optional `working_directory` path. This is especially useful when handling command line arguments. If `working_directory` is empty, no handling of relative paths will be done.
+    pub fn from_user_input(user_input: &QString, working_directory: &QString) -> Self {
         ffi::qurl_from_user_input(user_input, working_directory)
     }
 
     /// Returns the host of the URL if it is defined; otherwise an empty string is returned.
-    pub fn host_or_default(&self) -> ffi::QString {
+    pub fn host_or_default(&self) -> QString {
         ffi::qurl_host(self)
     }
 
     /// Returns the current whitelist of top-level domains that are allowed to have non-ASCII characters in their compositions.
-    pub fn idn_whitelist() -> ffi::QStringList {
+    pub fn idn_whitelist() -> QStringList {
         ffi::qurl_idn_whitelist()
     }
 
     /// Returns the password of the URL if it is defined; otherwise an empty string is returned.
-    pub fn password_or_default(&self) -> ffi::QString {
+    pub fn password_or_default(&self) -> QString {
         ffi::qurl_password(self)
     }
 
     /// Returns the path of the URL.
-    pub fn path(&self) -> ffi::QString {
+    pub fn path(&self) -> QString {
         ffi::qurl_path(self)
     }
 
-    /// Returns the query string of the URL if there's a query string
-    pub fn query(&self) -> Option<ffi::QString> {
+    /// Returns the query string of the URL if there's a query string, or `None` if not.
+    pub fn query(&self) -> Option<QString> {
         if self.has_query() {
             Some(self.query_or_default())
         } else {
@@ -269,18 +298,18 @@ impl QUrl {
         }
     }
 
-    /// Returns the query string of the URL if it is defined; otherwise an empty string is returned.
-    pub fn query_or_default(&self) -> ffi::QString {
+    /// Returns the query string of the URL if there's a query string, or an empty result if not.
+    pub fn query_or_default(&self) -> QString {
         ffi::qurl_query(self)
     }
 
-    /// Returns the scheme of the URL. If the Option is None,
+    /// Returns the scheme of the URL. If `None` is returned,
     /// this means the scheme is undefined and the URL is then relative.
     ///
     /// The scheme can only contain US-ASCII letters or digits,
     /// which means it cannot contain any character that would otherwise require encoding
     /// Additionally, schemes are always returned in lowercase form.
-    pub fn scheme(&self) -> Option<ffi::QString> {
+    pub fn scheme(&self) -> Option<QString> {
         let scheme = self.scheme_or_default();
         if scheme.is_empty() {
             None
@@ -289,82 +318,88 @@ impl QUrl {
         }
     }
 
-    /// Sets the authority of the URL to authority.
-    pub fn set_authority(&mut self, authority: &ffi::QString) {
+    /// Sets the authority of the URL to `authority`.
+    pub fn set_authority(&mut self, authority: &QString) {
         ffi::qurl_set_authority(self, authority)
     }
 
-    /// Sets the fragment of the URL to fragment.
-    /// The fragment is the last part of the URL, represented by a '#' followed by a string of characters.
-    pub fn set_fragment(&mut self, fragment: &ffi::QString) {
+    /// Sets the fragment of the URL to `fragment`.
+    /// The fragment is the last part of the URL, represented by a `'#'` followed by a string of characters.
+    pub fn set_fragment(&mut self, fragment: &QString) {
         ffi::qurl_set_fragment(self, fragment)
     }
 
-    /// Sets the host of the URL to host. The host is part of the authority.
-    pub fn set_host(&mut self, host: &ffi::QString) {
+    /// Sets the host of the URL to `host`. The host is part of the authority.
+    pub fn set_host(&mut self, host: &QString) {
         ffi::qurl_set_host(self, host)
     }
 
-    /// Sets the whitelist of Top-Level Domains (TLDs) that are allowed to have non-ASCII characters in domains to the value of list.
-    pub fn set_idn_whitelist(list: &ffi::QStringList) {
+    /// Sets the whitelist of Top-Level Domains (TLDs) that are allowed to have non-ASCII characters in domains to the value of `list`.
+    pub fn set_idn_whitelist(list: &QStringList) {
         ffi::qurl_set_idn_whitelist(list)
     }
 
-    /// Sets the URL's password to password.
-    pub fn set_password(&mut self, password: &ffi::QString) {
+    /// Sets the URL's password to `password`.
+    pub fn set_password(&mut self, password: &QString) {
         ffi::qurl_set_password(self, password)
     }
 
-    /// Sets the path of the URL to path.
+    /// Sets the path of the URL to `path`.
     /// The path is the part of the URL that comes after the authority but before the query string.
-    pub fn set_path(&mut self, path: &ffi::QString) {
+    pub fn set_path(&mut self, path: &QString) {
         ffi::qurl_set_path(self, path)
     }
 
-    /// Sets the query string of the URL to query.
-    pub fn set_query(&mut self, query: &ffi::QString) {
+    /// Sets the query string of the URL to `query`.
+    pub fn set_query(&mut self, query: &QString) {
         ffi::qurl_set_query(self, query)
     }
 
-    /// Sets the scheme of the URL to scheme. As a scheme can only contain ASCII characters,
+    /// Sets the scheme of the URL to `scheme`. As a scheme can only contain ASCII characters,
     /// no conversion or decoding is done on the input. It must also start with an ASCII letter.
-    pub fn set_scheme(&mut self, scheme: &ffi::QString) {
+    pub fn set_scheme(&mut self, scheme: &QString) {
         ffi::qurl_set_scheme(self, scheme)
     }
 
-    /// Parses url and sets this object to that value.
-    /// QUrl will automatically percent encode all characters that are not allowed in a URL
+    /// Parses `url` and sets this object to that value.
+    /// `QUrl` will automatically percent encode all characters that are not allowed in a URL
     /// and decode the percent-encoded sequences that represent an unreserved character
     /// (letters, digits, hyphens, underscores, dots and tildes).
     /// All other characters are left in their original forms.
-    pub fn set_url(&mut self, url: &ffi::QString) {
+    pub fn set_url(&mut self, url: &QString) {
         ffi::qurl_set_url(self, url)
     }
 
-    /// Sets the user info of the URL to userInfo.
-    pub fn set_user_info(&mut self, user_info: &ffi::QString) {
+    /// Sets the user info of the URL to `user_info`.
+    pub fn set_user_info(&mut self, user_info: &QString) {
         ffi::qurl_set_user_info(self, user_info)
     }
 
-    /// Sets the URL's user name to userName.
-    pub fn set_user_name(&mut self, user_name: &ffi::QString) {
+    /// Sets the URL's user name to `user_name`.
+    pub fn set_user_name(&mut self, user_name: &QString) {
         ffi::qurl_set_user_name(self, user_name)
     }
 
     /// Returns a human-displayable string representation of the URL.
-    /// The option RemovePassword is always enabled, since passwords should never be shown back to users.
-    pub fn to_display_string(&self) -> ffi::QString {
+    /// The option [RemovePassword](https://doc.qt.io/qt/qurl.html#UrlFormattingOption-enum) is always enabled, since passwords should never be shown back to users.
+    pub fn to_display_string(&self) -> QString {
         ffi::qurl_to_display_string(self)
     }
 
-    /// Returns the encoded representation of the URL if it's valid; otherwise an empty QByteArray is returned.
-    pub fn to_encoded(&self) -> ffi::QByteArray {
+    /// Returns the encoded representation of the URL if it's valid; otherwise an empty `QByteArray` is returned.
+    ///
+    /// The user info, path and fragment are all converted to UTF-8, and all non-ASCII characters are then percent encoded. The host name is encoded using Punycode.
+    pub fn to_encoded(&self) -> QByteArray {
         ffi::qurl_to_encoded(self)
     }
 
-    /// Returns the path of this URL formatted as a local file path.
+    /// Returns the path of this URL formatted as a local file path, or `None` if this URL is not pointing to a local file path.
     /// The path returned will use forward slashes, even if it was originally created from one with backslashes.
-    pub fn to_local_file(&self) -> Option<ffi::QString> {
+    ///
+    /// If this URL contains a non-empty hostname, it will be encoded in the returned value in the form found on SMB networks (for example, `"//servername/path/to/file.txt"`).
+    ///
+    /// Note: if the path component of this URL contains a non-UTF-8 binary sequence (such as %80), the behaviour of this function is undefined.
+    pub fn to_local_file(&self) -> Option<QString> {
         if self.is_local_file() {
             Some(self.to_local_file_or_default())
         } else {
@@ -372,30 +407,30 @@ impl QUrl {
         }
     }
 
-    /// Returns an encoded copy of input. input is first converted to UTF-8,
+    /// Returns an encoded copy of `input`. `input` is first converted to UTF-8,
     /// and all ASCII-characters that are not in the unreserved group are percent encoded.
-    /// To prevent characters from being percent encoded pass them to exclude.
-    /// To force characters to be percent encoded pass them to include.
+    /// To prevent characters from being percent encoded pass them to `exclude`.
+    /// To force characters to be percent encoded pass them to `include`.
     pub fn to_percent_encoding(
-        input: &ffi::QString,
-        exclude: &ffi::QByteArray,
-        include: &ffi::QByteArray,
-    ) -> ffi::QByteArray {
+        input: &QString,
+        exclude: &QByteArray,
+        include: &QByteArray,
+    ) -> QByteArray {
         ffi::qurl_to_percent_encoding(input, exclude, include)
     }
 
-    /// Returns a QString representation of the URL.
-    pub fn to_qstring(&self) -> ffi::QString {
+    /// Returns a `QString` representation of the URL.
+    pub fn to_qstring(&self) -> QString {
         ffi::qurl_to_qstring(self)
     }
 
     /// Returns the user info of the URL, or an empty string if the user info is undefined.
-    pub fn user_info_or_default(&self) -> ffi::QString {
+    pub fn user_info_or_default(&self) -> QString {
         ffi::qurl_user_info(self)
     }
 
     /// Returns the user name of the URL if it is defined; otherwise an empty string is returned.
-    pub fn user_name_or_default(&self) -> ffi::QString {
+    pub fn user_name_or_default(&self) -> QString {
         ffi::qurl_user_name(self)
     }
 }
@@ -423,9 +458,9 @@ impl std::cmp::PartialEq for QUrl {
 impl std::cmp::Eq for QUrl {}
 
 impl fmt::Display for QUrl {
-    /// Convert the QUrl to a Rust string
+    /// Format the `QUrl` as a Rust string.
     ///
-    /// Note that this converts from UTF-16 to UTF-8
+    /// Note that this converts from UTF-16 to UTF-8.
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         ffi::qurl_to_display_string(self).fmt(f)
     }
@@ -444,26 +479,26 @@ impl Drop for QUrl {
     }
 }
 
-impl From<&ffi::QString> for QUrl {
-    /// Constructs a QUrl from a QString
-    fn from(str: &ffi::QString) -> Self {
+impl From<&QString> for QUrl {
+    /// Constructs a `QUrl` from a `QString`.
+    fn from(str: &QString) -> Self {
         ffi::qurl_init_from_qstring(str)
     }
 }
 
 impl From<&str> for QUrl {
-    /// Constructs a QUrl from a Rust string
+    /// Constructs a `QUrl` from a Rust string.
     ///
-    /// Note that this converts from UTF-8 to UTF-16
+    /// Note that this converts from UTF-8 to UTF-16.
     fn from(str: &str) -> Self {
-        Self::from(&ffi::QString::from(str))
+        Self::from(&QString::from(str))
     }
 }
 
 impl From<&String> for QUrl {
-    /// Constructs a QUrl from a Rust string
+    /// Constructs a `QUrl` from a Rust string.
     ///
-    /// Note that this converts from UTF-8 to UTF-16
+    /// Note that this converts from UTF-8 to UTF-16.
     fn from(str: &String) -> Self {
         Self::from(str.as_str())
     }
@@ -511,7 +546,7 @@ impl serde::Serialize for QUrl {
 #[cfg(feature = "serde")]
 impl<'de> serde::Deserialize<'de> for QUrl {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-        let string = ffi::QString::deserialize(deserializer)?;
+        let string = QString::deserialize(deserializer)?;
         Ok(Self::from(&string))
     }
 }

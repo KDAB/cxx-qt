@@ -258,23 +258,17 @@ impl QtInstallation for QtInstallationQMake {
 
     fn try_find_tool(&self, tool: QtTool) -> anyhow::Result<PathBuf> {
         let find_tool = || self.try_qmake_find_tool(tool.binary_name());
-
         // Attempt to use the cache
-        if let Ok(mut tool_cache) = self.tool_cache.try_borrow_mut() {
-            // Read the tool from the cache or insert
-            let path = tool_cache.get(&tool);
-            let path = match path {
-                Some(path) => path.clone(),
-                None => {
-                    let path = find_tool()?;
-                    tool_cache.insert(tool, path.clone());
-                    path
-                }
-            };
-            Ok(path)
-        } else {
-            find_tool()
+        let Ok(mut tool_cache) = self.tool_cache.try_borrow_mut() else {
+            return find_tool();
+        };
+        // Read the tool from the cache or insert
+        if let Some(path) = tool_cache.get(&tool) {
+            return Ok(path.clone());
         }
+        let path = find_tool()?;
+        tool_cache.insert(tool, path.clone());
+        Ok(path)
     }
 
     fn version(&self) -> semver::Version {
@@ -293,10 +287,7 @@ impl QtInstallationQMake {
         qt_module: &str,
     ) -> String {
         for arch in ["", "_arm64-v8a", "_armeabi-v7a", "_x86", "_x86_64"] {
-            let prl_path = format!(
-                "{}/{}Qt{}{}{}.prl",
-                lib_path, prefix, version_major, qt_module, arch
-            );
+            let prl_path = format!("{lib_path}/{prefix}Qt{version_major}{qt_module}{arch}.prl");
             match Path::new(&prl_path).try_exists() {
                 Ok(exists) => {
                     if exists {
@@ -304,18 +295,12 @@ impl QtInstallationQMake {
                     }
                 }
                 Err(e) => {
-                    println!(
-                        "cargo::warning=failed checking for existence of {}: {}",
-                        prl_path, e
-                    );
+                    println!("cargo::warning=failed checking for existence of {prl_path}: {e}");
                 }
             }
         }
 
-        format!(
-            "{}/{}Qt{}{}.prl",
-            lib_path, prefix, version_major, qt_module
-        )
+        format!("{lib_path}/{prefix}Qt{version_major}{qt_module}.prl")
     }
 
     fn link_qt_library(
@@ -381,7 +366,7 @@ impl QtInstallationQMake {
                 .stdout,
         )
         .trim()
-        .to_string()
+        .to_owned()
     }
 
     fn try_qmake_find_tool(&self, tool_name: &str) -> anyhow::Result<PathBuf> {

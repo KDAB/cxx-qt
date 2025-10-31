@@ -11,6 +11,7 @@
 /// const_assert!(5 == 4);
 /// ```
 #[macro_export]
+#[doc(hidden)]
 macro_rules! const_assert {
     ($x:expr $(,)?) => {
         const _: () = ::core::assert!($x);

@@ -8,15 +8,10 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new()
-        // ANCHOR: book_qml_module
-        .qml_module(QmlModule {
-            uri: "com.kdab.cxx_qt.demo",
-            rust_files: &["src/cxxqt_object.rs"],
-            qml_files: &["../qml/main.qml"],
-            ..Default::default()
-        })
-        // ANCHOR_END: book_qml_module
-        .build();
+    CxxQtBuilder::new_qml_module(
+        QmlModule::new("com.kdab.cxx_qt.demo").qml_file("../qml/main.qml"),
+    )
+    .files(["src/cxxqt_object.rs"])
+    .build();
 }
 // ANCHOR_END: book_build_rs

@@ -12,7 +12,7 @@ use indoc::formatdoc;
 /// With a given block name, join the given items and add them under the block
 fn create_block(block: &str, items: &[String]) -> String {
     if items.is_empty() {
-        "".to_owned()
+        String::new()
     } else {
         formatdoc! {r#"
         {block}:
@@ -76,7 +76,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
         let qobject_assert = if qobject.has_qobject_macro {
             format!("static_assert(::std::is_base_of<QObject, {ident}>::value, \"{ident} must inherit from QObject\");")
         } else {
-            "".to_owned()
+            String::new()
         };
         let class_definition = namespaced(
             qobject.name.namespace().unwrap_or_default(),
@@ -95,7 +95,7 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
 
                 {qobject_assert}"#,
             // Note that there is always a base class as we always have CxxQtType
-            base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {}", base)).collect::<Vec<String>>().join(", "),
+            base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {base}")).collect::<Vec<String>>().join(", "),
             metaobjects = qobject.blocks.metaobjects.join("\n  "),
             public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
             private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
@@ -108,17 +108,25 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
             .filter_map(pair_as_header)
             .collect::<Vec<String>>()
             .join("\n");
+        let post_fragments = qobject
+            .blocks
+            .post_fragments
+            .iter()
+            .filter_map(pair_as_header)
+            .collect::<Vec<String>>()
+            .join("\n");
 
         let declare_metatype = if qobject.has_qobject_macro {
             let ty = qobject.name.cxx_qualified();
             format!("Q_DECLARE_METATYPE({ty}*)")
         } else {
-            "".to_owned()
+            String::new()
         };
 
         formatdoc! {r#"
             {fragments}
             {class_definition}
+            {post_fragments}
 
             {declare_metatype}
             "#
@@ -189,7 +197,7 @@ mod tests {
 
     #[test]
     fn test_create_block() {
-        let block = create_block("block", &["line1".to_string(), "line2".to_string()]);
+        let block = create_block("block", &["line1".to_owned(), "line2".to_owned()]);
         let expected = indoc! {"
         block:
           line1
@@ -202,7 +210,7 @@ mod tests {
     fn test_create_block_with_empty() {
         let block = create_block(
             "block",
-            &["line1".to_string(), "".to_string(), "line2".to_string()],
+            &["line1".to_owned(), String::new(), "line2".to_owned()],
         );
         let expected = indoc! {"
         block:

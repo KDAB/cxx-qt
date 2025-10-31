@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qrectf.h");
         type QRectF = crate::QRectF;
 
-        include!("cxx-qt-lib/qvector_QRectF.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QRectF.h");
         type QVector_QRectF = crate::QVector<QRectF>;
     }
 

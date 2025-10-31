@@ -9,7 +9,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qsizef.h");
         type QSizeF = crate::QSizeF;
 
-        include!("cxx-qt-lib/qlist_QSizeF.h");
+        include!("cxx-qt-lib/core/qlist/qlist_QSizeF.h");
         type QList_QSizeF = crate::QList<QSizeF>;
     }
 

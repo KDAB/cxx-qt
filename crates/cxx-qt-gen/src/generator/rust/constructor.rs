@@ -489,7 +489,7 @@ mod tests {
             &mock_name(),
             &mock_namespace(),
             &type_names,
-            &vec![],
+            &[],
         )
         .unwrap()
     }
@@ -827,7 +827,7 @@ mod tests {
             &mock_name(),
             &mock_namespace(),
             &TypeNames::mock(),
-            &vec![],
+            &[],
         )
         .is_err());
     }

@@ -380,6 +380,7 @@ mod tests {
         } // namespace cxx_qt::my_object
 
 
+
         Q_DECLARE_METATYPE(cxx_qt::my_object::MyObject*)
 
         "#}
@@ -433,6 +434,7 @@ mod tests {
         } // namespace cxx_qt
 
 
+
         Q_DECLARE_METATYPE(cxx_qt::FirstObject*)
 
 
@@ -457,6 +459,7 @@ mod tests {
 
         static_assert(::std::is_base_of<QObject, SecondObject>::value, "SecondObject must inherit from QObject");
         } // namespace cxx_qt
+
 
 
         Q_DECLARE_METATYPE(cxx_qt::SecondObject*)
@@ -506,6 +509,7 @@ mod tests {
         };
 
         static_assert(::std::is_base_of<QObject, MyObject>::value, "MyObject must inherit from QObject");
+
 
         Q_DECLARE_METATYPE(MyObject*)
 

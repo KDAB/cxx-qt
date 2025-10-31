@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 #[macro_export]
+#[doc(hidden)]
 macro_rules! unsafe_impl_qflag {
     ( $typeName:ty, $typeId:literal, $repr:ident ) => {
         unsafe impl $crate::QFlag for $typeName {

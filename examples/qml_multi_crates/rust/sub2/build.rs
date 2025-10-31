@@ -3,15 +3,11 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_build::{CxxQtBuilder, Interface, QmlModule};
+use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    let interface = Interface::default();
-    CxxQtBuilder::library(interface)
-        .qml_module(QmlModule::<_, &str> {
-            uri: "com.kdab.cxx_qt.demo.sub2",
-            rust_files: &["src/sub2_object.rs"],
-            ..Default::default()
-        })
-        .build();
+    CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.cxx_qt.demo.sub2"))
+        .files(["src/sub2_object.rs"])
+        .build()
+        .export();
 }

@@ -20,19 +20,19 @@ mod ffi {
 
         /// Returns the column this persistent model index refers to.
         fn column(self: &QPersistentModelIndex) -> i32;
-        /// Returns true if this persistent model index is valid; otherwise returns false.
+        /// Returns `true` if this persistent model index is valid; otherwise returns `false`.
         ///
         /// A valid index belongs to a model, and has non-negative row and column numbers.
         #[rust_name = "is_valid"]
         fn isValid(self: &QPersistentModelIndex) -> bool;
-        /// Returns the parent QModelIndex for this persistent index, or an invalid QModelIndex if it has no parent.
+        /// Returns the parent `QModelIndex` for this persistent index, or an invalid `QModelIndex` if it has no parent.
         fn parent(self: &QPersistentModelIndex) -> QModelIndex;
         /// Returns the row this persistent model index refers to.
         fn row(self: &QPersistentModelIndex) -> i32;
-        /// Returns the sibling at row and column or an invalid QModelIndex if there is no sibling at this position.
+        /// Returns the sibling at `row` and `column` or an invalid `QModelIndex` if there is no sibling at this position.
         fn sibling(self: &QPersistentModelIndex, row: i32, column: i32) -> QModelIndex;
 
-        /// Swaps this persistent modelindex with other. This function is very fast and never fails.
+        /// Swaps this persistent modelindex with `other`. This function is very fast and never fails.
         fn swap(self: &mut QPersistentModelIndex, other: &mut QPersistentModelIndex);
     }
 
@@ -59,14 +59,16 @@ mod ffi {
     }
 }
 
-/// The QPersistentModelIndex class is used to locate data in a data model.
+/// The `QPersistentModelIndex` class is used to locate data in a data model.
+///
+/// Qt Documentation: [QPersistentModelIndex](https://doc.qt.io/qt/qpersistentmodelindex.html#details)
 #[repr(C)]
 pub struct QPersistentModelIndex {
     _space: MaybeUninit<usize>,
 }
 
 impl Clone for QPersistentModelIndex {
-    /// Creates a new QPersistentModelIndex that is a copy of the other persistent model index.
+    /// Creates a new `QPersistentModelIndex` that is a copy of the other persistent model index.
     fn clone(&self) -> Self {
         ffi::qpersistentmodelindex_clone(self)
     }
@@ -80,7 +82,7 @@ impl Drop for QPersistentModelIndex {
 }
 
 impl From<&crate::QModelIndex> for QPersistentModelIndex {
-    /// Creates a new QPersistentModelIndex that is a copy of the model index.
+    /// Creates a new `QPersistentModelIndex` that is a copy of the model `index`.
     fn from(index: &crate::QModelIndex) -> Self {
         ffi::qpersistentmodelindex_from_qmodelindex(index)
     }

@@ -7,6 +7,8 @@ use std::fmt;
 
 use cxx::{type_id, ExternType};
 
+use crate::{QPoint, QPointF, QVector3D, QVector4D};
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -24,7 +26,7 @@ mod ffi {
         include!("cxx-qt-lib/qvector4d.h");
         type QVector4D = crate::QVector4D;
 
-        /// Returns true if the x and y coordinates are set to 0.0, otherwise returns false.
+        /// Returns `true` if the x and y coordinates are set to 0.0, otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QVector2D) -> bool;
 
@@ -47,10 +49,10 @@ mod ffi {
         /// Otherwise the normalized form of the vector of length 1 will be returned.
         fn normalized(self: &QVector2D) -> QVector2D;
 
-        /// Sets the x coordinate of this point to the given finite x coordinate.
+        /// Sets the x coordinate of this point to the given finite `x` coordinate.
         #[rust_name = "set_x"]
         fn setX(self: &mut QVector2D, x: f32);
-        /// Sets the y coordinate of this point to the given finite y coordinate.
+        /// Sets the y coordinate of this point to the given finite `y` coordinate.
         #[rust_name = "set_y"]
         fn setY(self: &mut QVector2D, y: f32);
 
@@ -127,6 +129,8 @@ mod ffi {
 }
 
 /// The QVector2D class represents a vector or vertex in 2D space.
+///
+/// Qt Documentation: [QVector2D](https://doc.qt.io/qt/qvector2d.html#details)
 #[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QVector2D {
@@ -134,20 +138,20 @@ pub struct QVector2D {
 }
 
 impl QVector2D {
-    /// Constructs a vector with coordinates (xpos, ypos). Both coordinates must be finite.
+    /// Constructs a vector with coordinates (`xpos`, `ypos`). Both coordinates must be finite.
     pub fn new(xpos: f32, ypos: f32) -> Self {
         ffi::qvector2d_init(xpos, ypos)
     }
 
-    /// Returns the distance that this vertex is from a line defined by point and the unit vector direction.
+    /// Returns the distance that this vertex is from a line defined by `point` and the unit vector `direction`.
     ///
-    /// If direction is a null vector, then it does not define a line.
-    /// In that case, the distance from point to this vertex is returned.
+    /// If `direction` is a null vector, then it does not define a line.
+    /// In that case, the distance from `point` to this vertex is returned.
     pub fn distance_to_line(&self, point: QVector2D, direction: QVector2D) -> f32 {
         ffi::qvector2d_distance_to_line(self, point, direction)
     }
 
-    /// Returns the distance from this vertex to a point defined by the vertex point.
+    /// Returns the distance from this vertex to a point defined by the vertex `point`.
     pub fn distance_to_point(&self, point: QVector2D) -> f32 {
         ffi::qvector2d_distance_to_point(self, point)
     }
@@ -194,46 +198,46 @@ impl std::ops::Div<f32> for QVector2D {
     }
 }
 
-impl From<crate::QVector4D> for QVector2D {
+impl From<QVector4D> for QVector2D {
     /// Constructs a vector with x and y coordinates from a 3D vector.
     /// The z and w coordinates of vector are dropped.
-    fn from(value: crate::QVector4D) -> Self {
+    fn from(value: QVector4D) -> Self {
         ffi::qvector2d_init_qvector4d(value)
     }
 }
 
-impl From<crate::QVector3D> for QVector2D {
+impl From<QVector3D> for QVector2D {
     /// Constructs a vector with x and y coordinates from a 3D vector.
     /// The z coordinate of vector is dropped.
-    fn from(value: crate::QVector3D) -> Self {
+    fn from(value: QVector3D) -> Self {
         ffi::qvector2d_init_qvector3d(value)
     }
 }
 
-impl From<crate::QPointF> for QVector2D {
+impl From<QPointF> for QVector2D {
     /// Constructs a vector with x and y coordinates from a 2D point.
-    fn from(value: crate::QPointF) -> Self {
+    fn from(value: QPointF) -> Self {
         ffi::qvector2d_init_qpointf(value)
     }
 }
 
-impl From<QVector2D> for crate::QPointF {
-    /// Returns the QPoint form of this 2D vector.
+impl From<QVector2D> for QPointF {
+    /// Returns the `QPointF` form of this 2D vector.
     /// Each coordinate is rounded to the nearest integer.
     fn from(value: QVector2D) -> Self {
         value.to_pointf()
     }
 }
 
-impl From<crate::QPoint> for QVector2D {
+impl From<QPoint> for QVector2D {
     /// Constructs a vector with x and y coordinates from a 2D point.
-    fn from(value: crate::QPoint) -> Self {
+    fn from(value: QPoint) -> Self {
         ffi::qvector2d_init_qpoint(value)
     }
 }
 
-impl From<QVector2D> for crate::QPoint {
-    /// Returns the QPointF form of this 2D vector.
+impl From<QVector2D> for QPoint {
+    /// Returns the `QPoint` form of this 2D vector.
     fn from(value: QVector2D) -> Self {
         value.to_point()
     }

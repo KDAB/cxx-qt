@@ -21,27 +21,36 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qlist_QString.h");
+        include!("cxx-qt-lib/core/qlist/qlist_QString.h");
         type QList_QString = crate::QList<QString>;
 
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = super::QStringList;
 
-        /// Returns true if the list contains the string str; otherwise returns false.
+        /// Returns `true` if the list contains the string `str`; otherwise returns `false`.
+        ///
+        /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the comparison is case-insensitive.
         fn contains(self: &QStringList, str: &QString, cs: CaseSensitivity) -> bool;
 
-        /// Returns a list of all the strings containing the substring str.
+        /// Returns a list of all the strings containing the substring `str`.
+        ///
+        /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the comparison is case-insensitive.
         fn filter(self: &QStringList, str: &QString, cs: CaseSensitivity) -> QStringList;
 
         /// Joins all the string list's strings into a single string with each element
-        /// separated by the given separator (which can be an empty string).
+        /// separated by the given `separator` (which can be an empty string).
         fn join(self: &QStringList, separator: &QString) -> QString;
 
         /// Sorts the list of strings in ascending order.
+        ///
+        /// If `cs` is [`CaseSensitivity::CaseSensitive`], the string comparison is case-sensitive; otherwise the comparison is case-insensitive.
         fn sort(self: &mut QStringList, cs: CaseSensitivity);
 
-        /// Returns a string list where every string has had the before text replaced with the after text wherever the before text is found.
-        /// The before text is matched case-sensitively or not depending on the cs flag.
+        /// Returns a string list where every string has had the `before` text replaced with the `after` text wherever the `before` text is found.
+        ///
+        /// **Note:** If you use an empty `before` argument, the `after` argument will be inserted *before and after* each character of the string.
+        ///
+        /// If `cs` is [`CaseSensitivity::CaseSensitive`], the string comparison is case-sensitive; otherwise the comparison is case-insensitive.
         #[rust_name = "replace_in_strings"]
         fn replaceInStrings(
             self: &mut QStringList,
@@ -107,7 +116,9 @@ mod ffi {
     }
 }
 
-/// The QStringList class provides a list of strings.
+/// The `QStringList` class provides a list of strings.
+///
+/// Qt Documentation: [QStringList](https://doc.qt.io/qt/qstringlist.html#details)
 #[repr(C)]
 pub struct QStringList {
     /// The layout has changed between Qt 5 and Qt 6
@@ -123,6 +134,8 @@ pub struct QStringList {
 impl QStringList {
     /// This function removes duplicate entries from a list.
     /// The entries do not have to be sorted. They will retain their original order.
+    ///
+    /// Returns the number of removed entries.
     pub fn remove_duplicates(&mut self) -> isize {
         ffi::qstringlist_remove_duplicates(self)
     }
@@ -170,21 +183,21 @@ impl Drop for QStringList {
 }
 
 impl From<&QString> for QStringList {
-    /// Constructs a string list that contains the given string
+    /// Constructs a string list that contains the given string.
     fn from(string: &QString) -> Self {
         ffi::qstringlist_from_qstring(string)
     }
 }
 
 impl From<&QList<QString>> for QStringList {
-    /// Converts a `QList<QString>` into QStringList.
+    /// Converts a `QList<QString>` into `QStringList`.
     fn from(list: &QList<QString>) -> Self {
         ffi::qstringlist_from_qlist_qstring(list)
     }
 }
 
 impl From<&QStringList> for QList<QString> {
-    /// Converts a QStringList into a `QList<QString>`
+    /// Converts a `QStringList` into a `QList<QString>`.
     fn from(list: &QStringList) -> Self {
         ffi::qstringlist_as_qlist_qstring(list)
     }
@@ -230,10 +243,7 @@ mod test {
     fn deref() {
         let mut list = QStringList::default();
         list.append(QString::from("element"));
-        assert_eq!(
-            list.get(0).map(|s| s.to_string()),
-            Some("element".to_owned())
-        );
+        assert_eq!(list.get(0).map(String::from).as_deref(), Some("element"));
     }
 
     #[cfg(feature = "serde")]

@@ -7,9 +7,11 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
+use crate::{QString, QStringList};
+
 #[cxx::bridge]
 mod ffi {
-    /// How to format the output of the name() function
+    /// How to format the output of [`QColor::name`].
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
     enum QColorNameFormat {
@@ -45,12 +47,16 @@ mod ffi {
         fn black(self: &QColor) -> i32;
         /// Returns the blue color component of this color.
         fn blue(self: &QColor) -> i32;
-        /// Creates a copy of this color in the format specified by colorSpec.
+        /// Creates a copy of this color in the format specified by `color_spec`.
         #[rust_name = "convert_to"]
-        fn convertTo(self: &QColor, spec: QColorSpec) -> QColor;
+        fn convertTo(self: &QColor, color_spec: QColorSpec) -> QColor;
         /// Returns the cyan color component of this color.
         fn cyan(self: &QColor) -> i32;
         /// Returns a darker (or lighter) color, but does not change this object.
+        ///
+        /// If the `factor` is greater than 100, this functions returns a darker color. Setting `factor` to 300 returns a color that has one-third the brightness. If the `factor` is less than 100, the return color is lighter, but we recommend using [`lighter`](Self::lighter) for this purpose. If the `factor` is 0 or negative, the return value is unspecified.
+        ///
+        /// The function converts the current color to HSV, divides the value (V) component by factor and converts the color back to it's original color spec.
         fn darker(self: &QColor, factor: i32) -> QColor;
         /// Returns the green color component of this color.
         fn green(self: &QColor) -> i32;
@@ -70,16 +76,20 @@ mod ffi {
         ///
         /// The color is implicitly converted to HSV.
         fn hue(self: &QColor) -> i32;
-        /// Returns true if the color is valid; otherwise returns false.
+        /// Returns `true` if the color is valid; otherwise returns `false`.
         #[rust_name = "is_valid"]
         fn isValid(self: &QColor) -> bool;
         /// Returns a lighter (or darker) color, but does not change this object.
+        ///
+        /// If the `factor` is greater than 100, this functions returns a lighter color. Setting `factor` to 150 returns a color that is 50% brighter. If the `factor` is less than 100, the return color is darker, but we recommend using [`darker`](Self::darker) for this purpose. If the `factor` is 0 or negative, the return value is unspecified.
+        ///
+        /// The function converts the current color to HSV, multiplies the value (V) component by factor and converts the color back to it's original color spec.
         fn lighter(self: &QColor, factor: i32) -> QColor;
         /// Returns the lightness color component of this color.
         fn lightness(self: &QColor) -> i32;
         /// Returns the magenta color component of this color.
         fn magenta(self: &QColor) -> i32;
-        /// Returns the name of the color in the specified format.
+        /// Returns the name of the color in the specified `format`.
         fn name(self: &QColor, format: QColorNameFormat) -> QString;
         /// Returns the red color component of this color.
         fn red(self: &QColor) -> i32;
@@ -87,53 +97,53 @@ mod ffi {
         ///
         /// The color is implicitly converted to HSV.
         fn saturation(self: &QColor) -> i32;
-        /// Sets the alpha of this color to alpha. Integer alpha is specified in the range 0-255.
+        /// Sets the alpha of this color to `alpha`. Integer alpha is specified in the range 0-255.
         #[rust_name = "set_alpha"]
         fn setAlpha(self: &mut QColor, alpha: i32);
-        /// Sets the blue color component of this color to blue. Integer components are specified in the range 0-255.
+        /// Sets the blue color component of this color to 1. Integer components are specified in the range 0-255.
         #[rust_name = "set_blue"]
         fn setBlue(self: &mut QColor, blue: i32);
-        /// Sets the color to CMYK values, c (cyan), m (magenta), y (yellow), k (black), and a (alpha-channel, i.e. transparency).
+        /// Sets the color to CMYK values, `c` (cyan), `m` (magenta), `y` (yellow), `k` (black), and `a` (alpha-channel, i.e. transparency).
         ///
         /// All the values must be in the range 0-255.
         #[rust_name = "set_cmyk"]
         fn setCmyk(self: &mut QColor, c: i32, m: i32, y: i32, k: i32, a: i32);
-        /// Sets the green color component of this color to green. Integer components are specified in the range 0-255.
+        /// Sets the green color component of this color to `green`. Integer components are specified in the range 0-255.
         #[rust_name = "set_green"]
         fn setGreen(self: &mut QColor, green: i32);
-        /// Sets a HSL color value; h is the hue, s is the saturation, l is the lightness and a is the alpha component of the HSL color.
+        /// Sets a HSL color value; `h` is the hue, `s` is the saturation, `l` is the lightness and `a` is the alpha component of the HSL color.
         ///
         /// The saturation, value and alpha-channel values must be in the range 0-255, and the hue value must be greater than -1.
         #[rust_name = "set_hsl"]
         fn setHsl(self: &mut QColor, h: i32, s: i32, l: i32, a: i32);
-        /// Sets a HSV color value; h is the hue, s is the saturation, v is the value and a is the alpha component of the HSV color.
+        /// Sets a HSV color value; `h` is the hue, `s` is the saturation, `v` is the value and `a` is the alpha component of the HSV color.
         ///
         /// The saturation, value and alpha-channel values must be in the range 0-255, and the hue value must be greater than -1.
         #[rust_name = "set_hsv"]
         fn setHsv(self: &mut QColor, h: i32, s: i32, v: i32, a: i32);
-        /// Sets the red color component of this color to red. Integer components are specified in the range 0-255.
+        /// Sets the red color component of this color to `red`. Integer components are specified in the range 0-255.
         #[rust_name = "set_red"]
         fn setRed(self: &mut QColor, red: i32);
-        /// Sets the RGB value to r, g, b and the alpha value to a.
+        /// Sets the RGB value to `r`, `g`, `b` and the alpha value to `a`.
         ///
         /// All the values must be in the range 0-255.
         #[rust_name = "set_rgb"]
         fn setRgb(self: &mut QColor, r: i32, g: i32, b: i32, a: i32);
         /// Returns how the color was specified.
         fn spec(self: &QColor) -> QColorSpec;
-        /// Creates and returns a CMYK QColor based on this color.
+        /// Creates and returns a CMYK `QColor` based on this color.
         #[rust_name = "to_cmyk"]
         fn toCmyk(self: &QColor) -> QColor;
-        /// Create and returns an extended RGB QColor based on this color.
+        /// Create and returns an extended RGB `QColor` based on this color.
         #[rust_name = "to_extended_rgb"]
         fn toExtendedRgb(self: &QColor) -> QColor;
-        /// Creates and returns an HSL QColor based on this color.
+        /// Creates and returns an HSL `QColor` based on this color.
         #[rust_name = "to_hsl"]
         fn toHsl(self: &QColor) -> QColor;
-        /// Creates and returns an HSV QColor based on this color.
+        /// Creates and returns an HSV `QColor` based on this color.
         #[rust_name = "to_hsv"]
         fn toHsv(self: &QColor) -> QColor;
-        /// Create and returns an RGB QColor based on this color.
+        /// Create and returns an RGB `QColor` based on this color.
         #[rust_name = "to_rgb"]
         fn toRgb(self: &QColor) -> QColor;
         /// Returns the value color component of this color.
@@ -267,7 +277,9 @@ mod ffi {
 
 pub use ffi::{QColorNameFormat, QColorSpec};
 
-/// The QColor class provides colors based on RGB, HSL, HSV or CMYK values.
+/// The `QColor` class provides colors based on RGB, HSL, HSV or CMYK values.
+///
+/// Qt Documentation: [QColor](https://doc.qt.io/qt/qcolor.html#details)
 #[derive(Clone)]
 #[repr(C)]
 pub struct QColor {
@@ -291,8 +303,8 @@ impl QColor {
         ffi::qcolor_blue_f(self)
     }
 
-    /// Returns a QStringList containing the color names Qt knows about.
-    pub fn color_names() -> ffi::QStringList {
+    /// Returns a `QStringList` containing the color names Qt knows about.
+    pub fn color_names() -> QStringList {
         ffi::qcolor_color_names()
     }
 
@@ -301,86 +313,86 @@ impl QColor {
         ffi::qcolor_cyan_f(self)
     }
 
-    /// Constructs a QColor from the CMYK value c, m, y, and k.
+    /// Constructs a QColor from the CMYK value `c`, `m`, `y`, and `k`.
     pub fn from_cmyk(c: i32, m: i32, y: i32, k: i32) -> Self {
         ffi::qcolor_init_from_cmyk(c, m, y, k, 255)
     }
 
-    /// Constructs a QColor from the CMYK value c, m, y, k, and the alpha-channel (transparency) value of a.
+    /// Constructs a `QColor` from the CMYK value `c`, `m`, `y`, `k`, and the alpha-channel (transparency) value of `a`.
     pub fn from_cmyka(c: i32, m: i32, y: i32, k: i32, a: i32) -> Self {
         ffi::qcolor_init_from_cmyk(c, m, y, k, a)
     }
 
-    /// Constructs a QColor from the CMYK value c, m, y, and k.
+    /// Constructs a `QColor` from the CMYK value `c`, `m`, `y`, and `k`.
     pub fn from_cmyk_f(c: f32, m: f32, y: f32, k: f32) -> Self {
         ffi::qcolor_init_from_cmyk_f(c, m, y, k, 1.0)
     }
 
-    /// Constructs a QColor from the CMYK value c, m, y, k, and the alpha-channel (transparency) value of a.
+    /// Constructs a `QColor` from the CMYK value `c`, `m`, `y`, `k`, and the alpha-channel (transparency) value of `a`.
     pub fn from_cmyka_f(c: f32, m: f32, y: f32, k: f32, a: f32) -> Self {
         ffi::qcolor_init_from_cmyk_f(c, m, y, k, a)
     }
 
-    /// Constructs a QColor from the HSL value h, s, and l.
+    /// Constructs a `QColor` from the HSL value `h`, `s`, and `l`.
     pub fn from_hsl(h: i32, s: i32, l: i32) -> Self {
         ffi::qcolor_init_from_hsl(h, s, l, 255)
     }
 
-    /// Constructs a QColor from the HSL value h, s, l, and the alpha-channel (transparency) value of a.
+    /// Constructs a `QColor` from the HSL value `h`, `s`, `l`, and the alpha-channel (transparency) value of `a`.
     pub fn from_hsla(h: i32, s: i32, l: i32, a: i32) -> Self {
         ffi::qcolor_init_from_hsl(h, s, l, a)
     }
 
-    /// Constructs a QColor from the HSL value h, s, and l.
+    /// Constructs a `QColor` from the HSL value `h`, `s`, and `l`.
     pub fn from_hsl_f(h: f32, s: f32, l: f32) -> Self {
         ffi::qcolor_init_from_hsl_f(h, s, l, 1.0)
     }
 
-    /// Constructs a QColor from the HSL value h, s, l, and the alpha-channel (transparency) value of a.
+    /// Constructs a `QColor` from the HSL value `h`, `s`, `l`, and the alpha-channel (transparency) value of `a`.
     pub fn from_hsla_f(h: f32, s: f32, l: f32, a: f32) -> Self {
         ffi::qcolor_init_from_hsl_f(h, s, l, a)
     }
 
-    /// Constructs a QColor from the HSV value h, s, and v.
+    /// Constructs a `QColor` from the HSV value `h`, `s`, and `v`.
     pub fn from_hsv(h: i32, s: i32, v: i32) -> Self {
         ffi::qcolor_init_from_hsv(h, s, v, 255)
     }
 
-    /// Constructs a QColor from the HSV value h, s, v, and the alpha-channel (transparency) value of a.
+    /// Constructs a `QColor` from the HSV value `h`, `s`, `v`, and the alpha-channel (transparency) value of `a`.
     pub fn from_hsva(h: i32, s: i32, v: i32, a: i32) -> Self {
         ffi::qcolor_init_from_hsv(h, s, v, a)
     }
 
-    /// Constructs a QColor from the HSV value h, s, and v.
+    /// Constructs a `QColor` from the HSV value `h`, `s`, and `v`.
     pub fn from_hsv_f(h: f32, s: f32, v: f32) -> Self {
         ffi::qcolor_init_from_hsv_f(h, s, v, 1.0)
     }
 
-    /// Constructs a QColor from the HSV value h, s, v, and the alpha-channel (transparency) value of a.
+    /// Constructs a `QColor` from the HSV value `h`, `s`, `v`, and the alpha-channel (transparency) value of `a`.
     pub fn from_hsva_f(h: f32, s: f32, v: f32, a: f32) -> Self {
         ffi::qcolor_init_from_hsv_f(h, s, v, a)
     }
 
-    /// Constructs a QColor with the RGB value r, g, and b.
+    /// Constructs a `QColor` with the RGB value `r`, `g`, and `b`.
     ///
     /// The color is left invalid if any of the arguments are invalid.
     pub fn from_rgb(red: i32, green: i32, blue: i32) -> Self {
         ffi::qcolor_init_from_rgb(red, green, blue, 255)
     }
 
-    /// Constructs a QColor with the RGB value r, g, b, and the alpha-channel (transparency) value of a.
+    /// Constructs a `QColor` with the RGB value `r`, `g`, `b`, and the alpha-channel (transparency) value of `a`.
     ///
     /// The color is left invalid if any of the arguments are invalid.
     pub fn from_rgba(red: i32, green: i32, blue: i32, alpha: i32) -> Self {
         ffi::qcolor_init_from_rgb(red, green, blue, alpha)
     }
 
-    /// Constructs a QColor with the RGB value r, g, and b.
+    /// Constructs a `QColor` with the RGB value `r`, `g`, and `b`.
     pub fn from_rgb_f(red: f32, green: f32, blue: f32) -> Self {
         ffi::qcolor_init_from_rgb_f(red, green, blue, 1.0)
     }
 
-    /// Constructs a QColor with the RGB value r, g, b, and the alpha-channel (transparency) value of a.
+    /// Constructs a `QColor` with the RGB value `r`, `g`, `b`, and the alpha-channel (transparency) value of `a`.
     pub fn from_rgba_f(red: f32, green: f32, blue: f32, alpha: f32) -> Self {
         ffi::qcolor_init_from_rgb_f(red, green, blue, alpha)
     }
@@ -439,19 +451,19 @@ impl QColor {
         ffi::qcolor_saturation_f(self)
     }
 
-    /// Sets the alpha of this color to alpha. float alpha is specified in the range 0.0-1.0.
+    /// Sets the alpha of this color to `alpha`. float alpha is specified in the range 0.0-1.0.
     pub fn set_alpha_f(&mut self, alpha: f32) {
         ffi::qcolor_set_alpha_f(self, alpha);
     }
 
-    /// Sets the blue color component of this color to blue.
+    /// Sets the blue color component of this color to `blue`.
     ///
-    /// If blue lies outside the 0.0-1.0 range, the color model will be changed to ExtendedRgb.
+    /// If `blue` lies outside the 0.0-1.0 range, the color model will be changed to [`QColorSpec::ExtendedRgb`].
     pub fn set_blue_f(&mut self, blue: f32) {
         ffi::qcolor_set_blue_f(self, blue);
     }
 
-    /// Sets the color to CMYK values, c (cyan), m (magenta), y (yellow), k (black), and a (alpha-channel, i.e. transparency).
+    /// Sets the color to CMYK values, `c` (cyan), `m` (magenta), `y` (yellow), `k` (black), and `a` (alpha-channel, i.e. transparency).
     ///
     /// All the values must be in the range 0.0-1.0.
     pub fn set_cmyk_f(&mut self, c: f32, m: f32, y: f32, k: f32, a: f32) {
@@ -460,35 +472,35 @@ impl QColor {
 
     /// Sets the green color component of this color to green.
     ///
-    /// If green lies outside the 0.0-1.0 range, the color model will be changed to ExtendedRgb.
+    /// If `green` lies outside the 0.0-1.0 range, the color model will be changed to [`QColorSpec::ExtendedRgb`].
     pub fn set_green_f(&mut self, green: f32) {
         ffi::qcolor_set_green_f(self, green);
     }
 
-    /// Sets a HSL color lightness; h is the hue, s is the saturation, l is the lightness and a is the alpha component of the HSL color.
+    /// Sets a HSL color lightness; `h` is the hue, `s` is the saturation, `l` is the lightness and `a` is the alpha component of the HSL color.
     ///
     /// All the values must be in the range 0.0-1.0.
     pub fn set_hsl_f(&mut self, h: f32, s: f32, l: f32, a: f32) {
         ffi::qcolor_set_hsl_f(self, h, s, l, a);
     }
 
-    /// Sets a HSV color value; h is the hue, s is the saturation, v is the value and a is the alpha component of the HSV color.
+    /// Sets a HSV color value; `h` is the hue, `s` is the saturation, `v` is the value and `a` is the alpha component of the HSV color.
     ///
     /// All the values must be in the range 0.0-1.0.
     pub fn set_hsv_f(&mut self, h: f32, s: f32, v: f32, a: f32) {
         ffi::qcolor_set_hsv_f(self, h, s, v, a);
     }
 
-    /// Sets the red color component of this color to red.
+    /// Sets the red color component of this color to `red`.
     ///
-    /// If red lies outside the 0.0-1.0 range, the color model will be changed to ExtendedRgb.
+    /// If `red` lies outside the 0.0-1.0 range, the color model will be changed to [`QColorSpec::ExtendedRgb`].
     pub fn set_red_f(&mut self, red: f32) {
         ffi::qcolor_set_red_f(self, red);
     }
 
-    /// Sets the color channels of this color to r (red), g (green), b (blue) and a (alpha, transparency).
+    /// Sets the color channels of this color to `r` (red), `g` (green), `b` (blue) and `a` (alpha, transparency).
     ///
-    /// The alpha value must be in the range 0.0-1.0. If any of the other values are outside the range of 0.0-1.0 the color model will be set as ExtendedRgb.
+    /// The alpha value must be in the range 0.0-1.0. If any of the other values are outside the range of 0.0-1.0 the color model will be set as [`QColorSpec::ExtendedRgb`].
     pub fn set_rgb_f(&mut self, r: f32, g: f32, b: f32, a: f32) {
         ffi::qcolor_set_rgb_f(self, r, g, b, a);
     }
@@ -517,7 +529,7 @@ impl TryFrom<&str> for QColor {
     type Error = &'static str;
 
     fn try_from(value: &str) -> Result<Self, Self::Error> {
-        Self::try_from(&ffi::QString::from(value))
+        Self::try_from(&QString::from(value))
     }
 }
 
@@ -529,10 +541,10 @@ impl TryFrom<&String> for QColor {
     }
 }
 
-impl TryFrom<&ffi::QString> for QColor {
+impl TryFrom<&QString> for QColor {
     type Error = &'static str;
 
-    fn try_from(value: &ffi::QString) -> Result<Self, Self::Error> {
+    fn try_from(value: &QString) -> Result<Self, Self::Error> {
         let color = ffi::qcolor_init_from_qstring(value);
         if color.is_valid() {
             Ok(color)
@@ -676,6 +688,6 @@ mod tests {
     #[test]
     fn test_display_fmt() {
         let qcolor = QColor::from_rgba(50, 100, 150, 200);
-        assert_eq!(format!("{:-<30}", qcolor), "RGBA(50, 100, 150, 200)-------");
+        assert_eq!(format!("{qcolor:-<30}"), "RGBA(50, 100, 150, 200)-------");
     }
 }

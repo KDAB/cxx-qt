@@ -147,7 +147,7 @@ mod ffi {
         #[doc(hidden)]
         #[cxx_name = "cxxQtThreadDrop"]
         #[namespace = "rust::cxxqt1"]
-        fn cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread: &mut MyObjectCxxQtThread);
+        fn cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread: Pin<&mut MyObjectCxxQtThread>);
         #[doc(hidden)]
         #[cxx_name = "cxxQtThreadIsDestroyed"]
         #[namespace = "rust::cxxqt1"]
@@ -318,7 +318,7 @@ impl cxx_qt::Threading for ffi::MyObject {
         ffi::cxx_qt_ffi_MyObject_cxxQtThreadClone(cxx_qt_thread)
     }
     #[doc(hidden)]
-    fn threading_drop(cxx_qt_thread: &mut ffi::MyObjectCxxQtThread) {
+    fn threading_drop(cxx_qt_thread: Pin<&mut ffi::MyObjectCxxQtThread>) {
         ffi::cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread);
     }
 }

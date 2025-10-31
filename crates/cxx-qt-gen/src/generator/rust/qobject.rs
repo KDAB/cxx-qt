@@ -35,20 +35,18 @@ impl GeneratedRustFragment {
                 type_names,
                 structured_qobject,
             )?,
-            generate_rust_methods(&structured_qobject.methods, &qobject_names)?,
+            generate_rust_methods(&structured_qobject.methods, &qobject_names, type_names)?,
             inherit::generate(&qobject_names, &structured_qobject.inherited_methods)?,
             generate_rust_signals(&structured_qobject.signals, &qobject_names, type_names)?,
         ];
 
-        // If this type is a singleton then we need to add an include
-        if let Some(qml_metadata) = &qobject.qml_metadata {
-            if qml_metadata.singleton {
-                generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
-                    unsafe extern "C++" {
-                        include!(<QtQml/QQmlEngine>);
-                    }
-                }))
-            }
+        // If this type is using QML declarative macros then ensure we have the right include
+        if qobject.qml_metadata.is_some() {
+            generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
+                unsafe extern "C++" {
+                    include!(<QtQml/QQmlEngine>);
+                }
+            }))
         }
 
         // If this type has threading enabled then add generation
@@ -98,7 +96,6 @@ fn generate_qobject_definitions(
     let cxx_name = if cpp_class_name_rust.to_string() == *cpp_class_name_cpp {
         quote! {}
     } else {
-        let cpp_class_name_cpp = cpp_class_name_cpp.to_string();
         quote! {
             #[doc = "\n\nNote: The C++ name of this QObject is: "]
             #[doc = #cpp_class_name_cpp]

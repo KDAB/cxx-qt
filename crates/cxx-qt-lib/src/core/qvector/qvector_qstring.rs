@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qvector_QString.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QString.h");
         type QVector_QString = crate::QVector<QString>;
     }
 
