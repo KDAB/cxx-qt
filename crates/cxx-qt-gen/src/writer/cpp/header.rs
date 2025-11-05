@@ -91,11 +91,18 @@ fn qobjects_header(generated: &GeneratedCppBlocks) -> Vec<String> {
 
                 {public_methods}
                 {private_methods}
+
+                private:
+                  template<typename Inner, typename Outer>
+                  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+                  template<typename Inner, typename Outer>
+                  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
                 }};
 
                 {qobject_assert}"#,
             // Note that there is always a base class as we always have CxxQtType
-            base_classes = qobject.blocks.base_classes.iter().map(|base| format!("public {base}")).collect::<Vec<String>>().join(", "),
+            base_classes = qobject.blocks.base_classes.join(", "),
             metaobjects = qobject.blocks.metaobjects.join("\n  "),
             public_methods = create_block("public", &qobject.blocks.methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
             private_methods = create_block("private", &qobject.blocks.private_methods.iter().filter_map(pair_as_header).collect::<Vec<String>>()),
@@ -276,7 +283,7 @@ class MyObject;
 
 
 
-class MyObject : public MyBase, public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+class MyObject : public MyBase, private ::rust::cxxqt1::CxxQtType<MyObjectRust>
 {
 
 public:
@@ -287,7 +294,12 @@ public:
 public:
   explicit MyObject();
 
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
 
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 
