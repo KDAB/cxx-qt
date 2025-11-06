@@ -21,6 +21,7 @@ members = [
     "examples/qml_multi_crates/rust/main",
     "examples/qml_multi_crates/rust/sub1",
     "examples/qml_multi_crates/rust/sub2",
+    "examples/qml_multi_crates/rust/sub3",
     "examples/span-inspector",
 
     "tests/basic_cxx_only/rust",

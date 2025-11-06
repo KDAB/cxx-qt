@@ -5,9 +5,7 @@
 
 //! This Rust module contains structs for registering QML modules.
 
-use std::path::{Path, PathBuf};
-
-use qt_build_utils::QmlUri;
+pub use qt_build_utils::{QmlFile, QmlUri};
 
 /// This is a description of a QML module for building by the [crate::CxxQtBuilder].
 ///
@@ -19,7 +17,7 @@ pub struct QmlModule {
     pub(crate) uri: QmlUri,
     pub(crate) version_major: usize,
     pub(crate) version_minor: usize,
-    pub(crate) qml_files: Vec<PathBuf>,
+    pub(crate) qml_files: Vec<QmlFile>,
     pub(crate) depends: Vec<String>,
 }
 
@@ -66,14 +64,26 @@ impl QmlModule {
     ///
     /// Additional resources such as images can be added to the Qt resources for the QML module by specifying
     /// the `qrc_files` field.
-    pub fn qml_file(self, file: impl AsRef<Path>) -> Self {
+    ///
+    /// If the Qml file starts is uppercase, it will be treated as a QML component and registered in the `qmldir` file.
+    /// See [qt_build_utils::QmlFile] for more information on configuring the behavior of QML files.
+    ///
+    /// Note that if no version is specified for the QML file, the version of the QML module will
+    /// be used automatically.
+    pub fn qml_file(self, file: impl Into<QmlFile>) -> Self {
         self.qml_files([file])
     }
 
     /// Add multiple QML files to the module, see [Self::qml_file].
-    pub fn qml_files(mut self, files: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
-        self.qml_files
-            .extend(files.into_iter().map(|p| p.as_ref().to_path_buf()));
+    pub fn qml_files(mut self, files: impl IntoIterator<Item = impl Into<QmlFile>>) -> Self {
+        self.qml_files.extend(files.into_iter().map(|p| {
+            let qml_file = p.into();
+            if qml_file.get_version().is_none() {
+                qml_file.version(self.version_major, self.version_minor)
+            } else {
+                qml_file
+            }
+        }));
         self
     }
 }

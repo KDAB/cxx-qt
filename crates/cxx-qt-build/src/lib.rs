@@ -31,12 +31,11 @@ pub use opts::CxxQtBuildersOpts;
 pub use opts::QObjectHeaderOpts;
 
 mod qml_modules;
-pub use qml_modules::QmlModule;
+pub use qml_modules::{QmlFile, QmlModule, QmlUri};
 
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::MocProducts;
 use qt_build_utils::QResources;
-use qt_build_utils::QmlUri;
 use quote::ToTokens;
 use std::{
     collections::HashSet,
@@ -881,8 +880,8 @@ impl CxxQtBuilder {
             cc_builder.define("QT_STATICPLUGIN", None);
 
             // If any of the files inside the qml module change, then trigger a rerun
-            for path in qml_module.qml_files {
-                println!("cargo::rerun-if-changed={}", path.display());
+            for file in qml_module.qml_files {
+                println!("cargo::rerun-if-changed={}", file.path().display());
             }
 
             let module_init_key = qml_module_init_key(&qml_module.uri);

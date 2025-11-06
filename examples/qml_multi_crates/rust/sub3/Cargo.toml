@@ -3,23 +3,20 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 [package]
-name = "qml_multi_crates"
+name = "sub3"
 version = "0.1.0"
-authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>"]
-edition = "2021"
+authors = [
+  "Leon Matthes <leon.matthes@kdab.com>",
+]
+edition = "2024"
 license = "MIT OR Apache-2.0"
 
-[lib]
-crate-type = ["staticlib", "lib"]
+links = "sub3"
 
 [dependencies]
-sub1 = { path = "../sub1" }
-sub2 = { path = "../sub2" }
-sub3 = { path = "../sub3" }
-
 cxx.workspace = true
 cxx-qt.workspace = true
-cxx-qt-lib = { workspace = true, features = [ "qt_full" ] }
+cxx-qt-lib.workspace = true
 
 [build-dependencies]
 cxx-qt-build.workspace = true

@@ -1152,6 +1152,7 @@ dependencies = [
  "cxx-qt-lib",
  "sub1",
  "sub2",
+ "sub3",
 ]
 
 [[package]]
@@ -1323,6 +1324,16 @@ dependencies = [
 
 [[package]]
 name = "sub2"
+version = "0.1.0"
+dependencies = [
+ "cxx",
+ "cxx-qt",
+ "cxx-qt-build",
+ "cxx-qt-lib",
+]
+
+[[package]]
+name = "sub3"
 version = "0.1.0"
 dependencies = [
  "cxx",
