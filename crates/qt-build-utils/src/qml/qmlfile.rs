@@ -51,6 +51,6 @@ impl QmlFile {
 
     /// Returns the version assigned to the QML file, if any.
     pub fn get_version(&self) -> Option<(usize, usize)> {
-        self.version.clone()
+        self.version
     }
 }
