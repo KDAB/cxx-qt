@@ -432,10 +432,12 @@ impl CxxQtBuilder {
     ///     .files(["src/cxxqt_object.rs"])
     ///     .build();
     /// ```
+    ///
+    /// Note: This will automatically add the `Qml` Qt module to the build (see [Self::qt_module]).
     pub fn new_qml_module(module: QmlModule) -> Self {
         let mut builder = Self::new();
         builder.qml_module = Some(module);
-        builder
+        builder.qt_module("Qml")
     }
 
     /// Specify rust file paths to parse through the cxx-qt marco

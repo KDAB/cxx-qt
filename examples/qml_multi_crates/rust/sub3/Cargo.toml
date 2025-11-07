@@ -13,10 +13,14 @@ license = "MIT OR Apache-2.0"
 
 links = "sub3"
 
-[dependencies]
-cxx.workspace = true
-cxx-qt.workspace = true
-cxx-qt-lib.workspace = true
+# Do not depend on cxx/cxx-qt/cxx-qt-lib.
+# A pure QML module does not actually need any of them.
+#
+# If they are included anyway, the linker will complain about unused symbols for:
+# cxx_qt_init_crate_cxx_qt(_lib)
+#
+# If you encounter such errors, try removing the dependencies, or add an `extern crate cxx_qt;`/`extern crate cxx_qt_lib;`
+# directive somewhere in you Rust code to force inclusion of the dependency.
 
 [build-dependencies]
 cxx-qt-build.workspace = true
