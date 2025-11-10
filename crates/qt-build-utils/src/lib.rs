@@ -37,7 +37,7 @@ mod platform;
 pub use platform::QtPlatformLinker;
 
 mod qml;
-pub use qml::{QmlDirBuilder, QmlPluginCppBuilder, QmlUri};
+pub use qml::{QmlDirBuilder, QmlFile, QmlPluginCppBuilder, QmlUri};
 
 mod qrc;
 pub use qrc::{QResource, QResourceFile, QResources};
@@ -156,7 +156,7 @@ impl QtBuild {
         version_major: usize,
         version_minor: usize,
         plugin_name: &str,
-        qml_files: &[impl AsRef<Path>],
+        qml_files: &[QmlFile],
         depends: impl IntoIterator<Item = impl Into<String>>,
     ) -> QmlModuleRegistrationFiles {
         let qml_uri_dirs = uri.as_dirs();
@@ -176,16 +176,19 @@ impl QtBuild {
         // Generate qmldir file
         let qmldir_file_path = qml_module_dir.join("qmldir");
         {
-            let qml_type_files = qml_files.iter().filter(|path| {
-                // Qt by default only includes uppercase files in the qmldir file.
-                // Mirror this behavior.
-                path.as_ref()
-                    .file_name()
-                    .and_then(OsStr::to_str)
-                    .and_then(|file_name| file_name.chars().next())
-                    .map(char::is_uppercase)
-                    .unwrap_or_default()
-            });
+            let qml_type_files = qml_files
+                .iter()
+                .filter(|file| {
+                    // Qt by default only includes uppercase files in the qmldir file.
+                    // Mirror this behavior.
+                    file.path()
+                        .file_name()
+                        .and_then(OsStr::to_str)
+                        .and_then(|file_name| file_name.chars().next())
+                        .map(char::is_uppercase)
+                        .unwrap_or_default()
+                })
+                .cloned();
             let mut file = File::create(&qmldir_file_path).expect("Could not create qmldir file");
             QmlDirBuilder::new(uri.clone())
                 .depends(depends)
@@ -226,8 +229,8 @@ impl QtBuild {
                             .file(QResourceFile::new(resolved).alias(path.display().to_string()))
                     }
 
-                    for path in qml_files {
-                        resource = resource_add_path(resource, path.as_ref());
+                    for file in qml_files {
+                        resource = resource_add_path(resource, file.path());
                     }
                     resource
                 })
@@ -250,7 +253,7 @@ impl QtBuild {
             let mut qml_resource_paths = Vec::new();
             for file in qml_files {
                 let result = QtToolQmlCacheGen::new(self.qt_installation.as_ref())
-                    .compile(qml_cache_args.clone(), file);
+                    .compile(qml_cache_args.clone(), file.path());
                 qmlcachegen_file_paths.push(result.qml_cache_path);
                 qml_resource_paths.push(result.qml_resource_path);
             }

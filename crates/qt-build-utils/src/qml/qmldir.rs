@@ -3,11 +3,10 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::QmlUri;
+use crate::qml::{QmlFile, QmlUri};
 
 use std::ffi::OsStr;
 use std::io;
-use std::path::{Path, PathBuf};
 
 /// QML module definition files builder
 ///
@@ -18,7 +17,7 @@ pub struct QmlDirBuilder {
     plugin: Option<(bool, String)>,
     type_info: Option<String>,
     uri: QmlUri,
-    qml_files: Vec<PathBuf>,
+    qml_files: Vec<QmlFile>,
 }
 
 impl QmlDirBuilder {
@@ -66,23 +65,39 @@ impl QmlDirBuilder {
 
         for qml_file in &self.qml_files {
             let is_qml_file = qml_file
+                .path()
                 .extension()
                 .map(|ext| ext.eq_ignore_ascii_case("qml"))
                 .unwrap_or_default();
 
             if !is_qml_file {
-                panic!("QML file does not end with .qml: {}", qml_file.display(),);
+                panic!(
+                    "QML file does not end with .qml: {}",
+                    qml_file.path().display(),
+                );
             }
 
-            let path = qml_file.display();
+            let path = qml_file.path().display();
             let qml_component_name = qml_file
+                .path()
                 .file_stem()
                 .and_then(OsStr::to_str)
                 .expect("Could not get qml file stem");
 
+            let singleton = if qml_file.is_singleton() {
+                "singleton "
+            } else {
+                ""
+            };
+
             // Qt6 simply uses version 254.0 if no specific version is provided
-            // Until we support versions of individal qml files, we will use 254.0
-            writeln!(writer, "{qml_component_name} 254.0 {path}",)
+            let version = if let Some((major, minor)) = qml_file.get_version() {
+                format!("{}.{}", major, minor)
+            } else {
+                "254.0".to_string()
+            };
+
+            writeln!(writer, "{singleton}{qml_component_name} {version} {path}",)
                 .expect("Could not write qmldir file");
         }
 
@@ -139,11 +154,9 @@ impl QmlDirBuilder {
     }
 
     /// Declares a list of .qml files that are part of the module.
-    pub fn qml_files(mut self, qml_files: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
-        self.qml_files = qml_files
-            .into_iter()
-            .map(|p| p.as_ref().to_owned())
-            .collect();
+    pub fn qml_files(mut self, qml_files: impl IntoIterator<Item = impl Into<QmlFile>>) -> Self {
+        self.qml_files
+            .extend(qml_files.into_iter().map(|p| p.into()));
         self
     }
 
@@ -176,7 +189,11 @@ mod test {
             .depends(["QtQuick", "com.kdab.a"])
             .plugin("P", true)
             .type_info("T")
-            .qml_files(&["qml/Test.qml"])
+            .qml_files(["qml/Test.qml"])
+            .qml_files([QmlFile::from("qml/MySingleton.qml")
+                .singleton(true)
+                .version(1, 0)])
+            .qml_files([QmlFile::from("../AnotherFile.qml").version(2, 123)])
             .write(&mut result)
             .unwrap();
         assert_eq!(
@@ -189,6 +206,8 @@ depends QtQuick
 depends com.kdab.a
 prefer :/qt/qml/com/kdab/
 Test 254.0 qml/Test.qml
+singleton MySingleton 1.0 qml/MySingleton.qml
+AnotherFile 2.123 ../AnotherFile.qml
 "
         );
     }

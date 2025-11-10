@@ -11,3 +11,6 @@ pub use qmlplugincpp::QmlPluginCppBuilder;
 
 mod qmluri;
 pub use qmluri::QmlUri;
+
+mod qmlfile;
+pub use qmlfile::QmlFile;

@@ -10,6 +10,7 @@ import QtQuick.Window 2.12
 import com.kdab.cxx_qt.demo 1.0
 import com.kdab.cxx_qt.demo.sub1 1.0
 import com.kdab.cxx_qt.demo.sub2 1.0
+import com.kdab.cxx_qt.demo.sub3 1.0
 
 ApplicationWindow {
     id: window
@@ -17,10 +18,6 @@ ApplicationWindow {
     minimumWidth: 640
     title: qsTr("CXX-Qt: Hello World")
     visible: true
-
-    BlueRect {
-        id: blueRect
-    }
 
     MainObject {
         id: main
@@ -51,6 +48,10 @@ ApplicationWindow {
             text: "Sub2: " + sub2.string
         }
 
+        Label {
+            text: "Sub3: " + Singleton.string
+        }
+
         Button {
             text: "Increment Number"
 
@@ -59,6 +60,14 @@ ApplicationWindow {
                 sub1.increment();
                 sub2.increment();
             }
+        }
+
+        BlueRect {
+            id: blueRect
+        }
+
+        RedRect {
+            id: redRect
         }
     }
 }

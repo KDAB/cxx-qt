@@ -68,7 +68,7 @@ cxx_qt_import_crate(
     MANIFEST_PATH rust/Cargo.toml
     CRATES ${CRATE}
     LOCKED
-    QT_MODULES Qt::Core
+    QT_MODULES Qt::Core Qt::Qml
 )
 cxx_qt_import_qml_module(${CRATE}_qml
     URI "com.kdab.energy"

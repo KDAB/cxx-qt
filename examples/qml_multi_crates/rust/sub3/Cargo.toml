@@ -1,0 +1,26 @@
+# SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+[package]
+name = "sub3"
+version = "0.1.0"
+authors = [
+  "Leon Matthes <leon.matthes@kdab.com>",
+]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+links = "sub3"
+
+# Do not depend on cxx/cxx-qt/cxx-qt-lib.
+# A pure QML module does not actually need any of them.
+#
+# If they are included anyway, the linker will complain about unused symbols for:
+# cxx_qt_init_crate_cxx_qt(_lib)
+#
+# If you encounter such errors, try removing the dependencies, or add an `extern crate cxx_qt;`/`extern crate cxx_qt_lib;`
+# directive somewhere in you Rust code to force inclusion of the dependency.
+
+[build-dependencies]
+cxx-qt-build.workspace = true

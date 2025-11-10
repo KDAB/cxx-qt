@@ -81,6 +81,10 @@ cxx_qt_import_qml_module(qml_multi_crates_sub2
     URI "com.kdab.cxx_qt.demo.sub2"
     SOURCE_CRATE qml_multi_crates)
 
+cxx_qt_import_qml_module(qml_multi_crates_sub3
+    URI "com.kdab.cxx_qt.demo.sub3"
+    SOURCE_CRATE qml_multi_crates)
+
 # Define the executable with the C++ source
 if(BUILD_WASM)
     # Currently need to use qt_add_executable
