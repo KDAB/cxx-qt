@@ -46,12 +46,12 @@ qstringInitFromRustString(::rust::Str string)
   return QString::fromUtf8(string.data(), string.size());
 }
 
-::rust::String
-qstringToRustString(const QString& string)
+::rust::Slice<const ::std::uint16_t>
+qstringAsSlice(const QString& string)
 {
-  // Note that this changes UTF-16 to UTF-8
-  const auto byteArray = string.toUtf8();
-  return ::rust::String(byteArray.constData(), byteArray.size());
+  return ::rust::Slice<const ::std::uint16_t>(
+    reinterpret_cast<const std::uint16_t*>(string.data()),
+    static_cast<::std::size_t>(string.size()));
 }
 
 QString

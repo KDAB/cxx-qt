@@ -30,21 +30,21 @@ Window {
 
     Image {
         id: background
-        source: "../images/bg.png"
+        source: "qrc:/images/bg.png"
     }
 
     Image {
         id: ocean
         x: Math.max(1008 - ((slideHouse.contentX - 600) / 9.2), 1008)
         y: -1
-        source: "../images/ocean.png"
+        source: "qrc:/images/ocean.png"
     }
 
     Image {
         id: beach1
         x: 955 - ((slideHouse.contentX - 600) / 7.9)
         y: -1
-        source: "../images/beach1.png"
+        source: "qrc:/images/beach1.png"
         width: sourceSize.width * ((slideHouse.contentX / 6500) + 0.9)
         smooth: true
     }
@@ -53,7 +53,7 @@ Window {
         id: beach2
         x:  890 - (slideHouse.contentX - 600) / 6.9
         y: -1
-        source: "../images/beach2.png"
+        source: "qrc:/images/beach2.png"
         width: sourceSize.width * ((slideHouse.contentX / 5000) + 0.8)
         smooth: true
     }
@@ -62,7 +62,7 @@ Window {
         id: level0
         x: Math.min(0, -168 - (slideHouse.contentX - 600) / 5.9)
         y: -128
-        source: "../images/level0.png"
+        source: "qrc:/images/level0.png"
         opacity: currentLevel=== 0 ? 1 : 0
 
         Behavior on opacity { NumberAnimation { duration: 900; easing.type: Easing.InOutQuad } }
@@ -80,7 +80,7 @@ Window {
         id: level0i
         x: level0.x
         y: 0
-        source: "../images/level0i.png"
+        source: "qrc:/images/level0i.png"
         opacity: 1 - Math.pow(level0.opacity, 2)
     }
     Image {
@@ -88,7 +88,7 @@ Window {
         property int xi: currentLevel > 0 ? 0 : -200
         property real opi: currentLevel > 1 ? 0 : 1
         x: level0.x + 86 + xi
-        source: "../images/level1.png"
+        source: "qrc:/images/level1.png"
         y: 79
         opacity: (1 + (xi / 200)) * opi
 
@@ -120,7 +120,7 @@ Window {
     Image {
         id: level1i
         x: level1.x
-        source: "../images/level1i.png"
+        source: "qrc:/images/level1i.png"
         y: 79
         opacity: currentLevel === 0 ? 0 : (1 - Math.pow(level1.opacity, 2))
     }
@@ -129,7 +129,7 @@ Window {
         property int xi: currentLevel > 1 ? 0 : -200
         property real opi: currentLevel > 2 ? 0 : 1
         x: level0.x + 86 + xi
-        source: "../images/level2.png"
+        source: "qrc:/images/level2.png"
         y: 79
         opacity: (1 + xi / 200) * opi
 
@@ -169,7 +169,7 @@ Window {
     Image {
         id: level2i
         x: level1.x
-        source: "../images/level2i.png"
+        source: "qrc:/images/level2i.png"
         y: 79
         opacity: currentLevel < 2 ? 0 : (1 - Math.pow(level2.opacity, 2))
     }
@@ -178,7 +178,7 @@ Window {
         id: level3
         property int xi: currentLevel > 2 ? 0: -200
         x: level0.x + 86 + xi
-        source: "../images/level3.png"
+        source: "qrc:/images/level3.png"
         y: 79
         opacity: (1 + (xi / 200))
 
@@ -195,7 +195,7 @@ Window {
     }
     Image {
         id: sideShadow
-        source: "../images/sideshadow.png"
+        source: "qrc:/images/sideshadow.png"
     }
 
     Flickable {
@@ -297,13 +297,13 @@ Window {
 
         Image {
             fillMode: Image.PreserveAspectFit
-            source: "../images/qt-logo.png"
+            source: "qrc:/images/qt-logo.png"
             width: parent.width
         }
 
         Image {
             fillMode: Image.PreserveAspectFit
-            source: "../images/rust-logo-white.png"
+            source: "qrc:/images/rust-logo-white.png"
             width: parent.width
         }
     }
@@ -361,7 +361,7 @@ Window {
 
     Image {
         id: wireless
-        source: "../images/iconwirless.png"
+        source: "qrc:/images/iconwirless.png"
         x: 19
         y: 22
     }
@@ -380,7 +380,7 @@ Window {
 
     Image {
         id: sensors
-        source: "../images/iconSensors.png"
+        source: "qrc:/images/iconSensors.png"
         anchors.left: powerusageT.right
         anchors.leftMargin: 16
         y: 22
@@ -407,7 +407,7 @@ Window {
 
         Image {
             id: rLogo
-            source: "../images/RLogo.png"
+            source: "qrc:/images/RLogo.png"
             anchors.centerIn: buttoninfo
             opacity: buttoninfo.pressed ? 1 : 0.7
             scale: 0.9

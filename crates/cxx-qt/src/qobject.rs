@@ -9,15 +9,13 @@
 mod ffi {
     unsafe extern "C++" {
         include!(<QtCore/QObject>);
-        /// QObject type.
+        /// The `QObject` class is the base class of all Qt objects.
         ///
-        /// Most methods available on this type are within the [cxx_qt_lib::core::QObjectExt] trait,
+        /// Most methods available on this type are within the [`cxx_qt_lib::QObjectExt`] trait,
         /// which needs to be imported in order to access these.
+        ///
+        /// Qt Documentation: [QObject](https://doc.qt.io/qt/qobject.html#details)
         type QObject;
-
-        #[cxx_name = "dumpObjectInfo"]
-        /// Dump information about this QObjects name and signals
-        fn dump_object_info(&self);
     }
 }
 

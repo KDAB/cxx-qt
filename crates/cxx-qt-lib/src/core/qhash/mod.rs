@@ -6,12 +6,14 @@ use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
 use std::fmt;
 
-/// The QHash class is a template class that provides a hash-table-based dictionary.
+/// The `QHash` class is a template class that provides a hash-table-based dictionary.
 ///
 /// Note that this means that T needs to have a C++ global
 /// [`qHash()` function](https://doc.qt.io/qt-6/qhash.html#qhash).
 ///
 /// To use QHash with a custom pair, implement the [`QHashPair`] trait for T.
+///
+/// Qt Documentation: [QHash]("https://doc.qt.io/qt/qhash.html#details")
 #[repr(C)]
 pub struct QHash<T>
 where
@@ -25,7 +27,7 @@ impl<T> Clone for QHash<T>
 where
     T: QHashPair,
 {
-    /// Constructs a copy of other.
+    /// Constructs a copy of the hash.
     fn clone(&self) -> Self {
         T::clone(self)
     }
@@ -72,17 +74,17 @@ impl<T> QHash<T>
 where
     T: QHashPair,
 {
-    /// Removes all items from the hash.
+    /// Removes all items from the hash and frees up all memory used by it.
     pub fn clear(&mut self) {
         T::clear(self)
     }
 
-    /// Returns true if the hash contains an item with the key; otherwise returns false.
+    /// Returns `true` if the hash contains an item with the key; otherwise returns `false`.
     pub fn contains(&self, key: &T::Key) -> bool {
         T::contains(self, key)
     }
 
-    /// Returns the value associated with the key if it exists.
+    /// Returns the value associated with the `key` or `None` if it does not exist.
     pub fn get(&self, key: &T::Key) -> Option<T::Value> {
         if self.contains(key) {
             Some(T::get_or_default(self, key))
@@ -91,12 +93,16 @@ where
         }
     }
 
-    /// Returns the value associated with the key or a default value.
+    /// Returns the value associated with the `key`, or a default-constructed value if it does not exist.
+    ///
+    /// For most value types, a default-constructed value simply means that a value is created using the default constructor (e.g. an empty string for [`QString`](crate::QString)). Primitive types like `i32` and `f64` are initialized to 0.
     pub fn get_or_default(&self, key: &T::Key) -> T::Value {
         T::get_or_default(self, key)
     }
 
-    /// Inserts a new item with the key and a value of value.
+    /// Inserts a new item with the `key` and a value of `value`.
+    ///
+    /// If there is already an item with the `key`, that item's value is replaced with `value`.
     ///
     /// The key and value is a reference here so it can be opaque or trivial but
     /// note that the key and value is copied when being inserted into the hash.
@@ -104,13 +110,13 @@ where
         T::insert_clone(self, key, value)
     }
 
-    /// Returns true if the hash contains no items; otherwise returns false.
+    /// Returns `true` if the hash contains no items; otherwise returns `false`.
     pub fn is_empty(&self) -> bool {
         T::len(self) == 0
     }
 
     /// An iterator visiting all key-value pairs in arbitrary order.
-    /// The iterator element type is (&'a T::Key, &'a T::Value).
+    /// The iterator element type is `(&'a T::Key, &'a T::Value)`.
     pub fn iter(&self) -> Iter<'_, T> {
         Iter {
             hash: self,
@@ -123,9 +129,9 @@ where
         T::len(self)
     }
 
-    /// Removes all the items that have the key from the hash.
+    /// Removes the item that has the `key` from the hash.
     ///
-    /// Returns true if at least one item was removed, otherwise returns false.
+    /// Returns `true` if the key exists in the hash and the item has been removed, and `false` otherwise.
     pub fn remove(&mut self, key: &T::Key) -> bool {
         T::remove(self, key)
     }
@@ -137,7 +143,7 @@ where
     T::Key: ExternType<Kind = cxx::kind::Trivial>,
     T::Value: ExternType<Kind = cxx::kind::Trivial>,
 {
-    /// Inserts a new item with the key and a value of value.
+    /// Inserts a new item with the `key` and a value of `value`.
     pub fn insert(&mut self, key: T::Key, value: T::Value) {
         T::insert(self, key, value)
     }

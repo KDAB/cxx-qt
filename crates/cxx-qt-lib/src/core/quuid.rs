@@ -10,6 +10,7 @@ use uuid::Uuid;
 
 #[cxx::bridge]
 mod ffi {
+    /// This enum defines the values used in the variant field of the UUID. The value in the variant field determines the layout of the 128-bit value.
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QUuidVariant {
@@ -17,7 +18,7 @@ mod ffi {
         VarUnknown = -1,
         /// Reserved for NCS (Network Computing System) backward compatibility
         NCS = 0,
-        /// Distributed Computing Environment, the scheme used by QUuid
+        /// Distributed Computing Environment, the scheme used by [`QUuid`](super::QUuid)
         DCE = 2,
         /// Reserved for Microsoft backward compatibility (GUID)
         Microsoft = 6,
@@ -25,6 +26,7 @@ mod ffi {
         Reserved = 7,
     }
 
+    /// This enum defines the values used in the version field of the UUID. The version field is meaningful only if the value in the variant field is [`QUuidVariant::DCE`].
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QUuidVersion {
@@ -103,6 +105,9 @@ mod ffi {
 
 pub use ffi::{QUuidVariant, QUuidVersion};
 
+/// The `QUuid` class stores a Universally Unique Identifier (UUID).
+///
+/// Qt Documentation: [QUuid](https://doc.qt.io/qt/quuid.html#details)
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[repr(C)]
 pub struct QUuid {
@@ -150,22 +155,22 @@ impl QUuid {
         (unsafe { std::mem::transmute::<QUuid, u128>(*self) }) == 0
     }
 
-    /// This function returns a new UUID with variant `QUuidVariant::DCE` and version
-    /// `QUuidVersion::Md5`. `namespace` is the namespace and `data` is the basic data as described
+    /// This function returns a new UUID with variant [`QUuidVariant::DCE`] and version
+    /// [`QUuidVersion::Md5`]. `namespace` is the namespace and `data` is the basic data as described
     /// by RFC 4122.
     pub fn create_uuid_v3(namespace: &Self, data: &[u8]) -> Self {
         ffi::quuid_create_uuid_v3(namespace, data)
     }
 
     /// On any platform other than Windows, this function returns a new UUID with variant
-    /// `QUuidVariant::DCE` and version `QUuidVersion::Random`. On Windows, a GUID is generated using
+    /// [`QUuidVariant::DCE`] and version [`QUuidVersion::Random`]. On Windows, a GUID is generated using
     /// the Windows API and will be of the type that the API decides to create.
     pub fn create_uuid() -> Self {
         ffi::quuid_create_uuid()
     }
 
-    /// This function returns a new UUID with variant `QUuidVariant::DCE` and version
-    /// `QUuidVersion::Sha1`. `namespace` is the namespace and `data` is the basic data as described
+    /// This function returns a new UUID with variant [`QUuidVariant::DCE`] and version
+    /// [`QUuidVersion::Sha1`]. `namespace` is the namespace and `data` is the basic data as described
     /// by RFC 4122.
     pub fn create_uuid_v5(namespace: &Self, data: &[u8]) -> Self {
         ffi::quuid_create_uuid_v5(namespace, data)
@@ -245,14 +250,14 @@ impl QUuid {
     }
 
     /// Returns the value in the variant field of the UUID. If the return value is
-    /// `QUuidVariant::DCE`, call `version()` to see which layout it uses. The null UUID is
+    /// [`QUuidVariant::DCE`], call [`version`](Self::version) to see which layout it uses. The null UUID is
     /// considered to be of an unknown variant.
     pub fn variant(&self) -> QUuidVariant {
         ffi::quuid_variant(self)
     }
 
-    /// Returns the version field of the UUID, if the UUID's variant field is `QUuidVariant::DCE`.
-    /// Otherwise it returns `QUuidVariant::VerUnknown`.
+    /// Returns the version field of the UUID, if the UUID's variant field is [`QUuidVariant::DCE`].
+    /// Otherwise it returns [`QUuidVersion::VerUnknown`].
     pub fn version(&self) -> QUuidVersion {
         ffi::quuid_version(self)
     }
@@ -282,7 +287,7 @@ impl From<QUuid> for u128 {
 }
 
 impl From<&QString> for QUuid {
-    /// Creates a QUuid object from the string text, which must be formatted as five hex fields
+    /// Creates a `QUuid` object from the string text, which must be formatted as five hex fields
     /// separated by '-', e.g., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
     /// digit. The curly braces shown here are optional, but it is normal to include them.
     ///
@@ -293,7 +298,7 @@ impl From<&QString> for QUuid {
 }
 
 impl From<&str> for QUuid {
-    /// Creates a QUuid object from the string text, which must be formatted as five hex fields
+    /// Creates a `QUuid` object from the string text, which must be formatted as five hex fields
     /// separated by '-', e.g., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
     /// digit. The curly braces shown here are optional, but it is normal to include them.
     ///
@@ -304,7 +309,7 @@ impl From<&str> for QUuid {
 }
 
 impl From<&String> for QUuid {
-    /// Creates a QUuid object from the string text, which must be formatted as five hex fields
+    /// Creates a `QUuid` object from the string text, which must be formatted as five hex fields
     /// separated by '-', e.g., "{xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx}" where each 'x' is a hex
     /// digit. The curly braces shown here are optional, but it is normal to include them.
     ///

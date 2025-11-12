@@ -7,7 +7,7 @@
 .vscode/
 **/target/
 **/coverage/
-**/build*/
+**/build/
 cargo/*
 **/mdbook/*
 **/mdbook-linkcheck/*

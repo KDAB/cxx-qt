@@ -394,7 +394,6 @@ dependencies = [
  "proc-macro2",
  "qt-build-utils",
  "quote",
- "semver",
  "serde",
  "serde_json",
 ]
@@ -1153,6 +1152,7 @@ dependencies = [
  "cxx-qt-lib",
  "sub1",
  "sub2",
+ "sub3",
 ]
 
 [[package]]
@@ -1330,6 +1330,13 @@ dependencies = [
  "cxx-qt",
  "cxx-qt-build",
  "cxx-qt-lib",
+]
+
+[[package]]
+name = "sub3"
+version = "0.1.0"
+dependencies = [
+ "cxx-qt-build",
 ]
 
 [[package]]

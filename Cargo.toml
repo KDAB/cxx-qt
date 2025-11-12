@@ -21,6 +21,7 @@ members = [
     "examples/qml_multi_crates/rust/main",
     "examples/qml_multi_crates/rust/sub1",
     "examples/qml_multi_crates/rust/sub2",
+    "examples/qml_multi_crates/rust/sub3",
     "examples/span-inspector",
 
     "tests/basic_cxx_only/rust",
@@ -67,3 +68,7 @@ thiserror = "1.0"
 
 [workspace.lints.clippy]
 incompatible_msrv = "deny"
+if_not_else = "warn"
+manual_let_else = "warn"
+redundant_else = "warn"
+single_match_else = "warn"

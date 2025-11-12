@@ -9,7 +9,7 @@
 #[cxx::bridge]
 pub mod ffi {
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qvector_i32.h");
+        include!("cxx-qt-lib/core/qvector/qvector_i32.h");
         type QVector_i32 = crate::QVector<i32>;
     }
 

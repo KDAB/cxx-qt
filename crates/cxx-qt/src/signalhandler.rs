@@ -12,32 +12,32 @@ pub trait CxxQtSignalHandlerClosure {
     /// The Id of the CXX type
     type Id;
     /// The type of the closure
-    type FnType<'a>: ?Sized;
+    type FnType: ?Sized;
 }
 
 // A signal handler helper which is used to move a FnMut closure into C++
 #[doc(hidden)]
 #[repr(transparent)]
-pub struct CxxQtSignalHandler<'a, T>
+pub struct CxxQtSignalHandler<T>
 where
     T: CxxQtSignalHandlerClosure,
 {
-    closure: Box<T::FnType<'a>>,
+    closure: Box<T::FnType>,
 }
 
-impl<'a, T> CxxQtSignalHandler<'a, T>
+impl<T> CxxQtSignalHandler<T>
 where
     T: CxxQtSignalHandlerClosure,
 {
     /// Create a new signal handler with the given closure
     //
     // Note that we cannot use From as we cannot infer the type in the caller
-    pub fn new(closure: Box<T::FnType<'a>>) -> Self {
+    pub fn new(closure: Box<T::FnType>) -> Self {
         Self { closure }
     }
 
     /// A mutable reference to the inner closure
-    pub fn closure(&mut self) -> &mut Box<T::FnType<'a>> {
+    pub fn closure(&mut self) -> &mut Box<T::FnType> {
         &mut self.closure
     }
 }
@@ -45,7 +45,7 @@ where
 // Safety:
 //
 // Static checks on the C++ and Rust side to ensure the size is the same.
-unsafe impl<T> ExternType for CxxQtSignalHandler<'_, T>
+unsafe impl<T> ExternType for CxxQtSignalHandler<T>
 where
     T: CxxQtSignalHandlerClosure,
 {

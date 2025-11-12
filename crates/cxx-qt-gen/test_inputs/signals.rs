@@ -17,6 +17,11 @@ mod ffi {
         /// When the QTimer timeout occurs
         #[qsignal]
         pub(self) fn timeout(self: Pin<&mut Self>);
+
+        /// A constant signal for when the timer is ready
+        #[qsignal]
+        fn const_ready(&self);
+
     }
 
     unsafe extern "RustQt" {

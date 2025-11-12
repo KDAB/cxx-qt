@@ -19,30 +19,31 @@ mod ffi {
         #[allow(dead_code)]
         type QPointF = crate::QPointF;
 
-        /// Returns true if both the x and y coordinates are set to 0, otherwise returns false.
+        /// Returns `true` if both the x and y coordinates are set to 0, otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QPoint) -> bool;
 
-        /// Returns the sum of the absolute values of x() and y(),
+        /// Returns the sum of the absolute values of [`x`](Self::x) and [`y`](Self::y),
         /// traditionally known as the "Manhattan length" of the vector from the origin to the point.
         #[rust_name = "manhattan_length"]
         fn manhattanLength(self: &QPoint) -> i32;
 
-        /// Sets the x coordinate of this point to the given x coordinate.
+        /// Sets the x coordinate of this point to the given `x` coordinate.
         #[rust_name = "set_x"]
         fn setX(self: &mut QPoint, x: i32);
 
-        /// Sets the y coordinate of this point to the given y coordinate.
+        /// Sets the y coordinate of this point to the given `y` coordinate.
         #[rust_name = "set_y"]
         fn setY(self: &mut QPoint, y: i32);
 
         /// Returns this point as a point with floating point accuracy.
+        ///
         /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_pointf"]
         fn toPointF(self: &QPoint) -> QPointF;
 
-        /// Returns a point with x and y coordinates exchanged
+        /// Returns a point with x and y coordinates exchanged.
         fn transposed(self: &QPoint) -> QPoint;
 
         /// Returns the x coordinate of this point.
@@ -93,7 +94,9 @@ mod ffi {
     }
 }
 
-/// The QPoint struct defines a point in the plane using integer precision.
+/// The `QPoint` class defines a point in the plane using integer precision.
+///
+/// Qt Documentation: [QPoint](https://doc.qt.io/qt/qpoint.html#details)
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[repr(C)]
 pub struct QPoint {
@@ -102,19 +105,19 @@ pub struct QPoint {
 }
 
 impl QPoint {
-    /// Returns the dot product of p1 and p2.
+    /// Returns the dot product of `p1` and `p2`.
     pub fn dot_product(p1: &QPoint, p2: &QPoint) -> i32 {
         ffi::qpoint_dot_product(p1, p2)
     }
 
-    /// Constructs a point with the given coordinates (x, y).
-    pub fn new(x: i32, y: i32) -> Self {
-        ffi::qpoint_init(x, y)
+    /// Constructs a point with the given coordinates (`xpos`, `ypos`).
+    pub fn new(xpos: i32, ypos: i32) -> Self {
+        ffi::qpoint_init(xpos, ypos)
     }
 }
 
 impl Default for QPoint {
-    /// Constructs a null point, i.e. with coordinates (0, 0)
+    /// Constructs a null point, i.e. with coordinates (0, 0).
     fn default() -> Self {
         ffi::qpoint_init_default()
     }

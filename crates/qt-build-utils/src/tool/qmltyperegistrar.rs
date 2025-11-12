@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QtInstallation, QtTool};
+use crate::{QmlUri, QtInstallation, QtTool};
 use semver::Version;
 use std::{
     path::{Path, PathBuf},
@@ -30,7 +30,7 @@ impl QtToolQmlTypeRegistrar {
         &self,
         metatypes_json: &[impl AsRef<Path>],
         qmltypes: impl AsRef<Path>,
-        uri: &str,
+        uri: &QmlUri,
         version: Version,
     ) -> Option<PathBuf> {
         // Filter out empty jsons
@@ -38,13 +38,11 @@ impl QtToolQmlTypeRegistrar {
             .iter()
             .filter(|f| {
                 std::fs::metadata(f)
-                    .unwrap_or_else(|_| {
-                        panic!("couldn't open json file {}", f.as_ref().to_string_lossy())
-                    })
+                    .unwrap_or_else(|_| panic!("couldn't open json file {}", f.as_ref().display()))
                     .len()
                     > 0
             })
-            .map(|f| f.as_ref().to_string_lossy().to_string())
+            .map(|f| f.as_ref().to_string_lossy().into_owned())
             .collect();
 
         // Only run qmltyperegistrar if we have valid json files left out
@@ -52,7 +50,7 @@ impl QtToolQmlTypeRegistrar {
             return None;
         }
 
-        let qml_uri_underscores = uri.replace('.', "_");
+        let qml_uri_underscores = uri.as_underscores();
         // TODO: note before this was the plugin folder
         let output_folder = QtTool::QmlTypeRegistrar.writable_path();
         std::fs::create_dir_all(&output_folder).expect("Could not create qmltyperegistrar dir");
@@ -60,16 +58,16 @@ impl QtToolQmlTypeRegistrar {
             output_folder.join(format!("{qml_uri_underscores}_qmltyperegistration.cpp"));
 
         let mut args = vec![
-            "--generate-qmltypes".to_string(),
-            qmltypes.as_ref().to_string_lossy().to_string(),
-            "--major-version".to_string(),
+            "--generate-qmltypes".to_owned(),
+            qmltypes.as_ref().to_string_lossy().into_owned(),
+            "--major-version".to_owned(),
             version.major.to_string(),
-            "--minor-version".to_string(),
+            "--minor-version".to_owned(),
             version.minor.to_string(),
-            "--import-name".to_string(),
+            "--import-name".to_owned(),
             uri.to_string(),
-            "-o".to_string(),
-            qmltyperegistrar_output_path.to_string_lossy().to_string(),
+            "-o".to_owned(),
+            qmltyperegistrar_output_path.to_string_lossy().into_owned(),
         ];
         args.extend(metatypes_json);
         let cmd = Command::new(&self.executable)

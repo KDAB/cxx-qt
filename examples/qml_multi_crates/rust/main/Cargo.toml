@@ -15,6 +15,7 @@ crate-type = ["staticlib", "lib"]
 [dependencies]
 sub1 = { path = "../sub1" }
 sub2 = { path = "../sub2" }
+sub3 = { path = "../sub3" }
 
 cxx.workspace = true
 cxx-qt.workspace = true

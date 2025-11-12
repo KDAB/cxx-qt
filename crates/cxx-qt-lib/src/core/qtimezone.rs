@@ -4,8 +4,11 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use std::fmt;
 
+use crate::{QByteArray, QList, QString};
+
 #[cxx::bridge]
 mod ffi {
+    /// The type of time zone name.
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QTimeZoneNameType {
@@ -20,6 +23,7 @@ mod ffi {
         OffsetName,
     }
 
+    /// The type of time zone time, for example when requesting the name. In time zones that do not apply DST, all three values may return the same result.
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QTimeZoneTimeType {
@@ -41,13 +45,15 @@ mod ffi {
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qdatetime.h");
         type QDateTime = crate::QDateTime;
-        include!("cxx-qt-lib/qlist_QByteArray.h");
+        include!("cxx-qt-lib/core/qlist/qlist_QByteArray.h");
         type QList_QByteArray = crate::QList<crate::QByteArray>;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
         include!("cxx-qt-lib/qtimezone.h");
-        /// The QTimeZone class converts between UTC and local time in a specific time zone.
+        /// The `QTimeZone` class converts between UTC and local time in a specific time zone.
+        ///
+        /// Qt Documentation: [QTimeZone](https://doc.qt.io/qt/qtimezone.html#details)
         //
         // QTimeZone only has a copy-constructor and not a move-constructor, which means that the following is true
         // "When the move constructor is not implicitly declared or explicitly supplied, expressions
@@ -58,45 +64,55 @@ mod ffi {
         type QTimeZoneNameType;
         type QTimeZoneTimeType;
 
-        /// Returns the time zone abbreviation at the given atDateTime. The abbreviation may change depending on DST or even historical events.
-        fn abbreviation(self: &QTimeZone, atDateTime: &QDateTime) -> QString;
+        /// Returns the time zone abbreviation at the given `at_date_time`. The abbreviation may change depending on DST or even historical events.
+        ///
+        /// **Note:** The abbreviation is not guaranteed to be unique to this time zone and should not be used in place of the ID or display name.
+        fn abbreviation(self: &QTimeZone, at_date_time: &QDateTime) -> QString;
 
         /// Returns any comment for the time zone.
+        ///
+        /// A comment may be provided by the host platform to assist users in choosing the correct time zone. Depending on the platform this may not be localized.
         fn comment(self: &QTimeZone) -> QString;
 
-        /// Returns the daylight-saving time offset at the given atDateTime,
+        /// Returns the daylight-saving time offset at the given `at_date_time`,
         /// i.e. the number of seconds to add to the standard time offset to obtain the local daylight-saving time.
+        ///
+        /// For example, for the time zone "Europe/Berlin" the DST offset is +3600 seconds. During standard time this function will return 0, and when daylight-saving is in effect it will return 3600.
         #[rust_name = "daylight_time_offset"]
-        fn daylightTimeOffset(self: &QTimeZone, atDateTime: &QDateTime) -> i32;
+        fn daylightTimeOffset(self: &QTimeZone, at_date_time: &QDateTime) -> i32;
 
-        /// Returns true if the time zone has practiced daylight-saving at any time.
+        /// Returns `true` if the time zone has practiced daylight-saving at any time.
         #[rust_name = "has_daylight_time"]
         fn hasDaylightTime(self: &QTimeZone) -> bool;
 
-        /// Returns true if the system backend supports obtaining transitions.
+        /// Returns `true` if the system backend supports obtaining transitions.
         #[rust_name = "has_transitions"]
         fn hasTransitions(self: &QTimeZone) -> bool;
 
         /// Returns the IANA ID for the time zone.
         fn id(self: &QTimeZone) -> QByteArray;
 
-        /// Returns true if daylight-saving was in effect at the given atDateTime.
+        /// Returns `true` if daylight-saving was in effect at the given `at_date_time`.
         #[rust_name = "is_daylight_time"]
-        fn isDaylightTime(self: &QTimeZone, atDateTime: &QDateTime) -> bool;
+        fn isDaylightTime(self: &QTimeZone, at_date_time: &QDateTime) -> bool;
 
-        /// Returns true if this time zone is valid.
+        /// Returns `true` if this time zone is valid.
         #[rust_name = "is_valid"]
         fn isValid(self: &QTimeZone) -> bool;
 
-        /// Returns the total effective offset at the given atDateTime, i.e. the number of seconds to add to UTC to obtain the local time.
-        /// This includes any DST offset that may be in effect, i.e. it is the sum of standardTimeOffset() and daylightTimeOffset() for the given datetime.
+        /// Returns the total effective offset at the given `at_date_time`, i.e. the number of seconds to add to UTC to obtain the local time.
+        /// This includes any DST offset that may be in effect, i.e. it is the sum of [`standard_time_offset`](QTimeZone::standard_time_offset) and [`daylight_time_offset`](QTimeZone::daylight_time_offset) for the given datetime.
+        ///
+        /// For example, for the time zone "Europe/Berlin" the standard time offset is +3600 seconds and the DST offset is +3600 seconds. During standard time this function will return 3600 (UTC+01:00), and during DST it will return 7200 (UTC+02:00).
         #[rust_name = "offset_from_utc"]
-        fn offsetFromUtc(self: &QTimeZone, atDateTime: &QDateTime) -> i32;
+        fn offsetFromUtc(self: &QTimeZone, at_date_time: &QDateTime) -> i32;
 
-        /// Returns the standard time offset at the given atDateTime, i.e. the number of seconds to add to UTC to obtain the local Standard Time.
+        /// Returns the standard time offset at the given `at_date_time`, i.e. the number of seconds to add to UTC to obtain the local Standard Time.
         /// This excludes any DST offset that may be in effect.
+        ///
+        /// For example, for the time zone "Europe/Berlin" the standard time offset is +3600 seconds. During both standard and DST this function will return 3600 (UTC+01:00).
         #[rust_name = "standard_time_offset"]
-        fn standardTimeOffset(self: &QTimeZone, atDateTime: &QDateTime) -> i32;
+        fn standardTimeOffset(self: &QTimeZone, at_date_time: &QDateTime) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -164,12 +180,13 @@ impl Default for QTimeZoneNameType {
 
 impl QTimeZone {
     /// Returns a list of all available IANA time zone IDs on this system.
-    pub fn available_time_zone_ids() -> ffi::QList_QByteArray {
+    pub fn available_time_zone_ids() -> QList<QByteArray> {
         ffi::qtimezone_available_time_zone_ids()
     }
 
     /// Returns the localized time zone display name.
     ///
+    /// The name returned is the one for the application default locale, applicable when the given `time_type` is in effect and of the form indicated by `name_type`.
     /// Where the time zone display names have changed over time, the current names will be used.
     /// If no suitably localized name of the given type is available, another name type may be
     /// used, or an empty string may be returned.
@@ -178,21 +195,21 @@ impl QTimeZone {
     /// used, as no localization data will be available for it. If this timezone is invalid, an
     /// empty string is returned. This may also arise for the representation of local time if
     /// determining the system time zone fails.
-    fn display_name(
-        &self,
-        time_type: QTimeZoneTimeType,
-        name_type: QTimeZoneNameType,
-    ) -> ffi::QString {
+    fn display_name(&self, time_type: QTimeZoneTimeType, name_type: QTimeZoneNameType) -> QString {
         ffi::qtimezone_display_name(self, time_type, name_type)
     }
 
-    /// Creates an instance of a time zone with the requested Offset from UTC of offsetSeconds.
+    /// Creates a time zone instance with the given offset, `offset_seconds`, from UTC.
+    ///
+    /// The `offset_seconds` from UTC must be in the range -16 hours to +16 hours otherwise an invalid time zone will be returned.
     pub fn from_offset_seconds(offset_seconds: i32) -> cxx::UniquePtr<Self> {
         ffi::qtimezone_from_offset_seconds(offset_seconds)
     }
 
-    /// Creates an instance of the requested time zone ianaId.
-    pub fn from_iana(iana_id: &ffi::QByteArray) -> cxx::UniquePtr<Self> {
+    /// Creates a time zone instance with the requested IANA ID `iana_id`.
+    ///
+    /// The ID must be one of the available system IDs or a valid UTC-with-offset ID, otherwise an invalid time zone will be returned. For UTC-with-offset IDs, when they are not in fact IANA IDs, the ID of the resulting instance may differ from the ID passed to the constructor.
+    pub fn from_iana(iana_id: &QByteArray) -> cxx::UniquePtr<Self> {
         ffi::qtimezone_from_iana(iana_id)
     }
 
@@ -201,22 +218,22 @@ impl QTimeZone {
         ffi::qtimezone_default()
     }
 
-    /// Returns a QTimeZone object that refers to the local system time, as specified by systemTimeZoneId().
+    /// Returns a `QTimeZone` object that refers to the local system time, as specified by [`system_time_zone_id`](Self::system_time_zone_id).
     pub fn system_time_zone() -> cxx::UniquePtr<Self> {
         ffi::qtimezone_system_time_zone()
     }
 
     /// Returns the current system time zone IANA ID.
-    pub fn system_time_zone_id() -> ffi::QByteArray {
+    pub fn system_time_zone_id() -> QByteArray {
         ffi::qtimezone_system_time_zone_id()
     }
 
-    /// Copy constructor, create a copy of the QTimeZone.
+    /// Copy constructor, create a copy of the `QTimeZone`.
     pub fn to_owned(&self) -> cxx::UniquePtr<Self> {
         ffi::qtimezone_clone(self)
     }
 
-    /// Returns a QTimeZone object that refers to UTC (Universal Time Coordinated).
+    /// Returns a `QTimeZone` object that refers to UTC (Universal Time Coordinated).
     pub fn utc() -> cxx::UniquePtr<Self> {
         ffi::qtimezone_utc()
     }

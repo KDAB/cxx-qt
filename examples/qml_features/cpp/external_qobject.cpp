@@ -16,6 +16,7 @@ ExternalQObject::trigger(::std::uint32_t amount)
 {
   for (::std::uint32_t i = 0; i < amount; i++) {
     Q_EMIT triggered();
+    Q_EMIT triggeredConstSignal();
     Q_EMIT triggeredPrivateSignal(QPrivateSignal());
   }
 }

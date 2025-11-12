@@ -3,16 +3,14 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use cxx_qt_build::{CxxQtBuilder, Interface, QmlModule};
+use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    let interface = Interface::default();
-    CxxQtBuilder::library(interface)
-        .qt_module("Network")
-        .qml_module(QmlModule::<_, &str> {
-            uri: "com.kdab.cxx_qt.demo.sub1",
-            rust_files: &["src/sub1_object.rs"],
-            ..Default::default()
-        })
-        .build();
+    CxxQtBuilder::new_qml_module(
+        QmlModule::new("com.kdab.cxx_qt.demo.sub1").qml_file("qml/BlueRect.qml"),
+    )
+    .qt_module("Network")
+    .files(["src/sub1_object.rs"])
+    .build()
+    .export();
 }

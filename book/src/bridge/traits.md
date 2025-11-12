@@ -26,6 +26,8 @@ For further documentation, refer to the documentation of the individual traits:
 - [Constructor](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html) - custom constructor
 - [Initialize](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Initialize.html) - execute Rust code when the object is constructed, or as shorthand for an empty constructor
 - [Threading](https://docs.rs/cxx-qt/latest/cxx_qt/trait.Threading.html) - marker trait whether CXX-Qt threading should be enabled
+- [QObjectExt](https://docs.rs/cxx-qt/latest/cxx_qt_lib/trait.QObjectExt.html) - Trait which exposes some key methods of QObject
+  - This trait is automatically implemented for anything that upcasts (see below) into QObject, even transitively such as having QObject as its grandparent.
 
 > ⚠️ These traits should only be implemented if you are sure you need to, they are automatically implemented for RustQt types.
 

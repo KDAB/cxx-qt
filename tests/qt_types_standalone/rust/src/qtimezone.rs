@@ -24,7 +24,7 @@ fn construct_qtimezone() -> cxx::UniquePtr<QTimeZone> {
 }
 
 fn read_qtimezone(t: &QTimeZone) -> bool {
-    t.id().to_string() == "Europe/London"
+    t.id().as_slice() == b"Europe/London"
 }
 
 fn clone_qtimezone(t: &QTimeZone) -> cxx::UniquePtr<QTimeZone> {

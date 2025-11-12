@@ -10,3 +10,4 @@ mod main_object;
 // crates in this crate, you can skip these `extern crate` statements).
 extern crate sub1;
 extern crate sub2;
+extern crate sub3;

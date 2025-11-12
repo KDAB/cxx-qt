@@ -4,7 +4,7 @@
 // SPDX-FileContributor: Laurent Montel <laurent.montel@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
-#include "cxx-qt-lib-extras/qelapsedtimer.h"
+#include "cxx-qt-lib-extras/core/qelapsedtimer.h"
 
 #include <cxx-qt-lib/assertion_utils.h>
 

@@ -117,14 +117,14 @@ pub fn generate(
             },
         });
 
-        let base_args = if !constructor.base_arguments.is_empty() {
+        let base_args = if constructor.base_arguments.is_empty() {
+            String::new()
+        } else {
             argument_names(&constructor.base_arguments)
                 .into_iter()
                 .map(|arg| format!("::std::move(args.base.{arg})"))
                 .collect::<Vec<_>>()
                 .join(", ")
-        } else {
-            "".to_string()
         };
         // For each constructor defined in CXX-Qt we need a pair of one public and one private
         // constructor.
@@ -170,7 +170,7 @@ mod tests {
         GeneratedCppQObject {
             name: Name::mock("MyObject"),
             rust_struct: Name::mock("MyObjectRust"),
-            namespace_internals: "rust".to_string(),
+            namespace_internals: "rust".to_owned(),
             blocks: GeneratedCppQObjectBlocks::default(),
             has_qobject_macro: true,
         }
@@ -199,7 +199,7 @@ mod tests {
             &qobject_for_testing(),
             &[],
             "BaseClass".to_owned(),
-            &["member1(1)".to_string(), "member2{ 2 }".to_string()],
+            &["member1(1)".to_owned(), "member2{ 2 }".to_owned()],
             &type_names_with_qobject(),
         )
         .unwrap();
@@ -209,7 +209,7 @@ mod tests {
         assert_eq!(
             blocks.methods,
             vec![CppFragment::Pair {
-                header: "explicit MyObject(QObject* parent = nullptr);".to_string(),
+                header: "explicit MyObject(QObject* parent = nullptr);".to_owned(),
                 source: formatdoc!(
                     "
                     MyObject::MyObject(QObject* parent)
@@ -239,7 +239,7 @@ mod tests {
         assert_eq!(
             blocks.methods,
             vec![CppFragment::Pair {
-                header: "explicit MyObject(QObject* parent = nullptr);".to_string(),
+                header: "explicit MyObject(QObject* parent = nullptr);".to_owned(),
                 source: formatdoc!(
                     "
                     MyObject::MyObject(QObject* parent)
@@ -270,7 +270,7 @@ mod tests {
         assert_eq!(
             blocks.methods,
             vec![CppFragment::Pair {
-                header: "explicit MyObject();".to_string(),
+                header: "explicit MyObject();".to_owned(),
                 source: formatdoc!(
                     "
                     MyObject::MyObject()
@@ -301,7 +301,7 @@ mod tests {
         assert_eq!(
             blocks.private_methods,
             vec![CppFragment::Pair {
-                header: "explicit MyObject(::rust::CxxQtConstructorArguments0&& args);".to_string(),
+                header: "explicit MyObject(::rust::CxxQtConstructorArguments0&& args);".to_owned(),
                 source: formatdoc!(
                     "
                     MyObject::MyObject(::rust::CxxQtConstructorArguments0&& args)
@@ -317,7 +317,7 @@ mod tests {
         assert_eq!(
             blocks.methods,
             vec![CppFragment::Pair {
-                header: "explicit MyObject(::std::int32_t arg0, QObject* arg1);".to_string(),
+                header: "explicit MyObject(::std::int32_t arg0, QObject* arg1);".to_owned(),
                 source: formatdoc!(
                     "
                     MyObject::MyObject(::std::int32_t arg0, QObject* arg1)
@@ -342,7 +342,7 @@ mod tests {
                 ..mock_constructor()
             }],
             "BaseClass".to_owned(),
-            &["initializer".to_string()],
+            &["initializer".to_owned()],
             &type_names_with_qobject(),
         )
         .unwrap();
@@ -351,7 +351,7 @@ mod tests {
         assert_eq!(
             blocks.methods,
             vec![CppFragment::Pair {
-                header: "explicit MyObject(::std::int8_t arg0, ::std::int16_t arg1);".to_string(),
+                header: "explicit MyObject(::std::int8_t arg0, ::std::int16_t arg1);".to_owned(),
                 source: formatdoc!(
                     "
                     MyObject::MyObject(::std::int8_t arg0, ::std::int16_t arg1)
@@ -364,7 +364,7 @@ mod tests {
         assert_eq!(
             blocks.private_methods,
             vec![CppFragment::Pair {
-                header: "explicit MyObject(::rust::CxxQtConstructorArguments0&& args);".to_string(),
+                header: "explicit MyObject(::rust::CxxQtConstructorArguments0&& args);".to_owned(),
                 source: formatdoc!(
                     "
                     MyObject::MyObject(::rust::CxxQtConstructorArguments0&& args)
@@ -396,7 +396,7 @@ mod tests {
                 },
             ],
             "BaseClass".to_owned(),
-            &["initializer".to_string()],
+            &["initializer".to_owned()],
             &type_names_with_qobject(),
         )
         .unwrap();
@@ -407,7 +407,7 @@ mod tests {
             blocks.methods,
             vec![
                 CppFragment::Pair {
-                    header: "explicit MyObject();".to_string(),
+                    header: "explicit MyObject();".to_owned(),
                     source: formatdoc!(
                         "
                         MyObject::MyObject()
@@ -417,7 +417,7 @@ mod tests {
                     ),
                 },
                 CppFragment::Pair {
-                    header: "explicit MyObject(QObject* arg0);".to_string(),
+                    header: "explicit MyObject(QObject* arg0);".to_owned(),
                     source: formatdoc! {
                         "
                         MyObject::MyObject(QObject* arg0)
@@ -434,7 +434,7 @@ mod tests {
             vec![
                 CppFragment::Pair {
                     header: "explicit MyObject(::rust::CxxQtConstructorArguments0&& args);"
-                        .to_string(),
+                        .to_owned(),
                     source: formatdoc!(
                         "
                         MyObject::MyObject(::rust::CxxQtConstructorArguments0&& args)
@@ -449,7 +449,7 @@ mod tests {
                 },
                 CppFragment::Pair {
                     header: "explicit MyObject(::rust::CxxQtConstructorArguments1&& args);"
-                        .to_string(),
+                        .to_owned(),
                     source: formatdoc!(
                         "
                         MyObject::MyObject(::rust::CxxQtConstructorArguments1&& args)

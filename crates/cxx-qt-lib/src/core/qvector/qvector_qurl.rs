@@ -11,7 +11,7 @@ pub mod ffi {
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
 
-        include!("cxx-qt-lib/qvector_QUrl.h");
+        include!("cxx-qt-lib/core/qvector/qvector_QUrl.h");
         type QVector_QUrl = crate::QVector<QUrl>;
     }
 

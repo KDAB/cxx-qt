@@ -25,7 +25,7 @@ impl NamespaceName {
     /// Build the namespace names from a given module and qobject ident
     pub fn from_namespace_and_ident(namespace: &str, ident: &Ident) -> Self {
         Self {
-            namespace: namespace.to_string(),
+            namespace: namespace.to_owned(),
             internal: namespace_internal_from_pair(namespace, ident),
         }
     }

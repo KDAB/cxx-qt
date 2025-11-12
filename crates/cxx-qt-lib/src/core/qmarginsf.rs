@@ -6,6 +6,8 @@
 use cxx::{type_id, ExternType};
 use std::fmt;
 
+use crate::QMargins;
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -19,7 +21,7 @@ mod ffi {
         /// Returns the bottom margin.
         fn bottom(self: &QMarginsF) -> f64;
 
-        /// Returns true if all margins are very close to 0; otherwise returns false.
+        /// Returns `true` if all margins are very close to 0; otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QMarginsF) -> bool;
 
@@ -29,21 +31,21 @@ mod ffi {
         /// Returns the right margin.
         fn right(self: &QMarginsF) -> f64;
 
-        /// Sets the bottom margin to abottom (which must be finite).
+        /// Sets the bottom margin to `abottom` (which must be finite).
         #[rust_name = "set_bottom"]
-        fn setBottom(self: &mut QMarginsF, bottom: f64);
+        fn setBottom(self: &mut QMarginsF, abottom: f64);
 
-        /// Sets the left margin to aleft (which must be finite).
+        /// Sets the left margin to `aleft` (which must be finite).
         #[rust_name = "set_left"]
-        fn setLeft(self: &mut QMarginsF, left: f64);
+        fn setLeft(self: &mut QMarginsF, aleft: f64);
 
-        /// Sets the right margin to aright (which must be finite).
+        /// Sets the right margin to `aright` (which must be finite).
         #[rust_name = "set_right"]
-        fn setRight(self: &mut QMarginsF, right: f64);
+        fn setRight(self: &mut QMarginsF, aright: f64);
 
-        /// Sets the top margin to atop (which must be finite).
+        /// Sets the top margin to `atop` (which must be finite).
         #[rust_name = "set_top"]
-        fn setTop(self: &mut QMarginsF, top: f64);
+        fn setTop(self: &mut QMarginsF, atop: f64);
 
         /// Returns an integer-based copy of this margins object.
         ///
@@ -92,7 +94,9 @@ mod ffi {
     }
 }
 
-/// The QMarginsF class defines the four margins of a rectangle.
+/// The `QMarginsF` class defines the four margins of a rectangle.
+///
+/// Qt Documentation: [QMarginsF](https://doc.qt.io/qt/qmarginsf.html#details)
 #[derive(Debug, Clone, PartialEq)]
 #[repr(C)]
 pub struct QMarginsF {
@@ -103,7 +107,7 @@ pub struct QMarginsF {
 }
 
 impl QMarginsF {
-    /// Constructs margins with the given left, top, right, and bottom. All parameters must be finite.
+    /// Constructs margins with the given `left`, `top`, `right`, and `bottom`. All parameters must be finite.
     pub fn new(left: f64, top: f64, right: f64, bottom: f64) -> Self {
         ffi::qmarginsf_new(left, top, right, bottom)
     }
@@ -164,19 +168,19 @@ impl std::ops::Div<f64> for QMarginsF {
     }
 }
 
-impl From<&ffi::QMargins> for QMarginsF {
-    /// Constructs margins copied from the given margins.
-    fn from(margins: &ffi::QMargins) -> Self {
+impl From<&QMargins> for QMarginsF {
+    /// Constructs margins copied from the given `margins`.
+    fn from(margins: &QMargins) -> Self {
         ffi::qmarginsf_from_qmargin(margins)
     }
 }
 
-impl From<&QMarginsF> for ffi::QMargins {
-    /// Returns an integer-based copy of this margins object.
+impl From<&QMarginsF> for QMargins {
+    /// Returns an integer-based copy of `margins`.
     ///
     /// Note that the components in the returned margins will be rounded to the nearest integer.
-    fn from(value: &QMarginsF) -> Self {
-        value.to_margins()
+    fn from(margins: &QMarginsF) -> Self {
+        margins.to_margins()
     }
 }
 
