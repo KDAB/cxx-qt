@@ -129,7 +129,7 @@ SyntaxHighlighter::highlightBlock(const QString& text)
   }
 
   if (!(currentState == State::Default))
-    setFormat(highlightStart, text.length() - highlightStart, charFormatMacro);
+    setFormat(highlightStart, text.length() - highlightStart, charFormat);
 
   setCurrentBlockState(static_cast<int>(currentState));
 }
@@ -142,4 +142,26 @@ new_syntax_highlighter(QQuickTextDocument* text_document)
   }
   return std::unique_ptr<SyntaxHighlighter>(
     new SyntaxHighlighter(text_document->textDocument()));
+}
+
+std::unique_ptr<QTextCursor>
+new_QTextCursor(QQuickTextDocument* text_document)
+{
+  if (text_document == NULL) {
+    return NULL;
+  }
+  return std::unique_ptr<QTextCursor>(
+    new QTextCursor(text_document->textDocument()));
+}
+
+std::unique_ptr<QTextCharFormat>
+new_QTextCharFormat()
+{
+  return std::unique_ptr<QTextCharFormat>(new QTextCharFormat());
+}
+
+std::unique_ptr<QBrush>
+new_QBrush(const QColor& color)
+{
+  return std::unique_ptr<QBrush>(new QBrush(color));
 }
