@@ -246,6 +246,12 @@ impl qobject::SpanInspector {
 
                     match token_flags {
                         Some(token_flags) => {
+                            this.as_mut()
+                                .rust_mut()
+                                .output_highlighter
+                                .pin_mut()
+                                .set_render_error(false);
+
                             let flat_tokenstream =
                                 Self::flatten_tokenstream(TokenStream::from_str(&output).unwrap());
 
@@ -288,6 +294,12 @@ impl qobject::SpanInspector {
                             }
                         }
                         None => {
+                            this.as_mut()
+                                .rust_mut()
+                                .output_highlighter
+                                .pin_mut()
+                                .set_render_error(true);
+
                             let mut format = new_QTextCharFormat();
                             cursor.pin_mut().set_position(0, MoveMode::MoveAnchor);
                             cursor

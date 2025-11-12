@@ -11,6 +11,7 @@
 SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
   : QSyntaxHighlighter(doc)
 {
+  renderError = false;
   highlightRules.assign(
     { { "\\w*::|None|Some|\\d", "#f99853" },
       { "(?<!\\w)(use|struct|pub|impl|fn|Self|if|let|else|ref|"
@@ -27,6 +28,9 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
 void
 SyntaxHighlighter::highlightBlock(const QString& text)
 {
+  if (renderError)
+    return;
+
   for (HighlightRule rule : highlightRules) {
     QTextCharFormat charFormat;
     charFormat.setForeground(rule.color);
