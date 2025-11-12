@@ -5,7 +5,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use cxx_qt_gen::{write_rust, Parser};
-use proc_macro2::{Span, TokenStream, TokenTree};
+use proc_macro2::{TokenStream, TokenTree};
 use std::str::FromStr;
 use syn::{parse2, ItemMod};
 
@@ -61,9 +61,6 @@ mod qobject {
         #[cxx_name = "mergeCharFormat"]
         fn merge_char_format(self: Pin<&mut QTextCursor>, format: &QTextCharFormat);
 
-        #[cxx_name = "position"]
-        fn position(self: &QTextCursor) -> i32;
-
         #[cxx_name = "setForeground"]
         fn set_foreground(self: Pin<&mut QTextCharFormat>, brush: &QBrush);
 
@@ -81,9 +78,6 @@ mod qobject {
 
         #[cxx_name = "setColor"]
         fn set_color(self: Pin<&mut QBrush>, color: &QColor);
-
-        #[cxx_name = "color"]
-        fn color(self: &QBrush) -> &QColor;
 
         #[cxx_name = "setDocument"]
         unsafe fn set_document(self: Pin<&mut SyntaxHighlighter>, doc: *mut QTextDocument);
@@ -142,7 +136,6 @@ use crate::inspector::qobject::{
 use cxx::UniquePtr;
 use cxx_qt::{CxxQtType, Threading};
 use qobject::{QQuickTextDocument, QString, QTextDocument, SyntaxHighlighter};
-use std::sync::atomic::{AtomicUsize, Ordering};
 use std::{pin::Pin, ptr};
 
 pub struct SpanInspectorRust {
