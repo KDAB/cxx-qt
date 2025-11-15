@@ -9,7 +9,6 @@
 
 #include <cxx-qt-lib/assertion_utils.h>
 
-static_assert(alignof(QMatrix2x3) == alignof(float[3][2]));
-static_assert(sizeof(QMatrix2x3) == sizeof(float[3][2]));
+assert_alignment_and_size(QMatrix2x3, { float[3][2] m; });
 
 static_assert(::std::is_trivially_copyable<QMatrix2x3>::value);

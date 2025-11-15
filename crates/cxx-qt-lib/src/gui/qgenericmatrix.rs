@@ -14,7 +14,7 @@ use cxx::{type_id, ExternType};
 /// QGenericMatrix is generic over the contained type.
 ///
 /// Qt Documentation: [QGenericMatrix](https://doc.qt.io/qt/qgenericmatrix.html#details)
-#[repr(transparent)]
+#[repr(C)]
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
 pub struct QGenericMatrix<const N: usize, const M: usize> {
     data: [[f32; M]; N],
