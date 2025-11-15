@@ -281,6 +281,7 @@ fn main() {
         cpp_files.extend([
             "gui/qcolor",
             "gui/qfont",
+            "gui/qgenericmatrix",
             "gui/qguiapplication",
             "gui/qimage",
             "gui/qpainterpath",
