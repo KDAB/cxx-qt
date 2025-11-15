@@ -13,6 +13,7 @@ mod qcoreapplication;
 mod qdate;
 mod qdatetime;
 mod qflags;
+mod qgenericmatrix;
 mod qguiapplication;
 mod qhash;
 mod qline;
