@@ -19,13 +19,13 @@ private Q_SLOTS:
   void construct()
   {
     const QMatrix2x3 m = construct_qmatrix_ascending();
-    QCOMPARE(m(2, 0), 0);
+    QCOMPARE(m(2, 0), 4);
   }
 
   void set()
   {
     QMatrix2x3 m;
     set_qmatrix_value(m, 2, 0, 3);
-    QCOMPARE(m(2, 3), 3);
+    QCOMPARE(m(2, 0), 3);
   }
 };
