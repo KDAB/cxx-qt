@@ -26,13 +26,9 @@ ApplicationWindow {
 
     SplitView {
         anchors.fill: parent
-        Item {
+        ScrollView {
             SplitView.preferredWidth: parent.width / 2
             TextArea {
-                id: inputEdit
-                SplitView.preferredWidth: parent.width / 2
-                wrapMode: TextArea.Wrap
-                anchors.fill: parent
                 clip: true
                 color: appWindow.textColor
                 Component.onCompleted: {
