@@ -309,8 +309,8 @@ jobs:
                 libvulkan-dev
                 libxkbcommon-dev
 
-          - name: macOS 13 (clang) Qt5
-            os: macos-13
+          - name: macOS 14 (clang) Qt5
+            os: macos-14
             qt_version: 5
             aqt_version: '5.15.2'
             aqt_arch: 'clang_64'
@@ -331,8 +331,8 @@ jobs:
             cxx: clang++
             rustc_wrapper: sccache
             build_type: Release
-          - name: macOS 14 (clang) Qt6
-            os: macos-14
+          - name: macOS 15 (clang) Qt6
+            os: macos-15
             qt_version: 6
             aqt_version: '6.9.3'
             aqt_arch: 'clang_64'
