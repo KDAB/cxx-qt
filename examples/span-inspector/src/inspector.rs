@@ -19,6 +19,26 @@ mod qobject {
     }
 
     unsafe extern "C++" {
+        include!("cxx-qt-lib/common.h");
+
+        #[rust_name = "make_syntax_highligher"]
+        #[namespace = "rust::cxxqtlib1"]
+        unsafe fn make_unique(parent: *mut QTextDocument) -> UniquePtr<SyntaxHighlighter>;
+
+        #[rust_name = "make_q_text_cursor"]
+        #[namespace = "rust::cxxqtlib1"]
+        unsafe fn make_unique(text_document: *mut QTextDocument) -> UniquePtr<QTextCursor>;
+
+        #[rust_name = "make_q_brush"]
+        #[namespace = "rust::cxxqtlib1"]
+        fn make_unique(color: &QColor) -> UniquePtr<QBrush>;
+
+        #[rust_name = "make_q_text_char_format"]
+        #[namespace = "rust::cxxqtlib1"]
+        fn make_unique() -> UniquePtr<QTextCharFormat>;
+    }
+
+    unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
 
@@ -40,17 +60,6 @@ mod qobject {
 
         #[cxx_name = "setRenderError"]
         fn set_render_error(self: Pin<&mut SyntaxHighlighter>, b: bool);
-
-        unsafe fn new_syntax_highlighter(
-            text_document: *mut QQuickTextDocument,
-        ) -> UniquePtr<SyntaxHighlighter>;
-
-        unsafe fn new_QTextCursor(text_document: *mut QQuickTextDocument)
-            -> UniquePtr<QTextCursor>;
-
-        fn new_QTextCharFormat() -> UniquePtr<QTextCharFormat>;
-
-        unsafe fn new_QBrush(color: &QColor) -> UniquePtr<QBrush>;
 
         #[cxx_name = "setPosition"]
         fn set_position(self: Pin<&mut QTextCursor>, pos: i32, m: MoveMode);
@@ -131,7 +140,8 @@ mod qobject {
 }
 
 use crate::inspector::qobject::{
-    new_QBrush, new_QTextCharFormat, new_QTextCursor, MoveMode, QColor,
+    make_q_brush, make_q_text_char_format, make_q_text_cursor, make_syntax_highligher, MoveMode,
+    QColor,
 };
 use cxx::UniquePtr;
 use cxx_qt::{CxxQtType, Threading};
@@ -191,7 +201,9 @@ impl qobject::SpanInspector {
     fn set_input(mut self: Pin<&mut Self>, input: *mut QQuickTextDocument) {
         self.as_mut().rust_mut().input = input;
         unsafe {
-            self.as_mut().rust_mut().input_highlighter = qobject::new_syntax_highlighter(input);
+            let input = Pin::new_unchecked(&mut *input);
+            self.as_mut().rust_mut().input_highlighter =
+                make_syntax_highligher(input.text_document());
         }
         self.as_mut().input_changed();
     }
@@ -199,7 +211,9 @@ impl qobject::SpanInspector {
     fn set_output(mut self: Pin<&mut Self>, output: *mut QQuickTextDocument) {
         self.as_mut().rust_mut().output = output;
         unsafe {
-            self.as_mut().rust_mut().output_highlighter = qobject::new_syntax_highlighter(output);
+            let output = Pin::new_unchecked(&mut *output);
+            self.as_mut().rust_mut().output_highlighter =
+                make_syntax_highligher(output.text_document());
         }
         self.as_mut().output_changed();
     }
@@ -242,7 +256,10 @@ impl qobject::SpanInspector {
                             .set_document(std::ptr::null_mut());
                     }
 
-                    let mut cursor = unsafe { new_QTextCursor(*this.output()) };
+                    let mut cursor = unsafe {
+                        let output = Pin::new_unchecked(&mut *this.output);
+                        make_q_text_cursor(output.text_document())
+                    };
 
                     match token_flags {
                         Some(token_flags) => {
@@ -268,7 +285,7 @@ impl qobject::SpanInspector {
                                     .pin_mut()
                                     .set_position(byte_range.end as i32, MoveMode::KeepAnchor);
 
-                                let mut format = new_QTextCharFormat();
+                                let mut format = make_q_text_char_format();
 
                                 /*let brush = match flag {
                                     TokenFlag::Highlighted => unsafe {
@@ -300,13 +317,12 @@ impl qobject::SpanInspector {
                                 .pin_mut()
                                 .set_render_error(true);
 
-                            let mut format = new_QTextCharFormat();
+                            let mut format = make_q_text_char_format();
                             cursor.pin_mut().set_position(0, MoveMode::MoveAnchor);
                             cursor
                                 .pin_mut()
                                 .set_position(output.len() as i32, MoveMode::KeepAnchor);
-                            let brush = unsafe { new_QBrush(&QColor::from_rgb(255, 0, 0)) };
-                            //let color = brush.color();
+                            let brush = make_q_brush(&QColor::from_rgb(255, 0, 0));
                             format.pin_mut().set_foreground(&*brush);
                             cursor.pin_mut().merge_char_format(&*format);
                         }

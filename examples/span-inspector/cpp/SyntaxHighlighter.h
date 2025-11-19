@@ -35,15 +35,3 @@ public:
 private:
   std::vector<HighlightRule> highlightRules;
 };
-
-std::unique_ptr<SyntaxHighlighter>
-new_syntax_highlighter(QQuickTextDocument*);
-
-std::unique_ptr<QTextCursor>
-new_QTextCursor(QQuickTextDocument*);
-
-std::unique_ptr<QTextCharFormat>
-new_QTextCharFormat();
-
-std::unique_ptr<QBrush>
-new_QBrush(const QColor&);

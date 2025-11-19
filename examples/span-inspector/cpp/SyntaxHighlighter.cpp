@@ -137,35 +137,3 @@ SyntaxHighlighter::highlightBlock(const QString& text)
 
   setCurrentBlockState(static_cast<int>(currentState));
 }
-
-std::unique_ptr<SyntaxHighlighter>
-new_syntax_highlighter(QQuickTextDocument* text_document)
-{
-  if (text_document == NULL) {
-    return NULL;
-  }
-  return std::unique_ptr<SyntaxHighlighter>(
-    new SyntaxHighlighter(text_document->textDocument()));
-}
-
-std::unique_ptr<QTextCursor>
-new_QTextCursor(QQuickTextDocument* text_document)
-{
-  if (text_document == NULL) {
-    return NULL;
-  }
-  return std::unique_ptr<QTextCursor>(
-    new QTextCursor(text_document->textDocument()));
-}
-
-std::unique_ptr<QTextCharFormat>
-new_QTextCharFormat()
-{
-  return std::unique_ptr<QTextCharFormat>(new QTextCharFormat());
-}
-
-std::unique_ptr<QBrush>
-new_QBrush(const QColor& color)
-{
-  return std::unique_ptr<QBrush>(new QBrush(color));
-}
