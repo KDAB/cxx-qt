@@ -325,7 +325,7 @@ jobs:
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
-            clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
+            clang_format_path: /Users/runner/Library/Python/3.14/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
