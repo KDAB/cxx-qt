@@ -76,6 +76,7 @@ add_executable(${APP_NAME}
     cpp/qdate.h
     cpp/qdatetime.h
     cpp/qflags.h
+    cpp/qgenericmatrix.h
     cpp/qguiapplication.h
     cpp/qhash.h
     cpp/qline.h
