@@ -309,8 +309,8 @@ jobs:
                 libvulkan-dev
                 libxkbcommon-dev
 
-          - name: macOS 14 (clang) Qt5
-            os: macos-14
+          - name: macOS 15 (clang) Qt5
+            os: macos-15-intel
             qt_version: 5
             aqt_version: '5.15.2'
             aqt_arch: 'clang_64'
