@@ -309,8 +309,8 @@ jobs:
                 libvulkan-dev
                 libxkbcommon-dev
 
-          - name: macOS 13 (clang) Qt5
-            os: macos-13
+          - name: macOS 15 (clang) Qt5
+            os: macos-15-intel
             qt_version: 5
             aqt_version: '5.15.2'
             aqt_arch: 'clang_64'
@@ -325,14 +325,14 @@ jobs:
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
-            clang_format_path: /Users/runner/Library/Python/3.13/bin/clang-format
+            clang_format_path: /Users/runner/Library/Python/3.14/bin/clang-format
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
             rustc_wrapper: sccache
             build_type: Release
-          - name: macOS 14 (clang) Qt6
-            os: macos-14
+          - name: macOS 15 (clang) Qt6
+            os: macos-15
             qt_version: 6
             aqt_version: '6.9.3'
             aqt_arch: 'clang_64'
