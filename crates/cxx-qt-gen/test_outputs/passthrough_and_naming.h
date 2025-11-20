@@ -107,7 +107,7 @@ MyObject_readyConnect(
 namespace cxx_qt::multi_object {
 class MyObject
   : public QStringListModel
-  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , private ::rust::cxxqt1::CxxQtType<MyObjectRust>
 {
   Q_OBJECT
 public:
@@ -123,6 +123,13 @@ public:
   Q_INVOKABLE void invokable_name() noexcept;
   Q_SIGNAL void ready();
   explicit MyObject(QObject* parent = nullptr);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
@@ -151,7 +158,7 @@ SecondObject_readyConnect(
 namespace second_object {
 class SecondObject
   : public QObject
-  , public ::rust::cxxqt1::CxxQtType<SecondObjectRust>
+  , private ::rust::cxxqt1::CxxQtType<SecondObjectRust>
 {
   Q_OBJECT
 public:
@@ -168,6 +175,13 @@ public:
   void myRenamedFunction(::std::int32_t param) const noexcept;
   Q_SIGNAL void ready();
   explicit SecondObject(QObject* parent = nullptr);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, SecondObject>::value,
@@ -179,7 +193,7 @@ Q_DECLARE_METATYPE(second_object::SecondObject*)
 namespace my_namespace {
 class MyCxxName
   : public QObject
-  , public ::rust::cxxqt1::CxxQtType<ThirdObjectRust>
+  , private ::rust::cxxqt1::CxxQtType<ThirdObjectRust>
 {
   Q_OBJECT
 public:
@@ -187,6 +201,13 @@ public:
 
 public:
   explicit MyCxxName(QObject* parent = nullptr);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, MyCxxName>::value,

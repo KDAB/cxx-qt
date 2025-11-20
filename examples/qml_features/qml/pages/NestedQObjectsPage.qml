@@ -9,6 +9,7 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -16,20 +17,20 @@ Page {
             ToolButton {
                 text: qsTr("Increment")
 
-                onClicked: outerObject.inner.counter += 1
+                onClicked: root.outerObject.inner.counter += 1
             }
 
 
             ToolButton {
                 text: qsTr("Reset")
 
-                onClicked: outerObject.reset()
+                onClicked: root.outerObject.reset()
             }
 
             ToolButton {
                 text: qsTr("Print")
 
-                onClicked: outerObject.printCount(innerObject)
+                onClicked: root.outerObject.printCount(root.innerObject)
             }
 
             Item {
@@ -38,22 +39,20 @@ Page {
         }
     }
 
-    InnerObject {
-        id: innerObject
+    readonly property InnerObject innerObject: InnerObject {
         counter: 10
 
         onCalled: () => console.warn("Inner signal called")
     }
 
-    OuterObject {
-        id: outerObject
-        inner: innerObject
+    readonly property OuterObject outerObject: OuterObject {
+        inner: root.innerObject
 
         onCalled: (inner) => console.warn("Signal called, inner value: ", inner.counter)
     }
 
     Label {
         anchors.centerIn: parent
-        text: innerObject.counter
+        text: root.innerObject.counter
     }
 }
