@@ -32,7 +32,7 @@ jobs:
   clang_format:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Note ensure that matrix runner is updated too
       - run: |
           pip install --user --break-system-packages clang-format==18.1.8
@@ -43,14 +43,14 @@ jobs:
   license_check:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@v6
 
   rust_format_check:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - run: rustup default 1.77.2
       - run: rustup component add rustfmt
       - run: cargo fmt --all --check --verbose
@@ -58,7 +58,7 @@ jobs:
   markdown_lint:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - uses: DavidAnson/markdownlint-cli2-action@v20
         with:
           globs: '**/*.md'
@@ -66,7 +66,7 @@ jobs:
   shellcheck:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       # Shellcheck is likely already installed but lets ensure it is
       - name: install shellcheck
         run: sudo apt-get install -y shellcheck
@@ -79,7 +79,7 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       # Note we need to match the LLVM and Rust versions
       #
       # See versions from the table in this link
@@ -138,7 +138,7 @@ jobs:
       SCCACHE_CACHE_SIZE: 600M
     steps:
       - name: "Checkout repository"
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Setup toolchain
         run: |
           rustup default 1.77.2
@@ -424,7 +424,7 @@ jobs:
 
     steps:
     - name: "Clone Git repository"
-      uses: actions/checkout@v5
+      uses: actions/checkout@v6
     # Ensure clippy and rustfmt is installed, they should come from github runner
     # clippy version needs to be 1.78.0 for the MSRV lint
     #
