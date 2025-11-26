@@ -36,6 +36,7 @@ pub use qml_modules::{QmlFile, QmlModule, QmlUri};
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::MocProducts;
 use qt_build_utils::QResources;
+use qt_build_utils::QmlLsIniBuilder;
 use quote::ToTokens;
 use std::{
     collections::HashSet,
@@ -295,13 +296,6 @@ fn generate_cxxqt_cpp_files(
     generated_file_paths
 }
 
-pub(crate) fn module_name_from_uri(module_uri: &QmlUri) -> String {
-    // Note: We need to make sure this matches the conversion done in CMake!
-    // TODO: Replace with as_dirs so qmlls/qmllint can resolve the path
-    // TODO: This needs an update to cxx-qt-cmake
-    module_uri.as_underscores()
-}
-
 pub(crate) fn crate_name() -> String {
     env::var("CARGO_PKG_NAME").unwrap()
 }
@@ -323,7 +317,7 @@ fn crate_init_key() -> String {
 }
 
 fn qml_module_init_key(module_uri: &QmlUri) -> String {
-    format!("qml_module_{}", module_name_from_uri(module_uri))
+    format!("qml_module_{}", module_uri.as_underscores())
 }
 
 /// Run cxx-qt's C++ code generator on Rust modules marked with the `cxx_qt::bridge` macro, compile
@@ -791,7 +785,9 @@ impl CxxQtBuilder {
         // Extract qml_modules out of self so we don't have to hold onto `self` for the duration of
         // the loop.
         if let Some(qml_module) = self.qml_module.take() {
-            dir::clean(dir::module_target(&qml_module.uri))
+            // Only clean files from the module directory, as we may have
+            // sub uris exported into sub folders
+            dir::clean_files(dir::module_target(&qml_module.uri))
                 .expect("Failed to clean qml module export directory!");
 
             // Check that all rust files are within the same directory
@@ -854,7 +850,7 @@ impl CxxQtBuilder {
                 // TODO: This will be passed to the `optional plugin ...` part of the qmldir
                 // We don't load any shared libraries, so the name shouldn't matter
                 // But make sure it still works
-                &module_name_from_uri(&qml_module.uri),
+                &qml_module.uri.as_underscores(),
                 &qml_module.qml_files,
                 &qml_module.depends,
             );
@@ -878,12 +874,45 @@ impl CxxQtBuilder {
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
                 cc_builder.file(qmlcachegen_file);
             }
-            // This is required, as described here: plugin_builder
+            // This is required, as described here: https://doc.qt.io/qt-6/plugins-howto.html#creating-static-plugins
             cc_builder.define("QT_STATICPLUGIN", None);
 
             // If any of the files inside the qml module change, then trigger a rerun
             for file in qml_module.qml_files {
                 println!("cargo::rerun-if-changed={}", file.path().display());
+            }
+
+            // Export the .qmltypes and qmldir files into a stable path, so that tools like
+            // qmllint/qmlls can find them.
+            let plugin_dir = dir::module_export(&qml_module.uri);
+            if let Some(plugin_dir) = &plugin_dir {
+                std::fs::create_dir_all(plugin_dir).expect("Could not create plugin directory");
+                std::fs::copy(
+                    qml_module_registration_files.qmltypes,
+                    plugin_dir.join("plugin.qmltypes"),
+                )
+                .expect("Could not copy plugin.qmltypes to export directory");
+                std::fs::copy(
+                    qml_module_registration_files.qmldir,
+                    plugin_dir.join("qmldir"),
+                )
+                .expect("Could not copy qmldir to export directory");
+            }
+
+            // Create a .qmlls.ini file with the build dir set similar to QT_QML_GENERATE_QMLLS_INI
+            if let (Some(qml_modules_dir), Some(manifest_dir)) =
+                (dir::module_export_qml_modules(), dir::manifest())
+            {
+                // TODO: manifest dir is not enough as QML files might be in a parent
+                // so this should likely be an argument given to cxx-qt-build
+                // that optionally exports?
+                let mut file = File::create(manifest_dir.parent().unwrap().join(".qmlls.ini"))
+                    .expect("Could not create qmlls.ini file");
+                QmlLsIniBuilder::new()
+                    .build_dir(qml_modules_dir)
+                    .no_cmake_calls(true)
+                    .write(&mut file)
+                    .expect("Could not write qmlls.ini")
             }
 
             let module_init_key = qml_module_init_key(&qml_module.uri);
@@ -893,7 +922,7 @@ impl CxxQtBuilder {
             self.build_initializers(
                 &private_initializers,
                 &public_initializer,
-                dir::module_export(&qml_module.uri).map(|dir| dir.join("plugin_init.o")),
+                plugin_dir.map(|dir| dir.join("plugin_init.o")),
                 &module_init_key,
             );
 
