@@ -17,12 +17,7 @@ fn main() {
         .qt_module("Network")
         .qt_module("Quick")
         .file("src/inspector.rs")
-        .qobject_header("cpp/SyntaxHighlighter.h")
-        .cc_builder(|cc| {
-            cc.include("cpp");
-            cc.file("cpp/SyntaxHighlighter.cpp");
-        })
+        .qobject_header("include/helper.h")
         .build();
-    println!("cargo:rerun-if-changed=cpp/SyntaxHighlighter.cpp");
-    println!("cargo:rerun-if-changed=cpp/SyntaxHighlighter.h");
+    println!("cargo:rerun-if-changed=include/helper.h");
 }

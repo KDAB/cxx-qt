@@ -4,30 +4,17 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::syntax_highlighter::SyntaxHighlighterRust;
 use cxx_qt_gen::{write_rust, Parser};
 use proc_macro2::{TokenStream, TokenTree};
+use std::default::Default;
 use std::str::FromStr;
 use syn::{parse2, ItemMod};
 
 #[cxx_qt::bridge]
-mod qobject {
-    #[repr(i32)]
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
-    enum MoveMode {
-        MoveAnchor = 0,
-        KeepAnchor = 1,
-    }
-
+pub mod qobject {
     unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
-
-        #[rust_name = "make_syntax_highligher"]
-        #[namespace = "rust::cxxqtlib1"]
-        unsafe fn make_unique(parent: *mut QTextDocument) -> UniquePtr<SyntaxHighlighter>;
-
-        #[rust_name = "make_q_text_cursor"]
-        #[namespace = "rust::cxxqtlib1"]
-        unsafe fn make_unique(text_document: *mut QTextDocument) -> UniquePtr<QTextCursor>;
 
         #[rust_name = "make_q_brush"]
         #[namespace = "rust::cxxqtlib1"]
@@ -45,30 +32,23 @@ mod qobject {
         include!("cxx-qt-lib/qcolor.h");
         type QColor = cxx_qt_lib::QColor;
 
-        include!("SyntaxHighlighter.h");
-        type SyntaxHighlighter;
+        include!("helper.h");
+        type QSyntaxHighlighterCXX;
 
         include!(<QTextCharFormat>);
         type QTextCharFormat;
 
-        include!(<QTextCursor>);
-        type QTextCursor;
-        type MoveMode;
-
         include!(<QBrush>);
         type QBrush;
 
-        #[cxx_name = "setRenderError"]
-        fn set_render_error(self: Pin<&mut SyntaxHighlighter>, b: bool);
+        include!(<QTextBlock>);
+        type QTextBlock;
 
-        #[cxx_name = "setPosition"]
-        fn set_position(self: Pin<&mut QTextCursor>, pos: i32, m: MoveMode);
+        #[cxx_name = "length"]
+        fn length(self: &QTextBlock) -> i32;
 
-        #[cxx_name = "setCharFormat"]
-        fn set_char_format(self: Pin<&mut QTextCursor>, format: &QTextCharFormat);
-
-        #[cxx_name = "mergeCharFormat"]
-        fn merge_char_format(self: Pin<&mut QTextCursor>, format: &QTextCharFormat);
+        #[cxx_name = "position"]
+        fn position(self: &QTextBlock) -> i32;
 
         #[cxx_name = "setForeground"]
         fn set_foreground(self: Pin<&mut QTextCharFormat>, brush: &QBrush);
@@ -76,20 +56,8 @@ mod qobject {
         #[cxx_name = "setBackground"]
         fn set_background(self: Pin<&mut QTextCharFormat>, brush: &QBrush);
 
-        #[cxx_name = "setFontWeight"]
-        fn set_font_weight(self: Pin<&mut QTextCharFormat>, weight: i32);
-
-        #[cxx_name = "setFontItalic"]
-        fn set_font_italic(self: Pin<&mut QTextCharFormat>, italic: bool);
-
-        #[cxx_name = "setFontUnderline"]
-        fn set_font_underline(self: Pin<&mut QTextCharFormat>, underline: bool);
-
         #[cxx_name = "setColor"]
         fn set_color(self: Pin<&mut QBrush>, color: &QColor);
-
-        #[cxx_name = "setDocument"]
-        unsafe fn set_document(self: Pin<&mut SyntaxHighlighter>, doc: *mut QTextDocument);
     }
 
     unsafe extern "C++Qt" {
@@ -135,17 +103,65 @@ mod qobject {
         fn rebuild_output(self: Pin<&mut SpanInspector>, cursor_position: i32);
     }
 
+    unsafe extern "C++Qt" {
+        include!(<QSyntaxHighlighter>);
+        #[qobject]
+        type QSyntaxHighlighter;
+
+        #[rust_name = "make_q_syntax_highlighter_2"]
+        #[namespace = "rust::cxxqtlib1"]
+        unsafe fn make_unique(text_document: *mut QTextDocument) -> UniquePtr<SyntaxHighlighter>;
+    }
+
+    unsafe extern "RustQt" {
+        #[qobject]
+        #[base = QSyntaxHighlighterCXX]
+        type SyntaxHighlighter = super::SyntaxHighlighterRust;
+
+        #[qinvokable]
+        #[cxx_override]
+        #[cxx_name = "highlightBlock"]
+        fn highlight_block(self: Pin<&mut SyntaxHighlighter>, text: &QString);
+
+        #[inherit]
+        #[cxx_name = "setFormat"]
+        fn set_format(
+            self: Pin<&mut SyntaxHighlighter>,
+            start: i32,
+            end: i32,
+            format: &QTextCharFormat,
+        );
+
+        #[inherit]
+        #[cxx_name = "setCurrentBlockState"]
+        fn set_current_block_state(self: Pin<&mut SyntaxHighlighter>, new_state: i32);
+
+        #[inherit]
+        #[cxx_name = "previousBlockState"]
+        fn previous_block_state(self: &SyntaxHighlighter) -> i32;
+
+        #[inherit]
+        #[cxx_name = "currentBlockCXX"]
+        fn current_block(self: Pin<&mut SyntaxHighlighter>) -> UniquePtr<QTextBlock>;
+    }
+
+    impl
+        cxx_qt::Constructor<
+            (*mut QTextDocument,),
+            BaseArguments = (*mut QTextDocument,),
+            NewArguments = (),
+        > for SyntaxHighlighter
+    {
+    }
+
     impl UniquePtr<QTextDocument> {}
     impl cxx_qt::Threading for SpanInspector {}
 }
 
-use crate::inspector::qobject::{
-    make_q_brush, make_q_text_char_format, make_q_text_cursor, make_syntax_highligher, MoveMode,
-    QColor,
-};
+use crate::inspector::qobject::{make_q_syntax_highlighter_2, SyntaxHighlighter};
 use cxx::UniquePtr;
 use cxx_qt::{CxxQtType, Threading};
-use qobject::{QQuickTextDocument, QString, QTextDocument, SyntaxHighlighter};
+use qobject::{QQuickTextDocument, QString, QTextDocument};
 use std::{pin::Pin, ptr};
 
 pub struct SpanInspectorRust {
@@ -168,6 +184,26 @@ impl Default for SpanInspectorRust {
     }
 }
 
+impl cxx_qt::Constructor<(*mut QTextDocument,)> for qobject::SyntaxHighlighter {
+    type BaseArguments = (*mut QTextDocument,);
+    type InitializeArguments = ();
+    type NewArguments = ();
+
+    fn route_arguments(
+        args: (*mut QTextDocument,),
+    ) -> (
+        Self::NewArguments,
+        Self::BaseArguments,
+        Self::InitializeArguments,
+    ) {
+        ((), args, ())
+    }
+
+    fn new(_: ()) -> SyntaxHighlighterRust {
+        SyntaxHighlighterRust::default()
+    }
+}
+
 // This Trait is necessary because `prettyplease` seems to add certain characters in some situations.
 // By simply ignoring these characters, we can work around the problem.
 impl<I> FilterPrettyPlease for I where I: Iterator<Item = TokenTree> + Sized {}
@@ -180,8 +216,8 @@ trait FilterPrettyPlease: Iterator<Item = TokenTree> + Sized {
     }
 }
 
-#[derive(Debug)]
-enum TokenFlag {
+#[derive(Debug, Clone)]
+pub enum TokenFlag {
     Default,
     //tokens highlighted by the cursor
     Highlighted,
@@ -203,7 +239,7 @@ impl qobject::SpanInspector {
         unsafe {
             let input = Pin::new_unchecked(&mut *input);
             self.as_mut().rust_mut().input_highlighter =
-                make_syntax_highligher(input.text_document());
+                make_q_syntax_highlighter_2(input.text_document());
         }
         self.as_mut().input_changed();
     }
@@ -213,9 +249,34 @@ impl qobject::SpanInspector {
         unsafe {
             let output = Pin::new_unchecked(&mut *output);
             self.as_mut().rust_mut().output_highlighter =
-                make_syntax_highligher(output.text_document());
+                make_q_syntax_highlighter_2(output.text_document());
+
+            self.as_mut()
+                .rust_mut()
+                .output_highlighter
+                .pin_mut()
+                .rust_mut()
+                .is_output = true;
         }
         self.as_mut().output_changed();
+    }
+
+    fn map_to_chars(token_flags: Vec<TokenFlag>, formated_rust: &str) -> Vec<TokenFlag> {
+        let flat_tokenstream =
+            Self::flatten_tokenstream(TokenStream::from_str(formated_rust).unwrap());
+
+        let mut char_flags = vec![TokenFlag::Generated; formated_rust.len() + 1];
+
+        for (token, flag) in flat_tokenstream
+            .into_iter()
+            .filter_pretty_please()
+            .zip(token_flags.into_iter())
+        {
+            for i in token.span().byte_range() {
+                char_flags[i] = flag.clone();
+            }
+        }
+        char_flags
     }
 
     fn rebuild_output(mut self: Pin<&mut Self>, cursor_position: i32) {
@@ -229,7 +290,7 @@ impl qobject::SpanInspector {
         let thread_id = self.thread_count;
 
         std::thread::spawn(move || {
-            let (output, token_flags) =
+            let (formated_rust, char_flags) =
                 match Self::expand(&text.to_string(), cursor_position as usize) {
                     Ok((expanded, token_flags)) => {
                         let Ok(file) = syn::parse_file(expanded.as_str())
@@ -237,7 +298,10 @@ impl qobject::SpanInspector {
                         else {
                             return;
                         };
-                        (prettyplease::unparse(&file), Some(token_flags))
+
+                        let formated_rust = prettyplease::unparse(&file);
+                        let char_flags = Self::map_to_chars(token_flags, &formated_rust);
+                        (formated_rust, Some(char_flags))
                     }
                     Err(error) => (error, None),
                 };
@@ -247,96 +311,16 @@ impl qobject::SpanInspector {
                     if thread_id != this.thread_count {
                         return;
                     }
-                    unsafe { this.output_document() }.set_plain_text(&QString::from(&output));
-                    unsafe {
-                        this.as_mut()
-                            .rust_mut()
-                            .output_highlighter
-                            .pin_mut()
-                            .set_document(std::ptr::null_mut());
-                    }
 
-                    let mut cursor = unsafe {
-                        let output = Pin::new_unchecked(&mut *this.output);
-                        make_q_text_cursor(output.text_document())
-                    };
+                    this.as_mut()
+                        .rust_mut()
+                        .output_highlighter
+                        .pin_mut()
+                        .rust_mut()
+                        .char_flags = char_flags;
 
-                    match token_flags {
-                        Some(token_flags) => {
-                            this.as_mut()
-                                .rust_mut()
-                                .output_highlighter
-                                .pin_mut()
-                                .set_render_error(false);
-
-                            let flat_tokenstream =
-                                Self::flatten_tokenstream(TokenStream::from_str(&output).unwrap());
-
-                            for (token, flag) in flat_tokenstream
-                                .into_iter()
-                                .filter_pretty_please()
-                                .zip(token_flags.into_iter())
-                            {
-                                let byte_range = token.span().byte_range();
-                                cursor
-                                    .pin_mut()
-                                    .set_position(byte_range.start as i32, MoveMode::MoveAnchor);
-                                cursor
-                                    .pin_mut()
-                                    .set_position(byte_range.end as i32, MoveMode::KeepAnchor);
-
-                                let mut format = make_q_text_char_format();
-
-                                /*let brush = match flag {
-                                    TokenFlag::Highlighted => unsafe {
-                                        new_QBrush(&QColor::from_rgb(255, 0, 0))
-                                    },
-                                    TokenFlag::Generated => unsafe {
-                                        new_QBrush(&QColor::from_rgb(0, 255, 0))
-                                    },
-                                    TokenFlag::Default => unsafe {
-                                        new_QBrush(&QColor::from_rgb(0, 0, 255))
-                                    },
-                                };
-                                //let brush = unsafe { new_QBrush(&QColor::from_rgb(0, 255, 0)) };
-                                format.pin_mut().set_background(&*brush);*/
-                                match flag {
-                                    TokenFlag::Generated => format.pin_mut().set_font_italic(true),
-                                    TokenFlag::Highlighted => {
-                                        format.pin_mut().set_font_underline(true)
-                                    }
-                                    TokenFlag::Default => {}
-                                }
-                                cursor.pin_mut().merge_char_format(&*format);
-                            }
-                        }
-                        None => {
-                            this.as_mut()
-                                .rust_mut()
-                                .output_highlighter
-                                .pin_mut()
-                                .set_render_error(true);
-
-                            let mut format = make_q_text_char_format();
-                            cursor.pin_mut().set_position(0, MoveMode::MoveAnchor);
-                            cursor
-                                .pin_mut()
-                                .set_position(output.len() as i32, MoveMode::KeepAnchor);
-                            let brush = make_q_brush(&QColor::from_rgb(255, 0, 0));
-                            format.pin_mut().set_foreground(&*brush);
-                            cursor.pin_mut().merge_char_format(&*format);
-                        }
-                    }
-
-                    unsafe {
-                        let output_doc =
-                            Pin::get_unchecked_mut(this.output_document()) as *mut QTextDocument;
-                        this.as_mut()
-                            .rust_mut()
-                            .output_highlighter
-                            .pin_mut()
-                            .set_document(output_doc);
-                    };
+                    unsafe { this.output_document() }
+                        .set_plain_text(&QString::from(&formated_rust));
                 })
                 .ok();
         });
