@@ -134,9 +134,9 @@ impl crate::inspector::qobject::SyntaxHighlighter {
 
         for i in 0..block_length {
             let color = match flags[(block_position + i) as usize] {
-                TokenFlag::Original => QColor::from_rgb(0, 0, 255),
-                TokenFlag::Generated => QColor::from_rgb(0, 255, 0),
-                TokenFlag::Highlighted => QColor::from_rgb(255, 0, 0),
+                TokenFlag::Original => QColor::from_rgba(0, 100, 155, 170),
+                TokenFlag::Generated => QColor::from_rgba(0, 255, 0, 15),
+                TokenFlag::Highlighted => QColor::from_rgba(255, 0, 0, 155),
             };
             final_fmt.set_background(i as usize, 1, color);
         }
