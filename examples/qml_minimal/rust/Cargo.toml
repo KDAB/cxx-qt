@@ -3,7 +3,6 @@
 # SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
-# ANCHOR: book_all
 # ANCHOR: book_static_lib
 # ANCHOR: book_package_name
 [package]
@@ -24,26 +23,16 @@ license = "MIT OR Apache-2.0"
 crate-type = ["staticlib"]
 # ANCHOR_END: book_static_lib
 
-# ANCHOR: book_dependencies
 [dependencies]
-# Use `cxx = "1.0.95"` here instead!
 cxx.workspace = true
-# Use `cxx-qt = "0.7"` here instead!
 cxx-qt.workspace = true
-# Use `cxx-qt-lib = "0.7"` here instead!
 cxx-qt-lib = { workspace = true, features = ["qt_full"] }
-# ANCHOR_END: book_dependencies
 
 # cxx-qt-build generates C++ code from the `#[cxx_qt::bridge]` module
 # and compiles it together with the Rust static library
-# ANCHOR: book_build_dependencies
 [build-dependencies]
-# Use `cxx-qt-build = "0.7"` here instead!
 cxx-qt-build.workspace = true
 
 [features]
 # This feature must be enabled for `cargo test` when linking Qt 6 statically.
 link_qt_object_files = [ "cxx-qt-build/link_qt_object_files" ]
-# ANCHOR_END: book_build_dependencies
-
-# ANCHOR_END: book_all
