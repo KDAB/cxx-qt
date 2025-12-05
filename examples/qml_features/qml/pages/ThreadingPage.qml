@@ -9,6 +9,7 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -16,13 +17,13 @@ Page {
             ToolButton {
                 text: qsTr("Change Url")
 
-                onClicked: website.changeUrl()
+                onClicked: root.website.changeUrl()
             }
 
             ToolButton {
                 text: qsTr("Fetch Title")
 
-                onClicked: website.fetchTitle()
+                onClicked: root.website.fetchTitle()
             }
 
             Item {
@@ -31,8 +32,7 @@ Page {
         }
     }
 
-    ThreadingWebsite {
-        id: website
+    readonly property ThreadingWebsite website: ThreadingWebsite {
     }
 
     ColumnLayout {
@@ -43,14 +43,14 @@ Page {
         Label {
             horizontalAlignment: Text.AlignHCenter
             Layout.fillWidth: true
-            text: qsTr("Url: %1").arg(website.url)
+            text: qsTr("Url: %1").arg(root.website.url)
             wrapMode: Text.Wrap
         }
 
         Label {
             horizontalAlignment: Text.AlignHCenter
             Layout.fillWidth: true
-            text: qsTr("Title: %1").arg(website.title)
+            text: qsTr("Title: %1").arg(root.website.title)
             wrapMode: Text.Wrap
         }
     }
