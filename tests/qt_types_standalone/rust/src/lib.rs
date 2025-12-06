@@ -42,6 +42,7 @@ mod qstring;
 mod qstringlist;
 mod qtime;
 mod qtimezone;
+mod qtlogging;
 mod qurl;
 mod qvariant;
 mod qvector;
