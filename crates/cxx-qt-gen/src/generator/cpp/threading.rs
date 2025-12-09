@@ -32,9 +32,29 @@ pub fn generate(qobject_idents: &QObjectNames) -> Result<(String, GeneratedCppQO
         .includes
         .insert("#include <cxx-qt/threading.h>".to_owned());
 
-    // TODO: this should probably be private too?
+    // This is meant to be used from Rust side only, so use private inheritance for now.
     result.base_classes.push(format!(
-        "public ::rust::cxxqt1::CxxQtThreading<{cpp_class}>"
+        "private ::rust::cxxqt1::CxxQtThreading<{cpp_class}>"
+    ));
+    // Note: Use auto syntax here, because otherwise it is not possible to fully
+    // qualify the qtThread function.
+    //
+    // e.g.:
+    // ```
+    // friend rust::cxxqt1::CxxQtThread<T> ::rust::cxxqt1::qtThread<T>(const MyType&
+    // qobject);
+    // ```
+    // is parsed as:
+    // ```
+    // friend rust::cxxqt1::CxxQtThread<T>::rust::cxxqt1::qtThread<T>(const MyType&
+    // qobject);
+    // ```
+    // Because the `::` after `CxxQtThread<T>` is scope resolution operator it
+    // applies to the type `CxxQtThread<T>` rather than starting a new scope
+    // resolution from the global namespace.
+    result.private_methods.push(CppFragment::Header(
+        "template<typename T>\nfriend auto ::rust::cxxqt1::qtThread(const T& qobject) -> ::rust::cxxqt1::CxxQtThread<T>;"
+            .to_owned(),
     ));
 
     let class_initializer = format!("::rust::cxxqt1::CxxQtThreading<{cpp_class}>(this)");
@@ -91,7 +111,18 @@ mod tests {
         assert_eq!(generated.base_classes.len(), 1);
         assert_eq!(
             generated.base_classes[0],
-            "public ::rust::cxxqt1::CxxQtThreading<MyObject>"
+            "private ::rust::cxxqt1::CxxQtThreading<MyObject>"
+        );
+        // friend declaration
+        assert_eq!(generated.private_methods.len(), 1);
+        let CppFragment::Header(friend_decl) = &generated.private_methods[0] else {
+            // CODECOV_EXCLUDE_START
+            panic!("Expected header fragment");
+            // CODECOV_EXCLUDE_STOP
+        };
+        assert_str_eq!(
+            friend_decl,
+            "template<typename T>\nfriend auto ::rust::cxxqt1::qtThread(const T& qobject) -> ::rust::cxxqt1::CxxQtThread<T>;"
         );
     }
 }

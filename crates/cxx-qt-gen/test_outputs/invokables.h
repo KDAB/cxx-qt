@@ -16,7 +16,7 @@ namespace cxx_qt::my_object {
 class MyObject
   : public QObject
   , private ::rust::cxxqt1::CxxQtType<MyObjectRust>
-  , public ::rust::cxxqt1::CxxQtThreading<MyObject>
+  , private ::rust::cxxqt1::CxxQtThreading<MyObject>
 {
   Q_OBJECT
 public:
@@ -42,6 +42,9 @@ public:
   explicit MyObject();
 
 private:
+  template<typename T>
+  friend auto ::rust::cxxqt1::qtThread(const T& qobject)
+    -> ::rust::cxxqt1::CxxQtThread<T>;
   explicit MyObject(
     ::cxx_qt::my_object::cxx_qt_MyObject::CxxQtConstructorArguments0&& args);
   explicit MyObject(

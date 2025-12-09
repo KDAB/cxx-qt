@@ -35,9 +35,25 @@ private:
   ::std::shared_ptr<CxxQtGuardedPointer<T>> m_cxxQtThreadObj;
 };
 
+// Note: Use auto syntax here, because otherwise it is not possible to fully
+// qualify this function when it is declared as as friend.
+//
+// e.g.:
+// ```
+// friend rust::cxxqt1::CxxQtThread<T> ::rust::cxxqt1::qtThread<T>(const MyType&
+// qobject);
+// ```
+// is parsed as:
+// ```
+// friend rust::cxxqt1::CxxQtThread<T>::rust::cxxqt1::qtThread<T>(const MyType&
+// qobject);
+// ```
+// Because the `::` after `CxxQtThread<T>` is scope resolution operator it
+// applies to the type `CxxQtThread<T>` rather than starting a new scope
+// resolution from the global namespace.
 template<typename T>
-CxxQtThread<T>
-qtThread(const T& qobject)
+auto
+qtThread(const T& qobject) -> CxxQtThread<T>
 {
   return static_cast<const CxxQtThreading<T>&>(qobject).qtThread();
 }
