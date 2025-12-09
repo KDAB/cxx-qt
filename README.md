@@ -63,9 +63,9 @@ Versions below Qt 5.15 LTS are *explicitly unsupported*.
 
 ## Comparison to other Rust Qt bindings
 
-| Project | Integrate into C++ codebase  | Safe Rust | QML | QWidgets | Maintained<sup>1</sup> | Binding mechanism |
-|-------- | ---------------------------- | --------- | --- | -------- | ---------------------- | ----------------- |
-| CXX-Qt  |  ✔                           | ✔         | ✔ | limited<sup>2</sup> | ✔       | [cxx](https://cxx.rs) plus additional code generation to implement QObject subclasses in Rust and bind them to C++ |
+| Project | Integrate into C++ codebase | Safe Rust | QML | QWidgets | Maintained<sup>1</sup> | Binding mechanism |
+| ------- | --------------------------- | --------- | --- | -------- | ---------------------- | ----------------- |
+| CXX-Qt | ✔ | ✔ | ✔ | limited<sup>2</sup> | ✔ | [cxx](https://cxx.rs) plus additional code generation to implement QObject subclasses in Rust and bind them to C++ |
 | [qmetaobject](https://github.com/woboq/qmetaobject-rs/) | ✗ | ✔ | ✔ | ✗ | ✔ | [cpp](https://github.com/mystor/rust-cpp) macro to write C++ inline in Rust, plus Rust macros to create QObject subclasses from Rust structs |
 | [Rust Qt Binding Generator](https://invent.kde.org/sdk/rust-qt-binding-generator) | ✔ | ✔ | ✔ | limited<sup>2</sup> | ✗ | generates Rust traits and C++ bindings from JSON description of QObject subclass |
 | [rust-qt](https://rust-qt.github.io/) | ✗ | ✗ | ✔ | ✔ | ✗ | [ritual](https://rust-qt.github.io/ritual/) to generate unsafe Rust bindings from C++ headers |
