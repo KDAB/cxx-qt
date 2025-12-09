@@ -878,12 +878,29 @@ impl CxxQtBuilder {
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
                 cc_builder.file(qmlcachegen_file);
             }
-            // This is required, as described here: plugin_builder
+            // This is required, as described here: https://doc.qt.io/qt-6/plugins-howto.html#creating-static-plugins
             cc_builder.define("QT_STATICPLUGIN", None);
 
             // If any of the files inside the qml module change, then trigger a rerun
             for file in qml_module.qml_files {
                 println!("cargo::rerun-if-changed={}", file.path().display());
+            }
+
+            // Export the .qmltypes and qmldir files into a stable path, so that tools like
+            // qmllint/qmlls can find them.
+            let plugin_dir = dir::module_export(&qml_module.uri);
+            if let Some(plugin_dir) = &plugin_dir {
+                std::fs::create_dir_all(plugin_dir).expect("Could not create plugin directory");
+                std::fs::copy(
+                    qml_module_registration_files.qmltypes,
+                    plugin_dir.join("plugin.qmltypes"),
+                )
+                .expect("Could not copy plugin.qmltypes to export directory");
+                std::fs::copy(
+                    qml_module_registration_files.qmldir,
+                    plugin_dir.join("qmldir"),
+                )
+                .expect("Could not copy qmldir to export directory");
             }
 
             let module_init_key = qml_module_init_key(&qml_module.uri);
@@ -893,7 +910,7 @@ impl CxxQtBuilder {
             self.build_initializers(
                 &private_initializers,
                 &public_initializer,
-                dir::module_export(&qml_module.uri).map(|dir| dir.join("plugin_init.o")),
+                plugin_dir.map(|dir| dir.join("plugin_init.o")),
                 &module_init_key,
             );
 
