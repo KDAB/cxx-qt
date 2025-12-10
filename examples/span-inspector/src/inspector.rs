@@ -8,6 +8,7 @@ use crate::syntax_highlighter::SyntaxHighlighterRust;
 use cxx_qt_gen::{write_rust, Parser};
 use proc_macro2::{TokenStream, TokenTree};
 use std::default::Default;
+use std::ops::Range;
 use std::str::FromStr;
 use syn::{parse2, ItemMod};
 
@@ -101,6 +102,10 @@ pub mod qobject {
         #[qinvokable]
         #[cxx_name = "rebuildOutput"]
         fn rebuild_output(self: Pin<&mut SpanInspector>, cursor_position: i32);
+
+        #[qinvokable]
+        #[cxx_name = "updateCursor"]
+        fn update_cursor(self: Pin<&mut SpanInspector>, cursor_position: i32);
     }
 
     unsafe extern "C++Qt" {
@@ -143,6 +148,10 @@ pub mod qobject {
         #[inherit]
         #[cxx_name = "currentBlockCXX"]
         fn current_block(self: Pin<&mut SyntaxHighlighter>) -> UniquePtr<QTextBlock>;
+
+        #[inherit]
+        #[cxx_name = "rehighlight"]
+        fn rehighlight(self: Pin<&mut SyntaxHighlighter>);
     }
 
     impl
@@ -170,6 +179,7 @@ pub struct SpanInspectorRust {
     input_highlighter: UniquePtr<SyntaxHighlighter>,
     output_highlighter: UniquePtr<SyntaxHighlighter>,
     thread_count: u32,
+    last_expansion: Result<Expansion, String>,
 }
 
 impl Default for SpanInspectorRust {
@@ -180,6 +190,7 @@ impl Default for SpanInspectorRust {
             input_highlighter: UniquePtr::null(),
             output_highlighter: UniquePtr::null(),
             thread_count: 0,
+            last_expansion: Err("".into()),
         }
     }
 }
@@ -226,6 +237,13 @@ pub enum TokenFlag {
     Generated,
 }
 
+#[derive(Clone)]
+struct Expansion {
+    formated_rust: String,
+    output_token_ranges: Vec<Range<usize>>,
+    input_token_ranges: Vec<Range<usize>>,
+}
+
 impl qobject::SpanInspector {
     unsafe fn output_document(&self) -> Pin<&mut QTextDocument> {
         if self.output.is_null() {
@@ -262,22 +280,24 @@ impl qobject::SpanInspector {
         self.as_mut().output_changed();
     }
 
-    fn map_to_chars(token_flags: Vec<TokenFlag>, formated_rust: &str) -> Vec<TokenFlag> {
-        let flat_tokenstream =
-            Self::flatten_tokenstream(TokenStream::from_str(formated_rust).unwrap());
+    fn update_cursor(mut self: Pin<&mut Self>, cursor_position: i32) {
+        if let Ok(last_expansion) = &self.last_expansion {
+            self.as_mut()
+                .rust_mut()
+                .output_highlighter
+                .pin_mut()
+                .rust_mut()
+                .char_flags = Some(Self::get_char_flags(
+                last_expansion,
+                cursor_position as usize,
+            ));
 
-        let mut char_flags = vec![TokenFlag::Generated; formated_rust.len() + 1];
-
-        for (token, flag) in flat_tokenstream
-            .into_iter()
-            .filter_pretty_please()
-            .zip(token_flags.into_iter())
-        {
-            for i in token.span().byte_range() {
-                char_flags[i] = flag.clone();
-            }
+            self.as_mut()
+                .rust_mut()
+                .output_highlighter
+                .pin_mut()
+                .rehighlight();
         }
-        char_flags
     }
 
     fn rebuild_output(mut self: Pin<&mut Self>, cursor_position: i32) {
@@ -291,27 +311,24 @@ impl qobject::SpanInspector {
         let thread_id = self.thread_count;
 
         std::thread::spawn(move || {
-            let (formated_rust, char_flags) =
-                match Self::expand(&text.to_string(), cursor_position as usize) {
-                    Ok((expanded, token_flags)) => {
-                        let Ok(file) = syn::parse_file(expanded.as_str())
-                            .map_err(|err| eprintln!("Parsing error: {err}"))
-                        else {
-                            return;
-                        };
+            let expand_result = Self::expand(&text.to_string());
 
-                        let formated_rust = prettyplease::unparse(&file);
-                        let char_flags = Self::map_to_chars(token_flags, &formated_rust);
-                        (formated_rust, Some(char_flags))
-                    }
-                    Err(error) => (error, None),
-                };
+            let (formated_rust, char_flags) = match expand_result.clone() {
+                Ok(expanded) => {
+                    let char_flags = Self::get_char_flags(&expanded, cursor_position as usize);
+
+                    (expanded.formated_rust, Some(char_flags))
+                }
+                Err(error) => (error, None),
+            };
 
             qt_thread
                 .queue(move |mut this| {
                     if thread_id != this.thread_count {
                         return;
                     }
+
+                    this.as_mut().rust_mut().last_expansion = expand_result;
 
                     this.as_mut()
                         .rust_mut()
@@ -328,7 +345,7 @@ impl qobject::SpanInspector {
     }
 
     // Expand input code as #[cxxqt_qt::bridge] would do
-    fn expand(input: &str, cursor_position: usize) -> Result<(String, Vec<TokenFlag>), String> {
+    fn expand(input: &str) -> Result<Expansion, String> {
         let input_stream: TokenStream = TokenStream::from_str(input).map_err(|e| e.to_string())?;
 
         let mut module: ItemMod = parse2(input_stream.clone()).map_err(|e| e.to_string())?;
@@ -341,27 +358,73 @@ impl qobject::SpanInspector {
         module.attrs = attrs.into_iter().chain(module.attrs).collect();
 
         let output_stream = Self::extract_and_generate(module);
-        let target_range = Self::flatten_tokenstream(input_stream)
-            .into_iter()
-            .find(|token| {
-                let range = token.span().byte_range();
-                range.start <= cursor_position && range.end >= cursor_position
-            })
-            .map(|token| token.span().byte_range());
 
-        let token_flags: Vec<TokenFlag> = Self::flatten_tokenstream(output_stream.clone())
+        //let output_string = output_stream.to_string();
+        let file = syn::parse_file(&output_stream.to_string())
+            .map_err(|err| eprintln!("Parsing error: {err}"))
+            .unwrap();
+
+        let formated_rust = prettyplease::unparse(&file);
+
+        let output_token_ranges = Self::flatten_tokenstream(output_stream)
             .into_iter()
             .filter_pretty_please()
-            .map(
-                |token| match (token.span().byte_range(), target_range.clone()) {
-                    (range, Some(target_range)) if range == target_range => TokenFlag::Highlighted,
-                    (range, _) if range.start == 0 => TokenFlag::Generated,
-                    _ => TokenFlag::Original,
-                },
-            )
+            .map(|token| token.span().byte_range())
             .collect();
 
-        Ok((format!("{}", output_stream), token_flags))
+        let input_token_ranges = Self::flatten_tokenstream(input_stream)
+            .into_iter()
+            .filter_pretty_please()
+            .map(|token| token.span().byte_range())
+            .collect();
+
+        Ok(Expansion {
+            formated_rust,
+            output_token_ranges,
+            input_token_ranges,
+        })
+    }
+
+    fn get_char_flags(last_expansion: &Expansion, cursor_position: usize) -> Vec<TokenFlag> {
+        let target_range = last_expansion
+            .input_token_ranges
+            .clone()
+            .into_iter()
+            .find(|range| range.start <= cursor_position && range.end >= cursor_position);
+
+        let token_flags: Vec<TokenFlag> = last_expansion
+            .output_token_ranges
+            .clone()
+            .into_iter()
+            .map(|range| {
+                if let Some(target_range) = &target_range {
+                    if *target_range == range {
+                        return TokenFlag::Highlighted;
+                    }
+                }
+                if range.start == 0 {
+                    return TokenFlag::Generated;
+                }
+                TokenFlag::Original
+            })
+            .collect();
+
+        let flat_tokenstream = Self::flatten_tokenstream(
+            TokenStream::from_str(&last_expansion.formated_rust).unwrap(),
+        );
+
+        let mut char_flags = vec![TokenFlag::Generated; last_expansion.formated_rust.len() + 1];
+
+        for (token, flag) in flat_tokenstream
+            .into_iter()
+            .filter_pretty_please()
+            .zip(token_flags.into_iter())
+        {
+            for i in token.span().byte_range() {
+                char_flags[i] = flag.clone();
+            }
+        }
+        char_flags
     }
 
     // Take the module and C++ namespace and generate the rust code

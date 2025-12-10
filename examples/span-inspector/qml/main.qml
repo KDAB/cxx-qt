@@ -37,7 +37,7 @@ ApplicationWindow {
                 }
 
                 onCursorPositionChanged: {
-                    inspector.rebuildOutput(cursorPosition);
+                    inspector.updateCursor(cursorPosition);
                 }
 
                 onTextChanged: {
