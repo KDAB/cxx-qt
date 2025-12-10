@@ -126,7 +126,10 @@ impl GeneratedCppQObject {
             // CODECOV_EXCLUDE_STOP
         };
 
-        generated.blocks.base_classes.push(base_class.clone());
+        generated
+            .blocks
+            .base_classes
+            .push(format!("public {base_class}"));
 
         // Add the CxxQtType rust and rust_mut methods
         generated
@@ -227,10 +230,10 @@ mod tests {
         assert_eq!(cpp.namespace_internals, "cxx_qt_MyObject");
 
         assert_eq!(cpp.blocks.base_classes.len(), 2);
-        assert_eq!(cpp.blocks.base_classes[0], "QObject");
+        assert_eq!(cpp.blocks.base_classes[0], "public QObject");
         assert_eq!(
             cpp.blocks.base_classes[1],
-            "::rust::cxxqt1::CxxQtType<MyObjectRust>"
+            "private ::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }
@@ -266,10 +269,10 @@ mod tests {
         .unwrap();
         assert_eq!(cpp.namespace_internals, "cxx_qt::cxx_qt_MyObject");
         assert_eq!(cpp.blocks.base_classes.len(), 2);
-        assert_eq!(cpp.blocks.base_classes[0], "QStringListModel");
+        assert_eq!(cpp.blocks.base_classes[0], "public QStringListModel");
         assert_eq!(
             cpp.blocks.base_classes[1],
-            "::rust::cxxqt1::CxxQtType<MyObjectRust>"
+            "private ::rust::cxxqt1::CxxQtType<MyObjectRust>"
         );
         assert_eq!(cpp.blocks.metaobjects.len(), 0);
     }

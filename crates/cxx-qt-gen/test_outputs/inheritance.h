@@ -9,7 +9,7 @@ class MyObject;
 
 class MyObject
   : public QAbstractItemModel
-  , public ::rust::cxxqt1::CxxQtType<MyObjectRust>
+  , private ::rust::cxxqt1::CxxQtType<MyObjectRust>
 {
   Q_OBJECT
 public:
@@ -36,6 +36,13 @@ public:
     return QAbstractItemModel::fetch_more(args...);
   }
   explicit MyObject(QObject* parent = nullptr);
+
+private:
+  template<typename Inner, typename Outer>
+  friend Inner& ::rust::cxxqt1::unsafeRustMut(Outer& outer);
+
+  template<typename Inner, typename Outer>
+  friend const Inner& ::rust::cxxqt1::unsafeRust(const Outer& outer);
 };
 
 static_assert(::std::is_base_of<QObject, MyObject>::value,
