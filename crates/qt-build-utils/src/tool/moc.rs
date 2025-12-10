@@ -55,6 +55,7 @@ impl MocArguments {
 pub struct QtToolMoc {
     executable: PathBuf,
     qt_include_paths: Vec<PathBuf>,
+    qt_framework_paths: Vec<PathBuf>,
 }
 
 impl QtToolMoc {
@@ -64,10 +65,12 @@ impl QtToolMoc {
             .try_find_tool(QtTool::Moc)
             .expect("Could not find moc");
         let qt_include_paths = qt_installation.include_paths(qt_modules);
+        let qt_framework_paths = qt_installation.framework_paths(qt_modules);
 
         Self {
             executable,
             qt_include_paths,
+            qt_framework_paths,
         }
     }
 
@@ -94,6 +97,11 @@ impl QtToolMoc {
             .chain(arguments.include_paths.iter())
         {
             include_args.push(format!("-I{}", include_path.display()));
+        }
+
+        // Qt frameworks for macOS
+        for framework_path in &self.qt_framework_paths {
+            include_args.push(format!("-F{}", framework_path.display()));
         }
 
         let mut cmd = Command::new(&self.executable);

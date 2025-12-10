@@ -132,6 +132,12 @@ impl QtBuild {
         self.qt_installation.link_modules(builder, &self.qt_modules);
     }
 
+    /// Get the frmaework paths for Qt. This is intended to be passed to whichever tool
+    /// you are using to invoke the C++ compiler.
+    pub fn framework_paths(&self) -> Vec<PathBuf> {
+        self.qt_installation.framework_paths(&self.qt_modules)
+    }
+
     /// Get the include paths for Qt, including Qt module subdirectories. This is intended
     /// to be passed to whichever tool you are using to invoke the C++ compiler.
     pub fn include_paths(&self) -> Vec<PathBuf> {
