@@ -113,7 +113,12 @@ pub mod qobject {
         #[qobject]
         type QSyntaxHighlighter;
 
-        #[rust_name = "make_q_syntax_highlighter_2"]
+        /// Creates a unique syntax highlighter instance.
+        ///
+        /// # Safety
+        /// - `text_document` must be a valid, non-null pointer to a `QTextDocument`.
+        /// - The caller must ensure the document outlives the returned `UniquePtr`.
+        #[rust_name = "make_q_syntax_highlighter"]
         #[namespace = "rust::cxxqtlib1"]
         unsafe fn make_unique(text_document: *mut QTextDocument) -> UniquePtr<SyntaxHighlighter>;
     }
@@ -167,7 +172,7 @@ pub mod qobject {
     impl cxx_qt::Threading for SpanInspector {}
 }
 
-use crate::inspector::qobject::{make_q_syntax_highlighter_2, SyntaxHighlighter};
+use crate::inspector::qobject::{make_q_syntax_highlighter, SyntaxHighlighter};
 use cxx::UniquePtr;
 use cxx_qt::{CxxQtType, Threading};
 use qobject::{QQuickTextDocument, QString, QTextDocument};
@@ -258,7 +263,7 @@ impl qobject::SpanInspector {
         unsafe {
             let input = Pin::new_unchecked(&mut *input);
             self.as_mut().rust_mut().input_highlighter =
-                make_q_syntax_highlighter_2(input.text_document());
+                make_q_syntax_highlighter(input.text_document());
         }
         self.as_mut().input_changed();
     }
@@ -268,7 +273,7 @@ impl qobject::SpanInspector {
         unsafe {
             let output = Pin::new_unchecked(&mut *output);
             self.as_mut().rust_mut().output_highlighter =
-                make_q_syntax_highlighter_2(output.text_document());
+                make_q_syntax_highlighter(output.text_document());
 
             self.as_mut()
                 .rust_mut()

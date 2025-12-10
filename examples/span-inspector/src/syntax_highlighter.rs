@@ -92,7 +92,7 @@ impl crate::inspector::qobject::SyntaxHighlighter {
         let block_length = self.as_mut().current_block().length();
         self.as_mut().rust_mut().pending_highlights = PendingHighlights::new(block_length);
 
-        if self.is_output == true {
+        if self.is_output {
             match self.as_mut().char_flags.clone() {
                 Some(char_flags) => {
                     self.as_mut().highlight_regex(&text);
@@ -124,7 +124,7 @@ impl crate::inspector::qobject::SyntaxHighlighter {
                 fmt.pin_mut().set_background(&make_q_brush(color));
             }
 
-            self.as_mut().set_format(i as i32, 1, &*fmt);
+            self.as_mut().set_format(i as i32, 1, &fmt);
         }
     }
 
@@ -179,7 +179,7 @@ impl crate::inspector::qobject::SyntaxHighlighter {
         //                                        /*     | */ |     "     | #[ | ]
         let mut matches: Vec<_> = Regex::new("(?<!\\\\)/\\*|\\*/|(?<!\\\\)\"|#\\[|\\]")
             .unwrap()
-            .find_iter(&text)
+            .find_iter(text)
             .filter_map(Result::ok)
             .collect();
         matches.sort_by_key(|m| m.start());
