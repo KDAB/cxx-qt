@@ -889,8 +889,11 @@ impl CxxQtBuilder {
 
             // Export the .qmltypes and qmldir files into a stable path, so that tools like
             // qmllint/qmlls can find them.
-            let plugin_dir = dir::module_export(&qml_module.uri);
-            if let Some(plugin_dir) = &plugin_dir {
+            let (module_export, plugin_dir) = (
+                dir::module_export_qml_modules(),
+                dir::module_export(&qml_module.uri),
+            );
+            if let (Some(module_export), Some(plugin_dir)) = (&module_export, &plugin_dir) {
                 std::fs::create_dir_all(plugin_dir).expect("Could not create plugin directory");
                 std::fs::copy(
                     qml_module_registration_files.qmltypes,
@@ -902,6 +905,30 @@ impl CxxQtBuilder {
                     plugin_dir.join("qmldir"),
                 )
                 .expect("Could not copy qmldir to export directory");
+
+                let module_export = module_export
+                    .canonicalize()
+                    .expect("Module export to be resolvable");
+                // Note that the path here is relative
+                for qml_file in qml_module_registration_files.qml_files {
+                    if !qml_file.is_relative() {
+                        panic!("Expected relative qml file: {qml_file:?}");
+                    }
+                    let target_path = plugin_dir.join(&qml_file);
+                    let target_dir = target_path.parent().expect("Target path to have a parent");
+                    std::fs::create_dir_all(target_dir)
+                        .expect("Could not create directory for qml file: {target_path:?}");
+                    // Check that the target path is within the export directory
+                    if !target_dir
+                        .canonicalize()
+                        .expect("Target qml file to be resolvable")
+                        .starts_with(&module_export)
+                    {
+                        panic!("QML file: {target_path:?} in QML module `{uri}` should be a child of export directory: {module_export:?}", uri = qml_module.uri);
+                    }
+                    std::fs::copy(qml_file, target_path)
+                        .expect("Could not copy qml file to export directory");
+                }
             }
 
             // Create a .qmlls.ini file with the source dir set similar to QT_QML_GENERATE_QMLLS_INI
