@@ -190,89 +190,46 @@ impl crate::inspector::qobject::SyntaxHighlighter {
         let mut highlight_start = 0;
 
         for mat in matches {
-            let capture_length = mat.end() - highlight_start;
-
-            current_state = match current_state {
-                State::Default => match mat.as_str() {
-                    "/*" => {
-                        highlight_start = mat.start();
-                        State::Comment
-                    }
-                    "\"" => {
-                        highlight_start = mat.start();
-                        State::Literal
-                    }
-                    "#[" => {
-                        highlight_start = mat.start();
-                        State::Macro
-                    }
-                    _ => State::Default,
-                },
-
-                State::Comment => {
-                    if mat.as_str() == "*/" {
-                        final_fmt.set_foreground(
-                            highlight_start,
-                            capture_length,
-                            color_comment.clone(),
-                        );
-                        State::Default
-                    } else {
-                        State::Comment
-                    }
+            let (color, next_state) = match (&current_state, mat.as_str()) {
+                (State::Default, "/*") => {
+                    highlight_start = mat.start();
+                    (None, State::Comment)
                 }
 
-                State::Literal => {
-                    if mat.as_str() == "\"" {
-                        final_fmt.set_foreground(
-                            highlight_start,
-                            capture_length,
-                            color_literal.clone(),
-                        );
-
-                        State::Default
-                    } else {
-                        State::Literal
-                    }
+                (State::Default, "\"") => {
+                    highlight_start = mat.start();
+                    (None, State::Literal)
                 }
 
-                State::Macro => {
-                    if mat.as_str() == "]" {
-                        final_fmt.set_foreground(
-                            highlight_start,
-                            capture_length,
-                            color_macro.clone(),
-                        );
-
-                        State::Default
-                    } else {
-                        State::Macro
-                    }
+                (State::Default, "#[") => {
+                    highlight_start = mat.start();
+                    (None, State::Macro)
                 }
+
+                (State::Comment, "*/") => (Some(color_comment.clone()), State::Default),
+                (State::Literal, "\"") => (Some(color_literal.clone()), State::Default),
+                (State::Macro, "]") => (Some(color_macro.clone()), State::Default),
+                _ => (None, current_state),
+            };
+
+            if let Some(color) = color {
+                let capture_length = mat.end() - highlight_start;
+                final_fmt.set_foreground(highlight_start, capture_length, color);
             }
+            current_state = next_state;
         }
 
-        let color = match current_state {
-            State::Default => {
-                self.as_mut().set_current_block_state(0);
-                color_comment
-            }
-            State::Comment => {
-                self.as_mut().set_current_block_state(1);
-                color_comment
-            }
-            State::Literal => {
-                self.as_mut().set_current_block_state(2);
-                color_literal
-            }
-            State::Macro => {
-                self.as_mut().set_current_block_state(3);
-                color_macro
-            }
+        let (color, next_state) = match current_state {
+            State::Comment => (Some(color_comment), 1),
+            State::Literal => (Some(color_literal), 2),
+            State::Macro => (Some(color_macro), 3),
+            State::Default => (None, 0),
         };
 
-        if current_state != State::Default {
+        if let Some(color) = color {
             final_fmt.set_foreground(highlight_start, text.len() - highlight_start, color);
         }
+
+        self.as_mut().set_current_block_state(next_state);
     }
 }
