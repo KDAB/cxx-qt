@@ -41,10 +41,12 @@ struct HighlightingRule {
     color: QColor,
 }
 
-fn rule(regex: &str, r: i32, g: i32, b: i32) -> HighlightingRule {
-    HighlightingRule {
-        regex: Regex::new(regex).unwrap(),
-        color: QColor::from_rgb(r, g, b),
+impl HighlightingRule {
+    fn new(regex: &str, r: i32, g: i32, b: i32) -> HighlightingRule {
+        HighlightingRule {
+            regex: Regex::new(regex).expect("Invalid regex pattern"),
+            color: QColor::from_rgb(r, g, b),
+        }
     }
 }
 
@@ -58,17 +60,17 @@ impl Default for SyntaxHighlighterRust {
     fn default() -> Self {
         Self {
             highlighting_rules: vec![
-                rule(r"\w*::|None|Some|\d", 249, 152, 83),
-                rule(
+                HighlightingRule::new(r"\w*::|None|Some|\d", 249, 152, 83),
+                HighlightingRule::new(
                     r"(?<!\w)(use|struct|pub|impl|fn|Self|if|let|else|ref|mut|while|for|in|extern|type|unsafe|crate|match|loop|break|str|mod|usize|isize|char|bool|(u|i|f)\d{1, 2})(?!\w)",
                     255,
                     123,
                     144,
                 ),
-                rule(r"\->|=>|\+=|-=|!|&|=|<|>|\*", 64, 126, 207),
-                rule(r"fn\s+(\w+)", 111, 192, 244),
-                rule(r"fn", 255, 123, 144),
-                rule(r"//.*", 103, 132, 181),
+                HighlightingRule::new(r"\->|=>|\+=|-=|!|&|=|<|>|\*", 64, 126, 207),
+                HighlightingRule::new(r"fn\s+(\w+)", 111, 192, 244),
+                HighlightingRule::new(r"fn", 255, 123, 144),
+                HighlightingRule::new(r"//.*", 103, 132, 181),
             ],
             is_output: false,
             char_flags: None,
