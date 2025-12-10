@@ -359,7 +359,6 @@ impl qobject::SpanInspector {
 
         let output_stream = Self::extract_and_generate(module);
 
-        //let output_string = output_stream.to_string();
         let file = syn::parse_file(&output_stream.to_string())
             .map_err(|err| eprintln!("Parsing error: {err}"))
             .unwrap();

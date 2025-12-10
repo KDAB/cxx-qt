@@ -5,16 +5,22 @@
 
 use crate::inspector::qobject::{make_q_brush, make_q_text_char_format, QColor, QString};
 use crate::inspector::TokenFlag;
+use cxx_qt::CxxQtType;
 use fancy_regex::Regex;
 use std::pin::Pin;
 
+/*
+ * Stores highlight changes collected during parsing.
+ * This allows applying all changes at once,
+ * preventing them from being overwritten.
+ */
 #[derive(Default, Clone)]
-struct FinalFormats {
+struct PendingHighlights {
     foreground: Vec<Option<QColor>>,
     background: Vec<Option<QColor>>,
 }
 
-impl FinalFormats {
+impl PendingHighlights {
     fn new(len: i32) -> Self {
         Self {
             foreground: vec![None; len as usize],
@@ -51,14 +57,17 @@ impl HighlightingRule {
 }
 
 pub struct SyntaxHighlighterRust {
-    highlighting_rules: Vec<HighlightingRule>,
     pub is_output: bool,
     pub char_flags: Option<Vec<TokenFlag>>,
+    highlighting_rules: Vec<HighlightingRule>,
+    pending_highlights: PendingHighlights,
 }
 
 impl Default for SyntaxHighlighterRust {
     fn default() -> Self {
         Self {
+            is_output: false,
+            char_flags: None,
             highlighting_rules: vec![
                 HighlightingRule::new(r"\w*::|None|Some|\d", 249, 152, 83),
                 HighlightingRule::new(
@@ -72,8 +81,7 @@ impl Default for SyntaxHighlighterRust {
                 HighlightingRule::new(r"fn", 255, 123, 144),
                 HighlightingRule::new(r"//.*", 103, 132, 181),
             ],
-            is_output: false,
-            char_flags: None,
+            pending_highlights: PendingHighlights::default(),
         }
     }
 }
@@ -82,38 +90,37 @@ impl crate::inspector::qobject::SyntaxHighlighter {
     pub fn highlight_block(mut self: Pin<&mut Self>, text: &QString) {
         let text = text.to_string();
         let block_length = self.as_mut().current_block().length();
-        let mut final_fmt = FinalFormats::new(block_length);
+        self.as_mut().rust_mut().pending_highlights = PendingHighlights::new(block_length);
 
         if self.is_output == true {
             match self.as_mut().char_flags.clone() {
                 Some(char_flags) => {
-                    self.as_mut().highlight_regex(&mut final_fmt, &text);
-                    self.as_mut().highlight_multi_line(&mut final_fmt, &text);
-                    self.as_mut()
-                        .highlight_char_flags(&mut final_fmt, char_flags);
+                    self.as_mut().highlight_regex(&text);
+                    self.as_mut().highlight_multi_line(&text);
+                    self.as_mut().highlight_char_flags(char_flags);
                 }
                 None => {
-                    self.as_mut().highlight_error(&mut final_fmt);
+                    self.as_mut().highlight_error();
                 }
             };
         } else {
-            self.as_mut().highlight_regex(&mut final_fmt, &text);
-            self.as_mut().highlight_multi_line(&mut final_fmt, &text);
+            self.as_mut().highlight_regex(&text);
+            self.as_mut().highlight_multi_line(&text);
         }
 
-        self.as_mut().apply_formats(final_fmt);
+        self.as_mut().apply_highlights();
     }
 
-    fn apply_formats(mut self: Pin<&mut Self>, final_fmt: FinalFormats) {
+    fn apply_highlights(mut self: Pin<&mut Self>) {
         let block_length = self.as_mut().current_block().length() as usize;
         for i in 0..block_length {
             let mut fmt = make_q_text_char_format();
 
-            if let Some(color) = &final_fmt.foreground[i] {
+            if let Some(color) = &self.pending_highlights.foreground[i] {
                 fmt.pin_mut().set_foreground(&make_q_brush(color));
             }
 
-            if let Some(color) = &final_fmt.background[i] {
+            if let Some(color) = &self.pending_highlights.background[i] {
                 fmt.pin_mut().set_background(&make_q_brush(color));
             }
 
@@ -121,16 +128,16 @@ impl crate::inspector::qobject::SyntaxHighlighter {
         }
     }
 
-    fn highlight_error(mut self: Pin<&mut Self>, final_fmt: &mut FinalFormats) {
-        let block_length = self.as_mut().current_block().length();
-        final_fmt.set_foreground(0, block_length as usize, QColor::from_rgb(255, 0, 0));
+    fn highlight_error(mut self: Pin<&mut Self>) {
+        let block_length = self.as_mut().current_block().length() as usize;
+        self.as_mut().rust_mut().pending_highlights.set_foreground(
+            0,
+            block_length,
+            QColor::from_rgb(255, 0, 0),
+        );
     }
 
-    fn highlight_char_flags(
-        mut self: Pin<&mut Self>,
-        final_fmt: &mut FinalFormats,
-        flags: Vec<TokenFlag>,
-    ) {
+    fn highlight_char_flags(mut self: Pin<&mut Self>, flags: Vec<TokenFlag>) {
         let block_length = self.as_mut().current_block().length();
         let block_position = self.as_mut().current_block().position();
 
@@ -140,11 +147,14 @@ impl crate::inspector::qobject::SyntaxHighlighter {
                 TokenFlag::Generated => QColor::from_rgba(0, 255, 0, 15),
                 TokenFlag::Highlighted => QColor::from_rgba(255, 0, 0, 155),
             };
-            final_fmt.set_background(i as usize, 1, color);
+            self.as_mut()
+                .rust_mut()
+                .pending_highlights
+                .set_background(i as usize, 1, color);
         }
     }
 
-    fn highlight_regex(self: Pin<&mut Self>, final_fmt: &mut FinalFormats, text: &str) {
+    fn highlight_regex(mut self: Pin<&mut Self>, text: &str) {
         let matches: Vec<_> = self
             .highlighting_rules
             .iter()
@@ -157,11 +167,15 @@ impl crate::inspector::qobject::SyntaxHighlighter {
             .collect();
 
         for (color, mat) in matches.iter() {
-            final_fmt.set_foreground(mat.start(), mat.end() - mat.start(), color.clone());
+            self.as_mut().rust_mut().pending_highlights.set_foreground(
+                mat.start(),
+                mat.end() - mat.start(),
+                color.clone(),
+            );
         }
     }
 
-    fn highlight_multi_line(mut self: Pin<&mut Self>, final_fmt: &mut FinalFormats, text: &str) {
+    fn highlight_multi_line(mut self: Pin<&mut Self>, text: &str) {
         //                                        /*     | */ |     "     | #[ | ]
         let mut matches: Vec<_> = Regex::new("(?<!\\\\)/\\*|\\*/|(?<!\\\\)\"|#\\[|\\]")
             .unwrap()
@@ -216,7 +230,11 @@ impl crate::inspector::qobject::SyntaxHighlighter {
 
             if let Some(color) = color {
                 let capture_length = mat.end() - highlight_start;
-                final_fmt.set_foreground(highlight_start, capture_length, color);
+                self.as_mut().rust_mut().pending_highlights.set_foreground(
+                    highlight_start,
+                    capture_length,
+                    color,
+                );
             }
             current_state = next_state;
         }
@@ -229,7 +247,11 @@ impl crate::inspector::qobject::SyntaxHighlighter {
         };
 
         if let Some(color) = color {
-            final_fmt.set_foreground(highlight_start, text.len() - highlight_start, color);
+            self.as_mut().rust_mut().pending_highlights.set_foreground(
+                highlight_start,
+                text.len() - highlight_start,
+                color,
+            );
         }
 
         self.as_mut().set_current_block_state(next_state);
