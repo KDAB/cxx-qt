@@ -5,13 +5,26 @@
 
 use std::io;
 
-use crate::QmlUri;
+use crate::{Initializer, QmlUri};
+
+/// The build type of a Qt plugin
+#[non_exhaustive]
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub enum PluginType {
+    /// A statically linked plugin
+    Static,
+    /// A dynamically linked plugin (sometimes called a MODULE plugin in Qt/CMake)
+    ///
+    /// Note: There can only be one dynamic plugin per dynamic library!
+    Dynamic,
+}
 
 /// A builder for representing a QML Extension Plugin C++ code
 pub struct QmlPluginCppBuilder {
     plugin_class_name: String,
     qml_cache: bool,
     uri: QmlUri,
+    plugin_type: PluginType,
 }
 
 impl QmlPluginCppBuilder {
@@ -22,6 +35,7 @@ impl QmlPluginCppBuilder {
         Self {
             plugin_class_name: plugin_class_name.into(),
             qml_cache: false,
+            plugin_type: PluginType::Static,
             uri,
         }
     }
@@ -32,8 +46,20 @@ impl QmlPluginCppBuilder {
         self
     }
 
+    /// Whether this is a static or dynamic plugin
+    ///
+    /// Note: For static plugins the QT_STATICPLUGIN definition should be set when compiling, for
+    /// dynamic plugins the QT_PLUGIN definition should be set when compiling.
+    /// See also: <https://doc.qt.io/qt-6/plugins-howto.html#creating-static-plugins>
+    ///
+    /// Note: There can only be one dynamic plugin per dynamic library!
+    pub fn plugin_type(mut self, plugin_type: PluginType) -> Self {
+        self.plugin_type = plugin_type;
+        self
+    }
+
     /// Write the resultant QML extension plugin C++ contents
-    pub fn write(self, writer: &mut impl io::Write) -> io::Result<()> {
+    pub fn write(self, writer: &mut impl io::Write) -> io::Result<Initializer> {
         let plugin_class_name = self.plugin_class_name;
         let qml_uri_underscores = self.uri.as_underscores();
 
@@ -60,6 +86,7 @@ impl QmlPluginCppBuilder {
         }
         let declarations = declarations.join("\n");
         let usages = usages.join("\n");
+        let init_fn_name = format!("init_cxx_qt_qml_module_{plugin_class_name}");
         write!(
             writer,
             r#"
@@ -81,9 +108,29 @@ public:
     }}
 }};
 
+extern "C" {{
+    // "drive-by initialization" causes the plugin class to be included in static linking scenarios
+    // Any function that is called from within this file causes the entire object file to be linked in.
+    // Therefore we provide an empty function that can be called at any point to ensure this file is linked in.
+    bool {init_fn_name}() {{
+        return true;
+    }}
+}}
+
 // The moc-generated cpp file doesn't compile on its own; it needs to be #included here.
 #include "moc_{plugin_class_name}.cpp.cpp"
 "#
-        )
+        )?;
+        let initializer = match self.plugin_type {
+            PluginType::Static => Initializer {
+                file: None,
+                init_call: None,
+                init_declaration: Some(format!(
+                    "#include <QtPlugin>\nQ_IMPORT_PLUGIN({plugin_class_name});"
+                )),
+            },
+            PluginType::Dynamic => Initializer::default_signature(&init_fn_name),
+        };
+        Ok(initializer)
     }
 }
