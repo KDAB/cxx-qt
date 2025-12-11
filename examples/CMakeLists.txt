@@ -13,5 +13,6 @@ add_subdirectory(qml_multi_crates)
 
 # TODO: get demo_threading working for wasm builds
 if(NOT BUILD_WASM)
+    add_subdirectory(qml_minimal_plugin)
     add_subdirectory(demo_threading)
 endif()
