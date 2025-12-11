@@ -5,7 +5,7 @@
 
 //! This Rust module contains structs for registering QML modules.
 
-pub use qt_build_utils::{QmlFile, QmlUri};
+pub use qt_build_utils::{PluginType, QmlFile, QmlUri};
 
 /// This is a description of a QML module for building by the [crate::CxxQtBuilder].
 ///
@@ -19,6 +19,7 @@ pub struct QmlModule {
     pub(crate) version_minor: usize,
     pub(crate) qml_files: Vec<QmlFile>,
     pub(crate) depends: Vec<String>,
+    pub(crate) plugin_type: PluginType,
 }
 
 impl QmlModule {
@@ -32,6 +33,7 @@ impl QmlModule {
             version_minor: 0,
             qml_files: Vec::new(),
             depends: Vec::new(),
+            plugin_type: PluginType::Static,
         }
     }
 
@@ -51,6 +53,35 @@ impl QmlModule {
     pub fn version(mut self, version_major: usize, version_minor: usize) -> Self {
         self.version_major = version_major;
         self.version_minor = version_minor;
+        self
+    }
+
+    /// Specify the plugin type for the QML module ([`PluginType::Static`] by default).
+    ///
+    /// Warning: The following limitations apply to building QML modules with [`PluginType::Dynamic`]:
+    ///
+    /// ### Crate must be built to cdylib
+    ///
+    /// Even though it is possible to build both a `staticlib` and `cdylib` from one crate, any
+    /// crate that uses [`PluginType::Dynamic`] for the QML module must build to `cdylib`.
+    /// The QML module will not work as expected if built into a `staticlib`.
+    ///
+    /// ### Only One Dynamic Plugin Per Library
+    ///
+    /// There can only be one dynamic QML module plugin per dynamic library.
+    /// This also applies to sub-crates, so no sub-crate in the dependency tree can
+    /// build to a dynamic QML module plugin if the main crate is already doing so.
+    ///
+    /// ### Final binary should be built with CXX-Qt-CMake
+    ///
+    /// Any binary that loads a dynamic QML module plugin expects a certain file layout of the qmldir
+    /// and dynamic library files. The easiest way to ensure this is to build the final binary
+    /// with
+    /// [CXX-Qt-CMake](https://kdab.github.io/cxx-qt/book/getting-started/5-cmake-integration.html).
+    /// CXX-Qt does not currently provide any way to generate the required file layout with pure
+    /// Cargo builds. Prefer building static QML module plugins when building with Cargo only.
+    pub fn plugin_type(mut self, plugin_type: PluginType) -> Self {
+        self.plugin_type = plugin_type;
         self
     }
 
