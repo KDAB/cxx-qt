@@ -1,0 +1,1 @@
+../../qml_minimal/cpp/main.cpp
