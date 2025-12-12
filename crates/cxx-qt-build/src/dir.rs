@@ -8,6 +8,7 @@
 use qt_build_utils::QmlUri;
 
 use crate::crate_name;
+use std::ffi::OsStr;
 use std::io::Result;
 use std::{
     env, fs,
@@ -58,6 +59,49 @@ pub(crate) fn crate_target() -> PathBuf {
     }
 }
 
+/// The cargo /target directory that is being used
+// Loosely based on
+// https://github.com/dtolnay/cxx/blob/5dca8106b2b218b7e85090cf7c641651ddd81537/gen/build/src/target.rs
+pub(crate) fn cargo_target_dir() -> core::result::Result<PathBuf, env::VarError> {
+    env::var("CARGO_TARGET_DIR")
+        .map(PathBuf::from)
+        .map(|path| path.join("cxxqt"))
+        .or_else(|_| {
+            // fs::canonicalize on Windows produces UNC paths which cl.exe is unable to
+            // handle in includes.
+            // https://github.com/rust-lang/rust/issues/42869
+            // https://github.com/alexcrichton/cc-rs/issues/169
+            let mut also_try_canonical = cfg!(not(windows));
+
+            let out_dir = out();
+            let mut dir = out_dir.clone();
+            loop {
+                if dir.join(".rustc_info.json").exists()
+                    || dir.join("CACHEDIR.TAG").exists()
+                    || dir.file_name() == Some(OsStr::new("target"))
+                        && dir
+                            .parent()
+                            .is_some_and(|parent| parent.join("Cargo.toml").exists())
+                {
+                    return Ok(dir.join("cxxqt"));
+                }
+                if dir.pop() {
+                    continue;
+                }
+                if also_try_canonical {
+                    if let Ok(canonical_dir) = out_dir.canonicalize() {
+                        dir = canonical_dir;
+                        also_try_canonical = false;
+                        continue;
+                    }
+                }
+
+                // We cannot find by scanning the directories so use a VarError for now
+                return Err(env::VarError::NotPresent);
+            }
+        })
+}
+
 /// The export directory, namespaced by QML module
 ///
 /// In contrast to the crate_export directory, this is `Some` for downstream dependencies as well.
@@ -75,8 +119,10 @@ pub(crate) fn module_export_qml_modules() -> Option<PathBuf> {
     // In contrast to crate_export, we don't need to check for the specific crate here.
     // QML modules should always be exported.
     env::var("CXX_QT_EXPORT_DIR")
-        .ok()
         .map(PathBuf::from)
+        // Fallback to find the target/ directory when using Cargo
+        .or_else(|_| cargo_target_dir())
+        .ok()
         .map(|dir| dir.join("qml_modules"))
 }
 
