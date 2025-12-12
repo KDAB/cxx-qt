@@ -36,7 +36,9 @@ pub use qml_modules::{QmlFile, QmlModule, QmlUri};
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::MocProducts;
 use qt_build_utils::QResources;
+use qt_build_utils::QmlLsIniBuilder;
 use quote::ToTokens;
+use std::fs::OpenOptions;
 use std::{
     collections::HashSet,
     env,
@@ -295,13 +297,6 @@ fn generate_cxxqt_cpp_files(
     generated_file_paths
 }
 
-pub(crate) fn module_name_from_uri(module_uri: &QmlUri) -> String {
-    // Note: We need to make sure this matches the conversion done in CMake!
-    // TODO: Replace with as_dirs so qmlls/qmllint can resolve the path
-    // TODO: This needs an update to cxx-qt-cmake
-    module_uri.as_underscores()
-}
-
 pub(crate) fn crate_name() -> String {
     env::var("CARGO_PKG_NAME").unwrap()
 }
@@ -323,7 +318,7 @@ fn crate_init_key() -> String {
 }
 
 fn qml_module_init_key(module_uri: &QmlUri) -> String {
-    format!("qml_module_{}", module_name_from_uri(module_uri))
+    format!("qml_module_{}", module_uri.as_underscores())
 }
 
 /// Run cxx-qt's C++ code generator on Rust modules marked with the `cxx_qt::bridge` macro, compile
@@ -791,8 +786,14 @@ impl CxxQtBuilder {
         // Extract qml_modules out of self so we don't have to hold onto `self` for the duration of
         // the loop.
         if let Some(qml_module) = self.qml_module.take() {
-            dir::clean(dir::module_target(&qml_module.uri))
-                .expect("Failed to clean qml module export directory!");
+            // Clean the module export directory only once at the start of the build
+            // as we may have overlapping sub modules so cannot clean per module
+            //
+            // TODO: this does not work with a static atomic so for now
+            // do not clean similar to CMake
+            // if let Some(path) = dir::module_export_qml_modules() {
+            //     dir::clean(path).expect("Failed to clean qml module export directory!");
+            // }
 
             // Check that all rust files are within the same directory
             //
@@ -854,7 +855,7 @@ impl CxxQtBuilder {
                 // TODO: This will be passed to the `optional plugin ...` part of the qmldir
                 // We don't load any shared libraries, so the name shouldn't matter
                 // But make sure it still works
-                &module_name_from_uri(&qml_module.uri),
+                &qml_module.uri.as_underscores(),
                 &qml_module.qml_files,
                 &qml_module.depends,
             );
@@ -888,8 +889,11 @@ impl CxxQtBuilder {
 
             // Export the .qmltypes and qmldir files into a stable path, so that tools like
             // qmllint/qmlls can find them.
-            let plugin_dir = dir::module_export(&qml_module.uri);
-            if let Some(plugin_dir) = &plugin_dir {
+            let (module_export, plugin_dir) = (
+                dir::module_export_qml_modules(),
+                dir::module_export(&qml_module.uri),
+            );
+            if let (Some(module_export), Some(plugin_dir)) = (&module_export, &plugin_dir) {
                 std::fs::create_dir_all(plugin_dir).expect("Could not create plugin directory");
                 std::fs::copy(
                     qml_module_registration_files.qmltypes,
@@ -901,6 +905,61 @@ impl CxxQtBuilder {
                     plugin_dir.join("qmldir"),
                 )
                 .expect("Could not copy qmldir to export directory");
+
+                let module_export = module_export
+                    .canonicalize()
+                    .expect("Module export to be resolvable");
+                // Note that the path here is relative
+                for qml_file in qml_module_registration_files.qml_files {
+                    if !qml_file.is_relative() {
+                        panic!("Expected relative qml file: {qml_file:?}");
+                    }
+                    let target_path = plugin_dir.join(&qml_file);
+                    let target_dir = target_path.parent().expect("Target path to have a parent");
+                    std::fs::create_dir_all(target_dir)
+                        .expect("Could not create directory for qml file: {target_path:?}");
+                    // Check that the target path is within the export directory
+                    if !target_dir
+                        .canonicalize()
+                        .expect("Target qml file to be resolvable")
+                        .starts_with(&module_export)
+                    {
+                        panic!("QML file: {target_path:?} in QML module `{uri}` should be a child of export directory: {module_export:?}", uri = qml_module.uri);
+                    }
+                    std::fs::copy(qml_file, target_path)
+                        .expect("Could not copy qml file to export directory");
+                }
+            }
+
+            // Create a .qmlls.ini file with the source dir set similar to QT_QML_GENERATE_QMLLS_INI
+            if let (Some(qml_modules_dir), Some(manifest_dir)) =
+                (dir::module_export_qml_modules(), dir::manifest())
+            {
+                // Note that QT_QML_GENERATE_QMLLS_INI only generates the qmlls.ini file
+                // in the same folder as the CMakeLists where the qt_add_qml_module is called
+                //
+                // This means that not all scenarios of having QML files in sibling or parent directories work
+                let qmlls_ini_path = manifest_dir.parent().unwrap().join(".qmlls.ini");
+
+                // Only generate the qmlls.ini file if it does not already exist so that we do
+                // not overwrite any user define values and we do not collide if there are
+                // multiple QML modules.
+                let file = OpenOptions::new()
+                    .write(true)
+                    .create_new(true)
+                    .open(&qmlls_ini_path);
+                match file {
+                    Ok(mut file) => {
+                        QmlLsIniBuilder::new()
+                            .build_dir(qml_modules_dir)
+                            .no_cmake_calls(true)
+                            .write(&mut file)
+                            .expect("Could not write qmlls.ini");
+                    }
+                    // Ignore if the file already exists
+                    Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => {}
+                    Err(_err) => panic!("Could not create qmlls.ini file: {qmlls_ini_path:?}"),
+                }
             }
 
             let module_init_key = qml_module_init_key(&qml_module.uri);

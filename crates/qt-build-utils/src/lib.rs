@@ -81,6 +81,8 @@ pub struct QmlModuleRegistrationFiles {
     pub plugin_init: Initializer,
     /// An optional include path that should be included
     pub include_path: Option<PathBuf>,
+    /// The original QML files defined in the QML module
+    pub qml_files: Vec<PathBuf>,
 }
 
 /// Helper for build.rs scripts using Qt
@@ -128,6 +130,12 @@ impl QtBuild {
     /// Tell Cargo to link each Qt module.
     pub fn cargo_link_libraries(&self, builder: &mut cc::Build) {
         self.qt_installation.link_modules(builder, &self.qt_modules);
+    }
+
+    /// Get the frmaework paths for Qt. This is intended to be passed to whichever tool
+    /// you are using to invoke the C++ compiler.
+    pub fn framework_paths(&self) -> Vec<PathBuf> {
+        self.qt_installation.framework_paths(&self.qt_modules)
     }
 
     /// Get the include paths for Qt, including Qt module subdirectories. This is intended
@@ -314,6 +322,11 @@ Q_IMPORT_PLUGIN({plugin_class_name});
                 )),
             };
 
+            let qml_files = qml_files
+                .iter()
+                .map(|qml_file| qml_file.path().to_path_buf())
+                .collect();
+
             let rcc = self.rcc().compile(&qrc_path);
             QmlModuleRegistrationFiles {
                 // The rcc file is automatically initialized when importing the plugin.
@@ -326,6 +339,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
                 plugin: qml_plugin_cpp_path,
                 plugin_init,
                 include_path,
+                qml_files,
             }
         }
     }

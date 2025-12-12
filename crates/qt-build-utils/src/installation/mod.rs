@@ -16,6 +16,10 @@ use crate::QtTool;
 /// Note that it is the responsbility of the QtInstallation implementation
 /// to print any cargo::rerun-if-changed lines
 pub trait QtInstallation {
+    /// Return the framework paths for Qt
+    ///
+    /// This is intended to be passed to whichever tool you are using to invoke the C++ compiler.
+    fn framework_paths(&self, qt_modules: &[String]) -> Vec<PathBuf>;
     /// Return the include paths for Qt, including Qt module subdirectories.
     ///
     /// This is intended to be passed to whichever tool you are using to invoke the C++ compiler.

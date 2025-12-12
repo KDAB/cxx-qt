@@ -8,23 +8,28 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.cxx_qt.demo").qml_files([
-        "../qml/main.qml",
-        "../qml/pages/ContainersPage.qml",
-        "../qml/pages/CustomBaseClassPage.qml",
-        "../qml/pages/CustomParentClassPage.qml",
-        "../qml/pages/ExternCxxQtPage.qml",
-        "../qml/pages/InvokablesPage.qml",
-        "../qml/pages/MultipleQObjectsPage.qml",
-        "../qml/pages/NamingPage.qml",
-        "../qml/pages/NestedQObjectsPage.qml",
-        "../qml/pages/PropertiesPage.qml",
-        "../qml/pages/SerialisationPage.qml",
-        "../qml/pages/SignalsPage.qml",
-        "../qml/pages/SingletonPage.qml",
-        "../qml/pages/ThreadingPage.qml",
-        "../qml/pages/TypesPage.qml",
-    ]))
+    CxxQtBuilder::new_qml_module(
+        QmlModule::new("com.kdab.cxx_qt.demo")
+            .qml_files([
+                "../qml/main.qml",
+                "../qml/pages/ContainersPage.qml",
+                "../qml/pages/CustomBaseClassPage.qml",
+                "../qml/pages/CustomParentClassPage.qml",
+                "../qml/pages/ExternCxxQtPage.qml",
+                "../qml/pages/InvokablesPage.qml",
+                "../qml/pages/MultipleQObjectsPage.qml",
+                "../qml/pages/NamingPage.qml",
+                "../qml/pages/NestedQObjectsPage.qml",
+                "../qml/pages/PropertiesPage.qml",
+                "../qml/pages/SerialisationPage.qml",
+                "../qml/pages/SignalsPage.qml",
+                "../qml/pages/SingletonPage.qml",
+                "../qml/pages/ThreadingPage.qml",
+                "../qml/pages/TypesPage.qml",
+            ])
+            // Need to depend on QtQuick for QColor to work with qmllint/qmlls
+            .depend("QtQuick"),
+    )
     .files([
         "src/containers.rs",
         "src/custom_base_class.rs",

@@ -11,6 +11,7 @@ fn main() {
     CxxQtBuilder::new_qml_module(
         QmlModule::new("com.kdab.cxx_qt.demo").qml_file("../qml/main.qml"),
     )
+    .qt_module("Qml")
     .files(["src/cxxqt_object.rs"])
     .build();
 }

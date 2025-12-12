@@ -7,7 +7,7 @@
 
 use qt_build_utils::QmlUri;
 
-use crate::{crate_name, module_name_from_uri};
+use crate::crate_name;
 use std::io::Result;
 use std::{
     env, fs,
@@ -58,19 +58,9 @@ pub(crate) fn crate_target() -> PathBuf {
     }
 }
 
-/// The target directory, namespaced by QML module
-pub(crate) fn module_target(module_uri: &QmlUri) -> PathBuf {
-    module_export(module_uri).unwrap_or_else(|| {
-        out()
-            // Use a short name due to the Windows file path limit!
-            .join("cxxqtqml")
-            .join(module_name_from_uri(module_uri))
-    })
-}
-
 /// The export directory, namespaced by QML module
 ///
-/// In conctrast to the crate_export directory, this is `Some` for downstream dependencies as well.
+/// In contrast to the crate_export directory, this is `Some` for downstream dependencies as well.
 /// This allows CMake to import QML modules from dependencies.
 ///
 /// TODO: This may conflict if two dependencies are building QML modules with the same name!
@@ -78,13 +68,16 @@ pub(crate) fn module_target(module_uri: &QmlUri) -> PathBuf {
 pub(crate) fn module_export(module_uri: &QmlUri) -> Option<PathBuf> {
     // In contrast to crate_export, we don't need to check for the specific crate here.
     // QML modules should always be exported.
+    module_export_qml_modules().map(|dir| dir.join(module_uri.as_dirs()))
+}
+
+pub(crate) fn module_export_qml_modules() -> Option<PathBuf> {
+    // In contrast to crate_export, we don't need to check for the specific crate here.
+    // QML modules should always be exported.
     env::var("CXX_QT_EXPORT_DIR")
         .ok()
         .map(PathBuf::from)
-        .map(|dir| {
-            dir.join("qml_modules")
-                .join(module_name_from_uri(module_uri))
-        })
+        .map(|dir| dir.join("qml_modules"))
 }
 
 /// The target directory or another directory where we can write files that will be shared
