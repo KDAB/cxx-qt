@@ -939,7 +939,7 @@ impl CxxQtBuilder {
                 // in the same folder as the CMakeLists where the qt_add_qml_module is called
                 //
                 // This means that not all scenarios of having QML files in sibling or parent directories work
-                let qmlls_ini_path = manifest_dir.parent().unwrap().join(".qmlls.ini");
+                let qmlls_ini_path = manifest_dir.join(".qmlls.ini");
 
                 // Only generate the qmlls.ini file if it does not already exist so that we do
                 // not overwrite any user define values and we do not collide if there are
