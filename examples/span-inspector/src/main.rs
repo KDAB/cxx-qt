@@ -7,6 +7,7 @@
 
 /// A module for our Rust defined QObject
 pub mod inspector;
+mod syntax_highlighter;
 
 use cxx_qt::casting::Upcast;
 use cxx_qt_lib::{QGuiApplication, QQmlApplicationEngine, QQmlEngine, QUrl};
