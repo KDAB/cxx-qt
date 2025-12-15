@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CXX-Qt-build: Multi-crate projects are now possible with Cargo and CMake (see `examples/qml_multi_crates`)
 - CXX-Qt-build: Allow forcing initialization of crates/QML modules (`cxx_qt::init_crate!`/`cxx_qt::init_qml_module!`)
 - CXX-Qt-build: `CxxQtBuilder::files` to add multiple files
+- CXX-Qt-build: Allow building dynamic QML module plugins with CMake
 - Add pure virtual function specified through the `#[cxx_pure]` attribute
 - Add wrappers for up and down casting, for all types which inherit from QObject, available for &T, &mut T and Pin<&mut T>
 - `#[base = T]` is now supported in `extern "C++Qt"` blocks
