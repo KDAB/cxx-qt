@@ -4,7 +4,6 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-# ANCHOR: book_cmake_setup
 cmake_minimum_required(VERSION 3.24)
 
 project(example_qml_minimal_plugin)
@@ -16,9 +15,6 @@ project(example_qml_minimal_plugin)
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreadedDLL")
 endif()
-# ANCHOR_END: book_cmake_setup
-
-# ANCHOR: book_cmake_setup-2
 
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
@@ -26,14 +22,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CXXQT_QTCOMPONENTS Core Gui Qml QuickControls2 QuickTest Test)
-# ANCHOR_END: book_cmake_setup-2
 if(NOT BUILD_WASM)
-    # ANCHOR: book_cmake_setup-3
     set(CXXQT_QTCOMPONENTS ${CXXQT_QTCOMPONENTS} QmlImportScanner)
-    # ANCHOR_END: book_cmake_setup-3
 endif()
 
-# ANCHOR: book_cmake_setup-4
 find_package(Qt6 COMPONENTS ${CXXQT_QTCOMPONENTS})
 set(Qt "Qt6")
 if(NOT Qt6_FOUND)
@@ -54,26 +46,20 @@ if(MSVC)
         TARGET ${Qt}::Core ${Qt}::Gui ${Qt}::Qml ${Qt}::QuickControls2 ${Qt}::QuickTest ${Qt}::Test
         PROPERTY MAP_IMPORTED_CONFIG_DEBUG "RELEASE")
 endif()
-# ANCHOR_END: book_cmake_setup-4
 
 
-# ANCHOR: book_cmake_find_cxx_qt_start
 find_package(CxxQt QUIET)
 if(NOT CxxQt_FOUND)
     include(FetchContent)
     FetchContent_Declare(
         CxxQt
         GIT_REPOSITORY https://github.com/LeonMatthesKDAB/cxx-qt-cmake.git
-        # ANCHOR_END: book_cmake_find_cxx_qt_start
         GIT_TAG 1266-qml-plugin
-        # ANCHOR: book_cmake_find_cxx_qt_end
     )
 
     FetchContent_MakeAvailable(CxxQt)
 endif()
-# ANCHOR_END: book_cmake_find_cxx_qt_end
 
-# ANCHOR: book_cmake_use_cxx_qt
 # CXX-Qt (using Corrosion) creates a CMake target with the same name as the crate.
 cxx_qt_import_crate(
     MANIFEST_PATH rust/Cargo.toml 
@@ -85,21 +71,15 @@ cxx_qt_import_crate(
 cxx_qt_import_qml_module(qml_minimal_plugin_qml_module
     URI "com.kdab.cxx_qt.demo"
     SOURCE_CRATE qml_minimal_plugin)
-# ANCHOR_END: book_cmake_use_cxx_qt
 
 # Add the main.qml file via the qml.qrc, as Qt5 does not yet support qt_add_resources
 add_executable(example_qml_minimal_plugin cpp/main.cpp qml/qml.qrc)
-
-# ANCHOR_END: book_cmake_executable-2
-
-# ANCHOR: book_cmake_executable
 
 # Link to the qml module, which in turn links to the Rust qml_minimal library
 target_link_libraries(example_qml_minimal_plugin PRIVATE Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
 
 # If we are using a statically linked Qt then we need to import any qml plugins
 # qt_import_qml_plugins(example_qml_minimal_plugin)
-# ANCHOR_END: book_cmake_executable
 
 if(BUILD_TESTING)
     #

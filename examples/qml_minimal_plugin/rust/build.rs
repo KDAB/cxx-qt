@@ -4,7 +4,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-// ANCHOR: book_build_rs
 use cxx_qt_build::{CxxQtBuilder, PluginType, QmlModule};
 
 fn main() {
@@ -16,4 +15,3 @@ fn main() {
     .files(["src/cxxqt_object.rs"])
     .build();
 }
-// ANCHOR_END: book_build_rs

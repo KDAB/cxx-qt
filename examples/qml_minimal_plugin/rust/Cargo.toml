@@ -3,11 +3,8 @@
 # SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
-# ANCHOR: book_static_lib
-# ANCHOR: book_package_name
 [package]
 name = "qml_minimal_plugin"
-# ANCHOR_END: book_package_name
 version = "0.1.0"
 authors = [
   "Andrew Hayzen <andrew.hayzen@kdab.com>",
@@ -21,7 +18,6 @@ license = "MIT OR Apache-2.0"
 # library which CMake can link against
 [lib]
 crate-type = ["cdylib"]
-# ANCHOR_END: book_static_lib
 
 [dependencies]
 cxx.workspace = true
