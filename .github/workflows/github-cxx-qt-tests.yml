@@ -145,7 +145,7 @@ jobs:
           rustup component add rustfmt
           rustup target add wasm32-unknown-emscripten
       - name: "Rust tools cache"
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: rust-tools-cache
         with:
           path: |
@@ -171,14 +171,14 @@ jobs:
       #
       # Ideally we'd like to use this:
       # - name: "Compiler cache"
-      #   uses: actions/cache@v4
+      #   uses: actions/cache@v5
       #   with:
       #     update: true <------- THIS DOESN'T EXIST YET
       #     path: /home/runner/.cache/sccache
       #     key: "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache"
       - name: "Restore Compiler Cache"
         id: compiler-cache-restore
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: /home/runner/.cache/sccache
           key: "${{ env.GITHUB_COMPILER_CACHE_KEY }}"
@@ -191,7 +191,7 @@ jobs:
           sccache --start-server
 
       - name: "emsdk cache"
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         id: emsdk-cache
         with:
           path: ./emsdk
@@ -258,7 +258,7 @@ jobs:
         # Updating th cache doesn't work from forks
         # So update it once it's merged into the repo
         if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: /home/runner/.cache/sccache
           key: "${{ env.GITHUB_COMPILER_CACHE_KEY }}"
@@ -436,7 +436,7 @@ jobs:
         rustup component add rustfmt
 
     - name: "Rust tools cache"
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       id: rust-tools-cache
       with:
         path: |
@@ -463,14 +463,14 @@ jobs:
     #
     # Ideally we'd like to use this:
     # - name: "Compiler cache"
-    #   uses: actions/cache@v4
+    #   uses: actions/cache@v5
     #   with:
     #     update: true <------- THIS DOESN'T EXIST YET
     #     path: ${{ matrix.compiler_cache_path }}
     #     key: ${{ matrix.name }}_compiler_cache
     - name: "Restore Compiler Cache"
       id: compiler-cache-restore
-      uses: actions/cache/restore@v4
+      uses: actions/cache/restore@v5
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
@@ -589,7 +589,7 @@ jobs:
       # Updating th cache doesn't work from forks
       # So update it once it's merged into the repo
       if: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-      uses: actions/cache/save@v4
+      uses: actions/cache/save@v5
       with:
         path: ${{ matrix.compiler_cache_path }}
         key: ${{ matrix.name }}_compiler_cache
