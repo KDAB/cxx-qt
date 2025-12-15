@@ -80,6 +80,14 @@ impl QmlModule {
     /// [CXX-Qt-CMake](https://kdab.github.io/cxx-qt/book/getting-started/5-cmake-integration.html).
     /// CXX-Qt does not currently provide any way to generate the required file layout with pure
     /// Cargo builds. Prefer building static QML module plugins when building with Cargo only.
+    ///
+    /// ### MSVC Runtime Compatibility on Windows
+    ///
+    /// As outlined in the CXX-Qt book, Rust always links to the release runtime under MSVC on Windows.
+    /// To ensure compatibility when loading dynamic QML module plugins, CXX-Qt will set the
+    /// QT_NO_DEBUG definition when compiling the C++ code for dynamic QML module plugins **under
+    /// MSVC**.
+    /// This will disable debug features in Qt, even when building a debug build of the Rust crate.
     pub fn plugin_type(mut self, plugin_type: PluginType) -> Self {
         self.plugin_type = plugin_type;
         self

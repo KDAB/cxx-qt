@@ -674,6 +674,11 @@ impl CxxQtBuilder {
         }
     }
 
+    fn is_debug() -> bool {
+        let debug = std::env::var("DEBUG").unwrap_or_else(|_| "0".to_owned());
+        debug != "0" && debug != "false" || debug != "none"
+    }
+
     fn setup_cc_builder(builder: &mut cc::Build, include_paths: &[impl AsRef<Path>]) {
         // Note, ensure our settings stay in sync across cxx-qt and cxx-qt-lib
         builder.cpp(true);
@@ -687,6 +692,15 @@ impl CxxQtBuilder {
 
         for include_path in include_paths {
             builder.include(include_path);
+        }
+
+        if !Self::is_debug() {
+            // Make sure QT_NO_DEBUG is set appropriately.
+            // This is especially important when building dynamic QML modules under windows, where
+            // we always link against the release mode Qt.
+            // Q_PLUGIN_METADATA will otherwise report that the plugin was built in debug mode and
+            // the main binary will refuse to load it.
+            builder.define("QT_NO_DEBUG", None);
         }
     }
 
@@ -886,6 +900,21 @@ impl CxxQtBuilder {
                 cc_builder.define("QT_STATICPLUGIN", None);
             } else {
                 cc_builder.define("QT_PLUGIN", None);
+                if cc_builder.get_compiler().is_like_msvc() {
+                    // Under MSVC, we always link to the release runtime
+                    // Therefore we need to ensure that QT_NO_DEBUG is defined,
+                    // as otherwise the plugin will report it was built in debug mode,
+                    // which implies that it was linked to the debug runtime, which is not
+                    // compatible and not true.
+                    cc_builder.define("QT_NO_DEBUG", None);
+                    // If we're actually in debug mode, emit a warning to inform the user about
+                    // this issue
+                    if Self::is_debug() {
+                        println!(
+                            "cargo::warning=Building a dynamic QML module plugin in debug mode under MSVC sets QT_NO_DEBUG, as Rust plugins will always link against the release Qt libraries.\nQ_ASSERT, Q_CHECK_PTR, etc. are disabled!"
+                        );
+                    }
+                }
             }
 
             // If any of the files inside the qml module change, then trigger a rerun
