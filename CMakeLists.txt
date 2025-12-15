@@ -172,6 +172,29 @@ if(BUILD_TESTING)
     
     # Ensure that cargo_build_rerun doesn't run while we are already building
     set_tests_properties(cargo_build_rerun PROPERTIES RUN_SERIAL TRUE)
+
+    # As we do not have cargo_without_cmake under cmake anymore
+    # instead manually have a test for qmllint here
+    #
+    # qmllint --max-warnings only exists in Qt 6
+    if(Qt6_FOUND AND Qt6_VERSION VERSION_GREATER_EQUAL 6.8.0)
+        find_program(QMLLINT_COMMAND qmllint PATHS "${QT_INSTALL_BINS}")
+        if("${QMLLINT_COMMAND}" STREQUAL "QMLLINT_COMMAND-NOTFOUND")
+            MESSAGE(STATUS "qmllint not found. Please install it. Skipping qmllint tests.")
+        else()
+            file(GLOB QMLLINT_QML_FILES ${CMAKE_CURRENT_SOURCE_DIR}/examples/cargo_without_cmake/qml/*.qml)
+            add_test(NAME example_cargo_without_cmake_qmllint_check COMMAND ${QMLLINT_COMMAND} --max-warnings 0 -I ${CARGO_TARGET_DIR}/cxxqt/qml_modules ${QMLLINT_QML_FILES})
+
+            # Add a fixture to so that this test can depend on cargo build being run before
+            add_test(NAME example_cargo_without_cmake_qmllint_check_fixture COMMAND cargo build -p qml-minimal-no-cmake --locked --release --all-features --target-dir ${CARGO_TARGET_DIR})
+            set_tests_properties(example_cargo_without_cmake_qmllint_check_fixture PROPERTIES FIXTURES_SETUP fixture_cargo_without_cmake_build)
+            set_tests_properties(example_cargo_without_cmake_qmllint_check PROPERTIES FIXTURES_REQUIRED fixture_cargo_without_cmake_build)
+
+            # Ensure that other tests are not running while building
+            set_tests_properties(example_cargo_without_cmake_qmllint_check_fixture PROPERTIES RUN_SERIAL TRUE)
+        endif()
+    endif()
+
 endif()
 
 if(CMAKE_RUSTC_WRAPPER)
