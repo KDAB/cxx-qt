@@ -7,6 +7,7 @@ use crate::{Initializer, QtInstallation, QtTool};
 
 use semver::Version;
 use std::{
+    ffi::{OsStr, OsString},
     path::{Path, PathBuf},
     process::Command,
 };
@@ -15,6 +16,7 @@ use std::{
 pub struct QtToolRcc {
     executable: PathBuf,
     qt_version: Version,
+    custom_args: Vec<OsString>,
 }
 
 impl QtToolRcc {
@@ -28,7 +30,17 @@ impl QtToolRcc {
         Self {
             executable,
             qt_version,
+            custom_args: Vec::new(),
         }
+    }
+
+    /// Append custom arguments to the end of the rcc invocation.
+    pub fn custom_args(mut self, args: impl IntoIterator<Item = impl AsRef<OsStr>>) -> Self {
+        self.custom_args = args
+            .into_iter()
+            .map(|s| s.as_ref().to_os_string())
+            .collect();
+        self
     }
 
     /// Run [rcc](https://doc.qt.io/qt-6/resources.html) on a .qrc file and save the output into [cargo's OUT_DIR](https://doc.rust-lang.org/cargo/reference/environment-variables.html).
@@ -50,14 +62,17 @@ impl QtToolRcc {
             .to_string_lossy()
             .replace('.', "_");
 
+        let mut args = vec![
+            OsString::from(input_path),
+            OsString::from("-o"),
+            OsString::from(&output_path),
+            OsString::from("--name"),
+            OsString::from(&name),
+        ];
+        args.extend(self.custom_args.iter().cloned());
+
         let cmd = Command::new(&self.executable)
-            .args([
-                input_path.to_str().unwrap(),
-                "-o",
-                output_path.to_str().unwrap(),
-                "--name",
-                &name,
-            ])
+            .args(args)
             .output()
             .unwrap_or_else(|_| panic!("rcc failed for {}", input_path.display()));
 
