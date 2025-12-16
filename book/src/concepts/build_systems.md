@@ -61,3 +61,23 @@ Whenever QML code is loaded that references your QML module, it will be loaded a
 > Some of our own examples use this structure for historical reasons - in that case: do as we say, not as we do 😅!
 >
 > This issue only affects dynamic QML module plugins, but we still recommend to avoid this pattern for static QML modules.
+
+## QML Language Server (qmlls)
+
+When using QML modules within a `build.rs` script CXX-Qt will automatically create a `.qmlls.ini` file, if one does not already exist, in the folder containing your Cargo.toml.
+
+This informs any [qmlls](https://doc.qt.io/qt-6/qtqml-tooling-qmlls.html) instance running in child directories where to find the build directory.
+
+> Note that if your QML files are in a parent or sibling folder you may need to copy or symlink the `.qmlls.ini` or create your own
+
+## QML Lint (qmllint)
+
+When using QML modules `.qmltypes` information is exported to the build folder which allows for both `qmllint` and `qmlls` to understand the types.
+
+For [qmllint](https://doc.qt.io/qt-6/qtqml-tooling-qmllint.html) this can be executed successfully by adding the `cxxqt/qml_modules` folder from the build directory to the QML import paths with the `-I` flag.
+
+```console
+qmllint -I /path/to/cxxqt/qml_modules /path/to/test.qml
+```
+
+> When using CMake the folder is `${CMAKE_CURRENT_BINARY_DIR}/cxxqt/qml_modules` and when using Cargo the folder is `target/cxxqt/qml_modules`.
