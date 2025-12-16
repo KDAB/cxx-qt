@@ -78,9 +78,6 @@ add_executable(example_qml_minimal_plugin cpp/main.cpp qml/qml.qrc)
 # Link to the qml module, which in turn links to the Rust qml_minimal library
 target_link_libraries(example_qml_minimal_plugin PRIVATE Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2)
 
-# If we are using a statically linked Qt then we need to import any qml plugins
-# qt_import_qml_plugins(example_qml_minimal_plugin)
-
 if(BUILD_TESTING)
     #
     # Unit test
@@ -124,6 +121,17 @@ if(BUILD_TESTING)
             )
         else()
             MESSAGE(STATUS "add_valgrind_test is defined in the top level of CXX-Qt. It will not executed")
+        endif()
+
+        # qmllint --max-warnings only exists in Qt 6
+        if(Qt6_FOUND AND Qt6_VERSION VERSION_GREATER_EQUAL 6.8.0)
+            find_program(QMLLINT_COMMAND qmllint PATHS "${QT_INSTALL_BINS}")
+            if("${QMLLINT_COMMAND}" STREQUAL "QMLLINT_COMMAND-NOTFOUND")
+                MESSAGE(STATUS "qmllint not found. Please install it. Skipping qmllint tests.")
+            else()
+                file(GLOB QMLLINT_QML_FILES ${CMAKE_CURRENT_SOURCE_DIR}/qml/*.qml)
+                add_test(NAME example_qml_minimal_plugin_qmllint_check COMMAND ${QMLLINT_COMMAND} --max-warnings 0 -I ${CMAKE_CURRENT_BINARY_DIR}/cxxqt/qml_modules ${QMLLINT_QML_FILES})
+            endif()
         endif()
     endfunction()
 
