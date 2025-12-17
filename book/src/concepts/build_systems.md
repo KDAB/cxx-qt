@@ -55,3 +55,9 @@ To build a dynamic QML module plugin, start with a normal static QML module, the
 In this case, CXX-Qt generates one large dynamic library for the plugin and your Rust code.
 Similar to this case described [in the Qt documentation](https://doc.qt.io/qt-6/qt-add-qml-module.html#plugin-target-with-no-backing-target).
 Whenever QML code is loaded that references your QML module, it will be loaded automatically.
+
+> ⚠️ Note: If your QML module contains paths above your Cargo.toml (e.g. `../qml/MyObject.qml`), they will not be exported correctly to tools like qmllint/qmlls.
+> In general, we do not recommend to structure QML modules this way, as the directory structure in QRC will then include files outside the actual module directory.
+> Some of our own examples use this structure for historical reasons - in that case: do as we say, not as we do 😅!
+>
+> This issue only affects dynamic QML module plugins, but we still recommend to avoid this pattern for static QML modules.
