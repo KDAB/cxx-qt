@@ -17,7 +17,7 @@ mod utils;
 mod diagnostics;
 use diagnostics::{Diagnostic, GeneratedError};
 
-pub mod dir;
+pub(crate) mod dir;
 use dir::INCLUDE_VERB;
 
 mod dependencies;
