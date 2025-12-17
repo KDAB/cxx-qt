@@ -13,7 +13,7 @@ use std::io;
 /// A qmldir file is a plain-text file that contains the commands
 pub struct QmlDirBuilder {
     class_name: Option<String>,
-    depends: Vec<String>,
+    depends: Vec<QmlUri>,
     plugin: Option<(bool, String)>,
     type_info: Option<String>,
     uri: QmlUri,
@@ -118,13 +118,13 @@ impl QmlDirBuilder {
     }
 
     /// Declares that this module depends on another
-    pub fn depend(mut self, depend: impl Into<String>) -> Self {
+    pub fn depend(mut self, depend: impl Into<QmlUri>) -> Self {
         self.depends.push(depend.into());
         self
     }
 
     /// Declares that this module depends on another
-    pub fn depends<T: Into<String>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
+    pub fn depends<T: Into<QmlUri>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
         self.depends.extend(depends.into_iter().map(Into::into));
         self
     }

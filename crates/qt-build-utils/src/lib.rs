@@ -182,7 +182,7 @@ impl QtBuild {
         version_minor: usize,
         plugin_name: &str,
         qml_files: &[QmlFile],
-        depends: impl IntoIterator<Item = impl Into<String>>,
+        depends: impl IntoIterator<Item = impl Into<QmlUri>>,
         plugin_type: PluginType,
     ) -> QmlModuleRegistrationFiles {
         let qml_uri_dirs = uri.as_dirs();

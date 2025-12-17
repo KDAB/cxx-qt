@@ -38,13 +38,13 @@ impl QmlModule {
     }
 
     /// Add a QML module dependency
-    pub fn depend(mut self, depend: impl Into<String>) -> Self {
+    pub fn depend(mut self, depend: impl Into<QmlUri>) -> Self {
         self.depends.push(depend.into());
         self
     }
 
     /// Add multiple QML module dependencies
-    pub fn depends<T: Into<String>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
+    pub fn depends<T: Into<QmlUri>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
         self.depends.extend(depends.into_iter().map(Into::into));
         self
     }
