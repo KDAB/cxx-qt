@@ -49,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CXX-Qt-build: Interface no longer includes initializers
 - CXX-Qt-build: QML modules no longer include Rust files (use `CxxQtBuilder::files` instead)
 - CXX-Qt-build: Only allow one QML module per `CxxQtBuilder`
+- CXX-Qt-build: Make `CxxQtBuilder::cc_builder` unsafe to use, to indicate its lack of guarantees
 
 ## [0.7.2](https://github.com/KDAB/cxx-qt/compare/v0.7.1...v0.7.2) - 2025-04-28
 

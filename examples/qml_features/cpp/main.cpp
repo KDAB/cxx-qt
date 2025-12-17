@@ -8,8 +8,8 @@
 #include <QtGui/QGuiApplication>
 #include <QtQml/QQmlApplicationEngine>
 
-#include "custom_object.h"
-#include "external_qobject.h"
+#include "qml_features/custom_object.h"
+#include "qml_features/external_qobject.h"
 
 int
 main(int argc, char* argv[])

@@ -50,9 +50,7 @@ fn main() {
     ])
     // custom_object.cpp/h need to be handled here rather than CMakeLists.txt,
     // otherwise linking cargo tests fails because the symbols from those files are not found.
-    .cc_builder(|cc| {
-        cc.include("../cpp");
-    })
+    .include_dir("../cpp")
     .cpp_file("../cpp/custom_object.cpp")
     .cpp_file("../cpp/external_qobject.cpp")
     .cpp_file("../cpp/custom_object.h")

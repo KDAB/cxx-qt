@@ -6,7 +6,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#include "cxx_test.h"
+#include "basic_cxx_only/cxx_test.h"
 
 namespace {
 int hidden_num = 100;

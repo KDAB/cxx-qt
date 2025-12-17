@@ -633,7 +633,7 @@ impl CxxQtBuilder {
     }
 
     /// Use a closure to run additional customization on [CxxQtBuilder]'s internal [cc::Build]
-    /// before calling [CxxQtBuilder::build]. This allows to add extra include paths, compiler flags,
+    /// before calling [CxxQtBuilder::build]. This allows to add extra compiler flags,
     /// or anything else available via [cc::Build]'s API. For example, to add an include path for
     /// manually written C++ headers located in a directory called `include` within your crate:
     ///
@@ -643,11 +643,18 @@ impl CxxQtBuilder {
     /// CxxQtBuilder::new()
     ///     .file("src/lib.rs")
     ///     .cc_builder(|cc| {
-    ///         cc.include("include");
+    ///         cc.flag_if_supported("-Wall");
     ///     })
     ///     .build();
     /// ```
-    pub fn cc_builder(mut self, mut callback: impl FnMut(&mut cc::Build)) -> Self {
+    ///
+    /// # Safety
+    ///
+    /// This function is marked as unsafe because the closure has full access to the internal
+    /// [cc::Build] instance. Misuse of the API may lead to unexpected behavior.
+    /// No stability guarantees are made about the [cc::Build] instance between minor releases of
+    /// Cxx-Qt.
+    pub unsafe fn cc_builder(mut self, mut callback: impl FnMut(&mut cc::Build)) -> Self {
         callback(&mut self.cc_builder);
         self
     }

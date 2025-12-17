@@ -8,9 +8,7 @@ use cxx_qt_build::CxxQtBuilder;
 fn main() {
     CxxQtBuilder::new()
         .file("src/lib.rs")
-        .cc_builder(|cc| {
-            cc.include("../cpp");
-        })
+        .include_dir("../cpp")
         // cxx_test.cpp need to be compiled by cargo rather than CMakeLists.txt,
         // otherwise linking cargo tests fails because the symbols from those files are not found.
         // This to make cargo only tests work.
