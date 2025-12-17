@@ -26,8 +26,8 @@ use dependencies::{Dependency, Manifest};
 mod interface;
 pub use interface::Interface;
 
-mod opts;
-pub use opts::QObjectHeaderOpts;
+mod cpp_file;
+pub use cpp_file::QObjectHeaderOpts;
 
 mod qml_modules;
 pub use qml_modules::{PluginType, QmlFile, QmlModule, QmlUri};
