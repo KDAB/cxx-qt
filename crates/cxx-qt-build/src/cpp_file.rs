@@ -7,39 +7,59 @@ use std::path::{Path, PathBuf};
 
 use crate::MocArguments;
 
-/// Options for qobject_headers
+/// This struct represents a C++ file to compile, together with appropriate options.
 ///
-/// QObjectHeaderOpts can be created using the `From<impl AsRef<Path>>` trait.
+/// CppFile can be created using the `From<impl AsRef<Path>>` trait.
 /// ```
-/// # use cxx_qt_build::{QObjectHeaderOpts, MocArguments};
-/// QObjectHeaderOpts::from("path/to/header.h")
+/// # use cxx_qt_build::{CppFile, MocArguments};
+/// CppFile::from("path/to/header.h")
 ///     .moc_arguments(MocArguments::default());
 /// ```
-pub struct QObjectHeaderOpts {
+pub struct CppFile {
     pub(crate) path: PathBuf,
     pub(crate) moc_arguments: MocArguments,
+    pub(crate) enable_moc: bool,
 }
 
-impl<T> From<T> for QObjectHeaderOpts
+impl<T> From<T> for CppFile
 where
     T: AsRef<Path>,
 {
     fn from(path: T) -> Self {
+        let path = path.as_ref().to_owned();
+        let enable_moc = path
+            .extension()
+            .map(|ext| Self::HEADER_EXTENSIONS.contains(&&*ext.to_string_lossy().to_lowercase()))
+            .unwrap_or_default();
         Self {
-            path: path.as_ref().to_owned(),
+            path,
             moc_arguments: MocArguments::default(),
+            enable_moc,
         }
     }
 }
 
-impl QObjectHeaderOpts {
-    /// Set the moc arguments for this header
+impl CppFile {
+    /// Which extensions are treated as header files.
+    pub const HEADER_EXTENSIONS: &[&'static str] = &["h", "hpp", "hh", "hxx", "h++"];
+
+    /// Set the moc arguments for this header.
+    /// This will also enable running moc over this file.
     ///
-    /// By default this is `MocArguments::default()`
+    /// By default this is `MocArguments::default()`.
     pub fn moc_arguments(self, moc_arguments: MocArguments) -> Self {
         Self {
             moc_arguments,
+            enable_moc: true,
             ..self
         }
+    }
+
+    /// Whether to run moc over this file.
+    ///
+    /// By default, moc is enabled for header files (i.e. ending in one of the extensions
+    /// listed in [Self::HEADER_EXTENSIONS]).
+    pub fn moc(self, enable_moc: bool) -> Self {
+        Self { enable_moc, ..self }
     }
 }

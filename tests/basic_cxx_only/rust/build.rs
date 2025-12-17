@@ -10,10 +10,10 @@ fn main() {
         .file("src/lib.rs")
         .cc_builder(|cc| {
             cc.include("../cpp");
-            // cxx_test.cpp need to be compiled by cargo rather than CMakeLists.txt,
-            // otherwise linking cargo tests fails because the symbols from those files are not found.
-            // This to make cargo only tests work.
-            cc.file("../cpp/cxx_test.cpp");
         })
+        // cxx_test.cpp need to be compiled by cargo rather than CMakeLists.txt,
+        // otherwise linking cargo tests fails because the symbols from those files are not found.
+        // This to make cargo only tests work.
+        .cpp_file("../cpp/cxx_test.cpp")
         .build();
 }
