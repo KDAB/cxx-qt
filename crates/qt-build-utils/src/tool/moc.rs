@@ -39,14 +39,21 @@ impl MocArguments {
     }
 
     /// Additional include path to pass to moc
-    pub fn include_path(mut self, include_path: PathBuf) -> Self {
-        self.include_paths.push(include_path);
+    pub fn include_path(mut self, include_path: impl AsRef<Path>) -> Self {
+        self.include_paths.push(include_path.as_ref().to_owned());
         self
     }
 
     /// Additional include paths to pass to moc.
-    pub fn include_paths(mut self, mut include_paths: Vec<PathBuf>) -> Self {
-        self.include_paths.append(&mut include_paths);
+    pub fn include_paths(
+        mut self,
+        include_paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    ) -> Self {
+        self.include_paths.extend(
+            include_paths
+                .into_iter()
+                .map(|path| path.as_ref().to_owned()),
+        );
         self
     }
 }
