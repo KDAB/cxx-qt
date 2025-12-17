@@ -19,6 +19,7 @@ pub struct CppFile {
     pub(crate) path: PathBuf,
     pub(crate) moc_arguments: MocArguments,
     pub(crate) enable_moc: bool,
+    pub(crate) compile: bool,
 }
 
 impl<T> From<T> for CppFile
@@ -27,21 +28,24 @@ where
 {
     fn from(path: T) -> Self {
         let path = path.as_ref().to_owned();
-        let enable_moc = path
+        let is_header = path
             .extension()
             .map(|ext| Self::HEADER_EXTENSIONS.contains(&&*ext.to_string_lossy().to_lowercase()))
             .unwrap_or_default();
+        let enable_moc = is_header;
+        let compile = !is_header;
         Self {
             path,
             moc_arguments: MocArguments::default(),
             enable_moc,
+            compile,
         }
     }
 }
 
 impl CppFile {
     /// Which extensions are treated as header files.
-    pub const HEADER_EXTENSIONS: &[&'static str] = &["h", "hpp", "hh", "hxx", "h++"];
+    pub const HEADER_EXTENSIONS: &'static [&'static str] = &["h", "hpp", "hh", "hxx", "h++"];
 
     /// Set the moc arguments for this header.
     /// This will also enable running moc over this file.
@@ -53,6 +57,14 @@ impl CppFile {
             enable_moc: true,
             ..self
         }
+    }
+
+    /// Whether to compile this file.
+    ///
+    /// By default, header files are not compiled, all other files are compiled (i.e. ending
+    /// in one of the extensions listed in [Self::HEADER_EXTENSIONS])
+    pub fn compile(self, compile: bool) -> Self {
+        Self { compile, ..self }
     }
 
     /// Whether to run moc over this file.

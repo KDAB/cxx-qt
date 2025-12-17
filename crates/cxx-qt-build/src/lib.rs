@@ -734,7 +734,8 @@ impl CxxQtBuilder {
         self.cpp_files.iter().filter(|file| file.enable_moc).map(|CppFile {
             path,
             moc_arguments,
-            enable_moc: _
+            enable_moc: _,
+            compile: _
         }|
         {
             let mut moc_arguments = moc_arguments.clone();
@@ -1302,7 +1303,7 @@ extern "C" bool {init_fun}() {{
         self.generate_cpp_files_from_cxxqt_bridges(&header_root, &self.include_prefix.clone());
 
         let moc_products = self.moc_cpp_files(&mut qtbuild);
-        for cpp_file in &self.cpp_files {
+        for cpp_file in self.cpp_files.iter().filter(|file| file.compile) {
             self.cc_builder.file(&cpp_file.path);
         }
 
