@@ -65,7 +65,7 @@ impl QmlDirBuilder {
 
         for qml_file in &self.qml_files {
             let is_qml_file = qml_file
-                .path()
+                .get_path()
                 .extension()
                 .map(|ext| ext.eq_ignore_ascii_case("qml"))
                 .unwrap_or_default();
@@ -73,13 +73,13 @@ impl QmlDirBuilder {
             if !is_qml_file {
                 panic!(
                     "QML file does not end with .qml: {}",
-                    qml_file.path().display(),
+                    qml_file.get_path().display(),
                 );
             }
 
-            let path = qml_file.path().display();
+            let path = qml_file.get_path().display();
             let qml_component_name = qml_file
-                .path()
+                .get_path()
                 .file_stem()
                 .and_then(OsStr::to_str)
                 .expect("Could not get qml file stem");

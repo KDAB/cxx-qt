@@ -918,7 +918,7 @@ impl CxxQtBuilder {
 
             // If any of the files inside the qml module change, then trigger a rerun
             for file in qml_module.qml_files {
-                println!("cargo::rerun-if-changed={}", file.path().display());
+                println!("cargo::rerun-if-changed={}", file.get_path().display());
             }
 
             // Export the .qmltypes and qmldir files into a stable path, so that tools like
