@@ -522,6 +522,14 @@ impl CxxQtBuilder {
         self
     }
 
+    /// Instead of generating files under the crate name, generate files under the given prefix.
+    ///
+    /// This is the prefix used [Self::crate_include_root] and [Self::include_dir]
+    pub fn include_prefix(mut self, prefix: &str) -> Self {
+        prefix.clone_into(&mut self.include_prefix);
+        self
+    }
+
     /// Include files listed in a .qrc file into the binary
     /// with [Qt's resource system](https://doc.qt.io/qt-6/resources.html).
     /// ```no_run
@@ -601,12 +609,6 @@ impl CxxQtBuilder {
         }
 
         self.qt_modules.insert(module.to_owned());
-        self
-    }
-
-    /// Instead of generating files under the crate name, generate files under the given prefix.
-    pub fn include_prefix(mut self, prefix: &str) -> Self {
-        prefix.clone_into(&mut self.include_prefix);
         self
     }
 
