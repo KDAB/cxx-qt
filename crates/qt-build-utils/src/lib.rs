@@ -12,6 +12,10 @@
 //! [cc](https://docs.rs/cc/latest/cc/),
 //! [cxx_build](https://docs.rs/cxx-build/latest/cxx_build/), or
 //! [cpp_build](https://docs.rs/cpp_build/latest/cpp_build/).
+//!
+//! ⚠️ THIS CRATE IS UNSTABLE!
+//! It is used internally by [cxx-qt-build](https://crates.io/crates/cxx-qt-build) and may be
+//! stabilized in the future. For now, prefer use [cxx-qt-build] directly.
 
 #![allow(clippy::too_many_arguments)]
 
