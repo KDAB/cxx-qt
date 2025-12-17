@@ -1167,6 +1167,13 @@ extern "C" bool {init_fun}() {{
 
         let mut qtbuild = qt_build_utils::QtBuild::new(qt_modules.iter().cloned().collect())
             .expect("Could not find Qt installation");
+        if let Some(autorcc) = env::var_os("CXX_QT_AUTORCC_OPTIONS") {
+            let autorcc = autorcc
+                .to_str()
+                .expect("CXX_QT_AUTORCC_OPTIONS are not UTF-8!");
+            let autorcc: Vec<_> = autorcc.split(':').collect();
+            qtbuild = qtbuild.autorcc_options(autorcc);
+        }
         qtbuild.cargo_link_libraries(&mut self.cc_builder);
 
         // Define the Qt cfg to cargo

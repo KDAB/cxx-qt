@@ -52,7 +52,7 @@ mod utils;
 
 use std::{
     env,
-    ffi::OsStr,
+    ffi::{OsStr, OsString},
     fs::File,
     path::{Path, PathBuf},
 };
@@ -96,6 +96,7 @@ pub struct QmlModuleRegistrationFiles {
 pub struct QtBuild {
     qt_installation: Box<dyn QtInstallation>,
     qt_modules: Vec<String>,
+    autorcc_options: Vec<OsString>,
 }
 
 impl QtBuild {
@@ -124,7 +125,17 @@ impl QtBuild {
         Self {
             qt_installation,
             qt_modules,
+            autorcc_options: Vec::new(),
         }
+    }
+
+    /// Add custom arguments to be passed to the end of the rcc invocation when converting qrc files.
+    pub fn autorcc_options(mut self, options: impl IntoIterator<Item = impl AsRef<OsStr>>) -> Self {
+        self.autorcc_options = options
+            .into_iter()
+            .map(|s| s.as_ref().to_os_string())
+            .collect();
+        self
     }
 
     /// Tell Cargo to link each Qt module.
@@ -348,7 +359,7 @@ Q_IMPORT_PLUGIN({plugin_class_name});
     ///
     /// This allows for using [rcc](https://doc.qt.io/qt-6/resources.html)
     pub fn rcc(&self) -> QtToolRcc {
-        QtToolRcc::new(self.qt_installation.as_ref())
+        QtToolRcc::new(self.qt_installation.as_ref()).custom_args(&self.autorcc_options)
     }
 
     /// Create a [QtToolQmlTypeRegistrar] for this [QtBuild]
