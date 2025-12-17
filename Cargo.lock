@@ -1143,6 +1143,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "qml_minimal_plugin"
+version = "0.1.0"
+dependencies = [
+ "cxx",
+ "cxx-qt",
+ "cxx-qt-build",
+ "cxx-qt-lib",
+]
+
+[[package]]
 name = "qml_multi_crates"
 version = "0.1.0"
 dependencies = [

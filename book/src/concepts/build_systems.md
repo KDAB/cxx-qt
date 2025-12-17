@@ -31,3 +31,33 @@ When using QML with CXX-Qt [QML modules](https://doc.qt.io/qt-6/qtqml-writing-a-
 This allows for attributes such as `#[qml_element]` to register the `QObject` with the QML type system without any C++ code.
 
 See [`QmlModule` documentation](https://docs.rs/cxx-qt-build/latest/cxx_qt_build/struct.QmlModule.html) for more details.
+
+### Dynamic QML module plugins
+
+Qt allows building QML modules into dynamic plugins that are loaded on-demand at runtime.
+
+By default, CXX-Qt uses static QML plugins, which are linked directly into the application.
+As Rust prefers static linking in general, we recommend sticking with this approach when using CXX-Qt.
+
+However, if you really need a dynamic QML plugin, CXX-Qt supports generating them **with CMake only**.
+For an example, see the [qml_minimal_plugin example](https://github.com/KDAB/cxx-qt/tree/main/examples/qml_minimal_plugin) in the CXX-Qt repository.
+
+To build a dynamic QML module plugin, start with a normal static QML module, then make sure you have taken these steps:
+
+- Set the `crate-type` to `cdylib` in your Cargo.toml
+- Pass `PluginType::Dynamic` to `QtModule::plugin_type` in your Rust build script
+- Make sure you are using `cxx_qt_import_qml_module` in CMake with the correct `OUTPUT_DIR`
+  - `OUTPUT_DIR` should be the directory of the main application binary, not the plugin library
+  - Note: The `OUTPUT_DIR` defaults to the `CMAKE_CURRENT_BINARY_DIR`
+- Build the QML module target separately (`cmake --build /path/to/build/` should build it by default)
+- Your main binary no longer needs to link to the QML plugin
+
+In this case, CXX-Qt generates one large dynamic library for the plugin and your Rust code.
+Similar to this case described [in the Qt documentation](https://doc.qt.io/qt-6/qt-add-qml-module.html#plugin-target-with-no-backing-target).
+Whenever QML code is loaded that references your QML module, it will be loaded automatically.
+
+> ⚠️ Note: If your QML module contains paths above your Cargo.toml (e.g. `../qml/MyObject.qml`), they will not be exported correctly to tools like qmllint/qmlls.
+> In general, we do not recommend to structure QML modules this way, as the directory structure in QRC will then include files outside the actual module directory.
+> Some of our own examples use this structure for historical reasons - in that case: do as we say, not as we do 😅!
+>
+> This issue only affects dynamic QML module plugins, but we still recommend to avoid this pattern for static QML modules.

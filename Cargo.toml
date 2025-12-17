@@ -17,6 +17,7 @@ members = [
     "examples/demo_threading/rust",
     "examples/qml_features/rust",
     "examples/qml_minimal/rust",
+    "examples/qml_minimal_plugin/rust",
     "examples/qml_basics",
     "examples/qml_multi_crates/rust/main",
     "examples/qml_multi_crates/rust/sub1",

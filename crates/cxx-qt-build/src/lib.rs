@@ -31,7 +31,7 @@ pub use opts::CxxQtBuildersOpts;
 pub use opts::QObjectHeaderOpts;
 
 mod qml_modules;
-pub use qml_modules::{QmlFile, QmlModule, QmlUri};
+pub use qml_modules::{PluginType, QmlFile, QmlModule, QmlUri};
 
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::MocProducts;
@@ -674,6 +674,11 @@ impl CxxQtBuilder {
         }
     }
 
+    fn is_debug() -> bool {
+        let debug = std::env::var("DEBUG").unwrap_or_else(|_| "0".to_owned());
+        debug != "0" && debug != "false" || debug != "none"
+    }
+
     fn setup_cc_builder(builder: &mut cc::Build, include_paths: &[impl AsRef<Path>]) {
         // Note, ensure our settings stay in sync across cxx-qt and cxx-qt-lib
         builder.cpp(true);
@@ -687,6 +692,15 @@ impl CxxQtBuilder {
 
         for include_path in include_paths {
             builder.include(include_path);
+        }
+
+        if !Self::is_debug() {
+            // Make sure QT_NO_DEBUG is set appropriately.
+            // This is especially important when building dynamic QML modules under windows, where
+            // we always link against the release mode Qt.
+            // Q_PLUGIN_METADATA will otherwise report that the plugin was built in debug mode and
+            // the main binary will refuse to load it.
+            builder.define("QT_NO_DEBUG", None);
         }
     }
 
@@ -858,6 +872,7 @@ impl CxxQtBuilder {
                 &qml_module.uri.as_underscores(),
                 &qml_module.qml_files,
                 &qml_module.depends,
+                qml_module.plugin_type,
             );
             if let Some(qmltyperegistrar) = qml_module_registration_files.qmltyperegistrar {
                 cc_builder.file(qmltyperegistrar);
@@ -879,8 +894,28 @@ impl CxxQtBuilder {
             for qmlcachegen_file in qml_module_registration_files.qmlcachegen {
                 cc_builder.file(qmlcachegen_file);
             }
-            // This is required, as described here: https://doc.qt.io/qt-6/plugins-howto.html#creating-static-plugins
-            cc_builder.define("QT_STATICPLUGIN", None);
+            // Set the appropriate compile-time definitions in the cc_builder
+            if qml_module.plugin_type == PluginType::Static {
+                // This is required, as described here: https://doc.qt.io/qt-6/plugins-howto.html#creating-static-plugins
+                cc_builder.define("QT_STATICPLUGIN", None);
+            } else {
+                cc_builder.define("QT_PLUGIN", None);
+                if cc_builder.get_compiler().is_like_msvc() {
+                    // Under MSVC, we always link to the release runtime
+                    // Therefore we need to ensure that QT_NO_DEBUG is defined,
+                    // as otherwise the plugin will report it was built in debug mode,
+                    // which implies that it was linked to the debug runtime, which is not
+                    // compatible and not true.
+                    cc_builder.define("QT_NO_DEBUG", None);
+                    // If we're actually in debug mode, emit a warning to inform the user about
+                    // this issue
+                    if Self::is_debug() {
+                        println!(
+                            "cargo::warning=Building a dynamic QML module plugin in debug mode under MSVC sets QT_NO_DEBUG, as Rust plugins will always link against the release Qt libraries.\nQ_ASSERT, Q_CHECK_PTR, etc. are disabled!"
+                        );
+                    }
+                }
+            }
 
             // If any of the files inside the qml module change, then trigger a rerun
             for file in qml_module.qml_files {
@@ -1077,23 +1112,29 @@ extern "C" bool {init_fun}() {{
         let init_file = dir::initializers(key).join("call-initializers.cpp");
         std::fs::write(&init_file, init_call).expect("Could not write initializers call file!");
 
+        // Export the object file if requested, but always try to link the initializer in with whole-archive.
+        //
+        // If we're building to a static library, the whole-archive build doesn't really hurt, but
+        // it is required when building a dynamic library (where exporting the object file doesn't
+        // hurt either, but is not necessary).
+        // From the build script we simply cannot know whether we're building a static or dynamic
+        // library, so we need to be prepared for both cases, even if we're exporting to CMake.
         if let Some(export_path) = export_path {
-            Self::export_object_file(init_call_builder, init_file, export_path);
-        } else {
-            // Link the call-init-lib with +whole-archive to ensure that the static initializers are not discarded.
-            // We previously used object files that we linked directly into the final binary, but this caused
-            // issues, as the static initializers could sometimes not link to the initializer functions.
-            // This is simpler and ends up linking correctly.
-            //
-            // The trick is that we only link the initializer call with +whole-archive, and not the entire
-            // Rust static library, as the initializer is rather simple and shouldn't lead to issues with
-            // duplicate symbols.
-            // Note that for CMake builds we still need to export an object file to link to.
-            init_call_builder
-                .file(init_file)
-                .link_lib_modifier("+whole-archive")
-                .compile(&format!("cxx-qt-call-init-{key}"));
+            Self::export_object_file(init_call_builder.clone(), &init_file, export_path);
         }
+        // Link the call-init-lib with +whole-archive to ensure that the static initializers are not discarded.
+        // We previously used object files that we linked directly into the final binary, but this caused
+        // issues, as the static initializers could sometimes not link to the initializer functions.
+        // This is simpler and ends up linking correctly.
+        //
+        // The trick is that we only link the initializer call with +whole-archive, and not the entire
+        // Rust static library, as the initializer is rather simple and shouldn't lead to issues with
+        // duplicate symbols.
+        // Note that for CMake builds we still need to export an object file to link to.
+        init_call_builder
+            .file(init_file)
+            .link_lib_modifier("+whole-archive")
+            .compile(&format!("cxx-qt-call-init-{key}"));
     }
 
     fn generate_qrc_files_from_resources(&mut self) {

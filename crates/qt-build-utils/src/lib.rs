@@ -37,7 +37,7 @@ mod platform;
 pub use platform::QtPlatformLinker;
 
 mod qml;
-pub use qml::{QmlDirBuilder, QmlFile, QmlLsIniBuilder, QmlPluginCppBuilder, QmlUri};
+pub use qml::{PluginType, QmlDirBuilder, QmlFile, QmlLsIniBuilder, QmlPluginCppBuilder, QmlUri};
 
 mod qrc;
 pub use qrc::{QResource, QResourceFile, QResources};
@@ -183,6 +183,7 @@ impl QtBuild {
         plugin_name: &str,
         qml_files: &[QmlFile],
         depends: impl IntoIterator<Item = impl Into<String>>,
+        plugin_type: PluginType,
     ) -> QmlModuleRegistrationFiles {
         let qml_uri_dirs = uri.as_dirs();
         let qml_uri_underscores = uri.as_underscores();
@@ -309,8 +310,9 @@ impl QtBuild {
         {
             let mut file = File::create(&qml_plugin_cpp_path)
                 .expect("Could not create plugin definition file");
-            QmlPluginCppBuilder::new(uri.clone(), plugin_class_name.clone())
+            let plugin_init = QmlPluginCppBuilder::new(uri.clone(), plugin_class_name.clone())
                 .qml_cache(!qml_files.is_empty() && !qmlcachegen_file_paths.is_empty())
+                .plugin_type(plugin_type)
                 .write(&mut file)
                 .expect("Failed to write plugin definition");
 
@@ -320,18 +322,6 @@ impl QtBuild {
             );
             // Pass the include directory of the moc file to the caller
             include_path = moc_product.cpp.parent().map(Path::to_path_buf);
-
-            // Generate Initializer for static QQmlExtensionPlugin
-            let plugin_init = Initializer {
-                file: None,
-                init_call: None,
-                init_declaration: Some(format!(
-                    r#"
-#include <QtPlugin>
-Q_IMPORT_PLUGIN({plugin_class_name});
-"#
-                )),
-            };
 
             let qml_files = qml_files
                 .iter()
