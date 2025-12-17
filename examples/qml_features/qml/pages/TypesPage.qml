@@ -50,7 +50,7 @@ Page {
                                 pointVariant = Qt.point(root.types.point.x + 1, root.types.point.y + 1);
                                 return pointVariant;
                             case 2:
-                                url = root.types.url == "https://kdab.com" ? "https://github.com/kdab/cxx-qt" : "https://kdab.com";
+                                url = root.types.url === "https://kdab.com" ? "https://github.com/kdab/cxx-qt" : "https://kdab.com";
                                 return urlVariant;
                             case 3:
                                 customObject.value += 1;
