@@ -34,8 +34,8 @@ pub use qml_modules::{PluginType, QmlFile, QmlModule, QmlUri};
 
 pub use qt_build_utils::MocArguments;
 use qt_build_utils::MocProducts;
-use qt_build_utils::QResources;
 use qt_build_utils::QmlLsIniBuilder;
+pub use qt_build_utils::{QResource, QResources};
 use quote::ToTokens;
 use std::fs::OpenOptions;
 use std::{
@@ -439,13 +439,13 @@ impl CxxQtBuilder {
         builder.qt_module("Qml")
     }
 
-    /// Specify rust file paths to parse through the cxx-qt marco
+    /// Specify rust file paths to parse through the cxx-qt macro
     /// Relative paths are treated as relative to the path of your crate's Cargo.toml file
     pub fn file(self, rust_source: impl AsRef<Path>) -> Self {
         self.files(std::iter::once(rust_source))
     }
 
-    /// Specify multiple rust file paths to parse through the cxx-qt marco.
+    /// Specify multiple rust file paths to parse through the cxx-qt macro.
     ///
     /// See also: [Self::file]
     pub fn files(mut self, rust_sources: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
@@ -544,7 +544,7 @@ impl CxxQtBuilder {
     /// Include resources (files) listed in a [QResources] struct into the binary
     /// with [Qt's resource system](https://doc.qt.io/qt-6/resources.html).
     ///
-    /// See [QResources] and [qt_build_utils::QResource] for details on how to specify resources.
+    /// See [QResources] and [QResource] for details on how to specify resources.
     ///
     /// If a [QmlModule] was specified when constructing the [CxxQtBuilder], any resources that do
     /// not have a prefix specified will automatically be given a prefix based on the QML module's
