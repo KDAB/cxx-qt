@@ -3,59 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use std::{
-    collections::HashSet,
-    path::{Path, PathBuf},
-};
+use std::path::{Path, PathBuf};
 
 use crate::MocArguments;
-
-/// Options for external crates to use
-#[derive(Default)]
-pub struct CxxQtBuildersOpts {
-    /// Any extra definitions
-    pub(crate) defines: HashSet<String>,
-    /// Contents, directory, file name
-    pub(crate) headers: Vec<(String, String, String)>,
-    /// Qt modules that are required
-    pub(crate) qt_modules: HashSet<String>,
-    /// Added initializer code required to be linked into a separate object file
-    pub(crate) initializers: Vec<String>,
-}
-
-impl CxxQtBuildersOpts {
-    /// Any additional defines that are required from this opt
-    pub fn define(mut self, define: &str) -> Self {
-        self.defines.insert(define.to_owned());
-        self
-    }
-
-    /// Any additional headers that are required from this opt
-    ///
-    /// These are placed in the given sub directory with the given file name
-    pub fn header(mut self, contents: &str, directory: &str, file_name: &str) -> Self {
-        self.headers.push((
-            contents.to_owned(),
-            directory.to_owned(),
-            file_name.to_owned(),
-        ));
-        self
-    }
-
-    /// Link additional [Qt modules](https://doc.qt.io/qt-6/qtmodules.html) for this opt.
-    /// Specify their names without the `Qt` prefix, for example `"Widgets"`.
-    pub fn qt_module(mut self, module: &str) -> Self {
-        self.qt_modules.insert(module.to_owned());
-        self
-    }
-
-    /// Add initializer C++ code that must be compiled into an object file or linked with
-    /// whole-archive so that the linker doesn't optimize it out.
-    pub fn initializer(mut self, initializers: &str) -> Self {
-        self.initializers.push(initializers.to_owned());
-        self
-    }
-}
 
 /// Options for qobject_headers
 ///

@@ -27,7 +27,6 @@ mod interface;
 pub use interface::Interface;
 
 mod opts;
-pub use opts::CxxQtBuildersOpts;
 pub use opts::QObjectHeaderOpts;
 
 mod qml_modules;
