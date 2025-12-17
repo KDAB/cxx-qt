@@ -290,7 +290,7 @@ jobs:
           - name: Ubuntu 24.04 (gcc) Qt6
             os: ubuntu-24.04
             qt_version: 6
-            aqt_version: '6.9.3'
+            aqt_version: '6.10.1'
             aqt_arch: 'linux_gcc_64'
             aqt_host: 'linux'
             cores: 4
@@ -334,10 +334,10 @@ jobs:
           - name: macOS 15 (clang) Qt6
             os: macos-15
             qt_version: 6
-            aqt_version: '6.9.3'
+            aqt_version: '6.10.1'
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
-            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.9.3/macos/lib
+            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.10.1/macos/lib
             # https://doc.qt.io/qt-6.7/macos.html#target-platforms
             macosx_deployment_target: '13.0'
             cores: 3
@@ -394,7 +394,7 @@ jobs:
           - name: Windows 2022 (MSVC2022) Qt6 Debug
             os: windows-2022
             qt_version: 6
-            aqt_version: '6.9.3'
+            aqt_version: '6.10.1'
             aqt_arch: 'win64_msvc2022_64'
             aqt_host: 'windows'
             cores: 4
