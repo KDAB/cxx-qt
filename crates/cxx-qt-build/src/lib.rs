@@ -344,7 +344,7 @@ fn qml_module_init_key(module_uri: &QmlUri) -> String {
 /// Refer to [CxxQtBuilder::cc_builder] for details.
 ///
 /// In addition to autogenerating and building QObject C++ subclasses, manually written QObject
-/// subclasses can be parsed by moc and built using [CxxQtBuilder::qobject_header].
+/// subclasses can be parsed by moc and built using [CxxQtBuilder::cpp_file].
 ///
 /// # External build system integration
 ///
@@ -619,11 +619,11 @@ impl CxxQtBuilder {
     /// including strings:
     ///
     /// ```no_run
-    /// #include cxx_qt_build::{CxxQtBuilder}
+    /// # use cxx_qt_build::CxxQtBuilder;
     ///
     /// CxxQtBuilder::new()
     ///     .cpp_file("./test.h")
-    ///     .build()
+    ///     .build();
     /// ```
     pub fn cpp_file(mut self, file: impl Into<CppFile>) -> Self {
         let file = file.into();
@@ -640,12 +640,14 @@ impl CxxQtBuilder {
     /// ```no_run
     /// # use cxx_qt_build::CxxQtBuilder;
     ///
+    /// unsafe {
     /// CxxQtBuilder::new()
     ///     .file("src/lib.rs")
     ///     .cc_builder(|cc| {
     ///         cc.flag_if_supported("-Wall");
     ///     })
     ///     .build();
+    /// }
     /// ```
     ///
     /// # Safety
@@ -1211,7 +1213,7 @@ extern "C" bool {init_fun}() {{
     }
 
     /// Generate and compile cxx-qt C++ code, as well as compile any additional files from
-    /// [CxxQtBuilder::qobject_header] and [CxxQtBuilder::cc_builder].
+    /// [CxxQtBuilder::cpp_file] and [CxxQtBuilder::cc_builder].
     pub fn build(mut self) -> Interface {
         dir::clean(dir::crate_target()).expect("Failed to clean crate export directory!");
 
