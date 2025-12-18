@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CXX-Qt-build: Allow forcing initialization of crates/QML modules (`cxx_qt::init_crate!`/`cxx_qt::init_qml_module!`)
 - CXX-Qt-build: `CxxQtBuilder::files` to add multiple files
 - CXX-Qt-build: Allow building dynamic QML module plugins with CMake
+- CXX-Qt-build: Rename `CxxQtBuilder::qobject_header` to `CxxQtBuilder::cpp_file` and allow compiling .cpp files.
 - Add pure virtual function specified through the `#[cxx_pure]` attribute
 - Add wrappers for up and down casting, for all types which inherit from QObject, available for &T, &mut T and Pin<&mut T>
 - `#[base = T]` is now supported in `extern "C++Qt"` blocks
@@ -48,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CXX-Qt-build: Interface no longer includes initializers
 - CXX-Qt-build: QML modules no longer include Rust files (use `CxxQtBuilder::files` instead)
 - CXX-Qt-build: Only allow one QML module per `CxxQtBuilder`
+- CXX-Qt-build: Make `CxxQtBuilder::cc_builder` unsafe to use, to indicate its lack of guarantees
 
 ## [0.7.2](https://github.com/KDAB/cxx-qt/compare/v0.7.1...v0.7.2) - 2025-04-28
 

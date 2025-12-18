@@ -49,7 +49,7 @@ pub mod ffi {
     }
 
     unsafe extern "C++" {
-        include!("custom_object.h");
+        include!("qml_features/custom_object.h");
         /// CustomStruct which is a custom C++ type
         type CustomStruct = super::CustomStruct;
 

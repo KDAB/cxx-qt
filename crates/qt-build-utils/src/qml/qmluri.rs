@@ -17,6 +17,12 @@ impl From<&str> for QmlUri {
     }
 }
 
+impl From<&QmlUri> for QmlUri {
+    fn from(value: &QmlUri) -> Self {
+        value.clone()
+    }
+}
+
 impl Display for QmlUri {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str(&self.as_dots())

@@ -50,13 +50,11 @@ fn main() {
     ])
     // custom_object.cpp/h need to be handled here rather than CMakeLists.txt,
     // otherwise linking cargo tests fails because the symbols from those files are not found.
-    .cc_builder(|cc| {
-        cc.include("../cpp");
-        cc.file("../cpp/custom_object.cpp");
-        cc.file("../cpp/external_qobject.cpp");
-    })
-    .qobject_header("../cpp/custom_object.h")
-    .qobject_header("../cpp/external_qobject.h")
+    .include_dir("../cpp")
+    .cpp_file("../cpp/custom_object.cpp")
+    .cpp_file("../cpp/external_qobject.cpp")
+    .cpp_file("../cpp/custom_object.h")
+    .cpp_file("../cpp/external_qobject.h")
     // Ensure that Quick module is linked, so that cargo test can work.
     // In a CMake project this isn't required as the linking happens in CMake.
     .qt_module("Quick")

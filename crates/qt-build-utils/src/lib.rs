@@ -12,6 +12,10 @@
 //! [cc](https://docs.rs/cc/latest/cc/),
 //! [cxx_build](https://docs.rs/cxx-build/latest/cxx_build/), or
 //! [cpp_build](https://docs.rs/cpp_build/latest/cpp_build/).
+//!
+//! ⚠️ THIS CRATE IS UNSTABLE!
+//! It is used internally by [cxx-qt-build](https://crates.io/crates/cxx-qt-build) and may be
+//! stabilized in the future. For now, prefer use [cxx-qt-build] directly.
 
 #![allow(clippy::too_many_arguments)]
 
@@ -182,7 +186,7 @@ impl QtBuild {
         version_minor: usize,
         plugin_name: &str,
         qml_files: &[QmlFile],
-        depends: impl IntoIterator<Item = impl Into<String>>,
+        depends: impl IntoIterator<Item = impl Into<QmlUri>>,
         plugin_type: PluginType,
     ) -> QmlModuleRegistrationFiles {
         let qml_uri_dirs = uri.as_dirs();
@@ -207,7 +211,7 @@ impl QtBuild {
                 .filter(|file| {
                     // Qt by default only includes uppercase files in the qmldir file.
                     // Mirror this behavior.
-                    file.path()
+                    file.get_path()
                         .file_name()
                         .and_then(OsStr::to_str)
                         .and_then(|file_name| file_name.chars().next())
@@ -256,7 +260,7 @@ impl QtBuild {
                     }
 
                     for file in qml_files {
-                        resource = resource_add_path(resource, file.path());
+                        resource = resource_add_path(resource, file.get_path());
                     }
                     resource
                 })
@@ -279,7 +283,7 @@ impl QtBuild {
             let mut qml_resource_paths = Vec::new();
             for file in qml_files {
                 let result = QtToolQmlCacheGen::new(self.qt_installation.as_ref())
-                    .compile(qml_cache_args.clone(), file.path());
+                    .compile(qml_cache_args.clone(), file.get_path());
                 qmlcachegen_file_paths.push(result.qml_cache_path);
                 qml_resource_paths.push(result.qml_resource_path);
             }
@@ -325,7 +329,7 @@ impl QtBuild {
 
             let qml_files = qml_files
                 .iter()
-                .map(|qml_file| qml_file.path().to_path_buf())
+                .map(|qml_file| qml_file.get_path().to_path_buf())
                 .collect();
 
             let rcc = self.rcc().compile(&qrc_path);

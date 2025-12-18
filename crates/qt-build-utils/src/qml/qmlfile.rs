@@ -39,7 +39,7 @@ impl QmlFile {
     }
 
     /// Returns the path to the QML file.
-    pub fn path(&self) -> &Path {
+    pub fn get_path(&self) -> &Path {
         &self.path
     }
 

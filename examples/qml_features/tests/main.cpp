@@ -7,8 +7,8 @@
 #include <QtQml/QQmlEngine>
 #include <QtQuickTest/quicktest.h>
 
-#include "custom_object.h"
-#include "external_qobject.h"
+#include "qml_features/custom_object.h"
+#include "qml_features/external_qobject.h"
 
 class Setup : public QObject
 {
