@@ -1,0 +1,242 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Introduction - CXX-Qt Documentation</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="index.html" class="active"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="getting-started/index.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="getting-started/1-qobjects-in-rust.html"><strong aria-hidden="true">2.1.</strong> QObjects in Rust</a></li><li class="chapter-item expanded "><a href="getting-started/2-our-first-cxx-qt-module.html"><strong aria-hidden="true">2.2.</strong> Our first CXX-Qt module</a></li><li class="chapter-item expanded "><a href="getting-started/3-qml-gui.html"><strong aria-hidden="true">2.3.</strong> Creating the QML GUI</a></li><li class="chapter-item expanded "><a href="getting-started/4-cargo-executable.html"><strong aria-hidden="true">2.4.</strong> Building with Cargo</a></li><li class="chapter-item expanded "><a href="getting-started/5-cmake-integration.html"><strong aria-hidden="true">2.5.</strong> Building with CMake</a></li></ol></li><li class="chapter-item expanded "><a href="concepts/index.html"><strong aria-hidden="true">3.</strong> Core Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="concepts/build_systems.html"><strong aria-hidden="true">3.1.</strong> Build Systems</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="concepts/wasm-builds.html"><strong aria-hidden="true">3.1.1.</strong> Building for WebAssembly</a></li></ol></li><li class="chapter-item expanded "><a href="concepts/generated_qobject.html"><strong aria-hidden="true">3.2.</strong> Generated QObject</a></li><li class="chapter-item expanded "><a href="concepts/types.html"><strong aria-hidden="true">3.3.</strong> Types</a></li><li class="chapter-item expanded "><a href="concepts/nested_objects.html"><strong aria-hidden="true">3.4.</strong> Nested Objects</a></li><li class="chapter-item expanded "><a href="concepts/inheritance.html"><strong aria-hidden="true">3.5.</strong> Inheritance & Overriding</a></li><li class="chapter-item expanded "><a href="concepts/casting.html"><strong aria-hidden="true">3.6.</strong> Casting</a></li><li class="chapter-item expanded "><a href="concepts/instantiating_in_rust.html"><strong aria-hidden="true">3.7.</strong> Instantiating in Rust</a></li></ol></li><li class="chapter-item expanded "><a href="bridge/index.html"><strong aria-hidden="true">4.</strong> Reference: the bridge module</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="bridge/extern_rustqt.html"><strong aria-hidden="true">4.1.</strong> extern "RustQt"</a></li><li class="chapter-item expanded "><a href="bridge/extern_cppqt.html"><strong aria-hidden="true">4.2.</strong> extern "C++Qt"</a></li><li class="chapter-item expanded "><a href="bridge/shared_types.html"><strong aria-hidden="true">4.3.</strong> Shared types</a></li><li class="chapter-item expanded "><a href="bridge/attributes.html"><strong aria-hidden="true">4.4.</strong> Attributes</a></li><li class="chapter-item expanded "><a href="bridge/traits.html"><strong aria-hidden="true">4.5.</strong> Traits</a></li></ol></li><li class="chapter-item expanded "><a href="common-issues.html"><strong aria-hidden="true">5.</strong> Common Issues</a></li><li class="chapter-item expanded "><a href="internals/index.html"><strong aria-hidden="true">6.</strong> For Contributors: CXX-Qt Internals</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="internals/build-system.html"><strong aria-hidden="true">6.1.</strong> Build System</a></li><li class="chapter-item expanded "><a href="internals/crate-organization.html"><strong aria-hidden="true">6.2.</strong> Crate Organization</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">CXX-Qt Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!--
+SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+-->
+<h1 id="cxx-qt---safe-interop-between-rust-and-qt"><a class="header" href="#cxx-qt---safe-interop-between-rust-and-qt">CXX-Qt - Safe interop between Rust and Qt</a></h1>
+<p align=center><a href="./getting-started/index.html">TLDR: Click here for "Getting Started" guide</a></p>
+<p>This library provides a safe mechanism for bridging between Qt code and Rust code differently from typical Rust Qt bindings.</p>
+<p>We acknowledge that Qt code and Rust code have different idioms so cannot be directly wrapped from one to another.</p>
+<p>Instead of one-to-one bindings we use <a href="https://cxx.rs/">CXX</a> to <a href="./bridge/index.html">bridge</a> between, this allows for normal Qt code and normal Rust code.</p>
+<p>We feel this is more powerful than typical bindings as this allows us to provide a safe API and safe multi-threading between Qt and Rust.</p>
+<p>To aid integration of Qt and Rust code we provide common <a href="./concepts/types.html">Qt types</a> for Rust which can pass across the bridge and provide ways to express common Qt idioms.</p>
+<p>Through the use of macros and code generation as seen in the figure below, the developer describes a <code>QObject</code> with CXX-Qt macro annotations. Then CXX-Qt generates the C++ representation of the object and uses macro expansion to define the <a href="https://cxx.rs/">CXX</a> bridge for interop between C++ and Rust.</p>
+<div style="background-color: white; padding: 1rem; text-align: center;">
+<p><img src="./images/overview_abstract.svg" alt="Overview of CXX-Qt concept" /></p>
+</div>
+<p>If you are new to CXX-Qt, we recommend you visit our <a href="./getting-started/index.html">Getting Started Guide</a>.</p>
+<p>To get detailed information on which features are available in CXX-Qt, see the <a href="./bridge/index.html">bridge chapter</a>.
+Should you be interested in a deeper dive into the concepts of CXX-Qt, take a look at the <a href="./concepts/index.html">concepts chapter</a>, which explains the concepts CXX-Qt introduces in detail.</p>
+<p><strong>📝 Note:</strong> CXX-Qt is tested on CI on Linux, Windows, and macOS (all on x86_64). wasm32 is compiled, but not tested on CI. It should work on other platforms that Qt and Rust both support, however, these are not tested regularly.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+                            <a rel="next prefetch" href="getting-started/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+                    <a rel="next prefetch" href="getting-started/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

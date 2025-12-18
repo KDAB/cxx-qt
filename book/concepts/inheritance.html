@@ -1,0 +1,427 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Inheritance &amp; Overriding - CXX-Qt Documentation</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started/index.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../getting-started/1-qobjects-in-rust.html"><strong aria-hidden="true">2.1.</strong> QObjects in Rust</a></li><li class="chapter-item expanded "><a href="../getting-started/2-our-first-cxx-qt-module.html"><strong aria-hidden="true">2.2.</strong> Our first CXX-Qt module</a></li><li class="chapter-item expanded "><a href="../getting-started/3-qml-gui.html"><strong aria-hidden="true">2.3.</strong> Creating the QML GUI</a></li><li class="chapter-item expanded "><a href="../getting-started/4-cargo-executable.html"><strong aria-hidden="true">2.4.</strong> Building with Cargo</a></li><li class="chapter-item expanded "><a href="../getting-started/5-cmake-integration.html"><strong aria-hidden="true">2.5.</strong> Building with CMake</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/index.html"><strong aria-hidden="true">3.</strong> Core Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/build_systems.html"><strong aria-hidden="true">3.1.</strong> Build Systems</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/wasm-builds.html"><strong aria-hidden="true">3.1.1.</strong> Building for WebAssembly</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/generated_qobject.html"><strong aria-hidden="true">3.2.</strong> Generated QObject</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">3.3.</strong> Types</a></li><li class="chapter-item expanded "><a href="../concepts/nested_objects.html"><strong aria-hidden="true">3.4.</strong> Nested Objects</a></li><li class="chapter-item expanded "><a href="../concepts/inheritance.html" class="active"><strong aria-hidden="true">3.5.</strong> Inheritance & Overriding</a></li><li class="chapter-item expanded "><a href="../concepts/casting.html"><strong aria-hidden="true">3.6.</strong> Casting</a></li><li class="chapter-item expanded "><a href="../concepts/instantiating_in_rust.html"><strong aria-hidden="true">3.7.</strong> Instantiating in Rust</a></li></ol></li><li class="chapter-item expanded "><a href="../bridge/index.html"><strong aria-hidden="true">4.</strong> Reference: the bridge module</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bridge/extern_rustqt.html"><strong aria-hidden="true">4.1.</strong> extern "RustQt"</a></li><li class="chapter-item expanded "><a href="../bridge/extern_cppqt.html"><strong aria-hidden="true">4.2.</strong> extern "C++Qt"</a></li><li class="chapter-item expanded "><a href="../bridge/shared_types.html"><strong aria-hidden="true">4.3.</strong> Shared types</a></li><li class="chapter-item expanded "><a href="../bridge/attributes.html"><strong aria-hidden="true">4.4.</strong> Attributes</a></li><li class="chapter-item expanded "><a href="../bridge/traits.html"><strong aria-hidden="true">4.5.</strong> Traits</a></li></ol></li><li class="chapter-item expanded "><a href="../common-issues.html"><strong aria-hidden="true">5.</strong> Common Issues</a></li><li class="chapter-item expanded "><a href="../internals/index.html"><strong aria-hidden="true">6.</strong> For Contributors: CXX-Qt Internals</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../internals/build-system.html"><strong aria-hidden="true">6.1.</strong> Build System</a></li><li class="chapter-item expanded "><a href="../internals/crate-organization.html"><strong aria-hidden="true">6.2.</strong> Crate Organization</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">CXX-Qt Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!--
+SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+-->
+<h1 id="inheritance"><a class="header" href="#inheritance">Inheritance</a></h1>
+<p>Some Qt APIs require you to override certain methods from an abstract base class, for example <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html"><code>QAbstractItemModel</code></a>.</p>
+<p>To support creating such subclasses directly from within Rust, CXX-Qt provides you with multiple helpers.</p>
+<p>Some superclasses may require special parameters for construction.
+This can be achieved by using a <a href="https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html">custom constructor</a>.</p>
+<h2 id="accessing-base-class-methods"><a class="header" href="#accessing-base-class-methods">Accessing base class methods</a></h2>
+<p>To access the methods of a base class in Rust, use the <code>#[inherit]</code> macro.
+It can be placed in front of a function in a <code>extern &quot;RustQt&quot;</code> block in a <code>#[cxx_qt::bridge]</code>.</p>
+<pre><code class="language-rust ignore">    extern &quot;RustQt&quot; {
+        #[qobject]
+        #[base = QAbstractListModel]
+        type AbstractBaseClass = super::AbstractBaseClassRust;
+
+        #[qobject]
+        #[base = AbstractBaseClass]
+        #[qml_element]
+        #[qproperty(State, state)]
+        type CustomBaseClass = super::CustomBaseClassRust;
+    }
+
+    // Create Rust bindings for C++ functions of the base class (QAbstractItemModel)
+    extern &quot;RustQt&quot; {
+        /// # Safety
+        ///
+        /// Inherited beginInsertRows from the base class.
+        /// If you call begin_insert_rows, it is your responsibility to ensure end_insert_rows is called
+        #[inherit]
+        #[cxx_name = &quot;beginInsertRows&quot;]
+        unsafe fn begin_insert_rows(
+            self: Pin&lt;&amp;mut CustomBaseClass&gt;,
+            parent: &amp;QModelIndex,
+            first: i32,
+            last: i32,
+        );
+        /// # Safety
+        ///
+        /// Inherited endInsertRows from the base class.
+        /// If you call `begin_insert_rows`, it is your responsibility to ensure `end_insert_rows` is called
+        #[inherit]
+        #[cxx_name = &quot;endInsertRows&quot;]
+        unsafe fn end_insert_rows(self: Pin&lt;&amp;mut CustomBaseClass&gt;);
+
+        /// # Safety
+        ///
+        /// Inherited beginRemoveRows from the base class.
+        /// If you call `begin_remove_rows`, it is your responsibility to ensure `end_remove_rows` is called
+        #[inherit]
+        #[cxx_name = &quot;beginRemoveRows&quot;]
+        unsafe fn begin_remove_rows(
+            self: Pin&lt;&amp;mut CustomBaseClass&gt;,
+            parent: &amp;QModelIndex,
+            first: i32,
+            last: i32,
+        );
+        /// # Safety
+        ///
+        /// Inherited endRemoveRows from the base class.
+        /// If you call `begin_remove_rows`, it is your responsibility to ensure `end_remove_rows` is called
+        #[inherit]
+        #[cxx_name = &quot;endRemoveRows&quot;]
+        unsafe fn end_remove_rows(self: Pin&lt;&amp;mut CustomBaseClass&gt;);
+
+        /// # Safety
+        ///
+        /// Inherited beginResetModel from the base class.
+        /// If you call `begin_reset_model`, it is your responsibility to ensure `end_reset_model` is called
+        #[inherit]
+        #[cxx_name = &quot;beginResetModel&quot;]
+        unsafe fn begin_reset_model(self: Pin&lt;&amp;mut CustomBaseClass&gt;);
+        /// # Safety
+        ///
+        /// Inherited endResetModel from the base class.
+        /// If you call `begin_reset_model`, it is your responsibility to ensure `end_reset_model` is called
+        #[inherit]
+        #[cxx_name = &quot;endResetModel&quot;]
+        unsafe fn end_reset_model(self: Pin&lt;&amp;mut CustomBaseClass&gt;);
+    }
+
+    extern &quot;RustQt&quot; {
+        /// Clear the rows in the QAbstractListModel
+        #[qinvokable]
+        pub fn clear(self: Pin&lt;&amp;mut CustomBaseClass&gt;);
+    }</code></pre>
+<pre><code class="language-rust ignore">impl qobject::CustomBaseClass {
+    /// Clear the rows in the QAbstractListModel
+    pub fn clear(mut self: Pin&lt;&amp;mut Self&gt;) {
+        unsafe {
+            self.as_mut().begin_reset_model();
+            self.as_mut().rust_mut().id = 0;
+            self.as_mut().rust_mut().vector.clear();
+            self.as_mut().end_reset_model();
+        }
+    }
+}</code></pre>
+<p><a href="https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs">Full example</a></p>
+<p>This code implements a <code>QAbstractListModel</code> subclass.
+For this, the <code>clear</code> method implemented in Rust needs to call <code>beginResetModel</code> and related methods from the base class, which are made accessible by using <code>#[inherit]</code>.
+See <a href="https://doc.qt.io/qt-6/qabstractlistmodel.html">the Qt docs</a> for more details on the specific subclassing requirements.</p>
+<p>Methods in a <code>extern &quot;RustQt&quot;</code> block similar to CXX can be tagged with an <code>#[inherit]</code> attribute, with the same restrictions regarding which types can be used.
+Additionally, the <code>self</code> type must be either <code>self: Pin&lt;&amp;mut qobject::T&gt;</code> or <code>self: &amp;qobject::T</code>, where <code>qobject::T</code> must refer to a <code>QObject</code> marked with <code>#[qobject]</code> in the <code>#[cxx_qt::bridge]</code></p>
+<p>If the Rust name should differ from the C++ method name, (e.g. due to snake_case vs. camelCase) use the <code>#[cxx_name = &quot;myFunctionName&quot;]</code> or <code>#[rust_name = &quot;my_function_name&quot;]</code> attributes.</p>
+<blockquote>
+<p><code>#[inherit]</code> can also be used on signals that exist on the base class in an <a href="../bridge/extern_rustqt.html#signals"><code>extern RustQt</code> block</a></p>
+</blockquote>
+<h2 id="overriding-base-class-methods"><a class="header" href="#overriding-base-class-methods">Overriding base class methods</a></h2>
+<p>CXX-Qt allows invokables to be generated with the C++ modifiers necessary to implement inheritance.
+This way methods can be overridden, declared as <code>virtual</code> or <code>final</code>.</p>
+<div class="table-wrapper"><table><thead><tr><th>C++ keyword</th><th>CXX-Qt attribute</th></tr></thead><tbody>
+<tr><td><code>override</code></td><td><code>#[cxx_override]</code></td></tr>
+<tr><td><code>virtual</code></td><td><code>#[cxx_virtual]</code></td></tr>
+<tr><td><code>final</code></td><td><code>#[cxx_final]</code></td></tr>
+</tbody></table>
+</div>
+<p>The example below overrides the <a href="https://doc.qt.io/qt-6/qabstractitemmodel.html#data"><code>data</code></a> method inherited from the <code>QAbstractListModel</code>.</p>
+<pre><code class="language-rust ignore">    extern &quot;RustQt&quot; {
+        #[qobject]
+        #[base = QAbstractListModel]
+        type AbstractBaseClass = super::AbstractBaseClassRust;
+
+        #[qobject]
+        #[base = AbstractBaseClass]
+        #[qml_element]
+        #[qproperty(State, state)]
+        type CustomBaseClass = super::CustomBaseClassRust;
+    }
+
+    extern &quot;RustQt&quot; {
+        #[qinvokable]
+        #[cxx_override]
+        fn data(self: &amp;CustomBaseClass, index: &amp;QModelIndex, role: i32) -&gt; QVariant;
+    }</code></pre>
+<pre><code class="language-rust ignore">impl qobject::CustomBaseClass {
+    /// Retrieve the data for a given index and role
+    pub fn data(&amp;self, index: &amp;QModelIndex, role: i32) -&gt; QVariant {
+        let role = qobject::Roles { repr: role };
+        if let Some((id, value)) = self.vector.get(index.row() as usize) {
+            return match role {
+                qobject::Roles::Id =&gt; QVariant::from(id),
+                qobject::Roles::Value =&gt; QVariant::from(value),
+                _ =&gt; QVariant::default(),
+            };
+        }
+
+        QVariant::default()
+    }
+}</code></pre>
+<p><a href="https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs">Full example</a></p>
+<p>When a method is overridden using <code>cxx_override</code>, the base class version of the method can be accessed by using <code>#[inherit]</code> in combination with the <code>#[cxx_name]</code> attribute.
+In this case the base class version of the function must get a different name because Rust can't have two functions with the same name on one type.</p>
+<p>Example:</p>
+<pre><code class="language-rust ignore">    extern &quot;RustQt&quot; {
+        #[qobject]
+        #[base = QAbstractListModel]
+        type AbstractBaseClass = super::AbstractBaseClassRust;
+
+        #[qobject]
+        #[base = AbstractBaseClass]
+        #[qml_element]
+        #[qproperty(State, state)]
+        type CustomBaseClass = super::CustomBaseClassRust;
+    }
+
+    unsafe extern &quot;RustQt&quot; {
+        /// Inherited canFetchMore from the base class
+        #[cxx_name = &quot;canFetchMore&quot;]
+        #[inherit]
+        fn base_can_fetch_more(self: &amp;CustomBaseClass, parent: &amp;QModelIndex) -&gt; bool;
+
+        /// Inherited index from the base class
+        #[inherit]
+        fn index(
+            self: &amp;CustomBaseClass,
+            row: i32,
+            column: i32,
+            parent: &amp;QModelIndex,
+        ) -&gt; QModelIndex;
+    }
+
+    extern &quot;RustQt&quot; {
+        /// Return whether the base class can fetch more
+        // Example of overriding a C++ virtual method and calling the base class implementation.
+        #[qinvokable]
+        #[cxx_override]
+        #[cxx_name = &quot;canFetchMore&quot;]
+        fn can_fetch_more(self: &amp;CustomBaseClass, parent: &amp;QModelIndex) -&gt; bool;
+    }</code></pre>
+<pre><code class="language-rust ignore">impl qobject::CustomBaseClass {
+    /// Return whether the base class can fetch more
+    // Example of overriding a C++ virtual method and calling the base class implementation.
+    pub fn can_fetch_more(&amp;self, parent: &amp;QModelIndex) -&gt; bool {
+        self.base_can_fetch_more(parent)
+    }
+}</code></pre>
+<p><a href="https://github.com/KDAB/cxx-qt/blob/main/examples/qml_features/rust/src/custom_base_class.rs">Full example</a></p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../concepts/nested_objects.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../concepts/casting.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../concepts/nested_objects.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../concepts/casting.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,514 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Building with CMake - CXX-Qt Documentation</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started/index.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../getting-started/1-qobjects-in-rust.html"><strong aria-hidden="true">2.1.</strong> QObjects in Rust</a></li><li class="chapter-item expanded "><a href="../getting-started/2-our-first-cxx-qt-module.html"><strong aria-hidden="true">2.2.</strong> Our first CXX-Qt module</a></li><li class="chapter-item expanded "><a href="../getting-started/3-qml-gui.html"><strong aria-hidden="true">2.3.</strong> Creating the QML GUI</a></li><li class="chapter-item expanded "><a href="../getting-started/4-cargo-executable.html"><strong aria-hidden="true">2.4.</strong> Building with Cargo</a></li><li class="chapter-item expanded "><a href="../getting-started/5-cmake-integration.html" class="active"><strong aria-hidden="true">2.5.</strong> Building with CMake</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/index.html"><strong aria-hidden="true">3.</strong> Core Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/build_systems.html"><strong aria-hidden="true">3.1.</strong> Build Systems</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/wasm-builds.html"><strong aria-hidden="true">3.1.1.</strong> Building for WebAssembly</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/generated_qobject.html"><strong aria-hidden="true">3.2.</strong> Generated QObject</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">3.3.</strong> Types</a></li><li class="chapter-item expanded "><a href="../concepts/nested_objects.html"><strong aria-hidden="true">3.4.</strong> Nested Objects</a></li><li class="chapter-item expanded "><a href="../concepts/inheritance.html"><strong aria-hidden="true">3.5.</strong> Inheritance & Overriding</a></li><li class="chapter-item expanded "><a href="../concepts/casting.html"><strong aria-hidden="true">3.6.</strong> Casting</a></li><li class="chapter-item expanded "><a href="../concepts/instantiating_in_rust.html"><strong aria-hidden="true">3.7.</strong> Instantiating in Rust</a></li></ol></li><li class="chapter-item expanded "><a href="../bridge/index.html"><strong aria-hidden="true">4.</strong> Reference: the bridge module</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bridge/extern_rustqt.html"><strong aria-hidden="true">4.1.</strong> extern "RustQt"</a></li><li class="chapter-item expanded "><a href="../bridge/extern_cppqt.html"><strong aria-hidden="true">4.2.</strong> extern "C++Qt"</a></li><li class="chapter-item expanded "><a href="../bridge/shared_types.html"><strong aria-hidden="true">4.3.</strong> Shared types</a></li><li class="chapter-item expanded "><a href="../bridge/attributes.html"><strong aria-hidden="true">4.4.</strong> Attributes</a></li><li class="chapter-item expanded "><a href="../bridge/traits.html"><strong aria-hidden="true">4.5.</strong> Traits</a></li></ol></li><li class="chapter-item expanded "><a href="../common-issues.html"><strong aria-hidden="true">5.</strong> Common Issues</a></li><li class="chapter-item expanded "><a href="../internals/index.html"><strong aria-hidden="true">6.</strong> For Contributors: CXX-Qt Internals</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../internals/build-system.html"><strong aria-hidden="true">6.1.</strong> Build System</a></li><li class="chapter-item expanded "><a href="../internals/crate-organization.html"><strong aria-hidden="true">6.2.</strong> Crate Organization</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">CXX-Qt Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!--
+SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+-->
+<h1 id="building-with-cmake"><a class="header" href="#building-with-cmake">Building with CMake</a></h1>
+<p>In this example, we will demonstrate how to integrate CXX-Qt code into a C++ application using CMake.
+Cargo builds the CXX-Qt code as a static library, then CMake links it into a C++ executable.</p>
+<blockquote>
+<p>If you don't want to use CMake, and only want to use Cargo to build your project, refer to the <a href="./4-cargo-executable.html">previous section</a>.</p>
+</blockquote>
+<p>We'll first want to modify our project structure to separate the different parts of our project.</p>
+<pre><code class="language-ignore">tutorial
+  - cpp
+  - qml
+  - rust
+</code></pre>
+<p>Move the rust project into the <code>rust</code> folder.
+Pull out the <code>qml</code> folder back to the top level.</p>
+<h2 id="c-executable"><a class="header" href="#c-executable">C++ executable</a></h2>
+<p>To start our QML application, we'll need a small <code>main.cpp</code> file with an ordinary <code>main</code> function. Put this in a <code>cpp</code> folder to clearly separate the C++ and Rust code:</p>
+<pre><code class="language-cpp ignore">#include &lt;QtGui/QGuiApplication&gt;
+#include &lt;QtQml/QQmlApplicationEngine&gt;
+
+int
+main(int argc, char* argv[])
+{
+  QGuiApplication app(argc, argv);
+
+  QQmlApplicationEngine engine;
+
+  const QUrl url(
+    QStringLiteral(&quot;qrc:/qt/qml/com/kdab/cxx_qt/demo/qml/main.qml&quot;));
+  QObject::connect(
+    &amp;engine,
+    &amp;QQmlApplicationEngine::objectCreated,
+    &amp;app,
+    [url](QObject* obj, const QUrl&amp; objUrl) {
+      if (!obj &amp;&amp; url == objUrl)
+        QCoreApplication::exit(-1);
+    },
+    Qt::QueuedConnection);
+
+  engine.load(url);
+
+  return app.exec();
+}
+</code></pre>
+<p>You can add as much C++ code as you want in addition to this.</p>
+<h2 id="using-rust-qobjects-in-c"><a class="header" href="#using-rust-qobjects-in-c">Using Rust QObjects in C++</a></h2>
+<p>For every <code>#[cxx_qt::bridge]</code> that we define in Rust, CXX-Qt will generate a corresponding C++ header file.
+To include any of the generated files, use the crates name as the include directory.
+The name of the header file will be the folder names, combined with the input rust file name of your <code>#[cxx_qt::bridge]</code>, followed by <code>.cxxqt.h</code>.
+So in our case: <code>#include &lt;qml_minimal/src/cxxqt_object.cxxqt.h&gt;</code></p>
+<blockquote>
+<p><strong>📝 Note</strong>: any folders relative to the <code>Cargo.toml</code> file are considered hence the <code>src</code> folder.</p>
+</blockquote>
+<p>Including the generated header allows us to access the <code>MyObject</code> C++ class, just like any other C++ class.
+Inherit from it, connect signals and slots to it, put it in a QVector, do whatever you want with it.
+That's the power of CXX-Qt.</p>
+<h2 id="cargo-setup"><a class="header" href="#cargo-setup">Cargo setup</a></h2>
+<p>Before we can get started on building Qt with CMake, we first need to make our Cargo build ready for it.
+If you've generated your project with e.g. <code>cargo new --lib qml_minimal</code> or <code>cargo init --lib [folder]</code> command, your <code>Cargo.toml</code> should look something like this:</p>
+<pre><code class="language-toml ignore">[package]
+name = &quot;qml_minimal&quot;
+version = &quot;0.1.0&quot;
+edition = &quot;2021&quot;
+
+[dependencies]
+</code></pre>
+<p>We'll have to do multiple things:</p>
+<ul>
+<li>Instruct cargo to create a static library</li>
+<li>Add <code>cxx</code>, <code>cxx-qt</code>, as well as <code>cxx-qt-lib</code> as dependencies</li>
+<li>Add <code>cxx-qt-build</code> as a build dependency</li>
+</ul>
+<blockquote>
+<p>If you've already followed the Cargo setup, most of this should already be done.
+Make sure to change the <code>crate-type</code> to <code>&quot;staticlib&quot;</code> though!</p>
+</blockquote>
+<p>In the end, your <code>Cargo.toml</code> should look similar to this.</p>
+<pre><code class="language-toml ignore">[package]
+name = &quot;qml_minimal&quot;
+version = &quot;0.1.0&quot;
+authors = [
+  &quot;Andrew Hayzen &lt;andrew.hayzen@kdab.com&gt;&quot;,
+  &quot;Gerhard de Clercq &lt;gerhard.declercq@kdab.com&gt;&quot;,
+  &quot;Leon Matthes &lt;leon.matthes@kdab.com&gt;&quot;
+]
+edition = &quot;2021&quot;
+license = &quot;MIT OR Apache-2.0&quot;
+
+# This will instruct Cargo to create a static
+# library which CMake can link against
+[lib]
+crate-type = [&quot;staticlib&quot;]
+
+[dependencies]
+cxx = &quot;1.0.95&quot;
+cxx-qt = &quot;0.8&quot;
+cxx-qt-lib = { version=&quot;0.8&quot;, features = [&quot;qt_full&quot;] }
+
+[build-dependencies]
+# The link_qt_object_files feature is required for statically linking Qt 6.
+cxx-qt-build = { version = &quot;0.8&quot;, features = [ &quot;link_qt_object_files&quot; ] }
+</code></pre>
+<p>We'll then also need to add a script named <code>build.rs</code> next to the <code>Cargo.toml</code>:</p>
+<blockquote>
+<p>If you've already followed the Cargo build tutorial, simply modify the existing <code>build.rs</code> file.</p>
+</blockquote>
+<pre><code class="language-rust ignore">use cxx_qt_build::{CxxQtBuilder, QmlModule};
+
+fn main() {
+    CxxQtBuilder::new_qml_module(
+        QmlModule::new(&quot;com.kdab.cxx_qt.demo&quot;).qml_file(&quot;../qml/main.qml&quot;),
+    )
+    .qt_module(&quot;Qml&quot;)
+    .files([&quot;src/cxxqt_object.rs&quot;])
+    .build();
+}</code></pre>
+<p>This is what generates and compiles the C++ code for our <code>MyObject</code> class at build time.</p>
+<p>Every Rust source file that uses the <code>#[cxx_qt::bridge]</code> macro need to be included in this script.
+In our case, this is only the <code>src/cxxqt_object.rs</code> file.</p>
+<p>This is also where the QML module is defined with a QML URI and version.
+The files and resources in the module are then exposed in the same way as the <a href="https://doc.qt.io/qt-6/qt-add-qml-module.html">qt_add_qml_module CMake function</a>.</p>
+<blockquote>
+<p>Note that in order for CXX-Qt to work, the <code>qmake</code> executable must be located. This is because CXX-Qt relies on <code>qmake</code> to locate the necessary Qt libraries and header files on your system.</p>
+<p>Usually, the CMake code that CXX-Qt provides you to import a crate should already take care of this.</p>
+<p>To overwrite the path to qmake, you may pass the <code>QMAKE</code> option to cxx_qt_import_crate, ensuring that CMake and Cargo use the same Qt binaries.</p>
+</blockquote>
+<p>We'll also need to remove the <code>src/main.rs</code> and replace it with a <code>src/lib.rs</code> file.
+This file only needs to include a single line:</p>
+<pre><code class="language-rust ignore">pub mod cxxqt_object;</code></pre>
+<p>This simply ensures that our rust module is included in our library.</p>
+<p>Feel free to add additional rust modules in your library as well.</p>
+<h2 id="cmake-setup"><a class="header" href="#cmake-setup">CMake setup</a></h2>
+<p>Now add a <code>CMakeLists.txt</code> file in the root of your project folder.
+Start the <code>CMakeLists.txt</code> file like any other C++ project using Qt.
+For this example, we are <a href="https://doc.qt.io/qt-6/cmake-qt5-and-qt6-compatibility.html">supporting both Qt5 and Qt6 with CMake</a>:</p>
+<pre><code class="language-cmake ignore">cmake_minimum_required(VERSION 3.24)
+
+project(example_qml_minimal)
+
+# Rust always links against non-debug Windows runtime on *-msvc targets
+# Note it is best to set this on the command line to ensure all targets are consistent
+# https://github.com/corrosion-rs/corrosion/blob/master/doc/src/common_issues.md#linking-debug-cc-libraries-into-rust-fails-on-windows-msvc-targets
+# https://github.com/rust-lang/rust/issues/39016
+if (CMAKE_CXX_COMPILER_ID STREQUAL &quot;MSVC&quot;)
+  set(CMAKE_MSVC_RUNTIME_LIBRARY &quot;MultiThreadedDLL&quot;)
+endif()
+
+set(CMAKE_AUTOMOC ON)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+set(CXXQT_QTCOMPONENTS Core Gui Qml QuickControls2 QuickTest Test)
+    set(CXXQT_QTCOMPONENTS ${CXXQT_QTCOMPONENTS} QmlImportScanner)
+if(NOT USE_QT5)
+    find_package(Qt6 COMPONENTS ${CXXQT_QTCOMPONENTS})
+    set(Qt &quot;Qt6&quot;)
+endif()
+if(NOT Qt6_FOUND)
+    find_package(Qt5 5.15 COMPONENTS ${CXXQT_QTCOMPONENTS} REQUIRED)
+    set(Qt &quot;Qt5&quot;)
+endif()
+
+if(MSVC)
+    # Qt also needs to link against the non-debug version of the MSVC Runtime libraries.
+    # Note: The Qt:: targets are ALIAS targets that do not support setting properties directly.
+    # We therefore need to resolve the target names to either Qt5 or Qt6 directly.
+    set_property(
+        TARGET ${Qt}::Core ${Qt}::Gui ${Qt}::Qml ${Qt}::QuickControls2 ${Qt}::QuickTest ${Qt}::Test
+        PROPERTY MAP_IMPORTED_CONFIG_DEBUG &quot;RELEASE&quot;)
+endif()
+</code></pre>
+<p>Download CXX-Qts CMake code with FetchContent:</p>
+<pre><code class="language-cmake ignore">find_package(CxxQt QUIET)
+if(NOT CxxQt_FOUND)
+    include(FetchContent)
+    FetchContent_Declare(
+        CxxQt
+        GIT_REPOSITORY https://github.com/kdab/cxx-qt-cmake.git
+        GIT_TAG 0.8.0
+    )
+
+    FetchContent_MakeAvailable(CxxQt)
+endif()
+</code></pre>
+<p>This provides you with a few wrappers around <a href="https://github.com/corrosion-rs/corrosion">Corrosion</a>, a tool for integrating Rust libraries into CMake:</p>
+<ol>
+<li><code>cxx_qt_import_crate</code> - A wrapper around <a href="https://corrosion-rs.github.io/corrosion/usage.html">corrosion_import_crate</a>. It supports the same arguments as corrosion_import_crate, with three new arguments:
+<ul>
+<li><code>QT_MODULES</code> <em>(required)</em> - The Qt modules to link to. Specify the corresponding CMake targets here.</li>
+<li><code>CXX_QT_EXPORT_DIR</code> (optional) - Manually specify the path where CXX-Qt artifacts will be exported to.
+<ul>
+<li>This is usually not necessary. However, if you're importing the same crate with different feature sets in the same CMake build configuration, you will need to specify seperate <code>CXX_QT_EXPORT_DIR</code>s to avoid multiple versions of the crate exporting to the same directory.</li>
+</ul>
+</li>
+<li><code>QMAKE</code> (optional) - Override the path to the QMAKE executable</li>
+</ul>
+</li>
+<li><code>cxx_qt_import_qml_module</code> - This function imports a QML modules as a new target. It requires the following arguments:
+<ul>
+<li><code>TARGET_NAME</code> - Specify the name of the CMake target that this function will create</li>
+<li><code>URI</code> - The URI of the qml module to import - this needs to exactly match the URI in the <code>CxxQtBuilder::qml_module</code> call in your build script.</li>
+<li><code>SOURCE_CRATE</code> The crate that exports the QML module (this crate must have been imported with <code>cxx_qt_import_crate</code>).</li>
+</ul>
+</li>
+</ol>
+<pre><code class="language-cmake ignore"># CXX-Qt (using Corrosion) creates a CMake target with the same name as the crate.
+cxx_qt_import_crate(
+    MANIFEST_PATH rust/Cargo.toml 
+    CRATES qml_minimal 
+    LOCKED
+    QT_MODULES Qt::Core Qt::Gui Qt::Qml Qt::QuickControls2
+)
+
+cxx_qt_import_qml_module(qml_minimal_qml_module
+    URI &quot;com.kdab.cxx_qt.demo&quot;
+    SOURCE_CRATE qml_minimal)
+</code></pre>
+<p>This will create two new CMake targets:</p>
+<ol>
+<li><code>qml_minimal</code> - The static library exported by our crate</li>
+<li><code>qml_minimal_qml_module</code> - The QML Module exported by our crate
+<ul>
+<li>The <code>_qml_module</code> target will automatically link to the <code>qml_minimal</code> target, so linking to the <code>_qml_module</code> is sufficient for our executable target</li>
+</ul>
+</li>
+</ol>
+<p>Finally, we can create the CMake executable target and link it to our crate:</p>
+<pre><code class="language-cmake ignore">    add_executable(example_qml_minimal cpp/main.cpp)
+
+# Link to the qml module, which in turn links to the Rust qml_minimal library
+target_link_libraries(example_qml_minimal PRIVATE qml_minimal_qml_module)
+
+# If we are using a statically linked Qt then we need to import any qml plugins
+qt_import_qml_plugins(example_qml_minimal)
+</code></pre>
+<p>Your project should now have a structure similar to this:</p>
+<pre><code class="language-console  ignore">$ tree -I target/ -I tests
+.
+├── CMakeLists.txt
+├── cpp
+│   └── main.cpp
+├── qml
+│   └── main.qml
+└── rust
+    ├── build.rs
+    ├── Cargo.toml
+    └── src
+        ├── cxxqt_object.rs
+        └── lib.rs
+
+5 directories, 7 files
+</code></pre>
+<p>Build the project like any other CMake project:</p>
+<pre><code class="language-shell">$ cmake -S . -B build
+$ cmake --build build
+</code></pre>
+<p>If this fails for any reason, take a look at the <a href="https://github.com/KDAB/cxx-qt/tree/main/examples/qml_minimal"><code>examples/qml_minimal</code></a> folder, which contains the complete example code.</p>
+<p>This should now configure and compile our project.
+If this was successful, you can now run our little project.</p>
+<pre><code class="language-shell">$ ./build/examples/qml_minimal/example_qml_minimal
+</code></pre>
+<p>You should now see the two Labels that display the state of our <code>MyObject</code>, as well as the two buttons to call our two Rust functions.</p>
+<h3 id="windows-with-msvc"><a class="header" href="#windows-with-msvc">Windows with MSVC</a></h3>
+<p>MSVC provides multiple versions of its runtime library.
+Unfortunately the Debug and Release versions are not binary compatible.
+The recommendation by Microsoft is to not mix different runtimes.</p>
+<p>See also: <a href="https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170">https://learn.microsoft.com/en-us/cpp/c-runtime-library/crt-library-features?view=msvc-170</a></p>
+<p>Currently, Rust by default <a href="https://github.com/rust-lang/rust/issues/39016">links to the Multi-Threaded <strong>Release</strong> DLL runtime</a>.
+This is a mismatch with the default CMake MSVC Debug configurations, which uses the Multi-Threaded <strong>Debug</strong> DLLs.</p>
+<p>To resolve this mismatch, we currently recommend to stick with the Multi-Threaded Release DLL runtime (<code>/MD</code>) <strong>for the entire program</strong>!</p>
+<p>For CMake, make sure to call <code>set(CMAKE_MSVC_RUNTIME_LIBRARY &quot;MultiThreadedDLL&quot;)</code> (or use the <code>-DCMAKE_MSVC_RUNTIME_LIBRARY=MultiThreadedDLL</code> flag) when building with the <code>Debug</code> configuration.
+See also the <a href="https://corrosion-rs.github.io/corrosion/common_issues.html#linking-debug-cc-libraries-into-rust-fails-on-windows-msvc-targets">Corrosion documentation</a>.</p>
+<p>Additionally, the Qt Debug DLLs also use the Debug runtime.
+We can force Qt to use the Release DLLs instead in the Debug configuration by setting the <code>MAP_IMPORTED_CONFIG_DEBUG</code> property to <code>&quot;RELEASE&quot;</code> on <strong>all Qt components</strong> that are linked into the final binary.</p>
+<pre><code class="language-cmake"># Note: The Qt:: targets are ALIAS targets that do not support setting properties directly.
+# We therefore need to resolve the target names to either Qt5 or Qt6 directly.
+set_property(
+    TARGET Qt6::Core Qt6::Gui Qt6::Qml Qt6::Test Qt6::QuickControls2
+    PROPERTY MAP_IMPORTED_CONFIG_DEBUG &quot;RELEASE&quot;)
+</code></pre>
+<p>We hope that in the future the Rust ecosystem can be configured to use the Debug runtime, so that these additional configurations are not necessary.</p>
+<p>Note: These issues do not apply to Cargo-only builds, as these always use the Release runtime and Release Qt DLLs.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../getting-started/4-cargo-executable.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../concepts/index.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../getting-started/4-cargo-executable.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../concepts/index.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

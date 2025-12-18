@@ -1,0 +1,453 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Our first CXX-Qt module - CXX-Qt Documentation</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started/index.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../getting-started/1-qobjects-in-rust.html"><strong aria-hidden="true">2.1.</strong> QObjects in Rust</a></li><li class="chapter-item expanded "><a href="../getting-started/2-our-first-cxx-qt-module.html" class="active"><strong aria-hidden="true">2.2.</strong> Our first CXX-Qt module</a></li><li class="chapter-item expanded "><a href="../getting-started/3-qml-gui.html"><strong aria-hidden="true">2.3.</strong> Creating the QML GUI</a></li><li class="chapter-item expanded "><a href="../getting-started/4-cargo-executable.html"><strong aria-hidden="true">2.4.</strong> Building with Cargo</a></li><li class="chapter-item expanded "><a href="../getting-started/5-cmake-integration.html"><strong aria-hidden="true">2.5.</strong> Building with CMake</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/index.html"><strong aria-hidden="true">3.</strong> Core Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/build_systems.html"><strong aria-hidden="true">3.1.</strong> Build Systems</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/wasm-builds.html"><strong aria-hidden="true">3.1.1.</strong> Building for WebAssembly</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/generated_qobject.html"><strong aria-hidden="true">3.2.</strong> Generated QObject</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">3.3.</strong> Types</a></li><li class="chapter-item expanded "><a href="../concepts/nested_objects.html"><strong aria-hidden="true">3.4.</strong> Nested Objects</a></li><li class="chapter-item expanded "><a href="../concepts/inheritance.html"><strong aria-hidden="true">3.5.</strong> Inheritance & Overriding</a></li><li class="chapter-item expanded "><a href="../concepts/casting.html"><strong aria-hidden="true">3.6.</strong> Casting</a></li><li class="chapter-item expanded "><a href="../concepts/instantiating_in_rust.html"><strong aria-hidden="true">3.7.</strong> Instantiating in Rust</a></li></ol></li><li class="chapter-item expanded "><a href="../bridge/index.html"><strong aria-hidden="true">4.</strong> Reference: the bridge module</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bridge/extern_rustqt.html"><strong aria-hidden="true">4.1.</strong> extern "RustQt"</a></li><li class="chapter-item expanded "><a href="../bridge/extern_cppqt.html"><strong aria-hidden="true">4.2.</strong> extern "C++Qt"</a></li><li class="chapter-item expanded "><a href="../bridge/shared_types.html"><strong aria-hidden="true">4.3.</strong> Shared types</a></li><li class="chapter-item expanded "><a href="../bridge/attributes.html"><strong aria-hidden="true">4.4.</strong> Attributes</a></li><li class="chapter-item expanded "><a href="../bridge/traits.html"><strong aria-hidden="true">4.5.</strong> Traits</a></li></ol></li><li class="chapter-item expanded "><a href="../common-issues.html"><strong aria-hidden="true">5.</strong> Common Issues</a></li><li class="chapter-item expanded "><a href="../internals/index.html"><strong aria-hidden="true">6.</strong> For Contributors: CXX-Qt Internals</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../internals/build-system.html"><strong aria-hidden="true">6.1.</strong> Build System</a></li><li class="chapter-item expanded "><a href="../internals/crate-organization.html"><strong aria-hidden="true">6.2.</strong> Crate Organization</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">CXX-Qt Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!--
+SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+-->
+<h1 id="our-first-cxx-qt-module"><a class="header" href="#our-first-cxx-qt-module">Our first CXX-Qt module</a></h1>
+<p>As with all things Rust, we'll want to create a cargo project.
+Run the following command inside a <code>tutorial</code> folder to initialize the Rust part of the project.</p>
+<pre><code class="language-shell">$ cargo new qml_minimal
+$ cd qml_minimal
+</code></pre>
+<blockquote>
+<p>If you want to skip building with Cargo and try building with CMake directly
+you can add the <code>--lib</code> option here. That will make it easier to create a static library in Rust and use CMake to
+link this into a C++ executable. We'll discuss details of this later, when we <a href="./5-cmake-integration.html">integrate our Rust project with CMake</a></p>
+<p>Building with Cargo is easier to start with, so if in doubt, try building with Cargo first.</p>
+</blockquote>
+<p>As outlined in the previous section, to use CXX-Qt, we'll create a Rust module within this crate.
+This Rust module will then serve as our interface between Qt and Rust.
+First, in the <code>src/main.rs</code>, we tell Cargo about the module we're about to create:</p>
+<pre><code class="language-rust ignore">pub mod cxxqt_object;</code></pre>
+<p>Now, we need to create a file <code>rust/src/cxxqt_object.rs</code> for that module.
+It will include our <code>#[cxx_qt::bridge]</code> that allows us to interact with Qt concepts.</p>
+<p>This is a lot to take in, so let's go one step at a time.</p>
+<pre><code class="language-rust ignore">
+/// The bridge definition for our QObject
+#[cxx_qt::bridge]
+pub mod qobject {
+
+    unsafe extern &quot;C++&quot; {
+        include!(&quot;cxx-qt-lib/qstring.h&quot;);
+        /// An alias to the QString type
+        type QString = cxx_qt_lib::QString;
+    }
+
+    extern &quot;RustQt&quot; {
+        // The QObject definition
+        // We tell CXX-Qt that we want a QObject class with the name MyObject
+        // based on the Rust struct MyObjectRust.
+        #[qobject]
+        #[qml_element]
+        #[qproperty(i32, number)]
+        #[qproperty(QString, string)]
+        #[namespace = &quot;my_object&quot;]
+        type MyObject = super::MyObjectRust;
+
+        // Declare the invokable methods we want to expose on the QObject
+        #[qinvokable]
+        #[cxx_name = &quot;incrementNumber&quot;]
+        fn increment_number(self: Pin&lt;&amp;mut Self&gt;);
+
+        #[qinvokable]
+        #[cxx_name = &quot;sayHi&quot;]
+        fn say_hi(&amp;self, string: &amp;QString, number: i32);
+    }
+}
+
+use core::pin::Pin;
+use cxx_qt_lib::QString;
+
+/// The Rust struct for the QObject
+#[derive(Default)]
+pub struct MyObjectRust {
+    number: i32,
+    string: QString,
+}
+
+impl qobject::MyObject {
+    /// Increment the number Q_PROPERTY
+    pub fn increment_number(self: Pin&lt;&amp;mut Self&gt;) {
+        let previous = *self.number();
+        self.set_number(previous + 1);
+    }
+
+    /// Print a log message with the given string and number
+    pub fn say_hi(&amp;self, string: &amp;QString, number: i32) {
+        println!(&quot;Hi from Rust! String is '{string}' and number is {number}&quot;);
+    }
+}
+
+</code></pre>
+<h2 id="cxx-qt-bridge-module"><a class="header" href="#cxx-qt-bridge-module">CXX-Qt bridge module</a></h2>
+<p>Starting with the module definition:</p>
+<pre><code class="language-rust ignore">
+/// The bridge definition for our QObject
+#[cxx_qt::bridge]
+pub mod qobject {
+    // ...
+}</code></pre>
+<p>A <code>#[cxx_qt::bridge]</code> is the same as a <code>#[cxx::bridge]</code> and you can use all features of CXX in it.
+Additionally, a <code>#[cxx_qt::bridge]</code> gives you a few more features that allow you to create <code>QObject</code>s from Rust or declare existing <code>QObject</code>s for access from Rust.</p>
+<h2 id="extern-rustqt"><a class="header" href="#extern-rustqt"><code>extern &quot;RustQt&quot;</code></a></h2>
+<p>Like <code>extern &quot;Rust&quot;</code> and <code>extern &quot;C++&quot;</code> in CXX, CXX-Qt provides <code>extern &quot;RustQt&quot;</code> and <code>extern &quot;C++Qt&quot;</code>.</p>
+<p>These <code>extern</code> blocks instruct CXX-Qt to where the implementation of our interface lives.
+Anything that is marked as <code>extern &quot;RustQt&quot;</code> is implemented in Rust and will be exposed to C++.
+Conversely, anything inside <code>extern &quot;C++Qt&quot;</code> is implemented in C++ and will be exposed to Rust.</p>
+<h2 id="qobject-struct"><a class="header" href="#qobject-struct"><code>QObject</code> struct</a></h2>
+<p>First we will create a new <code>QObject</code> subclass.
+As we want to implement it in Rust, we need to place our interface inside <code>extern &quot;RustQt&quot;</code>.</p>
+<p>To create a new <code>QObject</code> subclass that will be defined in Rust, use a type-alias and mark it with <code>#[qobject]</code>.
+In our case the new class will be named <code>MyObject</code> and will be backed by a Rust <code>struct</code> named <code>MyObjectRust</code>.</p>
+<pre><code class="language-rust ignore">        // The QObject definition
+        // We tell CXX-Qt that we want a QObject class with the name MyObject
+        // based on the Rust struct MyObjectRust.
+        #[qobject]
+        #[qml_element]
+        #[qproperty(i32, number)]
+        #[qproperty(QString, string)]
+        #[namespace = &quot;my_object&quot;]
+        type MyObject = super::MyObjectRust;</code></pre>
+<p>The Rust struct must be defined <strong>outside</strong> the bridge module and is therefore referred to using <code>super::</code>.
+This just needs to be a normal Rust <code>struct</code> and can contain any kind of field, even Rust-only types that are not compatible with CXX.</p>
+<p>Unless we want to use CXX-Qt's <a href="https://docs.rs/cxx-qt/latest/cxx_qt/trait.Constructor.html">Constructor feature</a> we just need to ensure that this <code>struct</code> implements Rusts <code>Default</code> trait
+In this case we can just use <code>#[derive(Default)]</code> on the <code>struct</code>.</p>
+<pre><code class="language-rust ignore">#[derive(Default)]
+pub struct MyObjectRust {
+    number: i32,
+    string: QString,
+}</code></pre>
+<p>Now the <code>#[qobject]</code> macro will take care of creating a new <code>QObject</code> subclass named <code>MyObject</code>.
+Every instance of <code>MyObject</code> will include an instance of the <code>MyObjectRust</code> struct that can be used to work with data defined in Rust.</p>
+<p>To automatically export this new class to QML, we mark it with the <code>#[qml_element]</code> attribute.
+This is the same as specifying <a href="https://doc.qt.io/qt-6/qqmlengine.html#QML_ELEMENT"><code>QML_ELEMENT</code></a> in C++.
+We later define a QML module for our type when <a href="./4-cargo-executable.html">building with Cargo</a> <a href="./5-cmake-integration.html">or CMake</a>.</p>
+<p>The <a href="../bridge/extern_rustqt.html#properties"><code>#[qproperty]</code></a> attribute will create a <a href="https://doc.qt.io/qt-6/properties.html"><code>Q_PROPERTY</code></a> for the given type and field name.
+CXX-Qt will then:</p>
+<ol>
+<li>Create the <code>Q_PROPERTY</code> on the <code>QObject</code> type.</li>
+<li>Create a <code>NOTIFY</code> signal for when the property changes.</li>
+<li>Generate getters and setters that use the underlying Rust fields and emit the NOTIFY signal on changes.</li>
+</ol>
+<p>In this case the newly created <code>QObject</code> subclass will have two properties: <code>number</code> and <code>string</code>.
+CXX-Qt expects a field for each property to exist in the underlying Rust <code>struct</code>.
+For names that contain multiple words, like <code>my_number</code>, CXX-Qt allows you to rename the property in C++ with a custom <code>cxx_name</code> or <code>rust_name</code>. See the <a href="../bridge/extern_rustqt.html#properties">property documentation</a> for more information.</p>
+<h3 id="types"><a class="header" href="#types">Types</a></h3>
+<p>Please note that any fields exposed as <code>#[qproperty]</code> must have types that CXX can translate to C++ types.
+In our case that means:</p>
+<ul>
+<li><code>#[qproperty(i32, number)]</code> ⇾ <code>Q_PROPERTY(::std::int32_t number ...)</code></li>
+<li><code>#[qproperty(QString, string)</code> ⇾ <code>Q_PROPERTY(QString string ...)</code></li>
+</ul>
+<p>For <code>i32</code>, CXX already knows how to translate it.
+A <code>QString</code> however is unknown to CXX.
+Luckily, the <a href="https://docs.rs/cxx-qt-lib/latest/cxx_qt_lib/"><code>cxx_qt_lib</code></a> crate already wraps many Qt types for us.
+We can just include them in the bridge like any other CXX type:</p>
+<pre><code class="language-rust  ignore">    unsafe extern &quot;C++&quot; {
+        include!(&quot;cxx-qt-lib/qstring.h&quot;);
+        /// An alias to the QString type
+        type QString = cxx_qt_lib::QString;
+    }</code></pre>
+<p>For more details on the available types, see the <a href="../concepts/types.html">Qt types page</a>.</p>
+<hr />
+<p>With our completed QObject definition, CXX-Qt will automatically generate a new <code>QObject</code> subclass called <code>MyObject</code> and expose it as an <a href="https://cxx.rs/extern-c++.html#opaque-c-types"><code>extern &quot;C++&quot;</code> opaque type</a> back to Rust.
+In our case, this means we can refer to the C++ <code>QObject</code> as <code>qobject::MyObject</code>, as it is defined inside the <code>mod qobject</code>.</p>
+<p>This <code>qobject::MyObject</code> type can be used like any other CXX opaque type.</p>
+<h2 id="invokables"><a class="header" href="#invokables">Invokables</a></h2>
+<p>Additionally, CXX-Qt allows us to add functionality to this <code>QObject</code> by referring to the type as the self type of functions in an <code>extern &quot;RustQt&quot;</code> block.</p>
+<pre><code class="language-rust ignore">        // Declare the invokable methods we want to expose on the QObject
+        #[qinvokable]
+        #[cxx_name = &quot;incrementNumber&quot;]
+        fn increment_number(self: Pin&lt;&amp;mut Self&gt;);
+
+        #[qinvokable]
+        #[cxx_name = &quot;sayHi&quot;]
+        fn say_hi(&amp;self, string: &amp;QString, number: i32);</code></pre>
+<p>This works the same as exposing any other <a href="https://cxx.rs/extern-rust.html#methods">member function with CXX</a> in an <code>extern &quot;Rust&quot;</code> block.
+Additionally, CXX-Qt understands the <code>#[qinvokable]</code> attribute and marks the member function as <a href="https://doc.qt.io/qt-6/qtqml-cppintegration-exposecppattributes.html#exposing-methods-including-qt-slots"><code>Q_INVOKABLE</code></a>.
+This means they can be called from QML.</p>
+<p>These functions then need to be implemented <strong>outside</strong> the bridge using <code>impl qobject::MyObject</code>.</p>
+<pre><code class="language-rust ignore">impl qobject::MyObject {
+    /// Increment the number Q_PROPERTY
+    pub fn increment_number(self: Pin&lt;&amp;mut Self&gt;) {
+        let previous = *self.number();
+        self.set_number(previous + 1);
+    }
+
+    /// Print a log message with the given string and number
+    pub fn say_hi(&amp;self, string: &amp;QString, number: i32) {
+        println!(&quot;Hi from Rust! String is '{string}' and number is {number}&quot;);
+    }
+}
+</code></pre>
+<h3 id="inlining-the-self-receiver"><a class="header" href="#inlining-the-self-receiver">Inlining the self receiver</a></h3>
+<p>If an <code>extern &quot;RustQt&quot;</code> block contains exactly one <code>QObject</code>, the self type of methods can be inferred.
+For instance, in a block with multiple or no <code>QObject</code>s, a function like <code>foo(&amp;self)</code> or <code>foo(self: Pin&lt;&amp;mut Self&gt;)</code>
+would not compile, but will compile with the <code>Self</code> type set to that blocks <code>QObject</code>.
+This is how CXX <a href="https://cxx.rs/extern-rust.html">handles it</a> (see the Methods heading).</p>
+<p>This setup is a bit unusual, as the type <code>qobject::MyObject</code> is actually defined in C++.
+However, it is still possible to add member functions to it in Rust and then expose them back to C++.
+This is the usual workflow for <code>QObject</code>s in CXX-Qt.
+CXX-Qt will define the <code>QObject</code> class itself in C++, but defer to Rust for any behavior.</p>
+<blockquote>
+<p><strong>📝 Best Practice</strong>: We recommend calling the bridge module <code>qobject</code> instead of the CXX-typical <code>ffi</code>.
+This way accessing the C++ <code>QObject</code> outside the bridge becomes a natural <code>qobject::MyObject</code>
+instead of <code>ffi::MyObject</code>.</p>
+<p>Feel free to choose any module name you like though.</p>
+</blockquote>
+<p>Also do not forget to import everything required for the invokable implementation.</p>
+<pre><code class="language-rust ignore">use core::pin::Pin;
+use cxx_qt_lib::QString;</code></pre>
+<p>In our case, we define two new functions:</p>
+<ul>
+<li><code>increment_number</code>
+<ul>
+<li>Increments the number of the <code>MyObject</code>.</li>
+<li>The name will be converted to <code>incrementNumber</code> in C++.</li>
+</ul>
+</li>
+<li><code>say_hello</code>
+<ul>
+<li>Prints a provided number and string.</li>
+<li>The name will be converted to <code>sayHello</code> in C++.</li>
+</ul>
+</li>
+</ul>
+<p>Because we are implementing on the <code>qobject::MyObject</code> type instead of the <code>MyObject</code> type, <code>self</code> here is the C++ <code>QObject</code> that is generated from our <code>MyObject</code> struct.
+As this type is a CXX Opaque type, we can't actually instantiate it.
+Our Qt code will take care of this.
+Also, we can't move the <code>QObject</code>, which is why it is behind a Rust <a href="https://doc.rust-lang.org/std/pin/struct.Pin.html"><code>Pin</code></a>.</p>
+<p>CXX-Qt will generate getters and setters for all properties of our <code>struct</code>.
+That's where the <code>number()</code> and <code>set_number()</code> functions used by <code>increment_number()</code> come from.
+See the <a href="../bridge/extern_rustqt.html#properties"><code>QProperty</code> section</a> for details on user defined properties.</p>
+<p>For more details on what you can do with the <code>QObject</code> from Rust and what functions CXX-Qt will generate for you, take a look at the <a href="../concepts/generated_qobject.html"><code>QObject</code> page</a>.</p>
+<p>And that's it. We've defined our first <code>QObject</code> subclass in Rust. That wasn't so hard, was it?</p>
+<p>Now let's get to <a href="./3-qml-gui.html">using it in Qt</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../getting-started/1-qobjects-in-rust.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../getting-started/3-qml-gui.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../getting-started/1-qobjects-in-rust.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../getting-started/3-qml-gui.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>

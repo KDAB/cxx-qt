@@ -1,0 +1,346 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Building for WebAssembly - CXX-Qt Documentation</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="../favicon.svg">
+        <link rel="shortcut icon" href="../favicon.png">
+        <link rel="stylesheet" href="../css/variables.css">
+        <link rel="stylesheet" href="../css/general.css">
+        <link rel="stylesheet" href="../css/chrome.css">
+        <link rel="stylesheet" href="../css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="../FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="../fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="../highlight.css">
+        <link rel="stylesheet" href="../tomorrow-night.css">
+        <link rel="stylesheet" href="../ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "../";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="../index.html"><strong aria-hidden="true">1.</strong> Introduction</a></li><li class="chapter-item expanded "><a href="../getting-started/index.html"><strong aria-hidden="true">2.</strong> Getting Started</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../getting-started/1-qobjects-in-rust.html"><strong aria-hidden="true">2.1.</strong> QObjects in Rust</a></li><li class="chapter-item expanded "><a href="../getting-started/2-our-first-cxx-qt-module.html"><strong aria-hidden="true">2.2.</strong> Our first CXX-Qt module</a></li><li class="chapter-item expanded "><a href="../getting-started/3-qml-gui.html"><strong aria-hidden="true">2.3.</strong> Creating the QML GUI</a></li><li class="chapter-item expanded "><a href="../getting-started/4-cargo-executable.html"><strong aria-hidden="true">2.4.</strong> Building with Cargo</a></li><li class="chapter-item expanded "><a href="../getting-started/5-cmake-integration.html"><strong aria-hidden="true">2.5.</strong> Building with CMake</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/index.html"><strong aria-hidden="true">3.</strong> Core Concepts</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/build_systems.html"><strong aria-hidden="true">3.1.</strong> Build Systems</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../concepts/wasm-builds.html" class="active"><strong aria-hidden="true">3.1.1.</strong> Building for WebAssembly</a></li></ol></li><li class="chapter-item expanded "><a href="../concepts/generated_qobject.html"><strong aria-hidden="true">3.2.</strong> Generated QObject</a></li><li class="chapter-item expanded "><a href="../concepts/types.html"><strong aria-hidden="true">3.3.</strong> Types</a></li><li class="chapter-item expanded "><a href="../concepts/nested_objects.html"><strong aria-hidden="true">3.4.</strong> Nested Objects</a></li><li class="chapter-item expanded "><a href="../concepts/inheritance.html"><strong aria-hidden="true">3.5.</strong> Inheritance & Overriding</a></li><li class="chapter-item expanded "><a href="../concepts/casting.html"><strong aria-hidden="true">3.6.</strong> Casting</a></li><li class="chapter-item expanded "><a href="../concepts/instantiating_in_rust.html"><strong aria-hidden="true">3.7.</strong> Instantiating in Rust</a></li></ol></li><li class="chapter-item expanded "><a href="../bridge/index.html"><strong aria-hidden="true">4.</strong> Reference: the bridge module</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../bridge/extern_rustqt.html"><strong aria-hidden="true">4.1.</strong> extern "RustQt"</a></li><li class="chapter-item expanded "><a href="../bridge/extern_cppqt.html"><strong aria-hidden="true">4.2.</strong> extern "C++Qt"</a></li><li class="chapter-item expanded "><a href="../bridge/shared_types.html"><strong aria-hidden="true">4.3.</strong> Shared types</a></li><li class="chapter-item expanded "><a href="../bridge/attributes.html"><strong aria-hidden="true">4.4.</strong> Attributes</a></li><li class="chapter-item expanded "><a href="../bridge/traits.html"><strong aria-hidden="true">4.5.</strong> Traits</a></li></ol></li><li class="chapter-item expanded "><a href="../common-issues.html"><strong aria-hidden="true">5.</strong> Common Issues</a></li><li class="chapter-item expanded "><a href="../internals/index.html"><strong aria-hidden="true">6.</strong> For Contributors: CXX-Qt Internals</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="../internals/build-system.html"><strong aria-hidden="true">6.1.</strong> Build System</a></li><li class="chapter-item expanded "><a href="../internals/crate-organization.html"><strong aria-hidden="true">6.2.</strong> Crate Organization</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">CXX-Qt Documentation</h1>
+
+                    <div class="right-buttons">
+                        <a href="../print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <!--
+SPDX-FileCopyrightText: 2024 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+SPDX-FileContributor: Matt Aber <matt.aber@kdab.com>
+
+SPDX-License-Identifier: MIT OR Apache-2.0
+-->
+<h1 id="building-for-webassembly"><a class="header" href="#building-for-webassembly">Building for WebAssembly</a></h1>
+<p>CXX-Qt and applications written with it can be compiled for WebAssembly, with a few limitations. Below you will find detailed instructions regarding how to build for the WASM target.</p>
+<p>You will need to have Qt for WebAssembly installed. The next section shows versions that have been tested.</p>
+<p>Additionally, if you haven't already, clone the <a href="https://github.com/emscripten-core/emsdk"><code>emsdk</code> git repo from Github</a>.</p>
+<h2 id="using-correct-versions"><a class="header" href="#using-correct-versions">Using Correct Versions</a></h2>
+<p>The version of Emscripten used to build CXX-Qt and programs using it should match the one that was used to build Qt for WebAssembly. This is because Emscripten does not guarantee ABI compatibility between versions, so using different versions is not guaranteed to work fully or even at all.</p>
+<p>Here are the associated Qt and Emscripten versions, and whether they are currently working with CXX-Qt for WebAssembly:</p>
+<div class="table-wrapper"><table><thead><tr><th>Qt</th><th>Emscripten</th></tr></thead><tbody>
+<tr><td>6.2</td><td>2.0.14</td></tr>
+<tr><td>6.3</td><td>3.0.0</td></tr>
+<tr><td>6.4</td><td>3.1.14</td></tr>
+<tr><td>6.5</td><td>3.1.25</td></tr>
+<tr><td>6.6</td><td>3.1.37</td></tr>
+</tbody></table>
+</div>
+<p>Info about other Qt and emscripten versions can be found in the <a href="https://doc.qt.io/qt-6/wasm.html">Qt documentation</a>.</p>
+<h2 id="setting-up-emsdk"><a class="header" href="#setting-up-emsdk">Setting Up <code>emsdk</code></a></h2>
+<p>Once you know which Qt and Emscripten versions you will use, navigate to the root directory of the <code>emsdk</code> repo and run the following commands:</p>
+<pre><code class="language-bash">$ ./emsdk install &lt;emscripten version&gt;
+$ ./emsdk activate &lt;emscripten version&gt;
+$ source ./emsdk_env.sh
+</code></pre>
+<p>For example, if you are going to use Qt 6.4, the corresponding version of Emscripten is 3.1.14, so the first command will be:</p>
+<pre><code class="language-bash">$ ./emsdk install 3.1.14
+</code></pre>
+<p>On Windows, the third step, which sets up environment variables (<code>source</code> command above on Unix-like environments) is unnecessary because the required environment setup will already be done.</p>
+<h2 id="toolchains"><a class="header" href="#toolchains">Toolchains</a></h2>
+<p>When configuring with CMake, the <code>CMAKE_TOOLCHAIN_FILE</code> variable needs to be set to the correct toolchain file; for example, if using Qt 6.4.2 on WebAssembly, the toolchain file is typically located at <code>/path/to/Qt/6.4.2/wasm_32/lib/cmake/Qt6/qt.toolchain.cmake</code>. This will set CMake up to use the correct Qt path, compiler, linker, and so forth.</p>
+<p>Generally, this does not need to be done manually. Using the <code>qt-cmake</code> binary bundled with your selected version of Qt WASM will set the toolchain file for you.</p>
+<p>For example, if using Qt 6.4.2:</p>
+<pre><code class="language-bash">$ /path/to/Qt/6.4.2/wasm_32/bin/qt-cmake -B build .
+</code></pre>
+<p>However, in Qt 6.3 and below, the bundled CMake is version 3.22, while CXX-Qt requires at least version 3.24. For these versions of Qt, a more up-to-date CMake binary needs to be used to configure, so <code>CMAKE_TOOLCHAIN_FILE</code> needs to be passed into the <code>cmake</code> command.</p>
+<p>If using a different CMake binary, instead do this:</p>
+<pre><code class="language-bash">$ cmake -DCMAKE_TOOLCHAIN_FILE=/path/to/qt.toolchain.cmake -B build .
+</code></pre>
+<p>For Qt 6.5 or later, use the <code>wasm_singlethread</code> toolchain. For versions earlier than 6.5 use <code>wasm_32</code>.</p>
+<p>The <code>wasm_multithread</code> toolchain available in 6.5 and later is currently not supported. For more information, see the <a href="#known-issues">Known Issues</a> section at the bottom of this page.</p>
+<h2 id="compiling-your-project-for-webassembly"><a class="header" href="#compiling-your-project-for-webassembly">Compiling Your Project for WebAssembly</a></h2>
+<p>To build for WebAssembly in a project that uses CXX-Qt crates, first follow the instructions in the <a href="#using-correct-versions">Using Correct Versions</a> and <a href="#setting-up-emsdk">Setting Up <code>emsdk</code></a> sections.</p>
+<h3 id="cmakeliststxt"><a class="header" href="#cmakeliststxt">CMakeLists.txt</a></h3>
+<p>When compiling a CXX-Qt project for wasm, the Rust target must be set to <code>wasm32-unknown-emscripten</code>, and the project must be configured to use POSIX threads. Make sure you have the Emscripten target for <code>rustc</code> with <code>rustup target add wasm32-unknown-emscripten</code>.</p>
+<pre><code class="language-cmake">set(Rust_CARGO_TARGET wasm32-unknown-emscripten)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+</code></pre>
+<p>Any Rust crate that is imported via corrosion needs to have <code>-DRUST_CXX_NO_EXCEPTIONS</code> set otherwise <code>cxx</code> fails to build.</p>
+<pre><code class="language-cmake">if(BUILD_WASN)
+    # Add -DRUST_CXX_NO_EXCEPTIONS to CXXFLAGS, as WASM does not support exceptions
+    set(EMSCRIPTEN_CXX_FLAGS &quot;${CMAKE_CXX_FLAGS}&quot;)
+    list(APPEND EMSCRIPTEN_CXX_FLAGS &quot;-DRUST_CXX_NO_EXCEPTIONS&quot;)
+    corrosion_set_env_vars(${CRATE} &quot;CXXFLAGS=${EMSCRIPTEN_CXX_FLAGS}&quot;)
+endif()
+</code></pre>
+<p>Using CMake, <code>add_executable</code> will not output an HTML file when targeting wasm. In order to render an HTML file, one must use <code>qt_add_executable</code> in its place. Assuming a project has a CMake flag <code>BUILD_WASM</code> to toggle wasm and native builds, one could write the following:</p>
+<pre><code class="language-cmake">if(BUILD_WASM)
+    qt_add_executable(${APP_NAME} ${SOURCE_FILES})
+else()
+    add_executable(${APP_NAME} ${SOURCE_FILES})
+endif()
+</code></pre>
+<h3 id="configure-build-and-run"><a class="header" href="#configure-build-and-run">Configure, Build, and Run</a></h3>
+<p>Configure your build directory following the instructions in the <a href="#toolchains">Toolchains</a> section.</p>
+<p>Now, run <code>cmake --build</code> on the build directory to compile and link the project. This can be any CMake binary; here the OS package works just fine:</p>
+<pre><code class="language-bash">$ cmake --build build
+</code></pre>
+<p>You can then run your built application like so:</p>
+<pre><code class="language-bash">$ emrun ./build/path/to/&lt;appname&gt;.html
+</code></pre>
+<h2 id="compiling-cxx-qt-wasm-from-source"><a class="header" href="#compiling-cxx-qt-wasm-from-source">Compiling CXX-Qt WASM from Source</a></h2>
+<p>If you are compiling CXX-Qt from source, the workflow is similar. First, follow the instructions in the <a href="#using-correct-versions">Using Correct Versions</a> and <a href="#setting-up-emsdk">Setting Up <code>emsdk</code></a> sections.</p>
+<p>The <code>CMakeLists.txt</code> file at the root of the CXX-Qt repository has an option <code>BUILD_WASM</code> to toggle WebAssembly builds. Simply compiling with the correct emsdk and toolchain and flipping this option <code>ON</code> should build the libraries and examples for WebAssembly.</p>
+<h3 id="building"><a class="header" href="#building">Building</a></h3>
+<p>Read the <a href="#toolchains">Toolchains</a> section before proceeding. Then navigate to the root directory of the CXX-Qt repo.</p>
+<p>If using the <code>qt-cmake</code> binary packaged with your version of Qt for WebAssembly, run the following command to configure CXX-Qt:</p>
+<pre><code class="language-bash">$ /path/to/qt-cmake -DBUILD_WASM=ON -B build .
+</code></pre>
+<p>If using a different CMake binary, instead do this:</p>
+<pre><code class="language-bash">$ &lt;cmake binary&gt; -DCMAKE_TOOLCHAIN_FILE=/path/to/qt.toolchain.cmake -DBUILD_WASM=ON -B build .
+</code></pre>
+<p>Finally, run <code>cmake --build</code> on the configured build directory to compile and link the project and examples. This can be any CMake binary; here the OS package works just fine:</p>
+<pre><code class="language-bash">$ cmake --build build
+</code></pre>
+<p>Then you can run the <code>qml_minimal</code> example like so:</p>
+<pre><code class="language-bash">$ emrun ./build/examples/qml_minimal/example_qml_minimal.html
+</code></pre>
+<h3 id="working-examples"><a class="header" href="#working-examples">Working Examples</a></h3>
+<p>Not all of the examples are currently supported for WASM builds.</p>
+<div class="table-wrapper"><table><thead><tr><th>Example</th><th>Working</th></tr></thead><tbody>
+<tr><td><code>qml-minimal-no-cmake</code></td><td>❌ broken</td></tr>
+<tr><td><code>demo_threading</code></td><td>❌ broken</td></tr>
+<tr><td><code>qml_features</code></td><td>✅ working</td></tr>
+<tr><td><code>qml_minimal</code></td><td>✅ working</td></tr>
+</tbody></table>
+</div>
+<p>For more information, see the <a href="#known-issues">Known Issues</a> section at the bottom of this page.</p>
+<h2 id="known-issues"><a class="header" href="#known-issues">Known Issues</a></h2>
+<h3 id="wasm_multithread-toolchain"><a class="header" href="#wasm_multithread-toolchain"><code>wasm_multithread</code> toolchain</a></h3>
+<p>CXX-Qt will currently not build with <code>wasm_multithread</code> versions of Qt.</p>
+<pre><code class="language-console">wasm-ld: error: --shared-memory is disallowed by qml_minimal-e6f36338b0e1fa5c.17g6vcid2nczsjj0.rcgu.o 
+            because it was not compiled with 'atomics' or 'bulk-memory' features.
+</code></pre>
+<p>This issue is related to <code>pthread</code> in the <code>libc</code> crate. It is possible that manually compiling <code>cxx</code> and <code>libc</code> crates with <code>-pthread</code> may solve this.</p>
+<h3 id="cargo-only-builds"><a class="header" href="#cargo-only-builds"><code>cargo</code>-only builds</a></h3>
+<p>The example <code>qml-minimal-no-cmake</code> will not build for WebAssembly with <code>cargo</code>, and attempts to build with <code>cargo</code> without <code>cmake</code> will not work. This is due to an upstream issue with the <code>libc</code> crate, which does not support wasm and can cause breakage.</p>
+<pre><code class="language-console">cannot find function `pthread_kill` in crate `libc`
+</code></pre>
+<h3 id="demo_threading-example"><a class="header" href="#demo_threading-example"><code>demo_threading</code> example</a></h3>
+<p>The example <code>demo_threading</code> will not build for WebAssembly due to an upstream issue with <code>async-std</code>, which does not support wasm. On Linux, the observed breakage is due to <code>socket2</code> using its <code>unix.rs</code> file to target a Unix rather than wasm environment, resulting in error messages from <code>unix.rs</code> like the following:</p>
+<pre><code class="language-console">error[E0433]: failed to resolve: use of undeclared type `IovLen`
+</code></pre>
+<p><code>socket2</code> is a dependency of <code>async-io</code>, which is a dependency of <code>async-std</code>.</p>
+<p>There is discussion around supporting wasm in the GitHub repository for <code>async-std</code>, and the progress is being tracked <a href="https://github.com/async-rs/async-std/issues/220">in this issue</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="../concepts/build_systems.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="../concepts/generated_qobject.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="../concepts/build_systems.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="../concepts/generated_qobject.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="../elasticlunr.min.js"></script>
+        <script src="../mark.min.js"></script>
+        <script src="../searcher.js"></script>
+
+        <script src="../clipboard.min.js"></script>
+        <script src="../highlight.js"></script>
+        <script src="../book.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+    </div>
+    </body>
+</html>
