@@ -244,7 +244,7 @@ pub enum TokenFlag {
 
 #[derive(Clone)]
 struct Expansion {
-    formated_rust: String,
+    formatted_rust: String,
     output_token_ranges: Vec<Range<usize>>,
     input_token_ranges: Vec<Range<usize>>,
 }
@@ -318,11 +318,11 @@ impl qobject::SpanInspector {
         std::thread::spawn(move || {
             let expand_result = Self::expand(&text.to_string());
 
-            let (formated_rust, char_flags) = match expand_result.clone() {
+            let (formatted_rust, char_flags) = match expand_result.clone() {
                 Ok(expanded) => {
                     let char_flags = Self::get_char_flags(&expanded, cursor_position as usize);
 
-                    (expanded.formated_rust, Some(char_flags))
+                    (expanded.formatted_rust, Some(char_flags))
                 }
                 Err(error) => (error, None),
             };
@@ -343,7 +343,7 @@ impl qobject::SpanInspector {
                         .char_flags = char_flags;
 
                     unsafe { this.output_document() }
-                        .set_plain_text(&QString::from(&formated_rust));
+                        .set_plain_text(&QString::from(&formatted_rust));
                 })
                 .ok();
         });
@@ -368,7 +368,7 @@ impl qobject::SpanInspector {
             .map_err(|err| eprintln!("Parsing error: {err}"))
             .unwrap();
 
-        let formated_rust = prettyplease::unparse(&file);
+        let formatted_rust = prettyplease::unparse(&file);
 
         let output_token_ranges = Self::flatten_tokenstream(output_stream)
             .into_iter()
@@ -383,7 +383,7 @@ impl qobject::SpanInspector {
             .collect();
 
         Ok(Expansion {
-            formated_rust,
+            formatted_rust,
             output_token_ranges,
             input_token_ranges,
         })
@@ -414,10 +414,10 @@ impl qobject::SpanInspector {
             .collect();
 
         let flat_tokenstream = Self::flatten_tokenstream(
-            TokenStream::from_str(&last_expansion.formated_rust).unwrap(),
+            TokenStream::from_str(&last_expansion.formatted_rust).unwrap(),
         );
 
-        let mut char_flags = vec![TokenFlag::Generated; last_expansion.formated_rust.len() + 1];
+        let mut char_flags = vec![TokenFlag::Generated; last_expansion.formatted_rust.len() + 1];
 
         for (token, flag) in flat_tokenstream
             .into_iter()
