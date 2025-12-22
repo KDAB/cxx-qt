@@ -83,6 +83,26 @@ impl Default for SyntaxHighlighterRust {
     }
 }
 
+#[derive(PartialEq, Debug)]
+#[repr(i32)]
+enum State {
+    Default = 0,
+    Comment = 1,
+    Literal = 2,
+    Macro = 3,
+}
+
+impl From<i32> for State {
+    fn from(value: i32) -> Self {
+        match value {
+            1 => State::Comment,
+            2 => State::Literal,
+            3 => State::Macro,
+            _ => State::Default,
+        }
+    }
+}
+
 impl crate::inspector::qobject::SyntaxHighlighter {
     pub fn highlight_block(mut self: Pin<&mut Self>, text: &QString) {
         let text = text.to_string();
@@ -191,20 +211,7 @@ impl crate::inspector::qobject::SyntaxHighlighter {
         let color_literal = QColor::from_rgb(111, 192, 244);
         let color_macro = QColor::from_rgb(176, 179, 11);
 
-        #[derive(PartialEq, Debug)]
-        enum State {
-            Default,
-            Comment,
-            Literal,
-            Macro,
-        }
-
-        let mut current_state = match self.as_mut().previous_block_state() {
-            1 => State::Comment,
-            2 => State::Literal,
-            3 => State::Macro,
-            _ => State::Default,
-        };
+        let mut current_state = self.as_mut().previous_block_state().into();
 
         let mut highlight_start = 0;
 
@@ -249,6 +256,6 @@ impl crate::inspector::qobject::SyntaxHighlighter {
             pending_highlights.set_foreground(highlight_start, text.len() - highlight_start, color);
         }
 
-        self.as_mut().set_current_block_state(next_state);
+        self.as_mut().set_current_block_state(current_state as i32);
     }
 }
