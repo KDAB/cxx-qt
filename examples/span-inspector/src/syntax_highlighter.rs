@@ -199,8 +199,8 @@ impl crate::inspector::qobject::SyntaxHighlighter {
         text: &str,
         pending_highlights: &mut PendingHighlights,
     ) {
-        //                                        /*     | */ |     "     | #[ | ]
-        let mut matches: Vec<_> = Regex::new("(?<!\\\\)/\\*|\\*/|(?<!\\\\)\"|#\\[|\\]")
+        //                                        /*     | */ |     "     | #[ | ] | #![
+        let mut matches: Vec<_> = Regex::new("(?<!\\\\)/\\*|\\*/|(?<!\\\\)\"|#\\[|\\]|#!\\[")
             .unwrap()
             .find_iter(text)
             .filter_map(Result::ok)
@@ -227,7 +227,7 @@ impl crate::inspector::qobject::SyntaxHighlighter {
                     (None, State::Literal)
                 }
 
-                (State::Default, "#[") => {
+                (State::Default, "#[" | "#![") => {
                     highlight_start = mat.start();
                     (None, State::Macro)
                 }
@@ -245,11 +245,11 @@ impl crate::inspector::qobject::SyntaxHighlighter {
             current_state = next_state;
         }
 
-        let (color, next_state) = match current_state {
-            State::Comment => (Some(color_comment), 1),
-            State::Literal => (Some(color_literal), 2),
-            State::Macro => (Some(color_macro), 3),
-            State::Default => (None, 0),
+        let color = match current_state {
+            State::Comment => Some(color_comment),
+            State::Literal => Some(color_literal),
+            State::Macro => Some(color_macro),
+            State::Default => None,
         };
 
         if let Some(color) = color {
