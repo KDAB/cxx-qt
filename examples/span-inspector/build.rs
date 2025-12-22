@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+// SPDX-FileContributor: Quentin Weber <quentin.weber@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -16,5 +17,6 @@ fn main() {
         .qt_module("Network")
         .qt_module("Quick")
         .file("src/inspector.rs")
+        .cpp_file("include/helper.h")
         .build();
 }
