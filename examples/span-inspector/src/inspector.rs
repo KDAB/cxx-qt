@@ -286,22 +286,16 @@ impl qobject::SpanInspector {
     }
 
     fn update_cursor(mut self: Pin<&mut Self>, cursor_position: i32) {
-        if let Ok(last_expansion) = &self.last_expansion {
-            self.as_mut()
-                .rust_mut()
-                .output_highlighter
-                .pin_mut()
-                .rust_mut()
-                .char_flags = Some(Self::get_char_flags(
+        if let Ok(last_expansion) = &self.last_expansion.clone() {
+            let mut rust_self = self.as_mut().rust_mut();
+            let mut output_highlighter = rust_self.output_highlighter.pin_mut();
+
+            output_highlighter.as_mut().rust_mut().char_flags = Some(Self::get_char_flags(
                 last_expansion,
                 cursor_position as usize,
             ));
 
-            self.as_mut()
-                .rust_mut()
-                .output_highlighter
-                .pin_mut()
-                .rehighlight();
+            output_highlighter.as_mut().rehighlight();
         }
     }
 
