@@ -204,6 +204,8 @@ impl_qvariant_value!(crate::QModelIndex, qvariant_qmodelindex);
 impl_qvariant_value!(crate::QPersistentModelIndex, qvariant_qpersistentmodelindex);
 impl_qvariant_value!(crate::QPoint, qvariant_qpoint);
 impl_qvariant_value!(crate::QPointF, qvariant_qpointf);
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QQuaternion, qvariant_qquaternion);
 impl_qvariant_value!(crate::QRect, qvariant_qrect);
 impl_qvariant_value!(crate::QRectF, qvariant_qrectf);
 impl_qvariant_value!(crate::QSize, qvariant_qsize);

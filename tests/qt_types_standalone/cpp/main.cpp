@@ -17,6 +17,7 @@
 #include "qdate.h"
 #include "qdatetime.h"
 #include "qflags.h"
+#include "qgenericmatrix.h"
 #include "qguiapplication.h"
 #include "qhash.h"
 #include "qline.h"
@@ -73,6 +74,7 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QDateTest));
   runTest(QScopedPointer<QObject>(new QDateTimeTest));
   runTest(QScopedPointer<QObject>(new QFlagsTest));
+  runTest(QScopedPointer<QObject>(new QGenericMatrixTest));
   runTest(QScopedPointer<QObject>(new QGuiApplicationTest));
   runTest(QScopedPointer<QObject>(new QHashTest));
   runTest(QScopedPointer<QObject>(new QLineTest));

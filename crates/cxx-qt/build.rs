@@ -14,13 +14,10 @@ fn main() {
     for bridge in &rust_bridges {
         builder = builder.file(bridge);
     }
+    for cpp_file in &cpp_files {
+        builder = builder.cpp_file(cpp_file)
+    }
 
-    builder = builder.cc_builder(move |cc| {
-        for cpp_file in &cpp_files {
-            cc.file(cpp_file);
-            println!("cargo::rerun-if-changed={cpp_file}");
-        }
-    });
     builder = builder.initializer(qt_build_utils::Initializer {
         file: Some("src/init.cpp".into()),
         ..qt_build_utils::Initializer::default_signature("init_cxx_qt_core")

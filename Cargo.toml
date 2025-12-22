@@ -17,6 +17,7 @@ members = [
     "examples/demo_threading/rust",
     "examples/qml_features/rust",
     "examples/qml_minimal/rust",
+    "examples/qml_minimal_plugin/rust",
     "examples/qml_basics",
     "examples/qml_multi_crates/rust/main",
     "examples/qml_multi_crates/rust/sub1",
@@ -34,19 +35,19 @@ resolver = "2"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/KDAB/cxx-qt/"
-version = "0.7.2"
+version = "0.8.0"
 rust-version = "1.77.2" # Clippy needs to >= 1.78.0 for a lint, but the package can be 1.77.2
 
 # Note a version needs to be specified on dependencies of packages
 # we publish, otherwise crates.io complains as it doesn't know the version.
 [workspace.dependencies]
-cxx-qt = { path = "crates/cxx-qt", version = "0.7.2" }
-cxx-qt-macro = { path = "crates/cxx-qt-macro", version = "0.7.2" }
-cxx-qt-build = { path = "crates/cxx-qt-build", version = "0.7.2" }
-cxx-qt-gen = { path = "crates/cxx-qt-gen", version = "0.7.2" }
-cxx-qt-lib = { path = "crates/cxx-qt-lib", version = "0.7.2" }
-qt-build-utils = { path = "crates/qt-build-utils", version = "0.7.2" }
-cxx-qt-lib-extras = { path = "crates/cxx-qt-lib-extras", version = "0.7.2" }
+cxx-qt = { path = "crates/cxx-qt", version = "0.8.0" }
+cxx-qt-macro = { path = "crates/cxx-qt-macro", version = "0.8.0" }
+cxx-qt-build = { path = "crates/cxx-qt-build", version = "0.8.0" }
+cxx-qt-gen = { path = "crates/cxx-qt-gen", version = "0.8.0" }
+cxx-qt-lib = { path = "crates/cxx-qt-lib", version = "0.8.0" }
+qt-build-utils = { path = "crates/qt-build-utils", version = "0.8.0" }
+cxx-qt-lib-extras = { path = "crates/cxx-qt-lib-extras", version = "0.8.0" }
 
 cc = { version = "1.0.100", features = ["parallel"] }
 # Ensure that the example comments are kept in sync

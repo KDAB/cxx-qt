@@ -9,6 +9,7 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -18,9 +19,9 @@ Page {
 
                 onClicked: {
                     lastErrorLabel.errorMessage = "";
-                    serialisation.number = numberSpinBox.value;
-                    serialisation.string = stringTextField.text;
-                    jsonTextField.text = serialisation.asJsonStr();
+                    root.serialisation.number = numberSpinBox.value;
+                    root.serialisation.string = stringTextField.text;
+                    jsonTextField.text = root.serialisation.asJsonStr();
                 }
             }
 
@@ -29,7 +30,7 @@ Page {
 
                 onClicked: {
                     lastErrorLabel.errorMessage = "";
-                    serialisation.fromJsonStr(jsonTextField.text);
+                    root.serialisation.fromJsonStr(jsonTextField.text);
                 }
             }
 
@@ -39,8 +40,10 @@ Page {
         }
     }
 
-    Serialisation {
-        id: serialisation
+    readonly property Serialisation serialisation: Serialisation {
+                onError: (message) => {
+                    lastErrorLabel.errorMessage = message;
+                }
     }
 
     GridLayout {
@@ -60,7 +63,7 @@ Page {
             Binding {
                 target: numberSpinBox
                 property: "value"
-                value: serialisation.number
+                value: root.serialisation.number
             }
         }
 
@@ -76,7 +79,7 @@ Page {
             Binding {
                 target: stringTextField
                 property: "text"
-                value: serialisation.string
+                value: root.serialisation.string
             }
         }
 
@@ -101,14 +104,6 @@ Page {
             Layout.columnSpan: 2
             text: errorMessage !== "" ? qsTr("Error: %1").arg(errorMessage) : ""
             wrapMode: Text.Wrap
-
-            Connections {
-                target: serialisation
-
-                function onError(message) {
-                    lastErrorLabel.errorMessage = message;
-                }
-            }
         }
     }
 }

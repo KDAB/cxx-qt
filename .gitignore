@@ -13,6 +13,7 @@ cargo/*
 **/mdbook-linkcheck/*
 pip3/*
 rustup/*
+CMakeUserPresets.json
 CMakeLists.txt.user
 
 # clangd
@@ -23,3 +24,5 @@ compile_commands.json
 
 # clangd cache
 .cache/
+
+.qmlls.ini

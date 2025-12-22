@@ -15,7 +15,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.7.2...HEAD)
+## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.8.0...HEAD)
+
+## [0.8.0](https://github.com/KDAB/cxx-qt/compare/v0.7.2...v0.8.0) - 2025-12-18
 
 ### Added
 
@@ -23,12 +25,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `QSet::reserve` to reserve capacity up-front.
 - Support for further types: `QUuid`
 - New example: Basic greeter app
-- Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`
+- Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`, `QQuaternion`
 - Support for `cfg` attributes through to C++ generation
 - CXX-Qt-build: Improved compile time and propagation of initializers between crates
 - CXX-Qt-build: Multi-crate projects are now possible with Cargo and CMake (see `examples/qml_multi_crates`)
 - CXX-Qt-build: Allow forcing initialization of crates/QML modules (`cxx_qt::init_crate!`/`cxx_qt::init_qml_module!`)
 - CXX-Qt-build: `CxxQtBuilder::files` to add multiple files
+- CXX-Qt-build: Allow building dynamic QML module plugins with CMake
+- CXX-Qt-build: Rename `CxxQtBuilder::qobject_header` to `CxxQtBuilder::cpp_file` and allow compiling .cpp files.
 - Add pure virtual function specified through the `#[cxx_pure]` attribute
 - Add wrappers for up and down casting, for all types which inherit from QObject, available for &T, &mut T and Pin<&mut T>
 - `#[base = T]` is now supported in `extern "C++Qt"` blocks
@@ -39,6 +43,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for setting Qt log message patterns with `q_set_message_pattern` and formatting log messages ith `q_format_log_message`.
 - Implement `IntoIterator` for `&QHash`, `&QList`, `&QMap`, `&QSet`, and `&QVector`.
 - Add `QByteArray:from_base64_encoding` and `QByteArray::to_base64`.
+- Added support for qmllint and qmlls due to correct QML module export (qmldir, .qml files, qmltypes etc) and .qmlls.ini generation
 
 ### Removed
 
@@ -46,6 +51,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CXX-Qt-build: Interface no longer includes initializers
 - CXX-Qt-build: QML modules no longer include Rust files (use `CxxQtBuilder::files` instead)
 - CXX-Qt-build: Only allow one QML module per `CxxQtBuilder`
+- CXX-Qt-build: Make `CxxQtBuilder::cc_builder` unsafe to use, to indicate its lack of guarantees
 
 ## [0.7.2](https://github.com/KDAB/cxx-qt/compare/v0.7.1...v0.7.2) - 2025-04-28
 

@@ -6,8 +6,11 @@
 mod qmldir;
 pub use qmldir::QmlDirBuilder;
 
+mod qmlls;
+pub use qmlls::QmlLsIniBuilder;
+
 mod qmlplugincpp;
-pub use qmlplugincpp::QmlPluginCppBuilder;
+pub use qmlplugincpp::{PluginType, QmlPluginCppBuilder};
 
 mod qmluri;
 pub use qmluri::QmlUri;

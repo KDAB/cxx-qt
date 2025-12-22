@@ -8,6 +8,7 @@
 
 #include <QtCore/QObject>
 #include <QtCore/QVariant>
+#include <QtQml/QQmlEngine>
 
 struct CustomStruct
 {
@@ -21,6 +22,7 @@ qvariantCanConvertCustomStruct(const QVariant& variant);
 class CustomObject : public QObject
 {
   Q_OBJECT
+  QML_ELEMENT
 
   Q_PROPERTY(int value MEMBER m_value)
 public:

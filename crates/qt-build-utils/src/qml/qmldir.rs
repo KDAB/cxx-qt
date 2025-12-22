@@ -13,7 +13,7 @@ use std::io;
 /// A qmldir file is a plain-text file that contains the commands
 pub struct QmlDirBuilder {
     class_name: Option<String>,
-    depends: Vec<String>,
+    depends: Vec<QmlUri>,
     plugin: Option<(bool, String)>,
     type_info: Option<String>,
     uri: QmlUri,
@@ -65,7 +65,7 @@ impl QmlDirBuilder {
 
         for qml_file in &self.qml_files {
             let is_qml_file = qml_file
-                .path()
+                .get_path()
                 .extension()
                 .map(|ext| ext.eq_ignore_ascii_case("qml"))
                 .unwrap_or_default();
@@ -73,13 +73,13 @@ impl QmlDirBuilder {
             if !is_qml_file {
                 panic!(
                     "QML file does not end with .qml: {}",
-                    qml_file.path().display(),
+                    qml_file.get_path().display(),
                 );
             }
 
-            let path = qml_file.path().display();
+            let path = qml_file.get_path().display();
             let qml_component_name = qml_file
-                .path()
+                .get_path()
                 .file_stem()
                 .and_then(OsStr::to_str)
                 .expect("Could not get qml file stem");
@@ -118,13 +118,13 @@ impl QmlDirBuilder {
     }
 
     /// Declares that this module depends on another
-    pub fn depend(mut self, depend: impl Into<String>) -> Self {
+    pub fn depend(mut self, depend: impl Into<QmlUri>) -> Self {
         self.depends.push(depend.into());
         self
     }
 
     /// Declares that this module depends on another
-    pub fn depends<T: Into<String>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
+    pub fn depends<T: Into<QmlUri>>(mut self, depends: impl IntoIterator<Item = T>) -> Self {
         self.depends.extend(depends.into_iter().map(Into::into));
         self
     }

@@ -201,6 +201,7 @@ fn main() {
         rust_bridges.extend([
             "core/qlist/qlist_qcolor",
             "core/qvariant/qvariant_qcolor",
+            "core/qvariant/qvariant_qquaternion",
             "core/qvariant/qvariant_qvector2d",
             "core/qvariant/qvariant_qvector3d",
             "core/qvariant/qvariant_qvector4d",
@@ -209,6 +210,7 @@ fn main() {
             "gui/qfont",
             "gui/qguiapplication",
             "gui/qimage",
+            "gui/qquaternion",
             "gui/qpainterpath",
             "gui/qpainter",
             "gui/qpen",
@@ -279,6 +281,7 @@ fn main() {
         cpp_files.extend([
             "gui/qcolor",
             "gui/qfont",
+            "gui/qgenericmatrix",
             "gui/qguiapplication",
             "gui/qimage",
             "gui/qpainterpath",
@@ -286,6 +289,7 @@ fn main() {
             "gui/qpen",
             "gui/qpolygon",
             "gui/qpolygonf",
+            "gui/qquaternion",
             "gui/qregion",
             "gui/qvector2d",
             "gui/qvector3d",
@@ -333,14 +337,10 @@ fn main() {
         builder = builder.file(format!("src/{rust_source}.rs"));
     }
 
-    builder = builder.cc_builder(move |cc| {
-        for cpp_file in &cpp_files {
-            cc.file(format!("src/{cpp_file}.cpp"));
-            println!("cargo::rerun-if-changed=src/{cpp_file}.cpp");
-        }
-        cc.file("src/qt_types.cpp");
-        println!("cargo::rerun-if-changed=src/qt_types.cpp");
-    });
+    for cpp_file in &cpp_files {
+        builder = builder.cpp_file(format!("src/{cpp_file}.cpp"));
+    }
+    builder = builder.cpp_file("src/qt_types.cpp");
 
     let interface = builder.build();
     interface.reexport_dependency("cxx-qt").export();

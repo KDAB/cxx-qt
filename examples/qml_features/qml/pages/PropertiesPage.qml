@@ -9,22 +9,23 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
 
             ToolButton {
-                enabled: rustProperties.connected
+                enabled: root.rustProperties.connected
                 text: qsTr("Disconnect")
 
-                onClicked: rustProperties.connectedUrl = undefined
+                onClicked: root.rustProperties.connectedUrl = undefined
             }
 
             ToolButton {
-                enabled: !rustProperties.connected
+                enabled: !root.rustProperties.connected
                 text: qsTr("Connect")
 
-                onClicked: rustProperties.connectedUrl = urlTextField.text
+                onClicked: root.rustProperties.connectedUrl = urlTextField.text
             }
 
             Item {
@@ -33,8 +34,7 @@ Page {
         }
     }
 
-    RustProperties {
-        id: rustProperties
+    readonly property RustProperties rustProperties: RustProperties {
     }
 
     ColumnLayout {
@@ -67,7 +67,7 @@ Page {
             id: statusLabel
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            text: rustProperties.connected ? qsTr("%1: %2").arg(rustProperties.statusMessage).arg(rustProperties.connectedUrl) : rustProperties.statusMessage
+            text: root.rustProperties.connected ? qsTr("%1: %2").arg(root.rustProperties.statusMessage).arg(root.rustProperties.connectedUrl) : root.rustProperties.statusMessage
             wrapMode: Text.Wrap
         }
     }

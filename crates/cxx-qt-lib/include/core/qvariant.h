@@ -33,6 +33,7 @@
 
 #ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QColor>
+#include <QtGui/QQuaternion>
 #include <QtGui/QVector2D>
 #include <QtGui/QVector3D>
 #include <QtGui/QVector4D>
@@ -83,6 +84,7 @@ CXX_QT_QVARIANT_CAN_CONVERT(I64)
 CXX_QT_QVARIANT_CAN_CONVERT(QByteArray)
 #ifdef CXX_QT_GUI_FEATURE
 CXX_QT_QVARIANT_CAN_CONVERT(QColor)
+CXX_QT_QVARIANT_CAN_CONVERT(QQuaternion)
 CXX_QT_QVARIANT_CAN_CONVERT(QVector2D)
 CXX_QT_QVARIANT_CAN_CONVERT(QVector3D)
 CXX_QT_QVARIANT_CAN_CONVERT(QVector4D)

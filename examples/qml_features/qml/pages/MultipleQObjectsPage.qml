@@ -9,6 +9,7 @@ import QtQuick.Layouts 1.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -16,13 +17,13 @@ Page {
             ToolButton {
                 text: qsTr("Increment First")
 
-                onClicked: first.increment()
+                onClicked: root.first.increment()
             }
 
             ToolButton {
                 text: qsTr("Increment Second")
 
-                onClicked: second.increment()
+                onClicked: root.second.increment()
             }
 
             Item {
@@ -31,16 +32,12 @@ Page {
         }
     }
 
-    FirstObject {
-        id: first
-
+    readonly property FirstObject first: FirstObject {
         onAccepted: console.warn("First Accepted")
         onRejected: console.warn("First Rejected")
     }
 
-    SecondObject {
-        id: second
-
+    readonly property SecondObject second: SecondObject {
         onAccepted: console.warn("Second Accepted")
         onRejected: console.warn("Second Rejected")
     }
@@ -58,17 +55,17 @@ Page {
         }
 
         Label {
-            color: first.color
+            color: root.first.color
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            text: qsTr("First Object Count: %1, color: %2").arg(first.counter).arg(first.color)
+            text: qsTr("First Object Count: %1, color: %2").arg(root.first.counter).arg(root.first.color)
             wrapMode: Text.Wrap
         }
 
         Label {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
-            text: qsTr("Second Object Count: %1, URL: %2").arg(second.counter).arg(second.url)
+            text: qsTr("Second Object Count: %1, URL: %2").arg(root.second.counter).arg(root.second.url)
             wrapMode: Text.Wrap
         }
     }

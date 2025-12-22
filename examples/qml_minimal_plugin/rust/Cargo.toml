@@ -1,0 +1,34 @@
+# SPDX-FileCopyrightText: 2021 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+# SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+# SPDX-FileContributor: Gerhard de Clercq <gerhard.declercq@kdab.com>
+#
+# SPDX-License-Identifier: MIT OR Apache-2.0
+[package]
+name = "qml_minimal_plugin"
+version = "0.1.0"
+authors = [
+  "Andrew Hayzen <andrew.hayzen@kdab.com>",
+  "Gerhard de Clercq <gerhard.declercq@kdab.com>",
+  "Leon Matthes <leon.matthes@kdab.com>"
+]
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+# This will instruct Cargo to create a static
+# library which CMake can link against
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+cxx.workspace = true
+cxx-qt.workspace = true
+cxx-qt-lib = { workspace = true, features = ["qt_full"] }
+
+# cxx-qt-build generates C++ code from the `#[cxx_qt::bridge]` module
+# and compiles it together with the Rust static library
+[build-dependencies]
+cxx-qt-build.workspace = true
+
+[features]
+# This feature must be enabled for `cargo test` when linking Qt 6 statically.
+link_qt_object_files = [ "cxx-qt-build/link_qt_object_files" ]

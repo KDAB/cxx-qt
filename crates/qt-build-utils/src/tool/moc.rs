@@ -39,14 +39,21 @@ impl MocArguments {
     }
 
     /// Additional include path to pass to moc
-    pub fn include_path(mut self, include_path: PathBuf) -> Self {
-        self.include_paths.push(include_path);
+    pub fn include_path(mut self, include_path: impl AsRef<Path>) -> Self {
+        self.include_paths.push(include_path.as_ref().to_owned());
         self
     }
 
     /// Additional include paths to pass to moc.
-    pub fn include_paths(mut self, mut include_paths: Vec<PathBuf>) -> Self {
-        self.include_paths.append(&mut include_paths);
+    pub fn include_paths(
+        mut self,
+        include_paths: impl IntoIterator<Item = impl AsRef<Path>>,
+    ) -> Self {
+        self.include_paths.extend(
+            include_paths
+                .into_iter()
+                .map(|path| path.as_ref().to_owned()),
+        );
         self
     }
 }
@@ -55,6 +62,7 @@ impl MocArguments {
 pub struct QtToolMoc {
     executable: PathBuf,
     qt_include_paths: Vec<PathBuf>,
+    qt_framework_paths: Vec<PathBuf>,
 }
 
 impl QtToolMoc {
@@ -64,10 +72,12 @@ impl QtToolMoc {
             .try_find_tool(QtTool::Moc)
             .expect("Could not find moc");
         let qt_include_paths = qt_installation.include_paths(qt_modules);
+        let qt_framework_paths = qt_installation.framework_paths(qt_modules);
 
         Self {
             executable,
             qt_include_paths,
+            qt_framework_paths,
         }
     }
 
@@ -94,6 +104,11 @@ impl QtToolMoc {
             .chain(arguments.include_paths.iter())
         {
             include_args.push(format!("-I{}", include_path.display()));
+        }
+
+        // Qt frameworks for macOS
+        for framework_path in &self.qt_framework_paths {
+            include_args.push(format!("-F{}", framework_path.display()));
         }
 
         let mut cmd = Command::new(&self.executable);

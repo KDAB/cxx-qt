@@ -8,23 +8,28 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.cxx_qt.demo").qml_files([
-        "../qml/main.qml",
-        "../qml/pages/ContainersPage.qml",
-        "../qml/pages/CustomBaseClassPage.qml",
-        "../qml/pages/CustomParentClassPage.qml",
-        "../qml/pages/ExternCxxQtPage.qml",
-        "../qml/pages/InvokablesPage.qml",
-        "../qml/pages/MultipleQObjectsPage.qml",
-        "../qml/pages/NamingPage.qml",
-        "../qml/pages/NestedQObjectsPage.qml",
-        "../qml/pages/PropertiesPage.qml",
-        "../qml/pages/SerialisationPage.qml",
-        "../qml/pages/SignalsPage.qml",
-        "../qml/pages/SingletonPage.qml",
-        "../qml/pages/ThreadingPage.qml",
-        "../qml/pages/TypesPage.qml",
-    ]))
+    CxxQtBuilder::new_qml_module(
+        QmlModule::new("com.kdab.cxx_qt.demo")
+            .qml_files([
+                "../qml/main.qml",
+                "../qml/pages/ContainersPage.qml",
+                "../qml/pages/CustomBaseClassPage.qml",
+                "../qml/pages/CustomParentClassPage.qml",
+                "../qml/pages/ExternCxxQtPage.qml",
+                "../qml/pages/InvokablesPage.qml",
+                "../qml/pages/MultipleQObjectsPage.qml",
+                "../qml/pages/NamingPage.qml",
+                "../qml/pages/NestedQObjectsPage.qml",
+                "../qml/pages/PropertiesPage.qml",
+                "../qml/pages/SerialisationPage.qml",
+                "../qml/pages/SignalsPage.qml",
+                "../qml/pages/SingletonPage.qml",
+                "../qml/pages/ThreadingPage.qml",
+                "../qml/pages/TypesPage.qml",
+            ])
+            // Need to depend on QtQuick for QColor to work with qmllint/qmlls
+            .depend("QtQuick"),
+    )
     .files([
         "src/containers.rs",
         "src/custom_base_class.rs",
@@ -45,13 +50,11 @@ fn main() {
     ])
     // custom_object.cpp/h need to be handled here rather than CMakeLists.txt,
     // otherwise linking cargo tests fails because the symbols from those files are not found.
-    .cc_builder(|cc| {
-        cc.include("../cpp");
-        cc.file("../cpp/custom_object.cpp");
-        cc.file("../cpp/external_qobject.cpp");
-    })
-    .qobject_header("../cpp/custom_object.h")
-    .qobject_header("../cpp/external_qobject.h")
+    .include_dir("../cpp")
+    .cpp_file("../cpp/custom_object.cpp")
+    .cpp_file("../cpp/external_qobject.cpp")
+    .cpp_file("../cpp/custom_object.h")
+    .cpp_file("../cpp/external_qobject.h")
     // Ensure that Quick module is linked, so that cargo test can work.
     // In a CMake project this isn't required as the linking happens in CMake.
     .qt_module("Quick")

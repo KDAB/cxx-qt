@@ -144,6 +144,24 @@ impl TryFrom<PathBuf> for QtInstallationQMake {
 }
 
 impl QtInstallation for QtInstallationQMake {
+    fn framework_paths(&self, _qt_modules: &[String]) -> Vec<PathBuf> {
+        let mut framework_paths = vec![];
+
+        if utils::is_apple_target() {
+            // Note that this adds the framework path which allows for
+            // includes such as <QtCore/QObject> to be resolved correctly
+            let framework_path = self.qmake_query("QT_INSTALL_LIBS");
+            framework_paths.push(framework_path);
+        }
+
+        framework_paths
+            .iter()
+            .map(PathBuf::from)
+            // Only add paths if they exist
+            .filter(|path| path.exists())
+            .collect()
+    }
+
     fn include_paths(&self, qt_modules: &[String]) -> Vec<PathBuf> {
         let root_path = self.qmake_query("QT_INSTALL_HEADERS");
         let lib_path = self.qmake_query("QT_INSTALL_LIBS");
@@ -153,6 +171,13 @@ impl QtInstallation for QtInstallationQMake {
             paths.push(format!("{root_path}/Qt{qt_module}"));
 
             // Ensure that we add any framework's headers path
+            //
+            // Note that the individual Qt modules should in theory work
+            // by giving `-framework QtCore` to the cc builder. However these
+            // appear to be lost in flag_if_supported.
+            //
+            // Also note we still need these include directs even with the -F / framework paths
+            // as otherwise only <QtCore/QtGlobal> works but <QtGlobal> does not.
             let header_path = format!("{lib_path}/Qt{qt_module}.framework/Headers");
             if utils::is_apple_target() && Path::new(&header_path).exists() {
                 paths.push(header_path);
@@ -192,7 +217,7 @@ impl QtInstallation for QtInstallationQMake {
             println!("cargo::rustc-link-search=framework={lib_path}");
 
             // Ensure that any framework paths are set to -F
-            for framework_path in self.qmake_framework_paths() {
+            for framework_path in self.framework_paths(qt_modules) {
                 builder.flag_if_supported(format!("-F{}", framework_path.display()));
                 // Also set the -rpath otherwise frameworks can not be found at runtime
                 println!(
@@ -335,26 +360,6 @@ impl QtInstallationQMake {
                 );
             }
         }
-    }
-
-    /// Get the framework paths for Qt. This is intended
-    /// to be passed to whichever tool you are using to invoke the C++ compiler.
-    fn qmake_framework_paths(&self) -> Vec<PathBuf> {
-        let mut framework_paths = vec![];
-
-        if utils::is_apple_target() {
-            // Note that this adds the framework path which allows for
-            // includes such as <QtCore/QObject> to be resolved correctly
-            let framework_path = self.qmake_query("QT_INSTALL_LIBS");
-            framework_paths.push(framework_path);
-        }
-
-        framework_paths
-            .iter()
-            .map(PathBuf::from)
-            // Only add paths if they exist
-            .filter(|path| path.exists())
-            .collect()
     }
 
     fn qmake_query(&self, var_name: &str) -> String {

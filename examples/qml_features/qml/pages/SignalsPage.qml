@@ -10,6 +10,7 @@ import QtQuick.Window 2.12
 import com.kdab.cxx_qt.demo 1.0
 
 Page {
+    id: root
     header: ToolBar {
         RowLayout {
             anchors.fill: parent
@@ -17,21 +18,21 @@ Page {
             ToolButton {
                 text: qsTr("Disconnect")
 
-                onClicked: rustSignals.disconnect()
+                onClicked: root.rustSignals.disconnect()
             }
 
             ToolButton {
                 text: qsTr("Connect")
 
-                onClicked: rustSignals.connect(urlTextField.text)
+                onClicked: root.rustSignals.connect(urlTextField.text)
             }
 
             ToolButton {
                 checkable: true
-                checked: rustSignals.logging_enabled
+                checked: root.rustSignals.logging_enabled
                 text: qsTr("Toggle Logging")
 
-                onClicked: rustSignals.logging_enabled = !rustSignals.logging_enabled
+                onClicked: root.rustSignals.logging_enabled = !root.rustSignals.logging_enabled
             }
 
             Item {
@@ -40,8 +41,18 @@ Page {
         }
     }
 
-    RustSignals {
-        id: rustSignals
+    readonly property RustSignals rustSignals: RustSignals {
+        onConnected: url => {
+            statusLabel.text = qsTr("Connected: %1").arg(url);
+        }
+
+        onDisconnected: {
+            statusLabel.text = qsTr("Disconnected");
+        }
+
+        onError: message => {
+            statusLabel.text = qsTr("Error: %1").arg(message);
+        }
     }
 
     ColumnLayout {
@@ -75,22 +86,6 @@ Page {
             Layout.fillWidth: true
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.Wrap
-
-            Connections {
-                target: rustSignals
-
-                function onConnected(url) {
-                    statusLabel.text = qsTr("Connected: %1").arg(url);
-                }
-
-                function onDisconnected() {
-                    statusLabel.text = qsTr("Disconnected");
-                }
-
-                function onError(message) {
-                    statusLabel.text = qsTr("Error: %1").arg(message);
-                }
-            }
         }
     }
 }

@@ -98,8 +98,12 @@ Page {
                         id: customBaseClass
                     }
                     delegate: ItemDelegate {
+                        required property int id
+                        required property int index
+                        required property double value
+
                         highlighted: ListView.isCurrentItem
-                        text: model.id + ": " + model.value
+                        text: id + ": " + value
                         width: ListView.view.width
 
                         onClicked: ListView.view.currentIndex = index
@@ -118,8 +122,12 @@ Page {
                         id: transitiveInheritance
                     }
                     delegate: ItemDelegate {
+                        required property int id
+                        required property int index
+                        required property double value
+
                         highlighted: ListView.isCurrentItem
-                        text: model.id + ": " + model.value
+                        text: id + ": " + value
                         width: ListView.view.width
 
                         onClicked: ListView.view.currentIndex = index
