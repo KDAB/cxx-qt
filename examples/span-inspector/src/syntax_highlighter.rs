@@ -28,14 +28,14 @@ impl PendingHighlights {
         }
     }
 
-    fn set_foreground(&mut self, start: usize, end: usize, color: QColor) {
-        for i in start..start + end {
+    fn set_foreground(&mut self, start: usize, len: usize, color: QColor) {
+        for i in start..start + len {
             self.foreground[i] = Some(color.clone());
         }
     }
 
-    fn set_background(&mut self, start: usize, end: usize, color: QColor) {
-        for i in start..start + end {
+    fn set_background(&mut self, start: usize, len: usize, color: QColor) {
+        for i in start..start + len {
             self.background[i] = Some(color.clone());
         }
     }
