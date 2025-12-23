@@ -381,7 +381,6 @@ impl_typed! {
 impl_typed! {
     crate::QColor => QColor,
     crate::QFont => QFont,
-    crate::QGenericMatrix<4, 4> => QMatrix4x4,
     crate::QImage => QImage,
     crate::QPen => QPen,
     crate::QPolygon => QPolygon,
