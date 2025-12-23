@@ -36,8 +36,8 @@
 #ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QColor>
 #include <QtGui/QFont>
-#include <QtGui/QImage>
 #include <QtGui/QGenericMatrix>
+#include <QtGui/QImage>
 #include <QtGui/QPen>
 #include <QtGui/QPolygon>
 #include <QtGui/QPolygonF>
