@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `QSet::reserve` to reserve capacity up-front.
 - Support for further types: `QUuid`
 - New example: Basic greeter app
-- Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`, `QQuaternion`
+- Support for further types: `qreal`, `qint64`, `qintptr`, `qsizetype`, `quint64`, `quintptr`, `QQuaternion`, `QMetaType`
 - Support for `cfg` attributes through to C++ generation
 - CXX-Qt-build: Improved compile time and propagation of initializers between crates
 - CXX-Qt-build: Multi-crate projects are now possible with Cargo and CMake (see `examples/qml_multi_crates`)
