@@ -304,6 +304,7 @@ impl QMetaTypeType {
     /// ```
     /// # use cxx_qt_lib::QMetaTypeType;
     /// # fn main() {
+    /// # cxx_qt::init_crate!(cxx_qt_lib);
     /// assert_eq!(QMetaTypeType::of::<bool>(), QMetaTypeType::Bool);
     /// # }
     /// ```
