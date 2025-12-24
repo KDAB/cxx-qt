@@ -203,6 +203,22 @@ impl From<&QStringList> for QList<QString> {
     }
 }
 
+impl<'a> FromIterator<&'a QString> for QStringList {
+    fn from_iter<I: IntoIterator<Item = &'a QString>>(iter: I) -> Self {
+        let mut qstringlist = Self::default();
+        qstringlist.extend(iter);
+        qstringlist
+    }
+}
+
+impl FromIterator<QString> for QStringList {
+    fn from_iter<I: IntoIterator<Item = QString>>(iter: I) -> Self {
+        let mut qstringlist = Self::default();
+        qstringlist.extend(iter);
+        qstringlist
+    }
+}
+
 impl Deref for QStringList {
     type Target = QList<QString>;
 
