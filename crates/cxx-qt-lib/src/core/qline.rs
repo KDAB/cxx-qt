@@ -91,7 +91,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qline_new"]
-        fn construct(pt1: QPoint, pt2: QPoint) -> QLine;
+        fn construct(pt1: &QPoint, pt2: &QPoint) -> QLine;
 
         #[doc(hidden)]
         #[rust_name = "qline_to_debug_qstring"]
@@ -112,7 +112,7 @@ pub struct QLine {
 impl QLine {
     /// Constructs a line object that represents the line between `p1` and `p2`.
     pub fn new(pt1: QPoint, pt2: QPoint) -> Self {
-        ffi::qline_new(pt1, pt2)
+        ffi::qline_new(&pt1, &pt2)
     }
 }
 

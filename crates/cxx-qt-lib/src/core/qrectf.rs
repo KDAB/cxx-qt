@@ -310,12 +310,25 @@ impl From<&QRect> for QRectF {
         ffi::qrectf_from_qrect(rectangle)
     }
 }
+impl From<QRect> for QRectF {
+    /// Constructs a `QRectF` rectangle from the given `QRect` rectangle.
+    fn from(rectangle: QRect) -> Self {
+        Self::from(&rectangle)
+    }
+}
 
 impl From<&QRectF> for QRect {
     /// Returns a `QRect` based on the values of this rectangle.
     /// Note that the coordinates in the returned rectangle are rounded to the nearest integer.
-    fn from(value: &QRectF) -> Self {
-        value.to_rect()
+    fn from(rectangle: &QRectF) -> Self {
+        rectangle.to_rect()
+    }
+}
+impl From<QRectF> for QRect {
+    /// Returns a `QRect` based on the values of this rectangle.
+    /// Note that the coordinates in the returned rectangle are rounded to the nearest integer.
+    fn from(rectangle: QRectF) -> Self {
+        Self::from(&rectangle)
     }
 }
 

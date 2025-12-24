@@ -174,6 +174,12 @@ impl From<&QMargins> for QMarginsF {
         ffi::qmarginsf_from_qmargin(margins)
     }
 }
+impl From<QMargins> for QMarginsF {
+    /// Constructs margins copied from the given `margins`.
+    fn from(margins: QMargins) -> Self {
+        Self::from(&margins)
+    }
+}
 
 impl From<&QMarginsF> for QMargins {
     /// Returns an integer-based copy of `margins`.
@@ -181,6 +187,14 @@ impl From<&QMarginsF> for QMargins {
     /// Note that the components in the returned margins will be rounded to the nearest integer.
     fn from(margins: &QMarginsF) -> Self {
         margins.to_margins()
+    }
+}
+impl From<QMarginsF> for QMargins {
+    /// Returns an integer-based copy of `margins`.
+    ///
+    /// Note that the components in the returned margins will be rounded to the nearest integer.
+    fn from(margins: QMarginsF) -> Self {
+        Self::from(&margins)
     }
 }
 
