@@ -102,10 +102,6 @@ mod ffi {
         fn construct() -> QPolygonF;
 
         #[doc(hidden)]
-        #[rust_name = "qpolygonf_from_qvector_qpointf"]
-        fn construct(points: &QVector_QPointF) -> QPolygonF;
-
-        #[doc(hidden)]
         #[rust_name = "qpolygonf_from_qpolygon"]
         fn construct(polygon: &QPolygon) -> QPolygonF;
 
@@ -216,12 +212,6 @@ impl From<QPolygonF> for QPolygon {
     /// Creates and returns a `QPolygon` by converting each `QPointF` to a `QPoint`.
     fn from(value: QPolygonF) -> Self {
         Self::from(&value)
-    }
-}
-
-impl From<&QVector<QPointF>> for QPolygonF {
-    fn from(value: &QVector<QPointF>) -> Self {
-        ffi::qpolygonf_from_qvector_qpointf(value)
     }
 }
 
