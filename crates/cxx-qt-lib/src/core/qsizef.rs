@@ -155,13 +155,27 @@ impl From<&QSize> for QSizeF {
         ffi::qsizef_from_qsize(size)
     }
 }
+impl From<QSize> for QSizeF {
+    /// Constructs a size with floating point accuracy from the given `size`.
+    fn from(size: QSize) -> Self {
+        Self::from(&size)
+    }
+}
 
+impl From<&QSizeF> for QSize {
+    /// Returns an integer based copy of this size.
+    ///
+    /// Note that the coordinates in the returned size will be rounded to the nearest integer.
+    fn from(size: &QSizeF) -> Self {
+        size.to_size()
+    }
+}
 impl From<QSizeF> for QSize {
     /// Returns an integer based copy of this size.
     ///
     /// Note that the coordinates in the returned size will be rounded to the nearest integer.
     fn from(size: QSizeF) -> Self {
-        size.to_size()
+        Self::from(&size)
     }
 }
 
