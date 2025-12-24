@@ -375,6 +375,12 @@ impl From<&QVector4D> for QQuaternion {
         ffi::qquaternion_init_qvector4d(value)
     }
 }
+impl From<QVector4D> for QQuaternion {
+    /// Constructs a quaternion from the components of vector.
+    fn from(value: QVector4D) -> Self {
+        Self::from(&value)
+    }
+}
 
 // Safety:
 //
