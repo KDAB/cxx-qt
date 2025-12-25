@@ -17,14 +17,14 @@ license.workspace = true
 description = "Code generation for integrating `cxx-qt` into higher level tools"
 repository.workspace = true
 exclude = ["update_expected.sh"]
-rust-version = "1.64.0"
+rust-version.workspace = true
 
 [dependencies]
 cxx-gen.workspace = true
 proc-macro2.workspace = true
 syn.workspace = true
 quote.workspace = true
-convert_case = "0.6.0"
+convert_case = "0.8.0"
 clang-format = "0.3"
 indoc = "2.0"
 
