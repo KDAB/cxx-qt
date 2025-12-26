@@ -110,6 +110,10 @@ mod ffi {
         fn construct(rect: &QRect, closed: bool) -> QPolygon;
 
         #[doc(hidden)]
+        #[rust_name = "qpolygon_init_qvector_qpoint"]
+        fn construct(points: &QVector_QPoint) -> QPolygon;
+
+        #[doc(hidden)]
         #[rust_name = "qpolygon_drop"]
         fn drop(pen: &mut QPolygon);
 
@@ -203,6 +207,29 @@ impl Deref for QPolygon {
 impl DerefMut for QPolygon {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.upcast_mut()
+    }
+}
+
+impl From<&QRect> for QPolygon {
+    /// Constructs a polygon from the given `rectangle`. The polygon just contains the four points of the rectangle ordered clockwise.
+    ///
+    /// Note that the bottom-right corner of the rectangle is located at (`rectangle.x() + rectangle.width(), rectangle.y() + rectangle.height()`).
+    fn from(rectangle: &QRect) -> Self {
+        ffi::qpolygon_init_qrect(rectangle, false)
+    }
+}
+impl From<QRect> for QPolygon {
+    /// Constructs a polygon from the given `rectangle`. The polygon just contains the four points of the rectangle ordered clockwise.
+    ///
+    /// Note that the bottom-right corner of the rectangle is located at (`rectangle.x() + rectangle.width(), rectangle.y() + rectangle.height()`).
+    fn from(rectangle: QRect) -> Self {
+        Self::from(&rectangle)
+    }
+}
+
+impl From<&QVector<QPoint>> for QPolygon {
+    fn from(value: &QVector<QPoint>) -> Self {
+        ffi::qpolygon_init_qvector_qpoint(value)
     }
 }
 
