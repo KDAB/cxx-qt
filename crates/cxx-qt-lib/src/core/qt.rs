@@ -36,6 +36,51 @@ mod ffi {
         RFC2822Date = 8,
     }
 
+    /// Qt's predefined `QColor` objects.
+    #[repr(i32)]
+    enum GlobalColor {
+        /// 0 pixel value (for bitmaps)
+        color0,
+        /// 1 pixel value (for bitmaps)
+        color1,
+        /// Black (#000000)
+        black,
+        /// White (#ffffff)
+        white,
+        /// Dark gray (#808080)
+        darkGray,
+        /// Gray (#a0a0a4)
+        gray,
+        /// Light gray (#c0c0c0)
+        lightGray,
+        /// Red (#ff0000)
+        red,
+        /// Green (#00ff00)
+        green,
+        /// Blue (#0000ff)
+        blue,
+        /// Cyan (#00ffff)
+        cyan,
+        /// Magenta (#ff00ff)
+        magenta,
+        /// Yellow (#ffff00)
+        yellow,
+        /// Dark red (#800000)
+        darkRed,
+        /// Dark green (#008000)
+        darkGreen,
+        /// Dark blue (#000080)
+        darkBlue,
+        /// Dark cyan (#008080)
+        darkCyan,
+        /// Dark magenta (#ff00ff)
+        darkMagenta,
+        /// Dark yellow (#808000)
+        darkYellow,
+        /// a transparent black value (i.e., `QColor(0, 0, 0,0)`)
+        transparent,
+    }
+
     /// This enum specifies how [`QString::split`](crate::QString::split) functions should behave with respect to empty strings.
     #[repr(i32)]
     enum SplitBehaviorFlags {
@@ -267,11 +312,12 @@ mod ffi {
         type MouseButton;
         type KeyboardModifier;
         type Orientation;
+        type GlobalColor;
     }
 }
 
 pub use ffi::{
-    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, FillRule,
+    AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, FillRule, GlobalColor,
     KeyboardModifier, LayoutDirection, MouseButton, Orientation, PenCapStyle, PenJoinStyle,
     PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec, TransformationMode,
 };
