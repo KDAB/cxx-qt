@@ -52,4 +52,4 @@ mod qpainter;
 pub use qpainter::{QPainter, QPainterCompositionMode, QPainterRenderHint};
 
 mod qregion;
-pub use qregion::QRegion;
+pub use qregion::{QRegion, QRegionRegionType};
