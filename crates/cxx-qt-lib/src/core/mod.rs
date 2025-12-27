@@ -43,10 +43,8 @@ pub use qmargins::QMargins;
 mod qmarginsf;
 pub use qmarginsf::QMarginsF;
 
-#[cfg(cxxqt_qt_version_major = "6")]
 mod qmetatype;
-#[cfg(cxxqt_qt_version_major = "6")]
-pub use qmetatype::{QMetaType, QMetaTypeType, QMetaTyped};
+pub use qmetatype::QMetaTypeType;
 
 // Reexport QMetaObjectConnection and guard from cxx-qt
 pub use cxx_qt::{QMetaObjectConnection, QMetaObjectConnectionGuard};

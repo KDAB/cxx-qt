@@ -194,7 +194,9 @@ fn main() {
     ];
 
     if qtbuild.version().major > 5 {
-        rust_bridges.extend(["core/qanystringview", "core/qmetatype"]);
+        rust_bridges.extend(["core/qanystringview", "core/qmetatype/qmetatypetype_v6"]);
+    } else {
+        rust_bridges.extend(["core/qmetatype/qmetatypetype_v5"]);
     }
 
     if qt_gui_enabled() {
@@ -274,7 +276,7 @@ fn main() {
     ];
 
     if qtbuild.version().major > 5 {
-        cpp_files.extend(["core/qanystringview", "core/qmetatype"]);
+        cpp_files.extend(["core/qanystringview"]);
     }
 
     if qt_gui_enabled() {

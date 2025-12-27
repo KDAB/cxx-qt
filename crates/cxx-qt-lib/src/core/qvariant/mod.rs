@@ -7,8 +7,7 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
-#[cfg(cxxqt_qt_version_major = "6")]
-use crate::{QMetaType, QMetaTypeType};
+use crate::QMetaTypeType;
 
 #[cxx::bridge]
 mod ffi {
@@ -16,22 +15,14 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qvariant.h");
-    }
-
-    #[cfg(cxxqt_qt_version_major = "6")]
-    unsafe extern "C++" {
         include!("cxx-qt-lib/qmetatype.h");
-        type QMetaType = crate::QMetaType;
+        type QMetaTypeType = crate::QMetaTypeType;
+
+        include!("cxx-qt-lib/qvariant.h");
     }
 
     unsafe extern "C++" {
         type QVariant = super::QVariant;
-
-        #[doc(hidden)]
-        #[cfg(cxxqt_qt_version_major = "6")]
-        #[rust_name = "can_convert_qmetatype"]
-        fn canConvert(&self, meta_type: QMetaType) -> bool;
 
         /// Convert this variant to type `QMetaType::UnknownType` and free up any resources used.
         fn clear(&mut self);
@@ -45,17 +36,9 @@ mod ffi {
         #[rust_name = "is_valid"]
         fn isValid(&self) -> bool;
 
-        /// Returns the `QMetaType` of the value stored in the variant.
-        ///
-        /// This function was introduced in Qt 6.0.
-        #[cfg(cxxqt_qt_version_major = "6")]
-        #[rust_name = "meta_type"]
-        fn metaType(&self) -> QMetaType;
-
         #[doc(hidden)]
-        #[cfg(cxxqt_qt_version_major = "6")]
-        #[rust_name = "type_id_int"]
-        fn typeId(&self) -> i32;
+        #[rust_name = "user_type"]
+        fn userType(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -144,23 +127,9 @@ where
 // - impl<T, U> TryInto<U> for T
 //   where U: TryFrom<T>;
 impl QVariant {
-    /// Returns `true` if the variant's type can be cast to the requested type, `meta_type`.
-    /// This functions accepts either a [`QMetaType`] or a [`QMetaTypeType`].
-    ///
-    /// Note this function operates only on the variant's type, not the contents. It indicates whether there is a conversion path from this variant to type, not that the conversion will succeed when attempted.
-    ///
-    /// Introduced in Qt 6.0.
-    #[cfg(cxxqt_qt_version_major = "6")]
-    pub fn can_convert<T: Into<QMetaType>>(&self, meta_type: T) -> bool {
-        self.can_convert_qmetatype(meta_type.into())
-    }
-
-    /// Returns the storage type of the value stored in the variant. This is the same as `self.meta_type().id()`.
-    ///
-    /// Introduced in Qt 6.0.
-    #[cfg(cxxqt_qt_version_major = "6")]
+    /// Returns the storage type of the value stored in the variant.
     pub fn type_id(&self) -> QMetaTypeType {
-        self.type_id_int().into()
+        self.user_type().into()
     }
 
     /// Returns the stored value converted to the template type `T`, or `None` if the type cannot be converted to `T`.
