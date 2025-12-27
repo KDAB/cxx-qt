@@ -15,9 +15,6 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
-        include!("cxx-qt-lib/qmetatype.h");
-        type QMetaTypeType = crate::QMetaTypeType;
-
         include!("cxx-qt-lib/qvariant.h");
     }
 
