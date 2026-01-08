@@ -223,6 +223,7 @@ pub fn generate(
             .cxx_qt_mod_contents
             .append(&mut vec![parse_quote_spanned! {
             constructor.imp.span() =>
+            #[allow(clippy::needless_lifetimes)]
             impl #lifetime ::cxx_qt::ConstructorDeclared<(#arguments) > for #qobject_name_rust_qualified {}
         }]);
 
@@ -616,6 +617,7 @@ mod tests {
         assert_tokens_eq(
             &blocks.cxx_qt_mod_contents[0],
             quote! {
+                #[allow(clippy::needless_lifetimes)]
                 impl ::cxx_qt::ConstructorDeclared<()> for qobject::MyObject {}
             },
         );
@@ -748,6 +750,7 @@ mod tests {
         assert_tokens_eq(
             &blocks.cxx_qt_mod_contents[4],
             quote! {
+                #[allow(clippy::needless_lifetimes)]
                 impl<'lifetime> ::cxx_qt::ConstructorDeclared<(*const QObject,)> for qobject::MyObject {}
             },
         );
