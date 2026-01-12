@@ -121,7 +121,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qpen_init_from_penstyle"]
-        fn construct(penstyle: &PenStyle) -> QPen;
+        fn construct(penstyle: PenStyle) -> QPen;
 
         #[doc(hidden)]
         #[rust_name = "qpen_drop"]
@@ -182,11 +182,23 @@ impl From<&QColor> for QPen {
         ffi::qpen_init_from_qcolor(color)
     }
 }
+impl From<QColor> for QPen {
+    /// Constructs a solid line pen with 1 width and the given `color`.
+    fn from(color: QColor) -> Self {
+        Self::from(&color)
+    }
+}
 
+impl From<PenStyle> for QPen {
+    /// Constructs a black pen with 1 width and the given `style`.
+    fn from(style: PenStyle) -> Self {
+        ffi::qpen_init_from_penstyle(style)
+    }
+}
 impl From<&PenStyle> for QPen {
     /// Constructs a black pen with 1 width and the given `style`.
     fn from(style: &PenStyle) -> Self {
-        ffi::qpen_init_from_penstyle(style)
+        ffi::qpen_init_from_penstyle(*style)
     }
 }
 
