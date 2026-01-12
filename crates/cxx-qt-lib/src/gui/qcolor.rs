@@ -7,7 +7,7 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
-use crate::{QString, QStringList};
+use crate::{GlobalColor, QString, QStringList};
 
 #[cxx::bridge]
 mod ffi {
@@ -31,6 +31,12 @@ mod ffi {
         Cmyk,
         Hsl,
         ExtendedRgb,
+    }
+
+    #[namespace = "Qt"]
+    extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type GlobalColor = crate::GlobalColor;
     }
 
     unsafe extern "C++" {
@@ -269,6 +275,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qcolor_init_from_qstring"]
         fn construct(name: &QString) -> QColor;
+        #[doc(hidden)]
+        #[rust_name = "qcolor_init_from_globalcolor"]
+        fn construct(color: GlobalColor) -> QColor;
         #[doc(hidden)]
         #[rust_name = "qcolor_eq"]
         fn operatorEq(a: &QColor, b: &QColor) -> bool;
@@ -522,6 +531,13 @@ impl Default for QColor {
     /// The alpha value of an invalid color is unspecified.
     fn default() -> Self {
         ffi::qcolor_init_default()
+    }
+}
+
+impl From<GlobalColor> for QColor {
+    /// Constructs a new color with a color value of `color`.
+    fn from(color: GlobalColor) -> Self {
+        ffi::qcolor_init_from_globalcolor(color)
     }
 }
 
