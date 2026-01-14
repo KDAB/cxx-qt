@@ -37,6 +37,7 @@ fn write_headers() {
 
     write_headers_in("core");
     write_headers_in("gui");
+    write_headers_in("qml");
 }
 
 fn main() {
@@ -50,6 +51,10 @@ fn main() {
         "core/qcommandlineoption",
         "core/qcommandlineparser",
         "gui/qapplication",
+        "qml/qjsengine",
+        "qml/qjsvalue",
+        "qml/qjsvalueiterator",
+        "qml/qjsvaluelist",
     ];
 
     for rust_source in &rust_bridges {
@@ -61,6 +66,10 @@ fn main() {
         "core/qcommandlineoption",
         "core/qcommandlineparser",
         "gui/qapplication",
+        "qml/qjsengine",
+        "qml/qjsvalue",
+        "qml/qjsvalueiterator",
+        "qml/qjsvaluelist",
     ];
 
     for cpp_file in &cpp_files {
