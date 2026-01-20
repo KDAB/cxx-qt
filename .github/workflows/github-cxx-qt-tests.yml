@@ -366,7 +366,7 @@ jobs:
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
             sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
-            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
+            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python312\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
@@ -384,7 +384,7 @@ jobs:
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
             sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
-            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
+            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python312\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
@@ -403,7 +403,7 @@ jobs:
             qt_qpa_platform: windows
             compiler_cache_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\cache
             sccache_log_path: C:\Users\runneradmin\AppData\Local\Mozilla\sccache\log.txt
-            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python39\Scripts\clang-format.exe
+            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python312\Scripts\clang-format.exe
             cargo_dir: C:\Users\runneradmin\.cargo
             cc: cl
             cxx: cl
@@ -494,7 +494,8 @@ jobs:
     - name: "Install clang-format"
       # Note ensure that clang-format runner is updated too
       run: |
-        pip install --user --break-system-packages clang-format==18.1.8
+        pip install --user --break-system-packages --verbose clang-format==18.1.8
+        echo "Checking for path: ${{ matrix.clang_format_path }}"
         test -x ${{ matrix.clang_format_path }}
 
     # Version info found using https://ddalcino.github.io/aqt-list-server/
