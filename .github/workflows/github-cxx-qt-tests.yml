@@ -92,7 +92,7 @@ jobs:
         run: |
           # Note that the llvm version needs to match, see the link above
           rustup default 1.77.2
-          cargo install --locked --version 0.8.20 grcov
+          cargo install --version 0.8.20 grcov
           rustup component add rustfmt
       # Ensure we do not have any existing coverage files
       - run: rm -f coverage/*.profraw
@@ -156,11 +156,11 @@ jobs:
       - name: "Build Rust tools"
         if: steps.rust-tools-cache.outputs.cache-hit != 'true'
         # Do not build with storage backends enabled, we only need local
-        # cargo install --locked --no-default-features --version 0.9.1 sccache
+        # cargo install --no-default-features --version 0.9.1 sccache
         run: |
-          cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
-          cargo install --locked --version 0.4.36 mdbook 
-          cargo install --locked --version 0.7.7 mdbook-linkcheck
+          cargo install --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
+          cargo install --version 0.4.36 mdbook
+          cargo install --version 0.7.7 mdbook-linkcheck
       # We want our compiler cache to always update to the newest state.
       # The best way for us to achieve this is to **always** update the cache after every landed commit.
       # That way it will closely follow our development.
@@ -203,7 +203,7 @@ jobs:
           ./emsdk/emsdk install 2.0.14
           ./emsdk/emsdk activate 2.0.14
       - name: "Install Dependencies"
-        run: | 
+        run: |
           sudo apt-get update && sudo apt-get install -y ninja-build
           pip install --user --break-system-packages clang-format==18.1.8
           test -x ~/.local/bin/clang-format
@@ -447,11 +447,11 @@ jobs:
     - name: "Build Rust tools"
       if: steps.rust-tools-cache.outputs.cache-hit != 'true'
       # Do not build with storage backends enabled, we only need local
-      # cargo install --locked --no-default-features --version 0.9.1 sccache
+      # cargo install --no-default-features --version 0.9.1 sccache
       run: |
-        cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
-        cargo install --locked --version 0.4.36 mdbook 
-        cargo install --locked --version 0.7.7 mdbook-linkcheck
+        cargo install --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
+        cargo install --version 0.4.36 mdbook
+        cargo install --version 0.7.7 mdbook-linkcheck
 
     # We want our compiler cache to always update to the newest state.
     # The best way for us to achieve this is to **always** update the cache after every landed commit.
