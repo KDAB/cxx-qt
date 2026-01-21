@@ -13,11 +13,10 @@
 #include <QtCore/QList>
 #include <QtCore/QTimeZone>
 
-using QTimeZoneNameType = QTimeZone::NameType;
-using QTimeZoneTimeType = QTimeZone::TimeType;
-
 namespace rust {
 namespace cxxqtlib1 {
+using QTimeZoneNameType = QTimeZone::NameType;
+using QTimeZoneTimeType = QTimeZone::TimeType;
 
 inline QList<QByteArray> (*qtimezoneAvailableTimeZoneIds)() =
   QTimeZone::availableTimeZoneIds;
