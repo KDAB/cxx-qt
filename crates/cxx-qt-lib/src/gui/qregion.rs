@@ -31,7 +31,6 @@ mod ffi {
 
     unsafe extern "C++" {
         type QRegion = super::QRegion;
-        type QRegionRegionType;
 
         include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
