@@ -8,7 +8,7 @@ name: cxx-qt tests
 on:
   push:
     branches:
-      - 'main'
+      - "main"
       - '[0-9]+\.[0-9]+\.x'
   pull_request:
   merge_group:
@@ -20,7 +20,7 @@ on:
     inputs:
       tmate_debugging:
         type: boolean
-        description: 'Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)'
+        description: "Run the build with tmate debugging enabled (https://github.com/marketplace/actions/debugging-with-tmate)"
         required: false
         default: false
 
@@ -61,7 +61,7 @@ jobs:
       - uses: actions/checkout@v6
       - uses: DavidAnson/markdownlint-cli2-action@v22
         with:
-          globs: '**/*.md'
+          globs: "**/*.md"
 
   shellcheck:
     runs-on: ubuntu-24.04
@@ -75,7 +75,7 @@ jobs:
 
   coverage:
     # Run after pre checks
-    needs: [ clang_format, license_check, rust_format_check, markdown_lint, shellcheck ]
+    needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout repository
@@ -92,6 +92,7 @@ jobs:
         run: |
           # Note that the llvm version needs to match, see the link above
           rustup default 1.77.2
+          cargo install --version 0.4.16 globset
           cargo install --version 0.8.20 grcov
           rustup component add rustfmt
       # Ensure we do not have any existing coverage files
@@ -211,11 +212,11 @@ jobs:
       - name: Install Qt WASM & Desktop
         uses: jurplel/install-qt-action@v4
         with:
-          version: '6.2.4'
-          host: 'linux'
-          target: 'desktop'
-          arch: 'wasm_32'
-          tools: 'tools_cmake'
+          version: "6.2.4"
+          host: "linux"
+          target: "desktop"
+          arch: "wasm_32"
+          tools: "tools_cmake"
           cache: true
       - name: "Configure"
         # FIXME: ninja is not being found?
@@ -273,9 +274,9 @@ jobs:
           - name: Ubuntu 24.04 (gcc) Qt5
             os: ubuntu-24.04
             qt_version: 5
-            aqt_version: '5.15.2'
-            aqt_arch: 'gcc_64'
-            aqt_host: 'linux'
+            aqt_version: "5.15.2"
+            aqt_arch: "gcc_64"
+            aqt_host: "linux"
             cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
@@ -290,9 +291,9 @@ jobs:
           - name: Ubuntu 24.04 (gcc) Qt6
             os: ubuntu-24.04
             qt_version: 6
-            aqt_version: '6.10.1'
-            aqt_arch: 'linux_gcc_64'
-            aqt_host: 'linux'
+            aqt_version: "6.10.1"
+            aqt_arch: "linux_gcc_64"
+            aqt_host: "linux"
             cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
@@ -305,19 +306,19 @@ jobs:
             rustc_wrapper: sccache
             build_type: Release
             packages-extra: >-
-                libgl1-mesa-dev
-                libvulkan-dev
-                libxkbcommon-dev
+              libgl1-mesa-dev
+              libvulkan-dev
+              libxkbcommon-dev
 
           - name: macOS 15 (clang) Qt5
             os: macos-15-intel
             qt_version: 5
-            aqt_version: '5.15.2'
-            aqt_arch: 'clang_64'
-            aqt_host: 'mac'
+            aqt_version: "5.15.2"
+            aqt_arch: "clang_64"
+            aqt_host: "mac"
             dyld_framework_path: /Users/runner/work/cxx-qt/Qt/5.15.2/clang_64/lib
             # https://doc.qt.io/qt-5/macos.html#target-platforms
-            macosx_deployment_target: '10.13'
+            macosx_deployment_target: "10.13"
             cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
@@ -334,12 +335,12 @@ jobs:
           - name: macOS 15 (clang) Qt6
             os: macos-15
             qt_version: 6
-            aqt_version: '6.10.1'
-            aqt_arch: 'clang_64'
-            aqt_host: 'mac'
+            aqt_version: "6.10.1"
+            aqt_arch: "clang_64"
+            aqt_host: "mac"
             dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.10.1/macos/lib
             # https://doc.qt.io/qt-6.7/macos.html#target-platforms
-            macosx_deployment_target: '13.0'
+            macosx_deployment_target: "13.0"
             cores: 3
             # FIXME: qmltestrunner fails to import QtQuick module
             # https://github.com/KDAB/cxx-qt/issues/110
@@ -357,9 +358,9 @@ jobs:
           - name: Windows 2022 (MSVC) Qt5
             os: windows-2022
             qt_version: 5
-            aqt_version: '5.15.2'
-            aqt_arch: 'win64_msvc2019_64'
-            aqt_host: 'windows'
+            aqt_version: "5.15.2"
+            aqt_arch: "win64_msvc2019_64"
+            aqt_host: "windows"
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
@@ -375,9 +376,9 @@ jobs:
           - name: Windows 2022 (MSVC2019) Qt6
             os: windows-2022
             qt_version: 6
-            aqt_version: '6.7.3'
-            aqt_arch: 'win64_msvc2019_64'
-            aqt_host: 'windows'
+            aqt_version: "6.7.3"
+            aqt_arch: "win64_msvc2019_64"
+            aqt_host: "windows"
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
@@ -394,9 +395,9 @@ jobs:
           - name: Windows 2022 (MSVC2022) Qt6 Debug
             os: windows-2022
             qt_version: 6
-            aqt_version: '6.10.1'
-            aqt_arch: 'win64_msvc2022_64'
-            aqt_host: 'windows'
+            aqt_version: "6.10.1"
+            aqt_arch: "win64_msvc2022_64"
+            aqt_host: "windows"
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
@@ -413,192 +414,192 @@ jobs:
     runs-on: ${{ matrix.os }}
     name: ${{ matrix.name }}
     env:
-        # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
-        MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
-        # sccache is around 180-300M in size for a normal build
-        # With GitHub caches we have a 10 GB limit / 6 conditions = 1666 MB
-        # Allow a larger cache size so that code in branches can be cached
-        # but still leave room for the tools cache
-        SCCACHE_CACHE_SIZE: 600M
-        SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
+      # ld: warning: object file (LIB) was built for newer macOS version (12.7) than being linked (12.0)
+      MACOSX_DEPLOYMENT_TARGET: ${{ matrix.macosx_deployment_target }}
+      # sccache is around 180-300M in size for a normal build
+      # With GitHub caches we have a 10 GB limit / 6 conditions = 1666 MB
+      # Allow a larger cache size so that code in branches can be cached
+      # but still leave room for the tools cache
+      SCCACHE_CACHE_SIZE: 600M
+      SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
 
     steps:
-    - name: "Clone Git repository"
-      uses: actions/checkout@v6
-    # Ensure clippy and rustfmt is installed, they should come from github runner
-    # clippy version needs to be 1.78.0 for the MSRV lint
-    #
-    # Note we still need rustfmt for the cxx-qt-gen tests
-    - name: "Install Rust toolchain"
-      run: |
-        rustup toolchain add 1.78.0 --component clippy
-        rustup default 1.77.2
-        rustup component add rustfmt
+      - name: "Clone Git repository"
+        uses: actions/checkout@v6
+      # Ensure clippy and rustfmt is installed, they should come from github runner
+      # clippy version needs to be 1.78.0 for the MSRV lint
+      #
+      # Note we still need rustfmt for the cxx-qt-gen tests
+      - name: "Install Rust toolchain"
+        run: |
+          rustup toolchain add 1.78.0 --component clippy
+          rustup default 1.77.2
+          rustup component add rustfmt
 
-    - name: "Rust tools cache"
-      uses: actions/cache@v5
-      id: rust-tools-cache
-      with:
-        path: |
-          ${{ matrix.cargo_dir }}/bin/sccache${{ matrix.exe_suffix }}
-          ${{ matrix.cargo_dir }}/bin/mdbook${{ matrix.exe_suffix }}
-          ${{ matrix.cargo_dir }}/bin/mdbook-linkcheck${{ matrix.exe_suffix }}
-        key: ${{ matrix.os }}_sccache-0.9.1-patched_mdbook-0.4.36_mdbook-linkcheck-0.7.7
-    - name: "Build Rust tools"
-      if: steps.rust-tools-cache.outputs.cache-hit != 'true'
-      # Do not build with storage backends enabled, we only need local
-      # cargo install --no-default-features --version 0.9.1 sccache
-      run: |
-        cargo install --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
-        cargo install --version 0.4.36 mdbook
-        cargo install --version 0.7.7 mdbook-linkcheck
+      - name: "Rust tools cache"
+        uses: actions/cache@v5
+        id: rust-tools-cache
+        with:
+          path: |
+            ${{ matrix.cargo_dir }}/bin/sccache${{ matrix.exe_suffix }}
+            ${{ matrix.cargo_dir }}/bin/mdbook${{ matrix.exe_suffix }}
+            ${{ matrix.cargo_dir }}/bin/mdbook-linkcheck${{ matrix.exe_suffix }}
+          key: ${{ matrix.os }}_sccache-0.9.1-patched_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+      - name: "Build Rust tools"
+        if: steps.rust-tools-cache.outputs.cache-hit != 'true'
+        # Do not build with storage backends enabled, we only need local
+        # cargo install --no-default-features --version 0.9.1 sccache
+        run: |
+          cargo install --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
+          cargo install --version 0.4.36 mdbook
+          cargo install --version 0.7.7 mdbook-linkcheck
 
-    # We want our compiler cache to always update to the newest state.
-    # The best way for us to achieve this is to **always** update the cache after every landed commit.
-    # That way it will closely follow our development.
-    # And if a PR diverges a lot with its cache that's not a big deal, as it will be merged eventually.
-    #
-    # This is a workaround for the fact that GH doesn't support updating existing caches.
-    # See: https://github.com/azu/github-actions-overwrite-cache-example
-    #
-    # Ideally we'd like to use this:
-    # - name: "Compiler cache"
-    #   uses: actions/cache@v5
-    #   with:
-    #     update: true <------- THIS DOESN'T EXIST YET
-    #     path: ${{ matrix.compiler_cache_path }}
-    #     key: ${{ matrix.name }}_compiler_cache
-    - name: "Restore Compiler Cache"
-      id: compiler-cache-restore
-      uses: actions/cache/restore@v5
-      with:
-        path: ${{ matrix.compiler_cache_path }}
-        key: ${{ matrix.name }}_compiler_cache
+      # We want our compiler cache to always update to the newest state.
+      # The best way for us to achieve this is to **always** update the cache after every landed commit.
+      # That way it will closely follow our development.
+      # And if a PR diverges a lot with its cache that's not a big deal, as it will be merged eventually.
+      #
+      # This is a workaround for the fact that GH doesn't support updating existing caches.
+      # See: https://github.com/azu/github-actions-overwrite-cache-example
+      #
+      # Ideally we'd like to use this:
+      # - name: "Compiler cache"
+      #   uses: actions/cache@v5
+      #   with:
+      #     update: true <------- THIS DOESN'T EXIST YET
+      #     path: ${{ matrix.compiler_cache_path }}
+      #     key: ${{ matrix.name }}_compiler_cache
+      - name: "Restore Compiler Cache"
+        id: compiler-cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ matrix.compiler_cache_path }}
+          key: ${{ matrix.name }}_compiler_cache
 
-    - name: "[Windows] Start sccache server"
-      # If the compiler cache couldn't be restored, we have to create the cache path,
-      # as otherwise the server startup fails.
-      if: runner.os == 'Windows'
-      run: |
-        md ${{ matrix.compiler_cache_path }} -ea 0
-        sccache --start-server
+      - name: "[Windows] Start sccache server"
+        # If the compiler cache couldn't be restored, we have to create the cache path,
+        # as otherwise the server startup fails.
+        if: runner.os == 'Windows'
+        run: |
+          md ${{ matrix.compiler_cache_path }} -ea 0
+          sccache --start-server
 
-    - name: "[Other] Start sccache server"
-      # If the compiler cache couldn't be restored, we have to create the cache path,
-      # as otherwise the server startup fails.
-      if: runner.os != 'Windows'
-      run: |
-        mkdir -p ${{ matrix.compiler_cache_path }}
-        sccache --start-server
+      - name: "[Other] Start sccache server"
+        # If the compiler cache couldn't be restored, we have to create the cache path,
+        # as otherwise the server startup fails.
+        if: runner.os != 'Windows'
+        run: |
+          mkdir -p ${{ matrix.compiler_cache_path }}
+          sccache --start-server
 
-    - name: "Install clang-format"
-      # Note ensure that clang-format runner is updated too
-      run: |
-        pip install --user --break-system-packages --verbose clang-format==18.1.8
-        echo "Checking for path: ${{ matrix.clang_format_path }}"
-        test -x ${{ matrix.clang_format_path }}
+      - name: "Install clang-format"
+        # Note ensure that clang-format runner is updated too
+        run: |
+          pip install --user --break-system-packages --verbose clang-format==18.1.8
+          echo "Checking for path: ${{ matrix.clang_format_path }}"
+          test -x ${{ matrix.clang_format_path }}
 
-    # Version info found using https://ddalcino.github.io/aqt-list-server/
-    - name: "Install Qt"
-      uses: jurplel/install-qt-action@v4
-      with:
-        version: ${{ matrix.aqt_version }}
-        host: ${{ matrix.aqt_host }}
-        target: 'desktop'
-        arch: ${{ matrix.aqt_arch }}
-        tools: 'tools_cmake'
-        cache: true
+      # Version info found using https://ddalcino.github.io/aqt-list-server/
+      - name: "Install Qt"
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: ${{ matrix.aqt_version }}
+          host: ${{ matrix.aqt_host }}
+          target: "desktop"
+          arch: ${{ matrix.aqt_arch }}
+          tools: "tools_cmake"
+          cache: true
 
-    - name: "[Ubuntu] Install dependencies"
-      if: runner.os == 'Linux'
-      run: >-
-        sudo apt-get update &&
-        sudo apt-get install -y
-        ninja-build
-        libssl-dev
-        pkg-config
-        valgrind
-        ${{ matrix.packages-extra }}
+      - name: "[Ubuntu] Install dependencies"
+        if: runner.os == 'Linux'
+        run: >-
+          sudo apt-get update &&
+          sudo apt-get install -y
+          ninja-build
+          libssl-dev
+          pkg-config
+          valgrind
+          ${{ matrix.packages-extra }}
 
-    # hack around https://bugs.launchpad.net/ubuntu/+source/qtchooser/+bug/1964763
-    - name: "[Ubuntu] Add Qt6 tools to PATH"
-      if: runner.os == 'Linux' && matrix.qt_version == 6
-      run: echo "PATH=/usr/lib/qt6/bin:${PATH}" >> "${GITHUB_ENV}"
+      # hack around https://bugs.launchpad.net/ubuntu/+source/qtchooser/+bug/1964763
+      - name: "[Ubuntu] Add Qt6 tools to PATH"
+        if: runner.os == 'Linux' && matrix.qt_version == 6
+        run: echo "PATH=/usr/lib/qt6/bin:${PATH}" >> "${GITHUB_ENV}"
 
-    - name: "[macOS] Install dependencies"
-      if: runner.os == 'macOS'
-      # automake is needed for building libicu which is a dependency of Qt
-      run: brew install automake autoconf-archive ninja
+      - name: "[macOS] Install dependencies"
+        if: runner.os == 'macOS'
+        # automake is needed for building libicu which is a dependency of Qt
+        run: brew install automake autoconf-archive ninja
 
-    # Required for CMake to find Ninja
-    - name: "[Windows] Set up MSVC Developer Command Prompt"
-      if: runner.os == 'Windows'
-      uses: seanmiddleditch/gha-setup-vsdevenv@v5
+      # Required for CMake to find Ninja
+      - name: "[Windows] Set up MSVC Developer Command Prompt"
+        if: runner.os == 'Windows'
+        uses: seanmiddleditch/gha-setup-vsdevenv@v5
 
-    # Enable tmate debugging of manually-triggered workflows if the input option was provided
-    - name: Setup tmate session
-      if: ${{ github.event_name == 'workflow_dispatch' && inputs.tmate_debugging }}
-      uses: mxschmitt/action-tmate@v3
+      # Enable tmate debugging of manually-triggered workflows if the input option was provided
+      - name: Setup tmate session
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.tmate_debugging }}
+        uses: mxschmitt/action-tmate@v3
 
-    # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
-    - name: "Configure"
-      run: >-
-        cmake ${{ matrix.cmake_args }}
-        -D USE_QT5=${{ matrix.qt_version == 5 }}
-        -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
-        -G Ninja
-        -S . -B build
-      env:
-        RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
-        CC: ${{ matrix.cc }}
-        CXX: ${{ matrix.cxx }}
-    - name: "Build"
-      run: cmake --build build --config ${{ matrix.build_type }} --parallel ${{ matrix.cores }}
-      env:
-        RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
+      # Ninja is required on Windows for CMAKE_CXX_COMPILER_LAUNCHER to work for using sccache.
+      - name: "Configure"
+        run: >-
+          cmake ${{ matrix.cmake_args }}
+          -D USE_QT5=${{ matrix.qt_version == 5 }}
+          -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          -G Ninja
+          -S . -B build
+        env:
+          RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
+          CC: ${{ matrix.cc }}
+          CXX: ${{ matrix.cxx }}
+      - name: "Build"
+        run: cmake --build build --config ${{ matrix.build_type }} --parallel ${{ matrix.cores }}
+        env:
+          RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
 
-    - name: "Print compiler cache statistics"
-      run: sccache --show-stats
+      - name: "Print compiler cache statistics"
+        run: sccache --show-stats
 
-    - name: "Test"
-      run: ctest ${{ matrix.ctest_args }} -C ${{ matrix.build_type }} -T test --output-on-failure --parallel ${{ matrix.cores }}
-      working-directory: ./build
-      env:
-        # Use the version of clang-format from pip
-        CLANG_FORMAT_BINARY: ${{ matrix.clang_format_path }}
-        RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
-        QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
-        QT_SELECT: qt${{ matrix.qt_version }}
-        DYLD_FRAMEWORK_PATH: ${{ matrix.dyld_framework_path }}
+      - name: "Test"
+        run: ctest ${{ matrix.ctest_args }} -C ${{ matrix.build_type }} -T test --output-on-failure --parallel ${{ matrix.cores }}
+        working-directory: ./build
+        env:
+          # Use the version of clang-format from pip
+          CLANG_FORMAT_BINARY: ${{ matrix.clang_format_path }}
+          RUSTC_WRAPPER: ${{ matrix.rustc_wrapper }}
+          QT_QPA_PLATFORM: ${{ matrix.qt_qpa_platform }}
+          QT_SELECT: qt${{ matrix.qt_version }}
+          DYLD_FRAMEWORK_PATH: ${{ matrix.dyld_framework_path }}
 
-    - name: "Print compiler cache statistics"
-      run: sccache --show-stats
+      - name: "Print compiler cache statistics"
+        run: sccache --show-stats
 
-    # This is a workaround for the fact that GH doesn't support updating existing caches.
-    # See: https://github.com/azu/github-actions-overwrite-cache-example
-    - name: "Delete previous compiler cache"
-      # Updating the cache doesn't work from forks
-      # So update it once it's merged into the repo or via scheduled workflows or manual triggers
-      if: ${{ steps.compiler-cache-restore.outputs.cache-hit && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main' }}
-      continue-on-error: true
-      run: |
-        gh extension install actions/gh-actions-cache
-        gh actions-cache delete "${{ matrix.name }}_compiler_cache" --confirm
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-    - name: "Save Compiler Cache"
-      # Updating the cache doesn't work from forks
-      # So update it once it's merged into the repo or via scheduled workflows or manual triggers
-      if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main' }}
-      uses: actions/cache/save@v5
-      with:
-        path: ${{ matrix.compiler_cache_path }}
-        key: ${{ matrix.name }}_compiler_cache
+      # This is a workaround for the fact that GH doesn't support updating existing caches.
+      # See: https://github.com/azu/github-actions-overwrite-cache-example
+      - name: "Delete previous compiler cache"
+        # Updating the cache doesn't work from forks
+        # So update it once it's merged into the repo or via scheduled workflows or manual triggers
+        if: ${{ steps.compiler-cache-restore.outputs.cache-hit && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main' }}
+        continue-on-error: true
+        run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "${{ matrix.name }}_compiler_cache" --confirm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Save Compiler Cache"
+        # Updating the cache doesn't work from forks
+        # So update it once it's merged into the repo or via scheduled workflows or manual triggers
+        if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main' }}
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ matrix.compiler_cache_path }}
+          key: ${{ matrix.name }}_compiler_cache
 
-    - name: Upload GitHub Actions artifacts of sccache debug log
-      if: always()
-      uses: actions/upload-artifact@v6
-      with:
-        name: sccache_log_${{ matrix.name }}
-        path: ${{ matrix.sccache_log_path }}
-        if-no-files-found: ignore
+      - name: Upload GitHub Actions artifacts of sccache debug log
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: sccache_log_${{ matrix.name }}
+          path: ${{ matrix.sccache_log_path }}
+          if-no-files-found: ignore
