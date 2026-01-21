@@ -8,6 +8,7 @@ use std::mem::MaybeUninit;
 #[cxx::bridge]
 mod ffi {
     /// Specifies the shape of the region to be created.
+    #[namespace = "rust::cxxqtlib1"]
     #[repr(i32)]
     enum QRegionRegionType {
         /// the region covers the entire rectangle.
@@ -22,8 +23,13 @@ mod ffi {
         type FillRule = crate::FillRule;
     }
 
-    unsafe extern "C++" {
+    #[namespace = "rust::cxxqtlib1"]
+    extern "C++" {
         include!("cxx-qt-lib/qregion.h");
+        type QRegionRegionType;
+    }
+
+    unsafe extern "C++" {
         type QRegion = super::QRegion;
         type QRegionRegionType;
 
