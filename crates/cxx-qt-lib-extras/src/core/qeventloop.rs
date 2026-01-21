@@ -12,6 +12,7 @@ use cxx_qt_lib::{QFlag, QFlags};
 #[cxx_qt::bridge]
 mod ffi {
     /// This enum controls the types of events processed by [`QEventLoop::process_events`].
+    #[namespace = "rust::cxxqtlib1"]
     #[repr(i32)]
     enum QEventLoopProcessEventsFlag {
         /// All events. Note that [QEvent::DeferredDelete](https://doc.qt.io/qt/qevent.html#Type-enum) events are processed specially. See [QObject::deleteLater](https://doc.qt.io/qt/qobject.html#deleteLater)() for more details.
@@ -24,6 +25,7 @@ mod ffi {
         WaitForMoreEvents = 0x04,
     }
 
+    #[namespace = "rust::cxxqtlib1"]
     extern "C++" {
         include!("cxx-qt-lib-extras/core/qeventloop.h");
         type QEventLoopProcessEventsFlag;
@@ -115,7 +117,7 @@ pub use ffi::{QEventLoop, QEventLoopProcessEventsFlag};
 pub type QEventLoopProcessEventsFlags = QFlags<QEventLoopProcessEventsFlag>;
 
 unsafe impl QFlag for QEventLoopProcessEventsFlag {
-    type TypeId = type_id!("QEventLoopProcessEventsFlags");
+    type TypeId = type_id!("rust::cxxqtlib1::QEventLoopProcessEventsFlags");
 
     type Repr = i32;
 
