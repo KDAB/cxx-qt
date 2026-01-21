@@ -525,6 +525,7 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "propertyNameChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_property_name_changed<
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
@@ -547,6 +548,7 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_property_name_changed<
         F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send,
     >(
@@ -593,6 +595,7 @@ impl ffi::MyObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "ready"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
@@ -613,6 +616,7 @@ impl ffi::MyObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::MyObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::MyObject>,
         closure: F,
@@ -699,6 +703,7 @@ impl ffi::SecondObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "propertyNameChanged"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_property_name_changed<
         F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send,
     >(
@@ -721,6 +726,7 @@ impl ffi::SecondObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_property_name_changed<
         F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send,
     >(
@@ -779,6 +785,7 @@ impl ffi::SecondObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "ready"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::SecondObject>,
         closure: F,
@@ -799,6 +806,7 @@ impl ffi::SecondObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_ready<F: FnMut(core::pin::Pin<&mut ffi::SecondObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::SecondObject>,
         closure: F,
@@ -910,6 +918,7 @@ impl ffi::QPushButton {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "clicked"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_clicked<
         F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static + Send,
     >(
@@ -932,6 +941,7 @@ impl ffi::QPushButton {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_clicked<F: FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::QPushButton>,
         closure: F,
@@ -973,6 +983,7 @@ impl ffi::ExternObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "dataReady"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
         closure: F,
@@ -987,6 +998,7 @@ impl ffi::ExternObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_data_ready<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
         closure: F,
@@ -1022,6 +1034,7 @@ impl ffi::ExternObject {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "errorOccurred"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_error_occurred<
         F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send,
     >(
@@ -1046,6 +1059,7 @@ impl ffi::ExternObject {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_error_occurred<F: FnMut(core::pin::Pin<&mut ffi::ExternObject>) + 'static + Send>(
         self: core::pin::Pin<&mut ffi::ExternObject>,
         closure: F,
