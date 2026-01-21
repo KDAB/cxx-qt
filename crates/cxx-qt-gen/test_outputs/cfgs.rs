@@ -509,6 +509,7 @@ impl ffi::QObjectEnabled {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "signal_disabled"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_signal_disabled<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
@@ -532,6 +533,7 @@ impl ffi::QObjectEnabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_signal_disabled<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
@@ -583,6 +585,7 @@ impl ffi::QObjectEnabled {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "signal_enabled"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_signal_enabled<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
@@ -606,6 +609,7 @@ impl ffi::QObjectEnabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_signal_enabled<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
     >(
@@ -688,6 +692,7 @@ impl ffi::QObjectDisabled {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "signal_disabled"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_signal_disabled<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
@@ -711,6 +716,7 @@ impl ffi::QObjectDisabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_signal_disabled<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
@@ -762,6 +768,7 @@ impl ffi::QObjectDisabled {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "signal_enabled"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_signal_enabled<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
@@ -785,6 +792,7 @@ impl ffi::QObjectDisabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_signal_enabled<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
     >(
@@ -875,6 +883,7 @@ impl ffi::QObjectExternEnabled {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "signal_disabled1"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_signal_disabled1<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
@@ -900,6 +909,7 @@ impl ffi::QObjectExternEnabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_signal_disabled1<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
@@ -958,6 +968,7 @@ impl ffi::QObjectExternEnabled {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "signal_enabled1"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_signal_enabled1<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
@@ -981,6 +992,7 @@ impl ffi::QObjectExternEnabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_signal_enabled1<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternEnabled>) + 'static + Send,
     >(
@@ -1045,6 +1057,7 @@ impl ffi::QObjectExternDisabled {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "signal_disabled2"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_signal_disabled2<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
@@ -1070,6 +1083,7 @@ impl ffi::QObjectExternDisabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_signal_disabled2<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
@@ -1128,6 +1142,7 @@ impl ffi::QObjectExternDisabled {
     #[doc = "Connect the given function pointer to the signal "]
     #[doc = "signal_enabled2"]
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
     pub fn connect_signal_enabled2<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(
@@ -1153,6 +1168,7 @@ impl ffi::QObjectExternDisabled {
     #[doc = ", so that when the signal is emitted the function pointer is executed."]
     #[doc = "\n"]
     #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
     pub fn on_signal_enabled2<
         F: FnMut(core::pin::Pin<&mut ffi::QObjectExternDisabled>) + 'static + Send,
     >(

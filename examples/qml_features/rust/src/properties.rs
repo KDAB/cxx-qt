@@ -117,10 +117,7 @@ impl qobject::RustProperties {
         let previous_url = self.as_ref().connected_url.clone();
         self.as_mut().rust_mut().previous_connected_url = previous_url;
 
-        std::mem::swap(
-            &mut self.as_mut().rust_mut().connected_url,
-            &mut QUrl::default(),
-        );
+        self.as_mut().rust_mut().connected_url = QUrl::default();
         self.as_mut().connected_state_changed();
     }
 }
