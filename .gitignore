@@ -15,6 +15,7 @@ pip3/*
 rustup/*
 CMakeUserPresets.json
 CMakeLists.txt.user
+Cargo.lock
 
 # clangd
 compile_commands.json
