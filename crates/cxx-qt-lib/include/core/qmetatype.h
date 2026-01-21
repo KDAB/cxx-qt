@@ -8,4 +8,8 @@
 
 #include <QtCore/QMetaType>
 
+namespace rust {
+namespace cxxqtlib1 {
 using QMetaTypeType = QMetaType::Type;
+}
+}

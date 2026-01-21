@@ -9,6 +9,7 @@ mod ffi {
     /// be registered during runtime.
     ///
     /// User-registered types should be greater than or equal to [`QMetaTypeType::User`].
+    #[namespace = "rust::cxxqtlib1"]
     #[repr(i32)]
     #[derive(Debug)]
     enum QMetaTypeType {
@@ -101,6 +102,7 @@ mod ffi {
         User = 65536,
     }
 
+    #[namespace = "rust::cxxqtlib1"]
     extern "C++" {
         include!("cxx-qt-lib/qmetatype.h");
         type QMetaTypeType;
