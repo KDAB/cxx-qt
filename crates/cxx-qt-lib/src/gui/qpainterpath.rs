@@ -268,6 +268,12 @@ impl From<&QPointF> for QPainterPath {
         ffi::qpainterpath_from_qpointf(start_point)
     }
 }
+impl From<QPointF> for QPainterPath {
+    /// Creates a `QPainterPath` object with the given `start_point` as its current position.
+    fn from(start_point: QPointF) -> Self {
+        Self::from(&start_point)
+    }
+}
 
 impl PartialEq for QPainterPath {
     fn eq(&self, other: &Self) -> bool {

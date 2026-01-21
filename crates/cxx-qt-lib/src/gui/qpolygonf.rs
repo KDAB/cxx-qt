@@ -8,7 +8,7 @@ use cxx_qt::casting::Upcast;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
-use crate::{QPointF, QVector};
+use crate::{QPointF, QPolygon, QVector};
 
 #[cxx::bridge]
 mod ffi {
@@ -102,6 +102,10 @@ mod ffi {
         fn construct() -> QPolygonF;
 
         #[doc(hidden)]
+        #[rust_name = "qpolygonf_from_qpolygon"]
+        fn construct(polygon: &QPolygon) -> QPolygonF;
+
+        #[doc(hidden)]
         #[rust_name = "qpolygonf_drop"]
         fn drop(pen: &mut QPolygonF);
 
@@ -182,6 +186,32 @@ impl Deref for QPolygonF {
 impl DerefMut for QPolygonF {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.upcast_mut()
+    }
+}
+
+impl From<&QPolygon> for QPolygonF {
+    /// Constructs a float based polygon from the specified integer based polygon.
+    fn from(polygon: &QPolygon) -> Self {
+        ffi::qpolygonf_from_qpolygon(polygon)
+    }
+}
+impl From<QPolygon> for QPolygonF {
+    /// Constructs a float based polygon from the specified integer based polygon.
+    fn from(polygon: QPolygon) -> Self {
+        Self::from(&polygon)
+    }
+}
+
+impl From<&QPolygonF> for QPolygon {
+    /// Creates and returns a `QPolygon` by converting each `QPointF` to a `QPoint`.
+    fn from(polygon: &QPolygonF) -> Self {
+        polygon.to_polygon()
+    }
+}
+impl From<QPolygonF> for QPolygon {
+    /// Creates and returns a `QPolygon` by converting each `QPointF` to a `QPoint`.
+    fn from(value: QPolygonF) -> Self {
+        Self::from(&value)
     }
 }
 
