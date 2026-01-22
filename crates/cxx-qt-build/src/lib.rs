@@ -449,10 +449,15 @@ impl CxxQtBuilder {
     ///
     /// See also: [Self::file]
     pub fn files(mut self, rust_sources: impl IntoIterator<Item = impl AsRef<Path>>) -> Self {
-        let rust_sources = rust_sources.into_iter().collect::<Vec<_>>();
-        for source in rust_sources.iter() {
-            let source = source.as_ref().to_owned();
-            if self.rust_sources.contains(&source) {
+        let len = self.rust_sources.len();
+        self.rust_sources
+            .extend(rust_sources.into_iter().map(|p| p.as_ref().to_path_buf()));
+
+        let (old_sources, new_sources) = self.rust_sources.split_at(len);
+
+        for source in new_sources {
+            println!("cargo::rerun-if-changed={}", source.display());
+            if old_sources.contains(source) {
                 // Duplicate rust files are likely to cause confusing linker errors later on
                 // Warn the user about it so that debugging may be easier.
                 println!(
@@ -461,13 +466,6 @@ impl CxxQtBuilder {
                 );
             }
         }
-
-        let rust_sources = rust_sources.into_iter().map(|p| {
-            let p = p.as_ref().to_path_buf();
-            println!("cargo::rerun-if-changed={}", p.display());
-            p
-        });
-        self.rust_sources.extend(rust_sources);
         self
     }
 
@@ -625,10 +623,27 @@ impl CxxQtBuilder {
     ///     .cpp_file("./test.h")
     ///     .build();
     /// ```
-    pub fn cpp_file(mut self, file: impl Into<CppFile>) -> Self {
-        let file = file.into();
-        println!("cargo::rerun-if-changed={}", file.path.display());
-        self.cpp_files.push(file);
+    pub fn cpp_file(self, file: impl Into<CppFile>) -> Self {
+        self.cpp_files(std::iter::once(file))
+    }
+
+    /// Specify multiple additional C++ files to compile or run moc on.
+    ///
+    /// See also: [Self::cpp_file]
+    ///
+    /// ```no_run
+    /// # use cxx_qt_build::CxxQtBuilder;
+    ///
+    /// CxxQtBuilder::new()
+    ///     .cpp_files(["src/connection.cpp", "src/test.cpp"])
+    ///     .build();
+    /// ```
+    pub fn cpp_files(mut self, files: impl IntoIterator<Item = impl Into<CppFile>>) -> Self {
+        let len = self.cpp_files.len();
+        self.cpp_files.extend(files.into_iter().map(Into::into));
+        for new_file in &self.cpp_files[len..] {
+            println!("cargo::rerun-if-changed={}", new_file.path.display());
+        }
         self
     }
 
