@@ -18,4 +18,7 @@ template<>
 struct IsRelocatable<QRegion> : ::std::true_type
 {};
 
+namespace cxxqtlib1 {
+using QRegionRegionType = QRegion::RegionType;
+}
 } // namespace rust

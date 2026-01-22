@@ -8,7 +8,7 @@ use cxx_qt::casting::Upcast;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 
-use crate::{QPointF, QVector};
+use crate::{QPointF, QRectF, QVector};
 
 #[cxx::bridge]
 mod ffi {
@@ -102,6 +102,14 @@ mod ffi {
         fn construct() -> QPolygonF;
 
         #[doc(hidden)]
+        #[rust_name = "qpolygonf_from_qrectf"]
+        fn construct(rectangle: &QRectF) -> QPolygonF;
+
+        #[doc(hidden)]
+        #[rust_name = "qpolygonf_from_qvector_qpointf"]
+        fn construct(points: &QVector_QPointF) -> QPolygonF;
+
+        #[doc(hidden)]
         #[rust_name = "qpolygonf_drop"]
         fn drop(pen: &mut QPolygonF);
 
@@ -182,6 +190,30 @@ impl Deref for QPolygonF {
 impl DerefMut for QPolygonF {
     fn deref_mut(&mut self) -> &mut Self::Target {
         self.upcast_mut()
+    }
+}
+
+impl From<&QVector<QPointF>> for QPolygonF {
+    /// Constructs a polygon containing the specified `points`.
+    fn from(points: &QVector<QPointF>) -> Self {
+        ffi::qpolygonf_from_qvector_qpointf(points)
+    }
+}
+
+impl From<&QRectF> for QPolygonF {
+    /// Constructs a closed polygon from the specified `rectangle`.
+    ///
+    /// The polygon contains the four vertices of the rectangle in clockwise order starting and ending with the top-left vertex.
+    fn from(rectangle: &QRectF) -> Self {
+        ffi::qpolygonf_from_qrectf(rectangle)
+    }
+}
+impl From<QRectF> for QPolygonF {
+    /// Constructs a closed polygon from the specified `rectangle`.
+    ///
+    /// The polygon contains the four vertices of the rectangle in clockwise order starting and ending with the top-left vertex.
+    fn from(rectangle: QRectF) -> Self {
+        Self::from(&rectangle)
     }
 }
 

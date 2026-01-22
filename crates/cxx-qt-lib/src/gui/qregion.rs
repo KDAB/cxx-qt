@@ -7,8 +7,29 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    /// Specifies the shape of the region to be created.
+    #[namespace = "rust::cxxqtlib1"]
+    #[repr(i32)]
+    enum QRegionRegionType {
+        /// the region covers the entire rectangle.
+        Rectangle,
+        /// The region is an ellipse inside the rectangle.
+        Ellipse,
+    }
+
+    #[namespace = "Qt"]
+    extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type FillRule = crate::FillRule;
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    extern "C++" {
         include!("cxx-qt-lib/qregion.h");
+        type QRegionRegionType;
+    }
+
+    unsafe extern "C++" {
         type QRegion = super::QRegion;
 
         include!("cxx-qt-lib/qrect.h");
@@ -16,6 +37,9 @@ mod ffi {
 
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
+
+        include!("cxx-qt-lib/qpolygon.h");
+        type QPolygon = crate::QPolygon;
 
         /// Returns the bounding rectangle of this region. An empty region gives a rectangle that is [`QRect::is_null`].
         #[rust_name = "bounding_rect"]
@@ -67,6 +91,12 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qregion_init_default"]
         fn construct() -> QRegion;
+        #[doc(hidden)]
+        #[rust_name = "qregion_init_qrect_regiontype"]
+        fn construct(r: &QRect, t: QRegionRegionType) -> QRegion;
+        #[doc(hidden)]
+        #[rust_name = "qregion_init_qpolygon_fillrule"]
+        fn construct(a: &QPolygon, fill_rule: FillRule) -> QRegion;
 
         #[doc(hidden)]
         #[rust_name = "qregion_drop"]
@@ -77,6 +107,10 @@ mod ffi {
         fn construct(r: &QRegion) -> QRegion;
     }
 }
+
+pub use ffi::QRegionRegionType;
+
+use crate::{FillRule, QPolygon, QRect};
 
 /// The `QRegion` class specifies a clip region for a painter.
 ///
@@ -102,6 +136,41 @@ impl Drop for QRegion {
 impl Clone for QRegion {
     fn clone(&self) -> Self {
         ffi::qregion_clone(self)
+    }
+}
+
+impl QRegion {
+    /// Create a region based on the rectangle `r` with region type `t`.
+    ///
+    /// If the rectangle is invalid a null region will be created.
+    pub fn from_rect(r: &QRect, t: QRegionRegionType) -> Self {
+        ffi::qregion_init_qrect_regiontype(r, t)
+    }
+
+    /// Constructs a polygon region from the point array `a` with the fill rule specified by `fill_rule`.
+    ///
+    /// If `fill_rule` is [`FillRule::WindingFill`], the polygon region is defined using the winding algorithm; if it is [`FillRule::OddEvenFill`], the odd-even fill algorithm is used.
+    ///
+    /// **Warning:** This constructor can be used to create complex regions that will slow down painting when used.
+    pub fn from_polygon(a: &QPolygon, fill_rule: FillRule) -> Self {
+        ffi::qregion_init_qpolygon_fillrule(a, fill_rule)
+    }
+}
+
+impl From<&QRect> for QRegion {
+    /// Create a region based on the rectangle `r` with region type [`QRegionRegionType::Rectangle`].
+    ///
+    /// If the rectangle is invalid a null region will be created.
+    fn from(r: &QRect) -> Self {
+        ffi::qregion_init_qrect_regiontype(r, QRegionRegionType::Rectangle)
+    }
+}
+impl From<QRect> for QRegion {
+    /// Create a region based on the rectangle `r` with region type [`QRegionRegionType::Rectangle`].
+    ///
+    /// If the rectangle is invalid a null region will be created.
+    fn from(r: QRect) -> Self {
+        Self::from(&r)
     }
 }
 
