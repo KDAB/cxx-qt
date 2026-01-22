@@ -42,41 +42,31 @@ fn write_headers() {
 fn main() {
     write_headers();
 
-    let mut builder = CxxQtBuilder::new().qt_module("Gui").qt_module("Widgets");
-
-    let rust_bridges = vec![
-        "core/qelapsedtimer",
-        "core/qeventloop",
-        "core/qcommandlineoption",
-        "core/qcommandlineparser",
-        "gui/qapplication",
-    ];
-
-    for rust_source in &rust_bridges {
-        builder = builder.file(format!("src/{rust_source}.rs"));
-    }
-
-    let cpp_files = vec![
-        "core/qelapsedtimer",
-        "core/qcommandlineoption",
-        "core/qcommandlineparser",
-        "gui/qapplication",
-    ];
-
-    for cpp_file in &cpp_files {
-        builder = builder.cpp_file(format!("src/{cpp_file}.cpp"));
-    }
-    builder = builder.cpp_file("src/qt_types.cpp");
-
     println!("cargo::rerun-if-changed=src/assertion_utils.h");
 
-    let interface = builder
+    CxxQtBuilder::new()
+        .qt_module("Gui")
+        .qt_module("Widgets")
+        .files([
+            "src/core/qelapsedtimer.rs",
+            "src/core/qeventloop.rs",
+            "src/core/qcommandlineoption.rs",
+            "src/core/qcommandlineparser.rs",
+            "src/gui/qapplication.rs",
+        ])
+        .cpp_files([
+            "src/core/qelapsedtimer.cpp",
+            "src/core/qcommandlineoption.cpp",
+            "src/core/qcommandlineparser.cpp",
+            "src/gui/qapplication.cpp",
+            "src/qt_types.cpp",
+        ])
         // Use a short name due to the Windows file path limit!
         // We don't re-export these headers anyway.
         .include_prefix("private")
         .crate_include_root(Some("include".to_owned()))
-        .build();
-
-    // Disable exporting the standard include directory, as we are exporting custom header
-    interface.reexport_dependency("cxx-qt-lib").export();
+        .build()
+        // Disable exporting the standard include directory, as we are exporting custom header
+        .reexport_dependency("cxx-qt-lib")
+        .export();
 }
