@@ -6,22 +6,14 @@
 use cxx_qt_build::CxxQtBuilder;
 
 fn main() {
-    let mut builder = CxxQtBuilder::new().crate_include_root(Some("include".to_owned()));
-
-    let cpp_files = ["src/connection.cpp"];
-    let rust_bridges = ["src/connection.rs", "src/qobject.rs"];
-
-    for bridge in &rust_bridges {
-        builder = builder.file(bridge);
-    }
-    for cpp_file in &cpp_files {
-        builder = builder.cpp_file(cpp_file)
-    }
-
-    builder = builder.initializer(qt_build_utils::Initializer {
-        file: Some("src/init.cpp".into()),
-        ..qt_build_utils::Initializer::default_signature("init_cxx_qt_core")
-    });
-
-    builder.build().export();
+    CxxQtBuilder::new()
+        .crate_include_root(Some("include".to_owned()))
+        .files(["src/connection.rs", "src/qobject.rs"])
+        .cpp_files(["src/connection.cpp"])
+        .initializer(qt_build_utils::Initializer {
+            file: Some("src/init.cpp".into()),
+            ..qt_build_utils::Initializer::default_signature("init_cxx_qt_core")
+        })
+        .build()
+        .export();
 }
