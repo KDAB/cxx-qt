@@ -11,6 +11,7 @@ use uuid::Uuid;
 #[cxx::bridge]
 mod ffi {
     /// This enum defines the values used in the variant field of the UUID. The value in the variant field determines the layout of the 128-bit value.
+    #[namespace = "rust::cxxqtlib1"]
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QUuidVariant {
@@ -27,6 +28,7 @@ mod ffi {
     }
 
     /// This enum defines the values used in the version field of the UUID. The version field is meaningful only if the value in the variant field is [`QUuidVariant::DCE`].
+    #[namespace = "rust::cxxqtlib1"]
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QUuidVersion {
@@ -44,21 +46,22 @@ mod ffi {
         Sha1 = 5,
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
-    }
-
-    unsafe extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
     }
 
-    unsafe extern "C++" {
+    #[namespace = "rust::cxxqtlib1"]
+    extern "C++" {
         include!("cxx-qt-lib/quuid.h");
-        type QUuid = super::QUuid;
         type QUuidVariant;
         type QUuidVersion;
+    }
+
+    unsafe extern "C++" {
+        type QUuid = super::QUuid;
 
         /// Returns the binary representation of this UUID. The byte array is in big endian format,
         /// and formatted according to RFC 4122, section 4.1.2 - "Layout and byte order".

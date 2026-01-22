@@ -10,11 +10,11 @@
 
 #include "rust/cxx.h"
 
+namespace rust {
+namespace cxxqtlib1 {
 using QUuidVariant = QUuid::Variant;
 using QUuidVersion = QUuid::Version;
 
-namespace rust {
-namespace cxxqtlib1 {
 QUuid
 quuidCreateUuidV3(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice);
 

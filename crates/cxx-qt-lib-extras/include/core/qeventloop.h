@@ -13,11 +13,11 @@
 
 #include "rust/cxx.h"
 
-using QEventLoopProcessEventsFlag = QEventLoop::ProcessEventsFlag;
-using QEventLoopProcessEventsFlags = QEventLoop::ProcessEventsFlags;
-
 namespace rust {
 namespace cxxqtlib1 {
+
+using QEventLoopProcessEventsFlag = QEventLoop::ProcessEventsFlag;
+using QEventLoopProcessEventsFlags = QEventLoop::ProcessEventsFlags;
 
 template<typename T>
 class QEventLoopClosureEvent : public QEvent
