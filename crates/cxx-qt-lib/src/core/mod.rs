@@ -43,6 +43,9 @@ pub use qmargins::QMargins;
 mod qmarginsf;
 pub use qmarginsf::QMarginsF;
 
+mod qmetatype;
+pub use qmetatype::QMetaTypeType;
+
 // Reexport QMetaObjectConnection and guard from cxx-qt
 pub use cxx_qt::{QMetaObjectConnection, QMetaObjectConnectionGuard};
 
