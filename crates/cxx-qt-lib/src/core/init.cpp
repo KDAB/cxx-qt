@@ -11,13 +11,10 @@
 #include <cxx-qt-lib/qset.h>
 #include <cxx-qt-lib/qvector.h>
 
-#include <mutex>
+#include <QtCore/QCoreApplication>
 
-extern "C" bool
-init_cxx_qt_lib_core()
+static void do_register_core_types()
 {
-  static std::once_flag flag;
-  std::call_once(flag, []() {
     qRegisterMetaType<::QHash_i32_QByteArray>("QHash_i32_QByteArray");
     // Ensure that QHash<QString, QVariant> (aka QVariantHash) is registered
     // otherwise it cannot be used in QML
@@ -115,7 +112,17 @@ init_cxx_qt_lib_core()
     qRegisterMetaType<::QVector_u16>("QVector_u16");
     qRegisterMetaType<::QVector_u32>("QVector_u32");
     qRegisterMetaType<::QVector_u64>("QVector_u64");
-  });
+}
 
+// Use Q_COREAPP_STARTUP_FUNCTION to defer registration until QCoreApplication
+// is created. This is Qt's recommended approach for type registration and
+// ensures proper initialization order on all platforms.
+Q_COREAPP_STARTUP_FUNCTION(do_register_core_types)
+
+extern "C" bool
+init_cxx_qt_lib_core()
+{
+  // Registration is handled automatically via Q_COREAPP_STARTUP_FUNCTION
+  // when QCoreApplication is constructed.
   return true;
 }
