@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2025 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Leon Matthes <leon.matthes@kdab.com>
+// SPDX-FileContributor: Quentin Weber <quentin.weber@kdab.com>
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
@@ -25,13 +26,9 @@ ApplicationWindow {
 
     SplitView {
         anchors.fill: parent
-        Item {
+        ScrollView {
             SplitView.preferredWidth: parent.width / 2
             TextArea {
-                id: inputEdit
-                SplitView.preferredWidth: parent.width / 2
-                wrapMode: TextArea.Wrap
-                anchors.fill: parent
                 clip: true
                 color: appWindow.textColor
                 Component.onCompleted: {
@@ -40,7 +37,7 @@ ApplicationWindow {
                 }
 
                 onCursorPositionChanged: {
-                    inspector.rebuildOutput(cursorPosition);
+                    inspector.updateCursor(cursorPosition);
                 }
 
                 onTextChanged: {
