@@ -65,15 +65,15 @@ mod ffi {
 
         #[cxx_name = "qmessagelogcontext_file"]
         #[doc(hidden)]
-        unsafe fn file(context: &QMessageLogContext) -> *const c_char;
+        fn file(context: &QMessageLogContext) -> *const c_char;
 
         #[cxx_name = "qmessagelogcontext_function"]
         #[doc(hidden)]
-        unsafe fn function(context: &QMessageLogContext) -> *const c_char;
+        fn function(context: &QMessageLogContext) -> *const c_char;
 
         #[cxx_name = "qmessagelogcontext_category"]
         #[doc(hidden)]
-        unsafe fn category(context: &QMessageLogContext) -> *const c_char;
+        fn category(context: &QMessageLogContext) -> *const c_char;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -133,17 +133,35 @@ impl<'a> QMessageLogContext<'a> {
 
     /// The file path given to the message handler.
     pub fn file(&self) -> &'a CStr {
-        unsafe { CStr::from_ptr(ffi::file(self)) }
+        let data = ffi::file(self);
+        if data.is_null() {
+            c""
+        } else {
+            // SAFETY: `data` is non-null and valid.
+            unsafe { CStr::from_ptr(data) }
+        }
     }
 
     /// The name of the function given to the message handler.
     pub fn function(&self) -> &'a CStr {
-        unsafe { CStr::from_ptr(ffi::function(self)) }
+        let data = ffi::function(self);
+        if data.is_null() {
+            c""
+        } else {
+            // SAFETY: `data` is non-null and valid.
+            unsafe { CStr::from_ptr(data) }
+        }
     }
 
     /// The category given to the message handler.
     pub fn category(&self) -> &'a CStr {
-        unsafe { CStr::from_ptr(ffi::category(self)) }
+        let data = ffi::category(self);
+        if data.is_null() {
+            c""
+        } else {
+            // SAFETY: `data` is non-null and valid.
+            unsafe { CStr::from_ptr(data) }
+        }
     }
 }
 
