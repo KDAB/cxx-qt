@@ -176,6 +176,10 @@ unsafe impl ExternType for QMessageLogger<'_> {
 ///     let category = c"my_category";
 ///     let logger = q_logger!(category);
 /// }
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt_lib);
+/// # }
 /// ```
 #[macro_export]
 macro_rules! q_logger {
@@ -224,6 +228,10 @@ macro_rules! q_logger {
 ///     q_debug!("x: {x}, y: {y}");
 ///     q_debug!("x: {}, y: {}", x, y);
 /// }
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt_lib);
+/// # }
 /// ```
 #[macro_export]
 macro_rules! q_debug {
@@ -241,6 +249,10 @@ macro_rules! q_debug {
 ///     q_info!("x: {x}, y: {y}");
 ///     q_info!("x: {}, y: {}", x, y);
 /// }
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt_lib);
+/// # }
 /// ```
 #[macro_export]
 macro_rules! q_info {
@@ -260,6 +272,10 @@ macro_rules! q_info {
 ///     q_warning!("x: {x}, y: {y}");
 ///     q_warning!("x: {}, y: {}", x, y);
 /// }
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt_lib);
+/// # }
 /// ```
 #[macro_export]
 macro_rules! q_warning {
@@ -279,6 +295,10 @@ macro_rules! q_warning {
 ///     q_critical!("x: {x}, y: {y}");
 ///     q_critical!("x: {}, y: {}", x, y);
 /// }
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt_lib);
+/// # }
 /// ```
 #[macro_export]
 macro_rules! q_critical {
@@ -298,6 +318,10 @@ macro_rules! q_critical {
 ///     q_fatal!("x: {x}, y: {y}");
 ///     q_fatal!("x: {}, y: {}", x, y);
 /// }
+/// # // Note that we need a fake main for doc tests to build
+/// # fn main() {
+/// #   cxx_qt::init_crate!(cxx_qt_lib);
+/// # }
 /// ```
 #[macro_export]
 macro_rules! q_fatal {
