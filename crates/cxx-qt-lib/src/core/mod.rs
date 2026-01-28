@@ -46,6 +46,10 @@ pub use qmarginsf::QMarginsF;
 // Reexport QMetaObjectConnection and guard from cxx-qt
 pub use cxx_qt::{QMetaObjectConnection, QMetaObjectConnectionGuard};
 
+#[macro_use]
+mod qmessagelogger;
+pub use qmessagelogger::QMessageLogger;
+
 mod qmodelindex;
 pub use qmodelindex::QModelIndex;
 
