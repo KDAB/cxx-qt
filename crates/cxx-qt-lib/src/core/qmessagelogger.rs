@@ -121,31 +121,31 @@ impl<'a> QMessageLogger<'a> {
     }
 
     /// Logs a critical message.
-    /// Uses the same behavior as [`q_critical!`].
+    /// Uses the same behavior as [`q_critical!`](crate::q_critical!).
     pub fn critical(&self, message: fmt::Arguments<'_>) {
         self.log(QtMsgType::QtCriticalMsg, message);
     }
 
     /// Logs a debug message.
-    /// Uses the same behavior as [`q_debug!`].
+    /// Uses the same behavior as [`q_debug!`](crate::q_debug!).
     pub fn debug(&self, message: fmt::Arguments<'_>) {
         self.log(QtMsgType::QtDebugMsg, message);
     }
 
     /// Logs a fatal message.
-    /// Uses the same behavior as [`q_fatal!`].
+    /// Uses the same behavior as [`q_fatal!`](crate::q_fatal!).
     pub fn fatal(&self, message: fmt::Arguments<'_>) {
         self.log(QtMsgType::QtFatalMsg, message);
     }
 
     /// Logs an info message.
-    /// Uses the same behavior as [`q_info!`].
+    /// Uses the same behavior as [`q_info!`](crate::q_info!).
     pub fn info(&self, message: fmt::Arguments<'_>) {
         self.log(QtMsgType::QtInfoMsg, message);
     }
 
     /// Logs a warning message.
-    /// Uses the same behavior as [`q_warning!`].
+    /// Uses the same behavior as [`q_warning!`](crate::q_warning!).
     pub fn warning(&self, message: fmt::Arguments<'_>) {
         self.log(QtMsgType::QtWarningMsg, message);
     }
@@ -261,7 +261,7 @@ macro_rules! q_info {
 
 /// Calls the Qt message handler with a formatted warning message. If no message handler has been installed, the message is printed to stderr. Under Windows the message is sent to the console, if it is a console application; otherwise, it is sent to the debugger. On QNX, the message is sent to slogger2. This function does nothing if `QT_NO_WARNING_OUTPUT` was defined during compilation.
 ///
-/// For debugging purposes, it is sometimes convenient to let the program abort for warning messages. This allows you then to inspect the core dump, or attach a debugger - see also [`q_fatal!`]. To enable this, set the environment variable `QT_FATAL_WARNINGS` to a number `n`. The program terminates then for the `n`-th warning. That is, if the environment variable is set to 1, it will terminate on the first call; if it contains the value 10, it will exit on the 10th call. Any non-numeric value in the environment variable is equivalent to 1.
+/// For debugging purposes, it is sometimes convenient to let the program abort for warning messages. This allows you then to inspect the core dump, or attach a debugger - see also [`q_fatal!`](crate::q_fatal!). To enable this, set the environment variable `QT_FATAL_WARNINGS` to a number `n`. The program terminates then for the `n`-th warning. That is, if the environment variable is set to 1, it will terminate on the first call; if it contains the value 10, it will exit on the 10th call. Any non-numeric value in the environment variable is equivalent to 1.
 ///
 /// # Examples
 ///
@@ -284,7 +284,7 @@ macro_rules! q_warning {
 
 /// Calls the Qt message handler with a formatted critical message. If no message handler has been installed, the message is printed to stderr. Under Windows the message is sent to the console, if it is a console application; otherwise, it is sent to the debugger. On QNX, the message is sent to slogger2. This function does nothing if `QT_NO_WARNING_OUTPUT` was defined during compilation.
 ///
-/// For debugging purposes, it is sometimes convenient to let the program abort for critical messages. This allows you then to inspect the core dump, or attach a debugger - see also [`q_fatal!`]. To enable this, set the environment variable `QT_FATAL_CRITICALS` to a number `n`. The program terminates then for the `n`-th critical message. That is, if the environment variable is set to 1, it will terminate on the first call; if it contains the value 10, it will exit on the 10th call. Any non-numeric value in the environment variable is equivalent to 1.
+/// For debugging purposes, it is sometimes convenient to let the program abort for critical messages. This allows you then to inspect the core dump, or attach a debugger - see also [`q_fatal!`](crate::q_fatal!). To enable this, set the environment variable `QT_FATAL_CRITICALS` to a number `n`. The program terminates then for the `n`-th critical message. That is, if the environment variable is set to 1, it will terminate on the first call; if it contains the value 10, it will exit on the 10th call. Any non-numeric value in the environment variable is equivalent to 1.
 ///
 /// # Examples
 ///
