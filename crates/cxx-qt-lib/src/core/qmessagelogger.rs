@@ -167,15 +167,13 @@ unsafe impl ExternType for QMessageLogger<'_> {
 /// ```rust
 /// use cxx_qt_lib::q_logger;
 ///
-/// fn somefunc() {
-///     // Using the default category
-///     let logger = q_logger!();
-///     // Using a literal as the category
-///     let logger = q_logger!("my_category");
-///     // Using a variable as the category
-///     let category = c"my_category";
-///     let logger = q_logger!(category);
-/// }
+/// // Using the default category
+/// let logger = q_logger!();
+/// // Using a literal as the category
+/// let logger = q_logger!("my_category");
+/// // Using a variable as the category
+/// let category = c"my_category";
+/// let logger = q_logger!(category);
 /// # // Note that we need a fake main for doc tests to build
 /// # fn main() {
 /// #   cxx_qt::init_crate!(cxx_qt_lib);
