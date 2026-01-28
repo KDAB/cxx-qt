@@ -67,7 +67,7 @@ pub trait QObjectExt {
     fn parent(&self) -> *const QObject;
 
     /// Makes the object a child of `parent`.
-    fn set_parent(self: Pin<&mut Self>, parent: &Self);
+    fn set_parent<P: Upcast<QObject>>(self: Pin<&mut Self>, parent: Pin<&mut P>);
 
     /// Makes the object parentless.
     fn unset_parent(self: Pin<&mut Self>);
@@ -111,11 +111,9 @@ where
         uncast(cast(self.upcast()).parent())
     }
 
-    fn set_parent(self: Pin<&mut Self>, parent: &Self) {
-        let s = cast_pin(self.upcast_pin());
-        unsafe {
-            s.set_parent(cast(parent.upcast()) as *const QObjectExternal as *mut QObjectExternal)
-        }
+    fn set_parent<P: Upcast<QObject>>(self: Pin<&mut Self>, parent: Pin<&mut P>) {
+        let parent = cast_pin(parent.upcast_pin());
+        unsafe { cast_pin(self.upcast_pin()).set_parent(parent.get_unchecked_mut()) }
     }
 
     fn unset_parent(self: Pin<&mut Self>) {
