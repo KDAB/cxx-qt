@@ -340,6 +340,15 @@ impl From<QString> for String {
     }
 }
 
+impl From<fmt::Arguments<'_>> for QString {
+    fn from(value: fmt::Arguments<'_>) -> Self {
+        match value.as_str() {
+            Some(s) => Self::from(s),
+            None => Self::from(&value.to_string()),
+        }
+    }
+}
+
 impl QString {
     /// Returns a copy of this string with the lowest numbered place marker replaced by string `a`, i.e., %1, %2, ..., %99.
     ///

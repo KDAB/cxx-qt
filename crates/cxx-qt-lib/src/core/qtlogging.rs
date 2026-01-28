@@ -6,7 +6,6 @@ use cxx::{type_id, ExternType};
 use std::ffi::c_char;
 use std::ffi::CStr;
 use std::marker::PhantomData;
-use std::mem::size_of;
 
 #[cxx::bridge]
 mod ffi {
@@ -30,12 +29,13 @@ mod ffi {
         type QString = crate::QString;
 
         include!("cxx-qt-lib/qtlogging.h");
-        type QMessageLogContext<'a> = crate::QMessageLogContext<'a>;
+        type QMessageLogContext<'a> = super::QMessageLogContext<'a>;
         type QtMsgType;
 
         /// Outputs a message in the Qt message handler.
         ///
-        /// **Warning:** This function is an undocumented internal utility in the Qt library.
+        /// **Warning:** This function is an undocumented internal utility in the Qt library, and
+        /// it may not behave as expected. Prefer using [`QMessageLogger`](crate::QMessageLogger).
         fn qt_message_output(msg_type: QtMsgType, context: &QMessageLogContext, string: &QString);
 
         /// Generates a formatted string out of the `msg_type`, `context`, `str` arguments.
@@ -105,17 +105,9 @@ pub struct QMessageLogContext<'a> {
     _phantom: PhantomData<&'a c_char>,
 }
 
-const_assert!(
-    size_of::<QMessageLogContext>() == (size_of::<i32>() * 2) + (size_of::<*const c_char>() * 3)
-);
-
 impl<'a> QMessageLogContext<'a> {
-    pub fn new(
-        file: &'a CStr,
-        line: i32,
-        function: &'a CStr,
-        category: &'a CStr,
-    ) -> QMessageLogContext<'a> {
+    pub fn new(file: &'a CStr, line: i32, function: &'a CStr, category: &'a CStr) -> Self {
+        // SAFETY: All pointers are valid.
         unsafe {
             ffi::construct_qmessagelogcontext(
                 file.as_ptr(),
@@ -147,6 +139,8 @@ impl<'a> QMessageLogContext<'a> {
     }
 }
 
+pub use ffi::{q_format_log_message, q_set_message_pattern, qt_message_output, QtMsgType};
+
 // Safety:
 //
 // Static checks on the C++ side ensure that QMessageLogContext is trivial.
@@ -154,6 +148,3 @@ unsafe impl ExternType for QMessageLogContext<'_> {
     type Id = type_id!("QMessageLogContext");
     type Kind = cxx::kind::Trivial;
 }
-
-use crate::const_assert;
-pub use ffi::{q_format_log_message, q_set_message_pattern, qt_message_output, QtMsgType};
