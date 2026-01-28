@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.8.0...HEAD)
 
+### Changed
+
+- `QObjectExt::set_parent` now accepts a  pinned mutable reference to any type that can upcast to `QObject`, rather than an immutable reference to `Self`.
+
 ## [0.8.0](https://github.com/KDAB/cxx-qt/compare/v0.7.2...v0.8.0) - 2025-12-18
 
 ### Added
