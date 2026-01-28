@@ -121,7 +121,6 @@ mod ffi {
         #[allow(dead_code)]
         type QSizeF = crate::QSizeF;
         type QImageCleanupFunction = super::QImageCleanupFunction;
-        type uchar;
 
         /// Returns `true` if all the colors in the image are shades of gray (i.e. their red, green and blue components are equal); otherwise `false`.
         ///
@@ -388,11 +387,11 @@ mod ffi {
     }
 
     #[namespace = "rust::cxxqtlib1"]
-    extern "C++" {
+    unsafe extern "C++" {
         #[doc(hidden)]
         #[rust_name = "qimage_init_from_raw_parts_mut"]
-        unsafe fn construct(
-            data: *mut uchar,
+        unsafe fn qimageInitFromRawParts(
+            data: *mut u8,
             width: i32,
             height: i32,
             format: QImageFormat,
@@ -402,8 +401,8 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qimage_init_from_raw_parts"]
-        unsafe fn construct(
-            data: *const uchar,
+        unsafe fn qimageInitFromRawParts(
+            data: *const u8,
             width: i32,
             height: i32,
             format: QImageFormat,
@@ -503,7 +502,7 @@ impl QImage {
     /// # Safety
     /// For details on safety see the [Qt documentation](https://doc.qt.io/qt/qimage.html#QImage-7)
     pub unsafe fn from_raw_parts(
-        data: *const ffi::uchar,
+        data: *const u8,
         width: i32,
         height: i32,
         format: QImageFormat,
@@ -525,7 +524,7 @@ impl QImage {
     /// # Safety
     /// For details on safety see the [Qt documentation](https://doc.qt.io/qt/qimage.html#QImage-8)
     pub unsafe fn from_raw_parts_mut(
-        data: *mut ffi::uchar,
+        data: *mut u8,
         width: i32,
         height: i32,
         format: QImageFormat,
@@ -561,12 +560,12 @@ impl QImage {
             // In this case the *mut ffi::c_void is actually a `*mut Vec<u8>` that was created by
             // Box::into_raw(), so can be re-created by Box::from_raw().
             // QImage also guarantees that this is only called once when the last copy is destroyed.
-            let the_box: Box<Vec<u8>> = unsafe { Box::from_raw(boxed_vec as *mut Vec<u8>) };
+            let the_box: Box<Vec<u8>> = unsafe { Box::from_raw(boxed_vec.cast()) };
             drop(the_box);
         }
-        let data = Box::new(data);
-        let bytes = data.as_ptr() as *mut ffi::uchar;
-        let raw_box = Box::into_raw(data) as *mut ffi::c_void;
+        let mut data = Box::new(data);
+        let bytes = data.as_mut_ptr();
+        let raw_box = Box::into_raw(data).cast();
         QImage::from_raw_parts_mut(bytes, width, height, format, delete_boxed_vec, raw_box)
     }
 
