@@ -195,17 +195,15 @@ impl_qvariant_value!(i16, qvariant_i16);
 impl_qvariant_value!(i32, qvariant_i32);
 impl_qvariant_value!(i64, qvariant_i64);
 impl_qvariant_value!(crate::QByteArray, qvariant_qbytearray);
-#[cfg(feature = "qt_gui")]
-impl_qvariant_value!(crate::QColor, qvariant_qcolor);
 impl_qvariant_value!(crate::QDate, qvariant_qdate);
 #[cfg(not(target_os = "emscripten"))]
 impl_qvariant_value!(crate::QDateTime, qvariant_qdatetime);
+impl_qvariant_value!(crate::QLine, qvariant_qline);
+impl_qvariant_value!(crate::QLineF, qvariant_qlinef);
 impl_qvariant_value!(crate::QModelIndex, qvariant_qmodelindex);
 impl_qvariant_value!(crate::QPersistentModelIndex, qvariant_qpersistentmodelindex);
 impl_qvariant_value!(crate::QPoint, qvariant_qpoint);
 impl_qvariant_value!(crate::QPointF, qvariant_qpointf);
-#[cfg(feature = "qt_gui")]
-impl_qvariant_value!(crate::QQuaternion, qvariant_qquaternion);
 impl_qvariant_value!(crate::QRect, qvariant_qrect);
 impl_qvariant_value!(crate::QRectF, qvariant_qrectf);
 impl_qvariant_value!(crate::QSize, qvariant_qsize);
@@ -215,16 +213,42 @@ impl_qvariant_value!(crate::QStringList, qvariant_qstringlist);
 impl_qvariant_value!(crate::QTime, qvariant_qtime);
 impl_qvariant_value!(crate::QUrl, qvariant_qurl);
 impl_qvariant_value!(crate::QUuid, qvariant_quuid);
+impl_qvariant_value!(
+    crate::QHash<crate::QHashPair_QString_QVariant>,
+    qvariant_qvarianthash
+);
+impl_qvariant_value!(crate::QList<QVariant>, qvariant_qvariantlist);
+impl_qvariant_value!(
+    crate::QMap<crate::QMapPair_QString_QVariant>,
+    qvariant_qvariantmap
+);
+impl_qvariant_value!(u8, qvariant_u8);
+impl_qvariant_value!(u16, qvariant_u16);
+impl_qvariant_value!(u32, qvariant_u32);
+impl_qvariant_value!(u64, qvariant_u64);
+
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QColor, qvariant_qcolor);
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QFont, qvariant_qfont);
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QImage, qvariant_qimage);
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QPen, qvariant_qpen);
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QPolygon, qvariant_qpolygon);
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QPolygonF, qvariant_qpolygonf);
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QQuaternion, qvariant_qquaternion);
+#[cfg(feature = "qt_gui")]
+impl_qvariant_value!(crate::QRegion, qvariant_qregion);
 #[cfg(feature = "qt_gui")]
 impl_qvariant_value!(crate::QVector2D, qvariant_qvector2d);
 #[cfg(feature = "qt_gui")]
 impl_qvariant_value!(crate::QVector3D, qvariant_qvector3d);
 #[cfg(feature = "qt_gui")]
 impl_qvariant_value!(crate::QVector4D, qvariant_qvector4d);
-impl_qvariant_value!(u8, qvariant_u8);
-impl_qvariant_value!(u16, qvariant_u16);
-impl_qvariant_value!(u32, qvariant_u32);
-impl_qvariant_value!(u64, qvariant_u64);
 
 // Safety:
 //
