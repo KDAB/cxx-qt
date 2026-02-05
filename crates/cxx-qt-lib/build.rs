@@ -284,6 +284,7 @@ fn main() {
         "core/quuid",
         "core/qvariant/qvariant",
         "core/qvector/qvector",
+        "qt_types",
     ];
 
     if qtbuild.version().major > 5 {
@@ -346,15 +347,18 @@ fn main() {
         builder = builder.qt_module("QuickControls2");
     }
 
-    for rust_source in &rust_bridges {
-        builder = builder.file(format!("src/{rust_source}.rs"));
-    }
+    let rust_bridges = rust_bridges
+        .into_iter()
+        .map(|rust_source| format!("src/{rust_source}.rs"));
 
-    for cpp_file in &cpp_files {
-        builder = builder.cpp_file(format!("src/{cpp_file}.cpp"));
-    }
-    builder = builder.cpp_file("src/qt_types.cpp");
+    let cpp_files = cpp_files
+        .into_iter()
+        .map(|cpp_file| format!("src/{cpp_file}.cpp"));
 
-    let interface = builder.build();
-    interface.reexport_dependency("cxx-qt").export();
+    builder
+        .files(rust_bridges)
+        .cpp_files(cpp_files)
+        .build()
+        .reexport_dependency("cxx-qt")
+        .export();
 }
