@@ -199,7 +199,9 @@ fn main() {
     ];
 
     if qtbuild.version().major > 5 {
-        rust_bridges.extend(["core/qanystringview"]);
+        rust_bridges.extend(["core/qanystringview", "core/qmetatype/qmetatypetype_v6"]);
+    } else {
+        rust_bridges.extend(["core/qmetatype/qmetatypetype_v5"]);
     }
 
     if qt_gui_enabled() {

@@ -7,6 +7,8 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
+use crate::QMetaTypeType;
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -14,19 +16,26 @@ mod ffi {
         type QString = crate::QString;
 
         include!("cxx-qt-lib/qvariant.h");
+    }
+
+    unsafe extern "C++" {
         type QVariant = super::QVariant;
 
         /// Convert this variant to type `QMetaType::UnknownType` and free up any resources used.
-        fn clear(self: &mut QVariant);
+        fn clear(&mut self);
         /// Returns `true` if this is a null variant, `false` otherwise.
         ///
         /// In Qt 6, a value is considered null if it contains no initialized value or a null pointer.
         /// In Qt 5, a value is additionally considered null if the variant contains an object of a builtin type with an `is_null` method that returned `true` for that object.
         #[rust_name = "is_null"]
-        fn isNull(self: &QVariant) -> bool;
+        fn isNull(&self) -> bool;
         /// Returns `true` if the storage type of this variant is not `QMetaType::UnknownType`; otherwise returns `false`.
         #[rust_name = "is_valid"]
-        fn isValid(self: &QVariant) -> bool;
+        fn isValid(&self) -> bool;
+
+        #[doc(hidden)]
+        #[rust_name = "user_type"]
+        fn userType(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -115,6 +124,11 @@ where
 // - impl<T, U> TryInto<U> for T
 //   where U: TryFrom<T>;
 impl QVariant {
+    /// Returns the storage type of the value stored in the variant.
+    pub fn type_id(&self) -> QMetaTypeType {
+        self.user_type().into()
+    }
+
     /// Returns the stored value converted to the template type `T`, or `None` if the type cannot be converted to `T`.
     ///
     /// Note that this first calls [`can_convert`](QVariantValue::can_convert).
