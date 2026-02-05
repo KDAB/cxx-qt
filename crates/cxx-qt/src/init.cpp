@@ -9,16 +9,13 @@
 
 // For versions less than Qt 6 we need to manually register the std numerics
 #if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+
+#include <QtCore/QCoreApplication>
 #include <QtCore/QMetaType>
-
 #include <cstdint>
-#include <mutex>
 
-extern "C" bool
-init_cxx_qt_core()
+static void do_register_cxx_qt_core_types()
 {
-  static std::once_flag flag;
-  std::call_once(flag, []() {
     // If we are using Qt 5 then register std numbers as a type for use in QML.
     //
     // See also:
@@ -33,8 +30,17 @@ init_cxx_qt_core()
     qRegisterMetaType<::std::uint16_t>("::std::uint16_t");
     qRegisterMetaType<::std::uint32_t>("::std::uint32_t");
     qRegisterMetaType<::std::uint64_t>("::std::uint64_t");
-  });
+}
 
+// Use Q_COREAPP_STARTUP_FUNCTION to defer registration until QCoreApplication
+// is created. This is Qt's recommended approach for type registration.
+Q_COREAPP_STARTUP_FUNCTION(do_register_cxx_qt_core_types)
+
+extern "C" bool
+init_cxx_qt_core()
+{
+  // Registration is handled automatically via Q_COREAPP_STARTUP_FUNCTION
+  // when QCoreApplication is constructed.
   return true;
 }
 
