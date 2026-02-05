@@ -9,6 +9,7 @@ use crate::{QByteArray, QList, QString};
 #[cxx::bridge]
 mod ffi {
     /// The type of time zone name.
+    #[namespace = "rust::cxxqtlib1"]
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QTimeZoneNameType {
@@ -24,6 +25,7 @@ mod ffi {
     }
 
     /// The type of time zone time, for example when requesting the name. In time zones that do not apply DST, all three values may return the same result.
+    #[namespace = "rust::cxxqtlib1"]
     #[repr(i32)]
     #[derive(Copy, Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
     enum QTimeZoneTimeType {
@@ -40,7 +42,7 @@ mod ffi {
         GenericTime,
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qdatetime.h");
@@ -49,8 +51,16 @@ mod ffi {
         type QList_QByteArray = crate::QList<crate::QByteArray>;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+    }
 
+    #[namespace = "rust::cxxqtlib1"]
+    extern "C++" {
         include!("cxx-qt-lib/qtimezone.h");
+        type QTimeZoneNameType;
+        type QTimeZoneTimeType;
+    }
+
+    unsafe extern "C++" {
         /// The `QTimeZone` class converts between UTC and local time in a specific time zone.
         ///
         /// Qt Documentation: [QTimeZone](https://doc.qt.io/qt/qtimezone.html#details)
@@ -61,8 +71,6 @@ mod ffi {
         //
         // Therefore the internal QSharedDataPointer is incremented causing a memory leak, so use an opaque type.
         type QTimeZone;
-        type QTimeZoneNameType;
-        type QTimeZoneTimeType;
 
         /// Returns the time zone abbreviation at the given `at_date_time`. The abbreviation may change depending on DST or even historical events.
         ///
