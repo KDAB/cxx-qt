@@ -35,6 +35,21 @@ static_assert(!::std::is_trivially_destructible<QString>::value);
 
 static_assert(QTypeInfo<QString>::isRelocatable);
 
+// Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+constexpr qsizetype
+castIndex(::rust::isize index) noexcept
+{
+  return static_cast<qsizetype>(index);
+}
+#else
+constexpr int
+castIndex(::rust::isize index) noexcept
+{
+  return static_cast<int>(index);
+}
+#endif
+
 namespace rust {
 namespace cxxqtlib1 {
 
@@ -46,12 +61,26 @@ qstringInitFromRustString(::rust::Str string)
   return QString::fromUtf8(string.data(), string.size());
 }
 
+::rust::Slice<const QChar>
+qstringAsChars(const QString& string)
+{
+  return ::rust::Slice<const QChar>(
+    reinterpret_cast<const QChar*>(string.data()),
+    static_cast<::std::size_t>(string.size()));
+}
+
 ::rust::Slice<const ::std::uint16_t>
 qstringAsSlice(const QString& string)
 {
   return ::rust::Slice<const ::std::uint16_t>(
     reinterpret_cast<const std::uint16_t*>(string.data()),
     static_cast<::std::size_t>(string.size()));
+}
+
+QChar
+qstringAt(const QString& string, ::rust::isize position)
+{
+  return string.at(castIndex(position));
 }
 
 QString
@@ -63,42 +92,39 @@ qstringArg(const QString& string, const QString& a)
 
 ::rust::isize
 qstringIndexOf(const QString& string,
+               QChar ch,
+               ::rust::isize from,
+               Qt::CaseSensitivity cs)
+{
+  return static_cast<::rust::isize>(string.indexOf(ch, castIndex(from), cs));
+}
+::rust::isize
+qstringIndexOf(const QString& string,
                const QString& str,
                ::rust::isize from,
                Qt::CaseSensitivity cs)
 {
-  // Qt 5 has an int Qt 6 has a qsizetype
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-  return static_cast<::rust::isize>(
-    string.indexOf(str, static_cast<qsizetype>(from), cs));
-#else
-  return static_cast<::rust::isize>(
-    string.indexOf(str, static_cast<int>(from), cs));
-#endif
+  return static_cast<::rust::isize>(string.indexOf(str, castIndex(from), cs));
 }
 
+QString&
+qstringInsert(QString& string, ::rust::isize pos, QChar ch)
+{
+  Q_ASSERT(pos >= 0);
+  return string.insert(castIndex(pos), ch);
+}
 QString&
 qstringInsert(QString& string, ::rust::isize pos, const QString& str)
 {
   Q_ASSERT(pos >= 0);
-  // Qt 5 has an int Qt 6 has a qsizetype
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-  return string.insert(static_cast<qsizetype>(pos), str);
-#else
-  return string.insert(static_cast<int>(pos), str);
-#endif
+  return string.insert(castIndex(pos), str);
 }
 
 QString
 qstringLeft(const QString& string, ::rust::isize n)
 {
   Q_ASSERT(n >= 0);
-  // Qt 5 has an int Qt 6 has a qsizetype
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-  return string.left(static_cast<qsizetype>(n));
-#else
-  return string.left(static_cast<int>(n));
-#endif
+  return string.left(castIndex(n));
 }
 
 ::rust::isize
@@ -114,30 +140,27 @@ qstringMid(const QString& string, ::rust::isize position, ::rust::isize n)
 {
   Q_ASSERT(position >= 0);
   Q_ASSERT(n >= -1);
-  // Qt 5 has an int Qt 6 has a qsizetype
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-  return string.mid(static_cast<qsizetype>(position),
-                    static_cast<qsizetype>(n));
-#else
-  return string.mid(static_cast<qsizetype>(position), static_cast<int>(n));
-#endif
+  return string.mid(castIndex(position), castIndex(n));
 }
 
 QString
 qstringRight(const QString& string, ::rust::isize n)
 {
   Q_ASSERT(n >= 0);
-  // Qt 5 has an int Qt 6 has a qsizetype
-#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
-  return string.right(static_cast<qsizetype>(n));
-#else
-  return string.right(static_cast<int>(n));
-#endif
+  return string.right(castIndex(n));
 }
 
 QStringList
 qstringSplit(const QString& string,
              const QString& sep,
+             Qt::SplitBehaviorFlags behavior,
+             Qt::CaseSensitivity cs)
+{
+  return string.split(sep, behavior, cs);
+}
+QStringList
+qstringSplit(const QString& string,
+             QChar sep,
              Qt::SplitBehaviorFlags behavior,
              Qt::CaseSensitivity cs)
 {

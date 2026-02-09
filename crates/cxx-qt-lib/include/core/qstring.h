@@ -31,13 +31,26 @@ qstringInitFromRustString(::rust::Str string);
 ::rust::Slice<const ::std::uint16_t>
 qstringAsSlice(const QString& string);
 
+::rust::Slice<const QChar>
+qstringAsChars(const QString& string);
+
+QChar
+qstringAt(const QString& string, ::rust::isize position);
+
 QString
 qstringArg(const QString& string, const QString& a);
+::rust::isize
+qstringIndexOf(const QString& string,
+               QChar ch,
+               ::rust::isize from,
+               Qt::CaseSensitivity cs);
 ::rust::isize
 qstringIndexOf(const QString& string,
                const QString& str,
                ::rust::isize from,
                Qt::CaseSensitivity cs);
+QString&
+qstringInsert(QString& string, ::rust::isize pos, QChar ch);
 QString&
 qstringInsert(QString& string, ::rust::isize pos, const QString& str);
 QString
@@ -48,6 +61,11 @@ QString
 qstringMid(const QString& string, ::rust::isize position, ::rust::isize n);
 QString
 qstringRight(const QString& string, ::rust::isize n);
+QStringList
+qstringSplit(const QString& string,
+             QChar sep,
+             Qt::SplitBehaviorFlags behavior,
+             Qt::CaseSensitivity cs);
 QStringList
 qstringSplit(const QString& string,
              const QString& sep,
