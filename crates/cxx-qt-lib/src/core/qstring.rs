@@ -7,8 +7,10 @@ use cxx::{type_id, ExternType};
 use std::cmp::Ordering;
 use std::fmt::{self, Write};
 use std::mem::MaybeUninit;
+use std::ops::Index;
+use std::{iter, slice};
 
-use crate::{CaseSensitivity, QByteArray, QStringList, SplitBehaviorFlags};
+use crate::{CaseSensitivity, QByteArray, QChar, QStringList, SplitBehaviorFlags};
 
 #[cxx::bridge]
 mod ffi {
@@ -22,6 +24,8 @@ mod ffi {
     extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
+        include!("cxx-qt-lib/qchar.h");
+        type QChar = crate::QChar;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
     }
@@ -143,12 +147,21 @@ mod ffi {
         fn operatorCmp(a: &QString, b: &QString) -> i8;
 
         #[doc(hidden)]
+        #[rust_name = "qstring_as_chars"]
+        fn qstringAsChars(string: &QString) -> &[QChar];
+        #[doc(hidden)]
         #[rust_name = "qstring_as_slice"]
         fn qstringAsSlice(string: &QString) -> &[u16];
 
         #[doc(hidden)]
         #[rust_name = "qstring_arg"]
         fn qstringArg(string: &QString, a: &QString) -> QString;
+        /// # Safety
+        ///
+        /// The `position` must be a valid index position in the string (i.e., `0 <= position < size()`).
+        #[doc(hidden)]
+        #[rust_name = "qstring_at"]
+        unsafe fn qstringAt(string: &QString, position: isize) -> QChar;
         #[doc(hidden)]
         #[rust_name = "qstring_index_of"]
         fn qstringIndexOf(
@@ -350,9 +363,44 @@ impl QString {
         ffi::qstring_arg(self, a)
     }
 
-    /// Extracts a slice containing the entire UTF-16 array.
+    /// Extracts a slice containing the entire array as QChars.
+    pub fn as_chars(&self) -> &[QChar] {
+        ffi::qstring_as_chars(self)
+    }
+
+    /// Extracts a slice containing the entire array as UTF-16.
     pub fn as_slice(&self) -> &[u16] {
         ffi::qstring_as_slice(self)
+    }
+
+    /// Returns the character at the given index position in the string.
+    pub fn at(&self, position: isize) -> Option<QChar> {
+        if position >= 0 && position < self.len() {
+            // SAFETY: 0 <= position < size()
+            Some(unsafe { self.at_unchecked(position) })
+        } else {
+            None
+        }
+    }
+
+    /// Returns the character at the given index position in the string.
+    ///
+    /// # Safety
+    /// The `position` must be a valid index position in the string (i.e., `0 <= position < size()`).
+    pub unsafe fn at_unchecked(&self, position: isize) -> QChar {
+        // SAFETY: upheld by contract
+        unsafe { ffi::qstring_at(self, position) }
+    }
+
+    /// Returns the last character in the string. Same as `at(size() - 1)`.
+    pub fn back(&self) -> Option<QChar> {
+        let position = self.len() - 1;
+        if position >= 0 {
+            // SAFETY: 0 <= position < size()
+            Some(unsafe { self.at_unchecked(position) })
+        } else {
+            None
+        }
     }
 
     /// Lexically compares this string with the `other` string.
@@ -362,6 +410,16 @@ impl QString {
     /// Case sensitive comparison is based exclusively on the numeric Unicode values of the characters and is very fast, but is not what a human would expect.
     pub fn compare(&self, other: &QString, cs: CaseSensitivity) -> Ordering {
         self.compare_i32(other, cs).cmp(&0)
+    }
+
+    /// Returns the first character in the string. Same as `at(0)`.
+    pub fn front(&self) -> Option<QChar> {
+        if self.is_empty() {
+            None
+        } else {
+            // SAFETY: 0 <= position < size()
+            Some(unsafe { self.at_unchecked(0) })
+        }
     }
 
     /// Returns the index position of the first occurrence of the string `str` in this string,
@@ -375,6 +433,11 @@ impl QString {
     /// Inserts the string `str` at the given index `position` and returns a mutable reference to this string.
     pub fn insert<'a>(&'a mut self, position: isize, str: &Self) -> &'a mut Self {
         ffi::qstring_insert(self, position, str)
+    }
+
+    /// Returns an iterator over the `QChars` that make up the string.
+    pub fn iter(&self) -> iter::Copied<slice::Iter<'_, QChar>> {
+        self.into_iter()
     }
 
     /// Returns a substring that contains the `n` leftmost characters of the string.
@@ -454,6 +517,30 @@ impl QString {
     /// Whitespace characters are the ASCII characters tabulation `'\t'`, line feed `'\n'`, carriage return `'\r'`, vertical tabulation `'\x08'` (`'\v'` in C), form feed `'\x0C'` (`'\f'` in C), and space `' '`.
     pub fn trimmed(&self) -> Self {
         ffi::qstring_trimmed(self)
+    }
+}
+
+impl<I> Index<I> for QString
+where
+    [QChar]: Index<I>,
+{
+    type Output = <[QChar] as Index<I>>::Output;
+
+    /// # Panics
+    ///
+    /// May panic if the index is out of bounds.
+    fn index(&self, index: I) -> &Self::Output {
+        self.as_chars().index(index)
+    }
+}
+
+impl<'a> IntoIterator for &'a QString {
+    type Item = QChar;
+
+    type IntoIter = iter::Copied<slice::Iter<'a, QChar>>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.as_chars().iter().copied()
     }
 }
 

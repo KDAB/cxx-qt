@@ -31,6 +31,12 @@ qstringInitFromRustString(::rust::Str string);
 ::rust::Slice<const ::std::uint16_t>
 qstringAsSlice(const QString& string);
 
+::rust::Slice<const QChar>
+qstringAsChars(const QString& string);
+
+QChar
+qstringAt(const QString& string, ::rust::isize position);
+
 QString
 qstringArg(const QString& string, const QString& a);
 ::rust::isize

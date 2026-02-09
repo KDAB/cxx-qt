@@ -46,12 +46,31 @@ qstringInitFromRustString(::rust::Str string)
   return QString::fromUtf8(string.data(), string.size());
 }
 
+::rust::Slice<const QChar>
+qstringAsChars(const QString& string)
+{
+  return ::rust::Slice<const QChar>(
+    reinterpret_cast<const QChar*>(string.data()),
+    static_cast<::std::size_t>(string.size()));
+}
+
 ::rust::Slice<const ::std::uint16_t>
 qstringAsSlice(const QString& string)
 {
   return ::rust::Slice<const ::std::uint16_t>(
     reinterpret_cast<const std::uint16_t*>(string.data()),
     static_cast<::std::size_t>(string.size()));
+}
+
+QChar
+qstringAt(const QString& string, ::rust::isize position)
+{
+  // Qt 5 has an int Qt 6 has a qsizetype
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+  return string.at(static_cast<qsizetype>(position));
+#else
+  return string.at(static_cast<int>(position));
+#endif
 }
 
 QString

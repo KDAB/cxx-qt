@@ -209,6 +209,7 @@ impl_qvariant_value!(i16, qvariant_i16);
 impl_qvariant_value!(i32, qvariant_i32);
 impl_qvariant_value!(i64, qvariant_i64);
 impl_qvariant_value!(crate::QByteArray, qvariant_qbytearray);
+impl_qvariant_value!(crate::QChar, qvariant_qchar);
 impl_qvariant_value!(crate::QDate, qvariant_qdate);
 #[cfg(not(target_os = "emscripten"))]
 impl_qvariant_value!(crate::QDateTime, qvariant_qdatetime);
