@@ -154,7 +154,7 @@ pub fn generate(
                     }
 
                     #[doc(hidden)]
-                    fn threading_drop(cxx_qt_thread:core::pin::Pin<&mut #module_ident::#cxx_qt_thread_ident>)
+                    fn threading_drop(cxx_qt_thread: core::pin::Pin<&mut #module_ident::#cxx_qt_thread_ident>)
                     {
                         #thread_drop_qualified(cxx_qt_thread);
                     }
