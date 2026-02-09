@@ -11,6 +11,7 @@ use cxx::{type_id, ExternType};
 mod ffi {
     extern "C++" {
         include!("cxx-qt-lib/qchar.h");
+        #[allow(unused)]
         type QChar = super::QChar;
     }
 }
@@ -70,7 +71,7 @@ impl QChar {
         self.ucs
     }
 
-    /// Returns `true` if the QChar contains a code point that is in either the high or the low part of the UTF-16 surrogate range (for example if its code point is in range `[0xd800..0xdfff]`); `false` otherwise.
+    /// Returns `true` if the `QChar` contains a code point that is in either the high or the low part of the UTF-16 surrogate range (for example if its code point is in range `[0xd800..0xdfff]`); `false` otherwise.
     pub const fn is_surrogate(self) -> bool {
         self.ucs - 0xd800 < 2048
     }
