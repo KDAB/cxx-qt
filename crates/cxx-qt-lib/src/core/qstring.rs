@@ -19,88 +19,90 @@ mod ffi {
         type SplitBehaviorFlags = crate::SplitBehaviorFlags;
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = super::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
+    }
+
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/qstring.h");
+        type QString = super::QString;
 
         /// Appends the string `str` onto the end of this string.
-        fn append<'a>(self: &'a mut QString, str: &QString) -> &'a mut QString;
+        fn append<'a>(&'a mut self, str: &QString) -> &'a mut QString;
 
         /// Clears the contents of the string and makes it null.
-        fn clear(self: &mut QString);
+        fn clear(&mut self);
 
         // We wrap this method to provide an enum so hide it from docs
         #[doc(hidden)]
         #[rust_name = "compare_i32"]
-        fn compare(self: &QString, other: &QString, cs: CaseSensitivity) -> i32;
+        fn compare(&self, other: &QString, cs: CaseSensitivity) -> i32;
 
         /// Returns `true` if this string contains an occurrence of the string `str`; otherwise returns `false`.
         ///
         /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
-        fn contains(self: &QString, str: &QString, cs: CaseSensitivity) -> bool;
+        fn contains(&self, str: &QString, cs: CaseSensitivity) -> bool;
 
         /// Returns `true` if the string ends with `s`; otherwise returns `false`.
         ///
         /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
         #[rust_name = "ends_with"]
-        fn endsWith(self: &QString, s: &QString, cs: CaseSensitivity) -> bool;
+        fn endsWith(&self, s: &QString, cs: CaseSensitivity) -> bool;
 
         /// Returns `true` if the string has no characters; otherwise returns `false`.
         #[rust_name = "is_empty"]
-        fn isEmpty(self: &QString) -> bool;
+        fn isEmpty(&self) -> bool;
 
         /// Returns `true` if the string is lowercase, that is, it's identical to its [`to_lower`](Self::to_lower) folding.
         #[rust_name = "is_lower"]
-        fn isLower(self: &QString) -> bool;
+        fn isLower(&self) -> bool;
 
         /// Returns `true` if this string is null; otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QString) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns `true` if the string is read right to left.
         #[rust_name = "is_right_to_left"]
-        fn isRightToLeft(self: &QString) -> bool;
+        fn isRightToLeft(&self) -> bool;
 
         /// Returns `true` if the string is uppercase, that is, it's identical to its [`to_upper`](Self::to_upper) folding.
         #[rust_name = "is_upper"]
-        fn isUpper(self: &QString) -> bool;
+        fn isUpper(&self) -> bool;
 
         /// Returns `true` if the string contains valid UTF-16 encoded data, or `false` otherwise.
         #[rust_name = "is_valid_utf16"]
-        fn isValidUtf16(self: &QString) -> bool;
+        fn isValidUtf16(&self) -> bool;
 
         /// Prepends the string `str` to the beginning of this string and returns a mutable reference to this string.
-        fn prepend<'a>(self: &'a mut QString, str: &QString) -> &'a mut QString;
+        fn prepend<'a>(&'a mut self, str: &QString) -> &'a mut QString;
 
         /// Removes every occurrence of the given `str` string in this string, and returns a mutable reference to this string.
         ///
         /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
-        fn remove<'a>(self: &'a mut QString, str: &QString, cs: CaseSensitivity)
-            -> &'a mut QString;
+        fn remove<'a>(&'a mut self, str: &QString, cs: CaseSensitivity) -> &'a mut QString;
 
         /// Removes the first character in this string. If the string is empty, this function does nothing.
         ///
         /// This function was introduced in Qt 6.5.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
         #[rust_name = "remove_first"]
-        fn removeFirst(self: &mut QString) -> &mut QString;
+        fn removeFirst(&mut self) -> &mut QString;
 
         /// Removes the last character in this string. If the string is empty, this function does nothing.
         ///
         /// This function was introduced in Qt 6.5.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_5))]
         #[rust_name = "remove_last"]
-        fn removeLast(self: &mut QString) -> &mut QString;
+        fn removeLast(&mut self) -> &mut QString;
 
         /// Replaces every occurrence of the string `before` with the string `after` and returns a mutable reference to this string.
         ///
         /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
         fn replace<'a>(
-            self: &'a mut QString,
+            &'a mut self,
             before: &QString,
             after: &QString,
             cs: CaseSensitivity,
@@ -108,11 +110,11 @@ mod ffi {
 
         /// Returns `true` if the string starts with `s`; otherwise returns `false`.
         #[rust_name = "starts_with"]
-        fn startsWith(self: &QString, s: &QString, cs: CaseSensitivity) -> bool;
+        fn startsWith(&self, s: &QString, cs: CaseSensitivity) -> bool;
 
         /// Converts a plain text string to an HTML string with HTML metacharacters `<`, `>`, `&`, and `"` replaced by HTML entities.
         #[rust_name = "to_html_escaped"]
-        fn toHtmlEscaped(self: &QString) -> QString;
+        fn toHtmlEscaped(&self) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -381,7 +383,7 @@ impl QString {
     }
 
     /// Returns the number of characters in this string.
-    pub fn len(self: &QString) -> isize {
+    pub fn len(&self) -> isize {
         ffi::qstring_len(self)
     }
 
