@@ -34,7 +34,12 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = super::QString;
 
-        /// Appends the string `str` onto the end of this string.
+        #[doc(hidden)]
+        #[rust_name = "append_qchar"]
+        fn append(&mut self, ch: QChar) -> &mut QString;
+
+        #[doc(hidden)]
+        #[rust_name = "append_qstring"]
         fn append<'a>(&'a mut self, str: &QString) -> &'a mut QString;
 
         /// Clears the contents of the string and makes it null.
@@ -45,15 +50,18 @@ mod ffi {
         #[rust_name = "compare_i32"]
         fn compare(&self, other: &QString, cs: CaseSensitivity) -> i32;
 
-        /// Returns `true` if this string contains an occurrence of the string `str`; otherwise returns `false`.
-        ///
-        /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
+        #[doc(hidden)]
+        #[rust_name = "contains_char"]
+        fn contains(&self, ch: QChar, cs: CaseSensitivity) -> bool;
+        #[doc(hidden)]
+        #[rust_name = "contains_str"]
         fn contains(&self, str: &QString, cs: CaseSensitivity) -> bool;
 
-        /// Returns `true` if the string ends with `s`; otherwise returns `false`.
-        ///
-        /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
-        #[rust_name = "ends_with"]
+        #[doc(hidden)]
+        #[rust_name = "ends_with_char"]
+        fn endsWith(&self, ch: QChar, cs: CaseSensitivity) -> bool;
+        #[doc(hidden)]
+        #[rust_name = "ends_with_str"]
         fn endsWith(&self, s: &QString, cs: CaseSensitivity) -> bool;
 
         /// Returns `true` if the string has no characters; otherwise returns `false`.
@@ -80,12 +88,18 @@ mod ffi {
         #[rust_name = "is_valid_utf16"]
         fn isValidUtf16(&self) -> bool;
 
-        /// Prepends the string `str` to the beginning of this string and returns a mutable reference to this string.
+        #[doc(hidden)]
+        #[rust_name = "prepend_char"]
+        fn prepend(&mut self, ch: QChar) -> &mut QString;
+        #[doc(hidden)]
+        #[rust_name = "prepend_str"]
         fn prepend<'a>(&'a mut self, str: &QString) -> &'a mut QString;
 
-        /// Removes every occurrence of the given `str` string in this string, and returns a mutable reference to this string.
-        ///
-        /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
+        #[doc(hidden)]
+        #[rust_name = "remove_char"]
+        fn remove(&mut self, ch: QChar, cs: CaseSensitivity) -> &mut QString;
+        #[doc(hidden)]
+        #[rust_name = "remove_str"]
         fn remove<'a>(&'a mut self, str: &QString, cs: CaseSensitivity) -> &'a mut QString;
 
         /// Removes the first character in this string. If the string is empty, this function does nothing.
@@ -112,8 +126,11 @@ mod ffi {
             cs: CaseSensitivity,
         ) -> &'a mut QString;
 
-        /// Returns `true` if the string starts with `s`; otherwise returns `false`.
-        #[rust_name = "starts_with"]
+        #[doc(hidden)]
+        #[rust_name = "starts_with_char"]
+        fn startsWith(&self, ch: QChar, cs: CaseSensitivity) -> bool;
+        #[doc(hidden)]
+        #[rust_name = "starts_with_str"]
         fn startsWith(&self, s: &QString, cs: CaseSensitivity) -> bool;
 
         /// Converts a plain text string to an HTML string with HTML metacharacters `<`, `>`, `&`, and `"` replaced by HTML entities.
@@ -163,7 +180,10 @@ mod ffi {
         #[rust_name = "qstring_at"]
         unsafe fn qstringAt(string: &QString, position: isize) -> QChar;
         #[doc(hidden)]
-        #[rust_name = "qstring_index_of"]
+        #[rust_name = "qstring_index_of_char"]
+        fn qstringIndexOf(string: &QString, ch: QChar, from: isize, cs: CaseSensitivity) -> isize;
+        #[doc(hidden)]
+        #[rust_name = "qstring_index_of_str"]
         fn qstringIndexOf(
             string: &QString,
             str: &QString,
@@ -171,7 +191,10 @@ mod ffi {
             cs: CaseSensitivity,
         ) -> isize;
         #[doc(hidden)]
-        #[rust_name = "qstring_insert"]
+        #[rust_name = "qstring_insert_char"]
+        fn qstringInsert(string: &mut QString, pos: isize, ch: QChar) -> &mut QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_insert_str"]
         fn qstringInsert<'a>(string: &'a mut QString, pos: isize, str: &QString)
             -> &'a mut QString;
         #[doc(hidden)]
@@ -190,7 +213,15 @@ mod ffi {
         #[rust_name = "qstring_simplified"]
         fn qstringSimplified(string: &QString) -> QString;
         #[doc(hidden)]
-        #[rust_name = "qstring_split"]
+        #[rust_name = "qstring_split_char"]
+        fn qstringSplit(
+            string: &QString,
+            sep: QChar,
+            behavior: SplitBehaviorFlags,
+            cs: CaseSensitivity,
+        ) -> QStringList;
+        #[doc(hidden)]
+        #[rust_name = "qstring_split_str"]
         fn qstringSplit(
             string: &QString,
             sep: &QString,
@@ -356,6 +387,11 @@ impl From<QString> for String {
 }
 
 impl QString {
+    /// Appends the string or character `str` onto the end of this string.
+    pub fn append<S: QStringElement>(&mut self, str: S) -> &mut Self {
+        S::append(self, str)
+    }
+
     /// Returns a copy of this string with the lowest numbered place marker replaced by string `a`, i.e., %1, %2, ..., %99.
     ///
     /// If there is no unreplaced place-marker remaining, a warning message is printed and the result is undefined. Place-marker numbers must be in the range 1 to 99.
@@ -412,6 +448,20 @@ impl QString {
         self.compare_i32(other, cs).cmp(&0)
     }
 
+    /// Returns `true` if this string contains an occurrence of the string or character `str`; otherwise returns `false`.
+    ///
+    /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
+    pub fn contains<S: QStringElement>(&self, str: S, cs: CaseSensitivity) -> bool {
+        S::contains(self, str, cs)
+    }
+
+    /// Returns `true` if the string ends with the string or character `s`; otherwise returns `false`.
+    ///
+    /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
+    pub fn ends_with<S: QStringElement>(&self, s: S, cs: CaseSensitivity) -> bool {
+        S::ends_with(self, s, cs)
+    }
+
     /// Returns the first character in the string. Same as `at(0)`.
     pub fn front(&self) -> Option<QChar> {
         if self.is_empty() {
@@ -422,17 +472,17 @@ impl QString {
         }
     }
 
-    /// Returns the index position of the first occurrence of the string `str` in this string,
+    /// Returns the index position of the first occurrence of the string or character `str` in this string,
     /// searching forward from index position `from`. Returns -1 if `str` is not found.
     ///
     /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the comparison is case-insensitive.
-    pub fn index_of(&self, str: &QString, from: isize, cs: CaseSensitivity) -> isize {
-        ffi::qstring_index_of(self, str, from, cs)
+    pub fn index_of<S: QStringElement>(&self, str: S, from: isize, cs: CaseSensitivity) -> isize {
+        S::index_of(self, str, from, cs)
     }
 
-    /// Inserts the string `str` at the given index `position` and returns a mutable reference to this string.
-    pub fn insert<'a>(&'a mut self, position: isize, str: &Self) -> &'a mut Self {
-        ffi::qstring_insert(self, position, str)
+    /// Inserts the string or character `str` at the given index `position` and returns a mutable reference to this string.
+    pub fn insert<S: QStringElement>(&mut self, position: isize, str: S) -> &mut Self {
+        S::insert(self, position, str)
     }
 
     /// Returns an iterator over the `QChars` that make up the string.
@@ -455,6 +505,18 @@ impl QString {
         ffi::qstring_mid(self, position, n)
     }
 
+    /// Prepends the string or character `str` to the beginning of this string and returns a mutable reference to this string.
+    pub fn prepend<S: QStringElement>(&mut self, str: S) -> &mut Self {
+        S::prepend(self, str)
+    }
+
+    /// Removes every occurrence of the given `str` string or character in this string, and returns a mutable reference to this string.
+    ///
+    /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
+    pub fn remove<S: QStringElement>(&mut self, str: S, cs: CaseSensitivity) -> &mut Self {
+        S::remove(self, str, cs)
+    }
+
     /// Returns a substring that contains the `n` rightmost characters of the string.
     pub fn right(&self, n: isize) -> Self {
         ffi::qstring_right(self, n)
@@ -468,19 +530,24 @@ impl QString {
         ffi::qstring_simplified(self)
     }
 
-    /// Splits the string into substrings wherever `sep` occurs, and returns the list of those strings.
+    /// Splits the string into substrings wherever string or character `sep` occurs, and returns the list of those strings.
     /// If `sep` does not match anywhere in the string, this function returns a single-element list containing this string.
     ///
     /// `cs` specifies whether `sep` should be matched case sensitively or case insensitively.
     ///
     /// If `behavior` is [`SplitBehaviorFlags::SkipEmptyParts`], empty entries don't appear in the result.
-    pub fn split(
+    pub fn split<S: QStringElement>(
         &self,
-        sep: &QString,
+        sep: S,
         behavior: SplitBehaviorFlags,
         cs: CaseSensitivity,
     ) -> QStringList {
-        ffi::qstring_split(self, sep, behavior, cs)
+        S::split(self, sep, behavior, cs)
+    }
+
+    /// Returns `true` if the string starts with string or character `s`; otherwise returns `false`.
+    pub fn starts_with<S: QStringElement>(&self, s: S, cs: CaseSensitivity) -> bool {
+        S::starts_with(self, s, cs)
     }
 
     /// Returns a Latin-1 representation of the string as a `QByteArray`.
@@ -550,6 +617,103 @@ impl<'a> IntoIterator for &'a QString {
 unsafe impl ExternType for QString {
     type Id = type_id!("QString");
     type Kind = cxx::kind::Trivial;
+}
+
+mod private {
+    pub trait Sealed {}
+}
+
+/// Many `QString` operations can be performed on either a `QChar` or a `QString`.
+/// As such, `QChar` and `QString` both implement `QStringElement`.
+pub trait QStringElement: private::Sealed {
+    fn append(s: &mut QString, el: Self) -> &mut QString;
+    fn contains(s: &QString, el: Self, cs: CaseSensitivity) -> bool;
+    fn ends_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool;
+    fn index_of(s: &QString, el: Self, from: isize, cs: CaseSensitivity) -> isize;
+    fn insert(s: &mut QString, position: isize, el: Self) -> &mut QString;
+    fn prepend(s: &mut QString, el: Self) -> &mut QString;
+    fn remove(s: &mut QString, el: Self, cs: CaseSensitivity) -> &mut QString;
+    fn split(
+        s: &QString,
+        sep: Self,
+        behavior: SplitBehaviorFlags,
+        cs: CaseSensitivity,
+    ) -> QStringList;
+    fn starts_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool;
+}
+
+impl private::Sealed for QChar {}
+
+impl QStringElement for QChar {
+    fn append(s: &mut QString, el: Self) -> &mut QString {
+        s.append_qchar(el)
+    }
+    fn contains(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
+        s.contains_char(el, cs)
+    }
+    fn ends_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
+        s.ends_with_char(el, cs)
+    }
+    fn index_of(s: &QString, el: Self, from: isize, cs: CaseSensitivity) -> isize {
+        ffi::qstring_index_of_char(s, el, from, cs)
+    }
+    fn insert(s: &mut QString, position: isize, el: Self) -> &mut QString {
+        ffi::qstring_insert_char(s, position, el)
+    }
+    fn prepend(s: &mut QString, el: Self) -> &mut QString {
+        s.prepend_char(el)
+    }
+    fn remove(s: &mut QString, el: Self, cs: CaseSensitivity) -> &mut QString {
+        s.remove_char(el, cs)
+    }
+    fn split(
+        s: &QString,
+        sep: Self,
+        behavior: SplitBehaviorFlags,
+        cs: CaseSensitivity,
+    ) -> QStringList {
+        ffi::qstring_split_char(s, sep, behavior, cs)
+    }
+    fn starts_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
+        s.starts_with_char(el, cs)
+    }
+}
+
+impl private::Sealed for &QString {}
+
+impl QStringElement for &QString {
+    fn append(s: &mut QString, el: Self) -> &mut QString {
+        s.append_qstring(el)
+    }
+    fn contains(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
+        s.contains_str(el, cs)
+    }
+    fn ends_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
+        s.ends_with_str(el, cs)
+    }
+    fn index_of(s: &QString, el: Self, from: isize, cs: CaseSensitivity) -> isize {
+        ffi::qstring_index_of_str(s, el, from, cs)
+    }
+    fn insert(s: &mut QString, position: isize, el: Self) -> &mut QString {
+        ffi::qstring_insert_str(s, position, el)
+    }
+    fn prepend(s: &mut QString, el: Self) -> &mut QString {
+        s.prepend_str(el)
+    }
+    fn remove(s: &mut QString, el: Self, cs: CaseSensitivity) -> &mut QString {
+        s.remove_str(el, cs)
+    }
+    fn split(
+        s: &QString,
+        sep: Self,
+        behavior: SplitBehaviorFlags,
+        cs: CaseSensitivity,
+    ) -> QStringList {
+        ffi::qstring_split_str(s, sep, behavior, cs)
+    }
+    fn starts_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
+        s.starts_with_str(el, cs)
+    }
 }
 
 #[cfg(feature = "serde")]

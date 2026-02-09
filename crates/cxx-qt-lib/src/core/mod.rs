@@ -77,7 +77,7 @@ mod qsizef;
 pub use qsizef::QSizeF;
 
 mod qstring;
-pub use qstring::QString;
+pub use qstring::{QString, QStringElement};
 
 #[cfg(cxxqt_qt_version_major = "6")]
 mod qanystringview;
