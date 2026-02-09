@@ -154,7 +154,7 @@ pub fn generate(
                     }
 
                     #[doc(hidden)]
-                    fn threading_drop(cxx_qt_thread: Pin<&mut #module_ident::#cxx_qt_thread_ident>)
+                    fn threading_drop(cxx_qt_thread:core::pin::Pin<&mut #module_ident::#cxx_qt_thread_ident>)
                     {
                         #thread_drop_qualified(cxx_qt_thread);
                     }
@@ -299,7 +299,7 @@ mod tests {
                     }
 
                     #[doc(hidden)]
-                    fn threading_drop(cxx_qt_thread: Pin<&mut qobject::MyObjectCxxQtThread>)
+                    fn threading_drop(cxx_qt_thread: core::pin::Pin<&mut qobject::MyObjectCxxQtThread>)
                     {
                         qobject::cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread);
                     }
