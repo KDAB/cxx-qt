@@ -318,7 +318,7 @@ impl cxx_qt::Threading for ffi::MyObject {
         ffi::cxx_qt_ffi_MyObject_cxxQtThreadClone(cxx_qt_thread)
     }
     #[doc(hidden)]
-    fn threading_drop(cxx_qt_thread: Pin<&mut ffi::MyObjectCxxQtThread>) {
+    fn threading_drop(cxx_qt_thread: core::pin::Pin<&mut ffi::MyObjectCxxQtThread>) {
         ffi::cxx_qt_ffi_MyObject_cxxQtThreadDrop(cxx_qt_thread);
     }
 }
