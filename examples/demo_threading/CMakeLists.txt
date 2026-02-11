@@ -76,9 +76,9 @@ cxx_qt_import_qml_module(${CRATE}_qml
 
 # Qt Graphical Effects imports changed in Qt 6 so provide proxies
 if(Qt5_FOUND)
-    set(QML_COMPAT_RESOURCES qml/compat/compat_qt5.qrc)
+    set(QML_COMPAT_RESOURCES compat/compat_qt5.qrc)
 else()
-    set(QML_COMPAT_RESOURCES qml/compat/compat_qt6.qrc)
+    set(QML_COMPAT_RESOURCES compat/compat_qt6.qrc)
 endif()
 
 set(DEMO_THREADING_SOURCES
