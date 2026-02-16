@@ -363,7 +363,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "cxx",
  "cxx-qt-build",
@@ -385,7 +385,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-build"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "cc",
  "codespan-reporting",
@@ -400,7 +400,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-gen"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "clang-format",
  "convert_case",
@@ -414,7 +414,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-lib"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "bytes",
  "chrono",
@@ -435,7 +435,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-lib-extras"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "cxx",
  "cxx-qt",
@@ -445,7 +445,7 @@ dependencies = [
 
 [[package]]
 name = "cxx-qt-macro"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "cxx-qt-gen",
  "proc-macro2",
@@ -1167,7 +1167,7 @@ dependencies = [
 
 [[package]]
 name = "qt-build-utils"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "anyhow",
  "cc",
@@ -1291,7 +1291,7 @@ checksum = "3c5e1a9a646d36c3599cd173a41282daf47c44583ad367b8e6837255952e5c67"
 
 [[package]]
 name = "span-inspector"
-version = "0.8.0"
+version = "0.8.1"
 dependencies = [
  "cxx",
  "cxx-qt",
