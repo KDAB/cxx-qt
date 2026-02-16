@@ -134,7 +134,7 @@ Download CXX-Qts CMake code with FetchContent:
 
 ```cmake,ignore
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt_start}}
-        GIT_TAG 0.8.0
+        GIT_TAG 0.8.1
 {{#include ../../../examples/qml_minimal/CMakeLists.txt:book_cmake_find_cxx_qt_end}}
 ```
 
