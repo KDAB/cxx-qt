@@ -14,6 +14,9 @@ pub use qmlcachegen::{QmlCacheArguments, QmlCacheProducts, QtToolQmlCacheGen};
 mod qmltyperegistrar;
 pub use qmltyperegistrar::QtToolQmlTypeRegistrar;
 
+mod qtpaths;
+pub use qtpaths::{QtPathsQueryArguments, QtToolQtPaths};
+
 mod rcc;
 pub use rcc::QtToolRcc;
 
@@ -29,6 +32,8 @@ pub enum QtTool {
     QmlCacheGen,
     /// Qml Type Registrar
     QmlTypeRegistrar,
+    /// QtPaths
+    QtPaths,
     // TODO: could add a Custom(&str) thing here
 }
 
@@ -39,6 +44,7 @@ impl QtTool {
             Self::Rcc => "rcc",
             Self::QmlCacheGen => "qmlcachegen",
             Self::QmlTypeRegistrar => "qmltyperegistrar",
+            Self::QtPaths => "qtpaths",
         }
     }
 

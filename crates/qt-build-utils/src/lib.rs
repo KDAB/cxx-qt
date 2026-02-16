@@ -48,8 +48,8 @@ pub use qrc::{QResource, QResourceFile, QResources};
 
 mod tool;
 pub use tool::{
-    MocArguments, MocProducts, QmlCacheArguments, QmlCacheProducts, QtTool, QtToolMoc,
-    QtToolQmlCacheGen, QtToolQmlTypeRegistrar, QtToolRcc,
+    MocArguments, MocProducts, QmlCacheArguments, QmlCacheProducts, QtPathsQueryArguments, QtTool,
+    QtToolMoc, QtToolQmlCacheGen, QtToolQmlTypeRegistrar, QtToolQtPaths, QtToolRcc,
 };
 
 mod utils;
@@ -359,5 +359,10 @@ impl QtBuild {
     /// Create a [QtToolQmlTypeRegistrar] for this [QtBuild]
     pub fn qmltyperegistrar(&self) -> QtToolQmlTypeRegistrar {
         QtToolQmlTypeRegistrar::new(self.qt_installation.as_ref())
+    }
+
+    /// Create a [QtToolQtPaths] for this [QtBuild]
+    pub fn qtpaths(&self) -> QtToolQtPaths {
+        QtToolQtPaths::new(self.qt_installation.as_ref())
     }
 }
