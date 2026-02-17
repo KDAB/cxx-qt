@@ -7,7 +7,6 @@
 [package]
 name = "cxx-qt-macro"
 version.workspace = true
-authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>","Leon Matthes <leon.matthes@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
 edition.workspace = true
 license.workspace = true
 description = "A set of macros for Qt/C++ interop in Rust"

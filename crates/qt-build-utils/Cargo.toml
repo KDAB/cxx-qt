@@ -7,7 +7,6 @@
 name = "qt-build-utils"
 version.workspace = true
 edition.workspace = true
-authors = ["Be Wilson <be.wilson@kdab.com>"]
 license.workspace = true
 description = "Build script helper for linking Qt libraries and using moc code generator. Intended to be used together with cc, cpp_build, or cxx_build"
 repository.workspace = true

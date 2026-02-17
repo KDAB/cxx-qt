@@ -7,7 +7,6 @@
 [package]
 name = "cxx-qt"
 version.workspace = true
-authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>", "Leon Matthes <leon.matthes@kdab.com>"]
 edition.workspace = true
 license.workspace = true
 description = "Safe interop between Rust and Qt"

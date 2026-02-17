@@ -6,7 +6,6 @@
 [package]
 name = "basic_cxx_qt"
 version = "0.1.0"
-authors = ["Andrew Hayzen <andrew.hayzen@kdab.com>", "Gerhard de Clercq <gerhard.declercq@kdab.com>"]
 edition.workspace = true
 license = "MIT OR Apache-2.0"
 
