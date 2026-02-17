@@ -116,7 +116,7 @@ impl QtToolRcc {
         }
 
         String::from_utf8_lossy(&cmd_list.stdout)
-            .split('\n')
+            .split_terminator('\n')
             .map(PathBuf::from)
             .collect()
     }
