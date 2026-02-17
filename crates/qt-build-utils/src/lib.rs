@@ -34,6 +34,9 @@ pub use installation::QtInstallation;
 #[cfg(feature = "qmake")]
 pub use installation::qmake::QtInstallationQMake;
 
+#[cfg(feature = "qt_minimal")]
+pub use installation::qt_minimal::QtInstallationQtMinimal;
+
 #[cfg(feature = "qmake")]
 mod parse_cflags;
 

@@ -6,6 +6,9 @@
 #[cfg(feature = "qmake")]
 pub(crate) mod qmake;
 
+#[cfg(feature = "qt_minimal")]
+pub(crate) mod qt_minimal;
+
 use semver::Version;
 use std::path::PathBuf;
 
