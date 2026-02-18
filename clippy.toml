@@ -3,5 +3,4 @@
 #
 # SPDX-License-Identifier: MIT OR Apache-2.0
 
-# This is higher than the rust-version because the `incompatible_msrv` lint was introduced in clippy 1.78.0
-msrv = "1.78.0"
+msrv = "1.85.0"
