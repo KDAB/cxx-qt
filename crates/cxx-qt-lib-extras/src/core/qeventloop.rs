@@ -3,6 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+// Seems to be a Clippy false positive, we need these lifetime declarations
+#![allow(clippy::needless_lifetimes)]
+
 use std::pin::Pin;
 use std::time::Duration;
 
@@ -192,7 +195,7 @@ struct EventLoopClosure<'a> {
     closure: Option<Box<dyn FnOnce() + 'a>>,
 }
 
-impl<'a> EventLoopClosure<'a> {
+impl EventLoopClosure<'_> {
     pub fn run(&mut self) {
         self.closure.take().unwrap()();
     }
