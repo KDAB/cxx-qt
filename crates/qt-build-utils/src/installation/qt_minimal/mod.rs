@@ -3,6 +3,13 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+#[allow(dead_code)]
+mod artifact;
+#[allow(dead_code)]
+mod checksum;
+#[allow(dead_code)]
+mod download;
+
 use crate::QtInstallation;
 
 /// A implementation of [QtInstallation] using qtminimal
