@@ -35,6 +35,7 @@ default = ["qmake"]
 # When linking Qt dynamically, this makes no difference.
 link_qt_object_files = []
 qmake = []
+qt_minimal = []
 serde = ["dep:serde"]
 
 [lints]
