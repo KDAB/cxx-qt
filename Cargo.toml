@@ -36,7 +36,8 @@ edition = "2021"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/KDAB/cxx-qt/"
 version = "0.8.1"
-rust-version = "1.77.2" # Clippy needs to >= 1.78.0 for a lint, but the package can be 1.77.2
+# At least 1.85.0 so that we can have rust edition 2024
+rust-version = "1.85.0"
 
 # Note a version needs to be specified on dependencies of packages
 # we publish, otherwise crates.io complains as it doesn't know the version.
@@ -56,9 +57,9 @@ cc = { version = "1.0.100", features = ["parallel"] }
 # ./book/src/getting-started/4-cargo-executable.md
 # ./book/src/getting-started/5-cmake-integration.md
 # TODO: Can we re-export cxx from cxx-qt, so people don't need to manually add this anymore?
-cxx = "1.0.144"
-cxx-build = { version = "1.0.95", features = [ "parallel" ] }
-cxx-gen = "0.7.121"
+cxx = "1.0.176"
+cxx-build = { version = "1.0.176", features = [ "parallel" ] }
+cxx-gen = "0.7.176"
 proc-macro2 = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }
 quote = "1.0"
