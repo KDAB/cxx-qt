@@ -25,7 +25,7 @@ pub(crate) struct ParsedQtArtifact {
 
 impl ParsedQtArtifact {
     /// Assert that the hashes are the same, from bytes
-    pub fn verify(&self, hash: &[u8]) {
+    pub fn verify(&self, hash: &[u8]) -> anyhow::Result<()> {
         let mut hash_string = String::new();
 
         for byte in hash {
@@ -33,6 +33,10 @@ impl ParsedQtArtifact {
             hash_string.push_str(&formatted);
         }
 
-        assert!(self.sha256 == hash_string);
+        if self.sha256 != hash_string {
+            return Err(anyhow::anyhow!("sha256 does not match for: {}", &self.url));
+        }
+
+        Ok(())
     }
 }
