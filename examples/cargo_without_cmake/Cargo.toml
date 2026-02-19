@@ -20,3 +20,7 @@ cxx-qt-lib = { workspace = true, features = ["full"] }
 [build-dependencies]
 # The link_qt_object_files feature is required for statically linking Qt 6.
 cxx-qt-build = { workspace = true, features = [ "link_qt_object_files" ] }
+
+# Enable qt_minimal feature in qt-build-utils and specify a qt-version
+# this allows for automatically downloading Qt when not found with qmake
+qt-build-utils = { workspace = true, features = ["qt_minimal"] }
