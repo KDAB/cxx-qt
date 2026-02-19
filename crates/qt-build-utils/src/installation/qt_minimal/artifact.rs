@@ -8,19 +8,19 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 /// A Qt manifest.json file, which specifies a set of artifacts needed for installation
 pub(crate) struct ParsedQtManifest {
-    schema_version: u8,
-    artifacts: Vec<ParsedQtArtifact>,
+    pub(crate) schema_version: u8,
+    pub(crate) artifacts: Vec<ParsedQtArtifact>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 /// Descriptor for a Qt artifact, included download information
 pub(crate) struct ParsedQtArtifact {
-    version: String,
-    arch: String,
-    os: String,
-    url: String,
+    pub(crate) version: semver::Version,
+    pub(crate) arch: String,
+    pub(crate) os: String,
+    pub(crate) url: String,
     sha256: String,
-    content: Vec<String>,
+    pub(crate) content: Vec<String>,
 }
 
 impl ParsedQtArtifact {

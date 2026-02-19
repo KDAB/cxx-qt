@@ -41,7 +41,7 @@ default = ["qmake"]
 # When linking Qt dynamically, this makes no difference.
 link_qt_object_files = []
 qmake = []
-qt_minimal = ["dep:serde", "serde/derive", "dep:reqwest", "dep:sha2", "dep:tempfile", "dep:serde_json", "dep:flate2", "dep:tar"]
+qt_minimal = ["dep:serde", "serde/derive", "semver/serde", "dep:reqwest", "dep:sha2", "dep:tempfile", "dep:serde_json", "dep:flate2", "dep:tar"]
 serde = ["dep:serde"]
 
 [lints]
