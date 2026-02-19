@@ -3,6 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::path::{Path, PathBuf};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -24,6 +26,23 @@ pub(crate) struct ParsedQtArtifact {
 }
 
 impl ParsedQtArtifact {
+    /// Download the artifact and extract to the given target path
+    pub fn download_and_extract(&self, target_path: &Path) -> anyhow::Result<PathBuf> {
+        // Download to a temporary location
+        let http_client = reqwest::blocking::Client::new();
+        let temp_dir = tempfile::TempDir::new()?;
+        let archive_path =
+            super::download::download_from_url(&self.url, &self.sha256, &temp_dir, &http_client)?;
+
+        // Verify the checksum
+        self.verify(&super::checksum::hash_file(&archive_path)?)?;
+
+        // Extract into the target folder
+        super::extract::extract_archive(&archive_path, target_path)?;
+
+        Ok(target_path.to_path_buf())
+    }
+
     /// Assert that the hashes are the same, from bytes
     pub fn verify(&self, hash: &[u8]) -> anyhow::Result<()> {
         let mut hash_string = String::new();
