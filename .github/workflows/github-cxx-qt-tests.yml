@@ -129,6 +129,118 @@ jobs:
           path: ./target/debug/lcov.info
           if-no-files-found: ignore
 
+  build-qt-minimal:
+    name: Ubuntu 24.04 (gcc) Qt 6 Minimal
+    needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
+    runs-on: ubuntu-24.04
+    env:
+      GITHUB_COMPILER_CACHE_KEY: "Ubuntu 24.04 (gcc) Qt6_minimal_compiler_cache"
+      SCCACHE_CACHE_SIZE: 600M
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v6
+      - name: Setup toolchain
+        run: |
+          rustup default 1.85.0
+          rustup component add rustfmt
+      - name: "Rust tools cache"
+        uses: actions/cache@v5
+        id: rust-tools-cache
+        with:
+          path: |
+            ~/.cargo/bin/sccache
+            ~/.cargo/bin/mdbook
+            ~/.cargo/bin/mdbook-linkcheck
+          key: ubuntu-24.04_sccache-0.9.1-patched_mdbook-0.4.36_mdbook-linkcheck-0.7.7
+      - name: "Build Rust tools"
+        if: steps.rust-tools-cache.outputs.cache-hit != 'true'
+        # Do not build with storage backends enabled, we only need local
+        # cargo install --locked --no-default-features --version 0.9.1 sccache
+        run: |
+          cargo install --locked --no-default-features --git=https://github.com/ahayzen-kdab/sccache --branch=2092-ignore-notfound-errors sccache
+          cargo install --locked --version 0.4.36 mdbook 
+          cargo install --locked --version 0.7.7 mdbook-linkcheck
+      # We want our compiler cache to always update to the newest state.
+      # The best way for us to achieve this is to **always** update the cache after every landed commit.
+      # That way it will closely follow our development.
+      # And if a PR diverges a lot with its cache that's not a big deal, as it will be merged eventually.
+      #
+      # This is a workaround for the fact that GH doesn't support updating existing caches.
+      # See: https://github.com/azu/github-actions-overwrite-cache-example
+      #
+      # Ideally we'd like to use this:
+      # - name: "Compiler cache"
+      #   uses: actions/cache@v5
+      #   with:
+      #     update: true <------- THIS DOESN'T EXIST YET
+      #     path: /home/runner/.cache/sccache
+      #     key: "Ubuntu 24.04 (wasm_32) Qt6_compiler_cache"
+      - name: "Restore Compiler Cache"
+        id: compiler-cache-restore
+        uses: actions/cache/restore@v5
+        with:
+          path: /home/runner/.cache/sccache
+          key: "${{ env.GITHUB_COMPILER_CACHE_KEY }}"
+
+      - name: "Start sccache server"
+        # If the compiler cache couldn't be restored, we have to create the cache path,
+        # as otherwise the server startup fails.
+        run: |
+          mkdir -p /home/runner/.cache/sccache
+          sccache --start-server
+
+      - name: "Install clang-format"
+        # Note ensure that clang-format runner is updated too
+        run: |
+          pip install --user --break-system-packages --verbose clang-format==18.1.8
+          echo "Checking for path: ${{ matrix.clang_format_path }}"
+          test -x ${{ matrix.clang_format_path }}
+
+      - name: "[Ubuntu] Install dependencies"
+        if: runner.os == 'Linux'
+        run: >-
+          sudo apt-get update &&
+          sudo apt-get install -y
+          ninja-build
+          libdouble-conversion3
+          libopengl-dev
+          libssl-dev
+          pkg-config
+          valgrind
+
+      # Just test that we can build with no Qt install available
+      - name: "Build"
+        env:
+          RUSTC_WRAPPER: sccache
+        run: cargo build --package qml-minimal-no-cmake
+      - name: Test output files exist
+        run: |
+          ! command -v qmake
+          test -x ./target/debug/qml-minimal-no-cmake
+
+      - name: "Print compiler cache statistics"
+        run: sccache --show-stats
+      # This is a workaround for the fact that GH doesn't support updating existing caches.
+      # See: https://github.com/azu/github-actions-overwrite-cache-example
+      - name: "Delete previous compiler cache"
+        # Updating the cache doesn't work from forks
+        # So update it once it's merged into the repo or via scheduled workflows or manual triggers
+        if: ${{ steps.compiler-cache-restore.outputs.cache-hit && (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main' }}
+        continue-on-error: true
+        run: |
+          gh extension install actions/gh-actions-cache
+          gh actions-cache delete "${{ env.GITHUB_COMPILER_CACHE_KEY }}" --confirm
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: "Save Compiler Cache"
+        # Updating the cache doesn't work from forks
+        # So update it once it's merged into the repo or via scheduled workflows or manual triggers
+        if: ${{ (github.event_name == 'push' || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main' }}
+        uses: actions/cache/save@v5
+        with:
+          path: /home/runner/.cache/sccache
+          key: "${{ env.GITHUB_COMPILER_CACHE_KEY }}"
+
   build-wasm:
     name: Ubuntu 24.04 (wasm_32) Qt 6
     needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
