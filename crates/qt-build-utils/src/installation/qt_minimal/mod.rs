@@ -10,7 +10,7 @@ mod extract;
 
 use std::path::PathBuf;
 
-use crate::QtInstallation;
+use crate::{QtBuildError, QtInstallation};
 
 /// A implementation of [QtInstallation] using qtminimal
 pub struct QtInstallationQtMinimal {
@@ -54,23 +54,23 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
         let artifact_bin = artifacts
             .iter()
             .find(|artifact| artifact.content.contains(&"bin".to_string()))
-            .expect("At least one artifact to have a bin folder");
+            .ok_or_else(|| QtBuildError::QtMissing)?;
         let artifact_include = artifacts
             .iter()
             .find(|artifact| artifact.content.contains(&"include".to_string()))
-            .expect("At least one artifact to have an include folder");
+            .ok_or_else(|| QtBuildError::QtMissing)?;
 
         // Download the artifacts
-        let extract_target_dir = Self::qt_minimal_root()?
+        let extract_target_dir = Self::qt_minimal_root()
             .join(format!(
                 "{}.{}.{}",
                 version.major, version.minor, version.patch
             ))
             .join(os)
             .join(arch);
-        artifact_bin.download_and_extract(&extract_target_dir)?;
+        artifact_bin.download_and_extract(&extract_target_dir);
         if artifact_bin != artifact_include {
-            artifact_include.download_and_extract(&extract_target_dir)?;
+            artifact_include.download_and_extract(&extract_target_dir);
         }
 
         Ok(Self {
@@ -127,7 +127,7 @@ impl QtInstallation for QtInstallationQtMinimal {
 }
 
 impl QtInstallationQtMinimal {
-    fn qt_minimal_root() -> anyhow::Result<PathBuf> {
+    fn qt_minimal_root() -> PathBuf {
         // Check if a custom root has been set
         let path = if let Ok(root) = std::env::var("QT_MINIMAL_DOWNLOAD_ROOT") {
             PathBuf::from(root)
@@ -138,7 +138,8 @@ impl QtInstallationQtMinimal {
                 .join("qt_minimal_download")
         };
 
-        std::fs::create_dir_all(&path)?;
-        return Ok(path);
+        std::fs::create_dir_all(&path).expect("Could not create Qt minimal root path");
+
+        path
     }
 }

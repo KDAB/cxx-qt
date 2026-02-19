@@ -27,20 +27,23 @@ pub(crate) struct ParsedQtArtifact {
 
 impl ParsedQtArtifact {
     /// Download the artifact and extract to the given target path
-    pub fn download_and_extract(&self, target_path: &Path) -> anyhow::Result<PathBuf> {
+    pub fn download_and_extract(&self, target_path: &Path) -> PathBuf {
         // Download to a temporary location
         let http_client = reqwest::blocking::Client::new();
-        let temp_dir = tempfile::TempDir::new()?;
+        let temp_dir = tempfile::TempDir::new().expect("Could not create temporary directory");
         let archive_path =
-            super::download::download_from_url(&self.url, &self.sha256, &temp_dir, &http_client)?;
+            super::download::download_from_url(&self.url, &self.sha256, &temp_dir, &http_client)
+                .expect("Could not download url");
 
         // Verify the checksum
-        self.verify(&super::checksum::hash_file(&archive_path)?)?;
+        self.verify(&super::checksum::hash_file(&archive_path).expect("Could not hash file"))
+            .expect("Could not verify sha256 hash");
 
         // Extract into the target folder
-        super::extract::extract_archive(&archive_path, target_path)?;
+        super::extract::extract_archive(&archive_path, target_path)
+            .expect("Could not extract archive into target");
 
-        Ok(target_path.to_path_buf())
+        target_path.to_path_buf()
     }
 
     /// Assert that the hashes are the same, from bytes
