@@ -144,55 +144,15 @@ impl TryFrom<PathBuf> for QtInstallationQMake {
 }
 
 impl QtInstallation for QtInstallationQMake {
-    fn framework_paths(&self, _qt_modules: &[String]) -> Vec<PathBuf> {
-        let mut framework_paths = vec![];
-
-        if utils::is_apple_target() {
-            // Note that this adds the framework path which allows for
-            // includes such as <QtCore/QObject> to be resolved correctly
-            let framework_path = self.qmake_query("QT_INSTALL_LIBS");
-            framework_paths.push(framework_path);
-        }
-
-        framework_paths
-            .iter()
-            .map(PathBuf::from)
-            // Only add paths if they exist
-            .filter(|path| path.exists())
-            .collect()
+    fn framework_paths(&self, qt_modules: &[String]) -> Vec<PathBuf> {
+        let path_lib = PathBuf::from(self.qmake_query("QT_INSTALL_LIBS"));
+        super::shared::framework_paths_for_qt_modules(qt_modules, path_lib)
     }
 
     fn include_paths(&self, qt_modules: &[String]) -> Vec<PathBuf> {
-        let root_path = self.qmake_query("QT_INSTALL_HEADERS");
-        let lib_path = self.qmake_query("QT_INSTALL_LIBS");
-        let mut paths = Vec::new();
-        for qt_module in qt_modules {
-            // Add the usual location for the Qt module
-            paths.push(format!("{root_path}/Qt{qt_module}"));
-
-            // Ensure that we add any framework's headers path
-            //
-            // Note that the individual Qt modules should in theory work
-            // by giving `-framework QtCore` to the cc builder. However these
-            // appear to be lost in flag_if_supported.
-            //
-            // Also note we still need these include directs even with the -F / framework paths
-            // as otherwise only <QtCore/QtGlobal> works but <QtGlobal> does not.
-            let header_path = format!("{lib_path}/Qt{qt_module}.framework/Headers");
-            if utils::is_apple_target() && Path::new(&header_path).exists() {
-                paths.push(header_path);
-            }
-        }
-
-        // Add the QT_INSTALL_HEADERS itself
-        paths.push(root_path);
-
-        paths
-            .iter()
-            .map(PathBuf::from)
-            // Only add paths if they exist
-            .filter(|path| path.exists())
-            .collect()
+        let path_include = PathBuf::from(self.qmake_query("QT_INSTALL_HEADERS"));
+        let path_lib = PathBuf::from(self.qmake_query("QT_INSTALL_LIBS"));
+        super::shared::include_paths_for_qt_modules(qt_modules, path_include, path_lib)
     }
 
     fn link_modules(&self, builder: &mut cc::Build, qt_modules: &[String]) {

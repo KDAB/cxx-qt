@@ -81,19 +81,15 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
 }
 
 impl QtInstallation for QtInstallationQtMinimal {
-    fn framework_paths(&self, _qt_modules: &[String]) -> Vec<std::path::PathBuf> {
-        // TODO: macos support
-        vec![]
+    fn framework_paths(&self, qt_modules: &[String]) -> Vec<std::path::PathBuf> {
+        let path_lib = self.path_qt.join("lib");
+        super::shared::framework_paths_for_qt_modules(qt_modules, path_lib)
     }
 
-    fn include_paths(&self, _qt_modules: &[String]) -> Vec<std::path::PathBuf> {
-        let mut paths = vec![];
-        let root_path = self.path_qt.join("include");
-        paths.push(root_path);
-
-        // TODO: loop over qt modules
-
-        paths
+    fn include_paths(&self, qt_modules: &[String]) -> Vec<std::path::PathBuf> {
+        let path_include = self.path_qt.join("include");
+        let path_lib = self.path_qt.join("lib");
+        super::shared::include_paths_for_qt_modules(qt_modules, path_include, path_lib)
     }
 
     fn link_modules(&self, _builder: &mut cc::Build, _qt_modules: &[String]) {
