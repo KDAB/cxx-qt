@@ -1696,6 +1696,8 @@ dependencies = [
  "cxx-qt",
  "cxx-qt-build",
  "cxx-qt-lib",
+ "qt-build-utils",
+ "qt-version",
 ]
 
 [[package]]
