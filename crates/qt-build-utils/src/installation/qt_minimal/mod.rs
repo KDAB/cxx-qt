@@ -9,6 +9,8 @@ mod artifact;
 mod checksum;
 #[allow(dead_code)]
 mod download;
+#[allow(dead_code)]
+mod extract;
 
 use crate::QtInstallation;
 
