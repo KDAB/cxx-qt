@@ -27,11 +27,27 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
             serde_json::from_str(qt_artifacts::QT_MANIFEST_JSON)?;
 
         // Find artifacts matching Qt version
+        //
+        // Arch could be x86_64
+        // OS could be linux
+        // https://doc.rust-lang.org/cargo/appendix/glossary.html#target
+        //
+        // TODO: is there a better way to find the arch and os ?
+        // and should this be configurable via env var overrides?
+        let target = std::env::var("TARGET").expect("TARGET to be set");
+        let target_parts: Vec<_> = target.split("-").collect();
+        let arch = target_parts
+            .first()
+            .expect("TARGET to have a <arch><sub> component");
+        let os = target_parts
+            .get(2)
+            .expect("TARGET to have a <sys> component");
         let artifacts: Vec<artifact::ParsedQtArtifact> = manifest
             .artifacts
             .into_iter()
-            // TODO: check OS and arch and likely make a function on the manifest struct
-            .filter(|artifact| artifact.version == version)
+            .filter(|artifact| {
+                artifact.arch == *arch && artifact.os == *os && artifact.version == version
+            })
             .collect();
 
         // Find the first bin / include
@@ -45,7 +61,13 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
             .expect("At least one artifact to have an include folder");
 
         // Download the artifacts
-        let extract_target_dir = PathBuf::from(".").canonicalize()?;
+        let extract_target_dir = Self::qt_minimal_root()?
+            .join(format!(
+                "{}.{}.{}",
+                version.major, version.minor, version.patch
+            ))
+            .join(os)
+            .join(arch);
         artifact_bin.download_and_extract(&extract_target_dir)?;
         if artifact_bin != artifact_include {
             artifact_include.download_and_extract(&extract_target_dir)?;
@@ -101,5 +123,22 @@ impl QtInstallation for QtInstallationQtMinimal {
 
     fn version(&self) -> semver::Version {
         self.version.clone()
+    }
+}
+
+impl QtInstallationQtMinimal {
+    fn qt_minimal_root() -> anyhow::Result<PathBuf> {
+        // Check if a custom root has been set
+        let path = if let Ok(root) = std::env::var("QT_MINIMAL_DOWNLOAD_ROOT") {
+            PathBuf::from(root)
+        } else {
+            // Otherwise fallback to user data dir
+            dirs::data_local_dir()
+                .expect("User local data directory to be found")
+                .join("qt_minimal_download")
+        };
+
+        std::fs::create_dir_all(&path)?;
+        return Ok(path);
     }
 }
