@@ -5,8 +5,17 @@
 
 /// Whether apple is the current target
 pub(crate) fn is_apple_target() -> bool {
+    // TODO: should CARGO_CFG_* be used here instead?
     std::env::var("TARGET")
         .map(|target| target.contains("apple"))
+        .unwrap_or_else(|_| false)
+}
+
+/// Whether windows is the current target
+pub(crate) fn is_windows_target() -> bool {
+    // TODO: should CARGO_CFG_* be used here instead?
+    std::env::var("TARGET")
+        .map(|target| target.contains("windows"))
         .unwrap_or_else(|_| false)
 }
 
