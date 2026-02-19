@@ -25,6 +25,7 @@ sha2 = { version = "0.10.9", optional = true }
 tempfile = { version = "3.25.0", optional = true }
 tar = { version = "0.4.44", optional = true }
 flate2 = { version = "1.1.9", optional = true }
+qt-artifacts = { version = "0.1.0", optional = true }
 
 [features]
 # TODO: should we default to qmake or let downstream crates specify, such as cxx-qt-build
@@ -41,7 +42,7 @@ default = ["qmake"]
 # When linking Qt dynamically, this makes no difference.
 link_qt_object_files = []
 qmake = []
-qt_minimal = ["dep:serde", "serde/derive", "semver/serde", "dep:reqwest", "dep:sha2", "dep:tempfile", "dep:serde_json", "dep:flate2", "dep:tar"]
+qt_minimal = ["dep:serde", "serde/derive", "semver/serde", "dep:reqwest", "dep:sha2", "dep:tempfile", "dep:serde_json", "dep:flate2", "dep:tar", "dep:qt-artifacts"]
 serde = ["dep:serde"]
 
 [lints]

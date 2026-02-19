@@ -1711,12 +1711,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "qt-artifacts"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9981b93a954c77b49398b61387315eeb07c5fc7ffa381c10b9e86c836c5c1fce"
+
+[[package]]
 name = "qt-build-utils"
 version = "0.8.1"
 dependencies = [
  "anyhow",
  "cc",
  "flate2",
+ "qt-artifacts",
  "reqwest",
  "semver",
  "serde",
