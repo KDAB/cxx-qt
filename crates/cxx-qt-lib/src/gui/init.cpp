@@ -10,10 +10,11 @@
 
 #include <QtCore/QCoreApplication>
 
-static void do_register_gui_types()
+static void
+do_register_gui_types()
 {
-    qRegisterMetaType<::QList_QColor>("QList_QColor");
-    qRegisterMetaType<::QVector_QColor>("QVector_QColor");
+  qRegisterMetaType<::QList_QColor>("QList_QColor");
+  qRegisterMetaType<::QVector_QColor>("QVector_QColor");
 }
 
 // Use Q_COREAPP_STARTUP_FUNCTION to defer registration until QCoreApplication
