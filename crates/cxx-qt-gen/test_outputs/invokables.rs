@@ -334,6 +334,7 @@ unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::MyObject {
         ffi::cxx_qt_ffi_MyObject_downcastPtr(base)
     }
 }
+impl<'a> ::cxx_qt::ConstructorDeclared<(i32, &'a QString)> for ffi::MyObject {}
 #[doc(hidden)]
 pub fn route_arguments_MyObject_0<'a>(
     arg0: i32,
@@ -376,6 +377,7 @@ pub fn initialize_MyObject_0<'a>(
 ) {
     <ffi::MyObject as cxx_qt::Constructor<(i32, &'a ffi::QString)>>::initialize(qobject, ());
 }
+impl ::cxx_qt::ConstructorDeclared<()> for ffi::MyObject {}
 #[doc(hidden)]
 pub fn route_arguments_MyObject_1() -> ffi::CxxQtConstructorArgumentsMyObject1 {
     #[allow(unused_variables)]

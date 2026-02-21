@@ -208,11 +208,24 @@ pub fn generate(
     let rust_struct_name_rust = qobject_names.rust_struct.rust_unqualified();
 
     for (index, constructor) in constructors.iter().enumerate() {
+        let mut arguments = TokenStream::new();
+        for elem in &constructor.arguments {
+            arguments.extend(quote!(#elem,));
+        }
+
         let lifetime = constructor.lifetime.as_ref().map(|lifetime| {
             quote! {
                 < #lifetime >
             }
         });
+
+        result
+            .cxx_qt_mod_contents
+            .append(&mut vec![parse_quote_spanned! {
+            constructor.imp.span() =>
+            impl #lifetime ::cxx_qt::ConstructorDeclared<(#arguments) > for #qobject_name_rust_qualified {}
+        }]);
+
         let arguments_lifetime =
             lifetime_of_arguments(&constructor.lifetime, &constructor.arguments)?;
         let base_lifetime =
@@ -599,8 +612,16 @@ mod tests {
             },
         );
 
+        // Shim impl only appears once
         assert_tokens_eq(
             &blocks.cxx_qt_mod_contents[0],
+            quote! {
+                impl ::cxx_qt::ConstructorDeclared<()> for qobject::MyObject {}
+            },
+        );
+
+        assert_tokens_eq(
+            &blocks.cxx_qt_mod_contents[1],
             quote! {
                 #[doc(hidden)]
                 pub fn route_arguments_MyObject_0() -> qobject::CxxQtConstructorArgumentsMyObject0
@@ -619,7 +640,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &blocks.cxx_qt_mod_contents[1],
+            &blocks.cxx_qt_mod_contents[2],
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
@@ -633,7 +654,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &blocks.cxx_qt_mod_contents[2],
+            &blocks.cxx_qt_mod_contents[3],
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
@@ -725,7 +746,14 @@ mod tests {
         );
 
         assert_tokens_eq(
-            &blocks.cxx_qt_mod_contents[3],
+            &blocks.cxx_qt_mod_contents[4],
+            quote! {
+                impl<'lifetime> ::cxx_qt::ConstructorDeclared<(*const QObject,)> for qobject::MyObject {}
+            },
+        );
+
+        assert_tokens_eq(
+            &blocks.cxx_qt_mod_contents[5],
             quote! {
                 #[doc(hidden)]
                 pub fn route_arguments_MyObject_1<'lifetime>(arg0: *const QObject) -> qobject::CxxQtConstructorArgumentsMyObject1<'lifetime>
@@ -753,7 +781,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &blocks.cxx_qt_mod_contents[4],
+            &blocks.cxx_qt_mod_contents[6],
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
@@ -767,7 +795,7 @@ mod tests {
             },
         );
         assert_tokens_eq(
-            &blocks.cxx_qt_mod_contents[5],
+            &blocks.cxx_qt_mod_contents[7],
             quote! {
                 #[doc(hidden)]
                 #[allow(unused_variables)]
@@ -806,7 +834,7 @@ mod tests {
         ]);
 
         assert_eq!(blocks.cxx_mod_contents.len(), 10);
-        assert_eq!(blocks.cxx_qt_mod_contents.len(), 6);
+        assert_eq!(blocks.cxx_qt_mod_contents.len(), 8);
 
         let namespace_attr = quote! {
                 #[namespace = "qobject::cxx_qt_MyObject"]
