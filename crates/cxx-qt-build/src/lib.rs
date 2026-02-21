@@ -1080,22 +1080,22 @@ impl CxxQtBuilder {
         // `extern "C"` as Q_INIT_RESOURCES needs name mangling, which doesn't happen if it's
         // called within an `extern "C"` function.
         // So add a static do_init function that we then call from the actual initializer function.
+        //
+        // Use atomic operations for single initialization - this is simpler than std::call_once
+        // and works reliably on all platforms including MinGW.
         let init_function = format!(
             r#"
-#include <mutex>
+#include <atomic>
 
 {declarations}
 
-static bool do_init() {{
-    static std::once_flag flag;
-    std::call_once(flag, []() {{
-        {calls}
-    }});
-    return true;
-}}
+static std::atomic<bool> initialized{{false}};
 
 extern "C" bool {init_fun}() {{
-    return do_init();
+    if (!initialized.exchange(true, std::memory_order_acq_rel)) {{
+        {calls}
+    }}
+    return true;
 }}
             "#,
             declarations = declarations.join("\n"),
@@ -1118,6 +1118,9 @@ extern "C" bool {init_fun}() {{
         export_path: Option<PathBuf>,
         key: &str,
     ) {
+        // Collect the private initializers so we can iterate multiple times
+        let private_initializers: Vec<_> = private_initializers.into_iter().collect();
+
         // Build the initializers themselves into the main library.
         self.cc_builder
             .file(
@@ -1128,7 +1131,7 @@ extern "C" bool {init_fun}() {{
             )
             .files(
                 private_initializers
-                    .into_iter()
+                    .iter()
                     .filter_map(|initializer| initializer.file.as_ref()),
             );
 
@@ -1139,16 +1142,23 @@ extern "C" bool {init_fun}() {{
         let includes: &[&str] = &[]; // <-- Needed for type annotations
         Self::setup_cc_builder(&mut init_call_builder, includes);
 
+        let declaration = public_initializer
+            .init_declaration
+            .clone()
+            .unwrap_or_default();
+        let call = public_initializer
+            .init_call
+            .clone()
+            .expect("Public initializer must be callable!");
+
+        // Static initialization to trigger the init chain. The actual metatype registration
+        // is handled by Q_COREAPP_STARTUP_FUNCTION in the init.cpp files, so the init
+        // functions themselves are lightweight (just return true).
         let init_call = format!(
             "{declaration}\nstatic const bool do_init_{key} = {init_call}",
-            declaration = public_initializer
-                .init_declaration
-                .clone()
-                .unwrap_or_default(),
-            init_call = public_initializer
-                .init_call
-                .clone()
-                .expect("Public initializer must be callable!"),
+            declaration = declaration,
+            init_call = call,
+            key = key,
         );
 
         let init_file = dir::initializers(key).join("call-initializers.cpp");
