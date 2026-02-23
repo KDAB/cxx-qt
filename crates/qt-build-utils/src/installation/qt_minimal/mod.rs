@@ -8,6 +8,7 @@ mod checksum;
 mod download;
 mod extract;
 
+use std::collections::HashMap;
 use std::fs::DirEntry;
 use std::path::{Path, PathBuf};
 
@@ -252,6 +253,36 @@ impl QtInstallationQtMinimal {
             .into_iter()
             .filter(|artifact| {
                 artifact.arch == *arch && artifact.os == *os && versions.contains(&artifact.version)
+            })
+            .collect()
+    }
+
+    /// Merge together artifacts with the same version
+    /// so that we do not have bin/ and include/ split
+    //
+    // NOTE: later we may support bin and include folders being in different places
+    pub(crate) fn group_artifacts(artifacts: Vec<ParsedQtArtifact>) -> Vec<ParsedQtArtifact> {
+        artifacts.into_iter().fold(
+                            HashMap::<semver::Version, ParsedQtArtifact>::default(),
+                            |mut acc, mut artifact| {
+                                acc.entry(artifact.version.clone())
+                                    .and_modify(|value| {
+                                        assert!(value.url == artifact.url);
+                                        if value.url == artifact.url {
+                                            value.content.append(&mut artifact.content)
+                                        } else {
+                                            println!("cargo::warning=Found multiple minimal installations of the same version but different urls: {} and {}", value.url, artifact.url);
+                                        }
+                                    })
+                                    .or_insert(artifact);
+                                acc
+                            },
+                        )
+            .into_values()
+            // Ensure that artifacts contain bin/ and include/
+            .filter(|artifact| {
+                artifact.content.contains(&"bin".to_string())
+                    && artifact.content.contains(&"include".to_string())
             })
             .collect()
     }

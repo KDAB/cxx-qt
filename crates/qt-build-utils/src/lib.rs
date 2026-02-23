@@ -143,9 +143,30 @@ impl QtBuild {
                 #[cfg(feature = "qt_minimal")]
                 {
                     // Search existing installed qt_minimal versions
-                    //
-                    // TODO: have API to do this
-                    let _ = QtInstallationQtMinimal::local_artifacts();
+                    if let Ok(local_artifacts) = QtInstallationQtMinimal::local_artifacts() {
+                        // Find artifacts with the version range for our OS and arch
+                        let artifacts = QtInstallationQtMinimal::match_artifact_requirements(
+                            local_artifacts,
+                            &versions,
+                        );
+
+                        // Merge artifacts into combined bin/ and include/
+                        let mut artifacts = QtInstallationQtMinimal::group_artifacts(artifacts);
+
+                        // Sort the artifacts by version, largest first
+                        artifacts.sort_by_key(|artifact| artifact.version.clone());
+                        artifacts.reverse();
+
+                        // Pick the first found version
+                        if let Some(artifact) = artifacts.first() {
+                            // Try building a Qt installation from the url
+                            if let Ok(qt_installation) = QtInstallationQtMinimal::try_from(
+                                PathBuf::from(artifact.url.clone()),
+                            ) {
+                                return Ok(Box::new(qt_installation));
+                            }
+                        }
+                    }
 
                     // Download from Qt artifacts
                     //
