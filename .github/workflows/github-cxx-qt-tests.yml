@@ -220,12 +220,14 @@ jobs:
       - name: "Configure"
         # FIXME: ninja is not being found?
         env:
+          QMAKE: /home/runner/work/cxx-qt/Qt/6.2.4/wasm_32/bin/qmake
           RUSTC_WRAPPER: sccache
         run: |
           source ./emsdk/emsdk_env.sh
           /home/runner/work/cxx-qt/Qt/6.2.4/wasm_32/bin/qt-cmake -DQT_HOST_PATH=/home/runner/work/cxx-qt/Qt/6.2.4/gcc_64 -DBUILD_WASM=ON -Bbuild .
       - name: "Build"
         env:
+          QMAKE: /home/runner/work/cxx-qt/Qt/6.2.4/wasm_32/bin/qmake
           RUSTC_WRAPPER: sccache
         run: cmake --build build --parallel 4
       - name: Test output files exist
@@ -276,6 +278,7 @@ jobs:
             aqt_version: '5.15.2'
             aqt_arch: 'gcc_64'
             aqt_host: 'linux'
+            qmake_path: /home/runner/work/cxx-qt/Qt/5.15.2/gcc_64/bin/qmake
             cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
@@ -293,6 +296,7 @@ jobs:
             aqt_version: '6.10.1'
             aqt_arch: 'linux_gcc_64'
             aqt_host: 'linux'
+            qmake_path: /home/runner/work/cxx-qt/Qt/6.10.1/gcc_64/bin/qmake
             cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
@@ -315,6 +319,7 @@ jobs:
             aqt_version: '5.15.2'
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
+            qmake_path: /Users/runner/work/cxx-qt/Qt/5.15.2/clang_64/bin/qmake
             dyld_framework_path: /Users/runner/work/cxx-qt/Qt/5.15.2/clang_64/lib
             # https://doc.qt.io/qt-5/macos.html#target-platforms
             macosx_deployment_target: '10.13'
@@ -337,6 +342,7 @@ jobs:
             aqt_version: '6.10.1'
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
+            qmake_path: /Users/runner/work/cxx-qt/Qt/6.10.1/macos/bin/qmake
             dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.10.1/macos/lib
             # https://doc.qt.io/qt-6.7/macos.html#target-platforms
             macosx_deployment_target: '13.0'
@@ -360,6 +366,7 @@ jobs:
             aqt_version: '5.15.2'
             aqt_arch: 'win64_msvc2019_64'
             aqt_host: 'windows'
+            qmake_path: D:/a/cxx-qt/Qt/5.15.2/msvc2019_64/bin/qmake.exe
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
@@ -378,6 +385,7 @@ jobs:
             aqt_version: '6.7.3'
             aqt_arch: 'win64_msvc2019_64'
             aqt_host: 'windows'
+            qmake_path: D:/a/cxx-qt/Qt/6.7.3/msvc2019_64/bin/qmake.exe
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
@@ -397,6 +405,7 @@ jobs:
             aqt_version: '6.10.1'
             aqt_arch: 'win64_msvc2022_64'
             aqt_host: 'windows'
+            qmake_path: D:/a/cxx-qt/Qt/6.10.1/msvc2022_64/bin/qmake.exe
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
@@ -421,6 +430,7 @@ jobs:
         # but still leave room for the tools cache
         SCCACHE_CACHE_SIZE: 600M
         SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
+        QMAKE: ${{ matrix.qmake_path }}
 
     steps:
     - name: "Clone Git repository"
