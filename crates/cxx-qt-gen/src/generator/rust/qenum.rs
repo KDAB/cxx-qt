@@ -68,7 +68,6 @@ fn generate_member_qenum(qenum: &ParsedQEnum) -> GeneratedRustFragment {
             item.span() =>
             #(#cfgs)*
             extern "C++" {
-                #[allow(private_interfaces)]
                 #(#docs)*
                 #(#qenum_attrs)*
                 type #qenum_ident = super::#module_name::#qenum_ident;
@@ -219,7 +218,6 @@ mod tests {
             &generated.cxx_mod_contents[0],
             quote! {
                 extern "C++" {
-                    #[allow(private_interfaces)]
                     #[doc = r" Doc comment"]
                     #[namespace = "my_namespace"]
                     type MyEnum = super::cxx_qt_private_qenum_MyEnum::MyEnum;
