@@ -485,22 +485,18 @@ mod ffi {
     }
     #[cfg(not(enabled))]
     extern "C++" {
-        #[allow(private_interfaces)]
         type EnumDisabled1 = super::cxx_qt_private_qenum_EnumDisabled1::EnumDisabled1;
     }
     #[cfg(enabled)]
     extern "C++" {
-        #[allow(private_interfaces)]
         type EnumEnabled1 = super::cxx_qt_private_qenum_EnumEnabled1::EnumEnabled1;
     }
     #[cfg(not(enabled))]
     extern "C++" {
-        #[allow(private_interfaces)]
         type EnumDisabled2 = super::cxx_qt_private_qenum_EnumDisabled2::EnumDisabled2;
     }
     #[cfg(enabled)]
     extern "C++" {
-        #[allow(private_interfaces)]
         type EnumEnabled2 = super::cxx_qt_private_qenum_EnumEnabled2::EnumEnabled2;
     }
 }

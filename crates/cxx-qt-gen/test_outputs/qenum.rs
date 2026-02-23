@@ -117,12 +117,10 @@ mod ffi {
         type QObject = cxx_qt::QObject;
     }
     extern "C++" {
-        #[allow(private_interfaces)]
         #[namespace = "cxx_qt::my_object"]
         type MyEnum = super::cxx_qt_private_qenum_MyEnum::MyEnum;
     }
     extern "C++" {
-        #[allow(private_interfaces)]
         #[namespace = "my_namespace"]
         type MyOtherEnum = super::cxx_qt_private_qenum_MyOtherEnum::MyOtherEnum;
     }
@@ -148,7 +146,6 @@ mod ffi {
         type MyOtherNamespacedEnum;
     }
     extern "C++" {
-        #[allow(private_interfaces)]
         #[namespace = "cxx_qt::my_object"]
         type MyRenamedEnum = super::cxx_qt_private_qenum_MyRenamedEnum::MyRenamedEnum;
     }
