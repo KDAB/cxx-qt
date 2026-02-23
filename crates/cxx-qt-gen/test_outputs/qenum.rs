@@ -212,7 +212,7 @@ impl ::cxx_qt::CxxQtType for ffi::MyRenamedObject {
 mod cxx_qt_private_qenum_MyEnum {
     #[derive(PartialEq, Eq, Clone, Copy)]
     #[repr(transparent)]
-    pub(super) struct MyEnum {
+    pub struct MyEnum {
         #[allow(missing_docs)]
         pub repr: i32,
     }
@@ -229,7 +229,7 @@ mod cxx_qt_private_qenum_MyEnum {
 mod cxx_qt_private_qenum_MyOtherEnum {
     #[derive(PartialEq, Eq, Clone, Copy)]
     #[repr(transparent)]
-    pub(super) struct MyOtherEnum {
+    pub struct MyOtherEnum {
         #[allow(missing_docs)]
         pub repr: i32,
     }
@@ -248,7 +248,7 @@ mod cxx_qt_private_qenum_MyOtherEnum {
 mod cxx_qt_private_qenum_MyRenamedEnum {
     #[derive(PartialEq, Eq, Clone, Copy)]
     #[repr(transparent)]
-    pub(super) struct MyRenamedEnum {
+    pub struct MyRenamedEnum {
         #[allow(missing_docs)]
         pub repr: i32,
     }

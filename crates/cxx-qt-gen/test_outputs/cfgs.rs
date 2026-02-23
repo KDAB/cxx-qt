@@ -1226,7 +1226,7 @@ cxx_qt::static_assertions::assert_eq_size!(
 mod cxx_qt_private_qenum_EnumDisabled1 {
     #[derive(PartialEq, Eq, Clone, Copy)]
     #[repr(transparent)]
-    pub(super) struct EnumDisabled1 {
+    pub struct EnumDisabled1 {
         #[allow(missing_docs)]
         pub repr: i32,
     }
@@ -1244,7 +1244,7 @@ mod cxx_qt_private_qenum_EnumDisabled1 {
 mod cxx_qt_private_qenum_EnumEnabled1 {
     #[derive(PartialEq, Eq, Clone, Copy)]
     #[repr(transparent)]
-    pub(super) struct EnumEnabled1 {
+    pub struct EnumEnabled1 {
         #[allow(missing_docs)]
         pub repr: i32,
     }
@@ -1262,7 +1262,7 @@ mod cxx_qt_private_qenum_EnumEnabled1 {
 mod cxx_qt_private_qenum_EnumDisabled2 {
     #[derive(PartialEq, Eq, Clone, Copy)]
     #[repr(transparent)]
-    pub(super) struct EnumDisabled2 {
+    pub struct EnumDisabled2 {
         #[allow(missing_docs)]
         pub repr: i32,
     }
@@ -1280,7 +1280,7 @@ mod cxx_qt_private_qenum_EnumDisabled2 {
 mod cxx_qt_private_qenum_EnumEnabled2 {
     #[derive(PartialEq, Eq, Clone, Copy)]
     #[repr(transparent)]
-    pub(super) struct EnumEnabled2 {
+    pub struct EnumEnabled2 {
         #[allow(missing_docs)]
         pub repr: i32,
     }
