@@ -81,3 +81,11 @@ impl QtToolQtPaths {
         Some(String::from_utf8_lossy(&output).trim().to_owned())
     }
 }
+
+#[cfg(feature = "qt_minimal")]
+impl QtToolQtPaths {
+    /// Construct from an executable path this is used interally to allow for querying for the Qt version
+    pub(crate) fn from_path_buf(executable: PathBuf) -> Self {
+        Self { executable }
+    }
+}
