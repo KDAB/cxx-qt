@@ -70,29 +70,8 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
         let manifest: artifact::ParsedQtManifest =
             serde_json::from_str(qt_artifacts::QT_MANIFEST_JSON)?;
 
-        // Find artifacts matching Qt version
-        //
-        // Arch could be x86_64
-        // OS could be linux
-        // https://doc.rust-lang.org/cargo/appendix/glossary.html#target
-        //
-        // TODO: is there a better way to find the arch and os ?
-        // and should this be configurable via env var overrides?
-        let target = std::env::var("TARGET").expect("TARGET to be set");
-        let target_parts: Vec<_> = target.split("-").collect();
-        let arch = target_parts
-            .first()
-            .expect("TARGET to have a <arch><sub> component");
-        let os = target_parts
-            .get(2)
-            .expect("TARGET to have a <sys> component");
-        let artifacts: Vec<ParsedQtArtifact> = manifest
-            .artifacts
-            .into_iter()
-            .filter(|artifact| {
-                artifact.arch == *arch && artifact.os == *os && artifact.version == version
-            })
-            .collect();
+        // Find artifacts for the Qt version
+        let artifacts = Self::match_artifact_requirements(manifest.artifacts, &[version.clone()]);
 
         // Find the first bin / include
         let artifact_bin = artifacts
@@ -110,8 +89,8 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
                 "{}.{}.{}",
                 version.major, version.minor, version.patch
             ))
-            .join(os)
-            .join(arch);
+            .join(&artifact_bin.os)
+            .join(&artifact_bin.arch);
         artifact_bin.download_and_extract(&extract_target_dir);
         if artifact_bin != artifact_include {
             artifact_include.download_and_extract(&extract_target_dir);
@@ -247,6 +226,34 @@ impl QtInstallationQtMinimal {
         }
 
         Ok(artifacts)
+    }
+
+    /// Find artifacts matching Qt version
+    pub(crate) fn match_artifact_requirements(
+        artifacts: Vec<ParsedQtArtifact>,
+        versions: &[semver::Version],
+    ) -> Vec<ParsedQtArtifact> {
+        // Arch could be x86_64
+        // OS could be linux
+        // https://doc.rust-lang.org/cargo/appendix/glossary.html#target
+        //
+        // TODO: is there a better way to find the arch and os ?
+        // and should this be configurable via env var overrides?
+        let target = std::env::var("TARGET").expect("TARGET to be set");
+        let target_parts: Vec<_> = target.split("-").collect();
+        let arch = target_parts
+            .first()
+            .expect("TARGET to have a <arch><sub> component");
+        let os = target_parts
+            .get(2)
+            .expect("TARGET to have a <sys> component");
+
+        artifacts
+            .into_iter()
+            .filter(|artifact| {
+                artifact.arch == *arch && artifact.os == *os && versions.contains(&artifact.version)
+            })
+            .collect()
     }
 }
 
