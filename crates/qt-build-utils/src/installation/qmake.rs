@@ -60,18 +60,15 @@ impl QtInstallationQMake {
     /// ```
     pub fn new() -> anyhow::Result<Self> {
         // Try the QMAKE variable first
-        println!("cargo::rerun-if-env-changed=QMAKE");
-        if let Ok(qmake_env_var) = env::var("QMAKE") {
-            return QtInstallationQMake::try_from(PathBuf::from(&qmake_env_var)).map_err(|err| {
-                QtBuildError::QMakeSetQtMissing {
-                    qmake_env_var,
-                    error: err.into(),
-                }
-                .into()
-            });
+        if let Some(result) = Self::try_from_qmake_env() {
+            return result;
         }
 
         // Try variable candidates within the patch
+        Self::try_from_path()
+    }
+
+    pub(crate) fn try_from_path() -> anyhow::Result<Self> {
         ["qmake6", "qmake-qt5", "qmake"]
             .iter()
             // Use the first non-errored installation
@@ -89,6 +86,24 @@ impl QtInstallationQMake {
                 ))
             })
             .unwrap_or_else(|| Err(QtBuildError::QtMissing.into()))
+    }
+
+    pub(crate) fn try_from_qmake_env() -> Option<anyhow::Result<Self>> {
+        println!("cargo::rerun-if-env-changed=QMAKE");
+
+        if let Ok(qmake_env_var) = env::var("QMAKE") {
+            return Some(
+                QtInstallationQMake::try_from(PathBuf::from(&qmake_env_var)).map_err(|err| {
+                    QtBuildError::QMakeSetQtMissing {
+                        qmake_env_var,
+                        error: err.into(),
+                    }
+                    .into()
+                }),
+            );
+        }
+
+        None
     }
 }
 

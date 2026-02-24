@@ -1752,6 +1752,7 @@ dependencies = [
  "dirs",
  "flate2",
  "qt-artifacts",
+ "qt-version",
  "reqwest",
  "semver",
  "serde",
@@ -1760,6 +1761,15 @@ dependencies = [
  "tar",
  "tempfile",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "qt-version"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f906d620a5341d4fe19f96ecf52a3ee10e7d80d808d539efb0e28402a84edc1a"
+dependencies = [
+ "semver",
 ]
 
 [[package]]

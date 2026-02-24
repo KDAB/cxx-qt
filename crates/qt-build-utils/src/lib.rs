@@ -107,16 +107,76 @@ pub struct QtBuild {
 }
 
 impl QtBuild {
-    /// Create a [QtBuild] using the default [QtInstallation] (currently uses [QtInstallationQMake])
+    /// Create a [QtBuild] automatically determining the [QtInstallation] depending on enable features
     /// and specify which Qt modules you are linking, ommitting the `Qt` prefix (`"Core"`
     /// rather than `"QtCore"`).
-    ///
-    /// Currently this function is only available when the `qmake` feature is enabled.
-    /// Use [Self::with_installation] to create a [QtBuild] with a custom [QtInstallation].
-    #[cfg(feature = "qmake")]
     pub fn new(qt_modules: Vec<String>) -> anyhow::Result<Self> {
-        let qt_installation = Box::new(QtInstallationQMake::new()?);
-        Ok(Self::with_installation(qt_installation, qt_modules))
+        let find_qt_installation = || -> anyhow::Result<Box<dyn QtInstallation>> {
+            // If QMAKE env var is set then try this first
+            //
+            // NOTE: if the env is set but qmake doesn't exist we fail
+            #[cfg(feature = "qmake")]
+            {
+                if let Some(result) = QtInstallationQMake::try_from_qmake_env() {
+                    return result
+                        .map(|installation| -> Box<dyn QtInstallation> { Box::new(installation) });
+                }
+            }
+
+            // Auto determining Qt version from crates is enabled
+            #[cfg(feature = "qt_version")]
+            {
+                let versions = qt_version::qt_versions();
+
+                // Check for a qmake install in PATH
+                #[cfg(feature = "qmake")]
+                {
+                    // See if qmake matches the Qt version range
+                    if let Ok(qt_installation) = QtInstallationQMake::try_from_path() {
+                        if versions.contains(&qt_installation.version()) {
+                            return Ok(Box::new(qt_installation));
+                        }
+                    }
+                }
+
+                // Check for a qt_minimal install
+                #[cfg(feature = "qt_minimal")]
+                {
+                    // Search existing installed qt_minimal versions
+                    //
+                    // TODO: have API to do this
+
+                    // Download from Qt artifacts
+                    //
+                    // NOTE: we assume the last version is the newest
+                    if let Some(version_last) = versions.last() {
+                        if let Ok(qt_installation) =
+                            QtInstallationQtMinimal::try_from(version_last.clone())
+                        {
+                            return Ok(Box::new(qt_installation));
+                        }
+                    }
+                }
+            }
+
+            #[cfg(not(feature = "qt_version"))]
+            {
+                // Check for a qmake install
+                #[cfg(feature = "qmake")]
+                {
+                    // See if qmake matches the Qt version range
+                    if let Ok(qt_installation) = QtInstallationQMake::try_from_path() {
+                        return Ok(Box::new(qt_installation));
+                    }
+                }
+
+                // TODO: will qt_minimal work without qt_version?
+            }
+
+            Err(QtBuildError::QtMissing.into())
+        };
+
+        Ok(Self::with_installation(find_qt_installation()?, qt_modules))
     }
 
     /// Create a [QtBuild] using the given [QtInstallation] and specify which
