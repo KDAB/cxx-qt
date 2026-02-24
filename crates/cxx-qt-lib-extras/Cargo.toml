@@ -5,7 +5,6 @@
 [package]
 name = "cxx-qt-lib-extras"
 version.workspace = true
-authors = ["Laurent Montel <laurent.montel@kdab.com>"]
 edition.workspace = true
 license.workspace = true
 description = "Extra Qt types for integrating `cxx-qt` crate with `cxx` that are not available in `cxx-qt-lib`"

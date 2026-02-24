@@ -7,9 +7,6 @@
 name = "cxx-qt-basics"
 version = "0.1.0"
 edition = "2021"
-authors = [
-  "Leon Matthes <leon.matthes@kdab.com>"
-]
 
 [dependencies]
 cxx.workspace = true
