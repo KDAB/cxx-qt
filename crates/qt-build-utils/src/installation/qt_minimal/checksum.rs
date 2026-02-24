@@ -4,14 +4,17 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use sha2::{Digest, Sha256};
-use std::io::{BufReader, Read};
+use std::{
+    io::{BufReader, Read},
+    path::Path,
+};
 
 const BUFFER_SIZE: usize = 1024;
 
 /// Hash a file at specified path, using sha256, and return it as a vec of bytes
-pub(crate) fn hash_file(path: &str) -> Vec<u8> {
+pub(crate) fn hash_file(path: &Path) -> anyhow::Result<Vec<u8>> {
     let mut hasher = Sha256::new();
-    let file = std::fs::File::open(path).unwrap();
+    let file = std::fs::File::open(path)?;
     let mut reader = BufReader::new(file);
     let mut buffer = [0; BUFFER_SIZE];
 
@@ -22,5 +25,5 @@ pub(crate) fn hash_file(path: &str) -> Vec<u8> {
         hasher.update(&buffer[..size]);
     }
 
-    hasher.finalize().to_vec()
+    Ok(hasher.finalize().to_vec())
 }

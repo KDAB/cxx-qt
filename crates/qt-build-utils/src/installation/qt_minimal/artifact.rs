@@ -3,29 +3,51 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::path::{Path, PathBuf};
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 /// A Qt manifest.json file, which specifies a set of artifacts needed for installation
 pub(crate) struct ParsedQtManifest {
-    schema_version: u8,
-    artifacts: Vec<ParsedQtArtifact>,
+    pub(crate) schema_version: u8,
+    pub(crate) artifacts: Vec<ParsedQtArtifact>,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, PartialEq)]
 /// Descriptor for a Qt artifact, included download information
 pub(crate) struct ParsedQtArtifact {
-    version: String,
-    arch: String,
-    os: String,
-    url: String,
+    pub(crate) version: semver::Version,
+    pub(crate) arch: String,
+    pub(crate) os: String,
+    pub(crate) url: String,
     sha256: String,
-    content: Vec<String>,
+    pub(crate) content: Vec<String>,
 }
 
 impl ParsedQtArtifact {
+    /// Download the artifact and extract to the given target path
+    pub fn download_and_extract(&self, target_path: &Path) -> PathBuf {
+        // Download to a temporary location
+        let http_client = reqwest::blocking::Client::new();
+        let temp_dir = tempfile::TempDir::new().expect("Could not create temporary directory");
+        let archive_path =
+            super::download::download_from_url(&self.url, &self.sha256, &temp_dir, &http_client)
+                .expect("Could not download url");
+
+        // Verify the checksum
+        self.verify(&super::checksum::hash_file(&archive_path).expect("Could not hash file"))
+            .expect("Could not verify sha256 hash");
+
+        // Extract into the target folder
+        super::extract::extract_archive(&archive_path, target_path)
+            .expect("Could not extract archive into target");
+
+        target_path.to_path_buf()
+    }
+
     /// Assert that the hashes are the same, from bytes
-    pub fn verify(&self, hash: &[u8]) {
+    pub fn verify(&self, hash: &[u8]) -> anyhow::Result<()> {
         let mut hash_string = String::new();
 
         for byte in hash {
@@ -33,6 +55,10 @@ impl ParsedQtArtifact {
             hash_string.push_str(&formatted);
         }
 
-        assert!(self.sha256 == hash_string);
+        if self.sha256 != hash_string {
+            return Err(anyhow::anyhow!("sha256 does not match for: {}", &self.url));
+        }
+
+        Ok(())
     }
 }
