@@ -81,26 +81,32 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
 }
 
 impl QtInstallation for QtInstallationQtMinimal {
-    fn framework_paths(&self, _qt_modules: &[String]) -> Vec<std::path::PathBuf> {
-        // TODO: macos support
-        vec![]
+    fn framework_paths(&self, qt_modules: &[String]) -> Vec<std::path::PathBuf> {
+        let path_lib = self.path_qt.join("lib");
+        super::shared::framework_paths_for_qt_modules(qt_modules, path_lib)
     }
 
-    fn include_paths(&self, _qt_modules: &[String]) -> Vec<std::path::PathBuf> {
-        let mut paths = vec![];
-        let root_path = self.path_qt.join("include");
-        paths.push(root_path);
-
-        // TODO: loop over qt modules
-
-        paths
+    fn include_paths(&self, qt_modules: &[String]) -> Vec<std::path::PathBuf> {
+        let path_include = self.path_qt.join("include");
+        let path_lib = self.path_qt.join("lib");
+        super::shared::include_paths_for_qt_modules(qt_modules, path_include, path_lib)
     }
 
-    fn link_modules(&self, _builder: &mut cc::Build, _qt_modules: &[String]) {
-        let lib_path = self.path_qt.join("lib");
-        println!("cargo::rustc-link-search={}", lib_path.display());
-
-        // TODO: loop over qt modules
+    fn link_modules(&self, builder: &mut cc::Build, qt_modules: &[String]) {
+        let path_frameworks = self.framework_paths(qt_modules);
+        let path_lib = self.path_qt.join("lib");
+        let path_prefix = self.path_qt.clone();
+        let path_plugins = self.path_qt.join("plugins");
+        let qt_version = self.version.clone();
+        super::shared::link_for_qt_modules(
+            builder,
+            qt_modules,
+            path_frameworks,
+            path_lib,
+            path_prefix,
+            path_plugins,
+            qt_version,
+        );
     }
 
     fn try_find_tool(&self, tool: crate::QtTool) -> anyhow::Result<std::path::PathBuf> {

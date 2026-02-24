@@ -5,15 +5,10 @@
 
 use semver::Version;
 use std::{
-    cell::RefCell,
-    collections::HashMap,
-    env,
-    io::ErrorKind,
-    path::{Path, PathBuf},
-    process::Command,
+    cell::RefCell, collections::HashMap, env, io::ErrorKind, path::PathBuf, process::Command,
 };
 
-use crate::{parse_cflags, utils, QtBuildError, QtInstallation, QtTool};
+use crate::{QtBuildError, QtInstallation, QtTool};
 
 /// A implementation of [QtInstallation] using qmake
 pub struct QtInstallationQMake {
@@ -144,141 +139,32 @@ impl TryFrom<PathBuf> for QtInstallationQMake {
 }
 
 impl QtInstallation for QtInstallationQMake {
-    fn framework_paths(&self, _qt_modules: &[String]) -> Vec<PathBuf> {
-        let mut framework_paths = vec![];
-
-        if utils::is_apple_target() {
-            // Note that this adds the framework path which allows for
-            // includes such as <QtCore/QObject> to be resolved correctly
-            let framework_path = self.qmake_query("QT_INSTALL_LIBS");
-            framework_paths.push(framework_path);
-        }
-
-        framework_paths
-            .iter()
-            .map(PathBuf::from)
-            // Only add paths if they exist
-            .filter(|path| path.exists())
-            .collect()
+    fn framework_paths(&self, qt_modules: &[String]) -> Vec<PathBuf> {
+        let path_lib = PathBuf::from(self.qmake_query("QT_INSTALL_LIBS"));
+        super::shared::framework_paths_for_qt_modules(qt_modules, path_lib)
     }
 
     fn include_paths(&self, qt_modules: &[String]) -> Vec<PathBuf> {
-        let root_path = self.qmake_query("QT_INSTALL_HEADERS");
-        let lib_path = self.qmake_query("QT_INSTALL_LIBS");
-        let mut paths = Vec::new();
-        for qt_module in qt_modules {
-            // Add the usual location for the Qt module
-            paths.push(format!("{root_path}/Qt{qt_module}"));
-
-            // Ensure that we add any framework's headers path
-            //
-            // Note that the individual Qt modules should in theory work
-            // by giving `-framework QtCore` to the cc builder. However these
-            // appear to be lost in flag_if_supported.
-            //
-            // Also note we still need these include directs even with the -F / framework paths
-            // as otherwise only <QtCore/QtGlobal> works but <QtGlobal> does not.
-            let header_path = format!("{lib_path}/Qt{qt_module}.framework/Headers");
-            if utils::is_apple_target() && Path::new(&header_path).exists() {
-                paths.push(header_path);
-            }
-        }
-
-        // Add the QT_INSTALL_HEADERS itself
-        paths.push(root_path);
-
-        paths
-            .iter()
-            .map(PathBuf::from)
-            // Only add paths if they exist
-            .filter(|path| path.exists())
-            .collect()
+        let path_include = PathBuf::from(self.qmake_query("QT_INSTALL_HEADERS"));
+        let path_lib = PathBuf::from(self.qmake_query("QT_INSTALL_LIBS"));
+        super::shared::include_paths_for_qt_modules(qt_modules, path_include, path_lib)
     }
 
     fn link_modules(&self, builder: &mut cc::Build, qt_modules: &[String]) {
-        let prefix_path = self.qmake_query("QT_INSTALL_PREFIX");
-        let lib_path = self.qmake_query("QT_INSTALL_LIBS");
-        println!("cargo::rustc-link-search={lib_path}");
-
-        let target = env::var("TARGET");
-
-        // Add the QT_INSTALL_LIBS as a framework link search path as well
-        //
-        // Note that leaving the kind empty should default to all,
-        // but this doesn't appear to find frameworks in all situations
-        // https://github.com/KDAB/cxx-qt/issues/885
-        //
-        // Note this doesn't have an adverse affect running all the time
-        // as it appears that all rustc-link-search are added
-        //
-        // Note that this adds the framework path which allows for
-        // includes such as <QtCore/QObject> to be resolved correctly
-        if utils::is_apple_target() {
-            println!("cargo::rustc-link-search=framework={lib_path}");
-
-            // Ensure that any framework paths are set to -F
-            for framework_path in self.framework_paths(qt_modules) {
-                builder.flag_if_supported(format!("-F{}", framework_path.display()));
-                // Also set the -rpath otherwise frameworks can not be found at runtime
-                println!(
-                    "cargo::rustc-link-arg=-Wl,-rpath,{}",
-                    framework_path.display()
-                );
-            }
-        }
-
-        let prefix = match &target {
-            Ok(target) => {
-                if target.contains("windows") {
-                    ""
-                } else {
-                    "lib"
-                }
-            }
-            Err(_) => "lib",
-        };
-
-        for qt_module in qt_modules {
-            let framework = if utils::is_apple_target() {
-                Path::new(&format!("{lib_path}/Qt{qt_module}.framework")).exists()
-            } else {
-                false
-            };
-
-            let (link_lib, prl_path) = if framework {
-                (
-                    format!("framework=Qt{qt_module}"),
-                    format!("{lib_path}/Qt{qt_module}.framework/Resources/Qt{qt_module}.prl"),
-                )
-            } else {
-                (
-                    format!("Qt{}{qt_module}", self.qmake_version.major),
-                    self.find_qt_module_prl(&lib_path, prefix, self.qmake_version.major, qt_module),
-                )
-            };
-
-            self.link_qt_library(
-                &format!("Qt{}{qt_module}", self.qmake_version.major),
-                &prefix_path,
-                &lib_path,
-                &link_lib,
-                &prl_path,
-                builder,
-            );
-        }
-
-        if utils::is_emscripten_target() {
-            let platforms_path = format!("{}/platforms", self.qmake_query("QT_INSTALL_PLUGINS"));
-            println!("cargo::rustc-link-search={platforms_path}");
-            self.link_qt_library(
-                "qwasm",
-                &prefix_path,
-                &lib_path,
-                "qwasm",
-                &format!("{platforms_path}/libqwasm.prl"),
-                builder,
-            );
-        }
+        let path_frameworks = self.framework_paths(qt_modules);
+        let path_lib = PathBuf::from(self.qmake_query("QT_INSTALL_LIBS"));
+        let path_prefix = PathBuf::from(self.qmake_query("QT_INSTALL_PREFIX"));
+        let path_plugins = PathBuf::from(self.qmake_query("QT_INSTALL_PLUGINS"));
+        let qt_version = self.qmake_version.clone();
+        super::shared::link_for_qt_modules(
+            builder,
+            qt_modules,
+            path_frameworks,
+            path_lib,
+            path_prefix,
+            path_plugins,
+            qt_version,
+        );
     }
 
     fn try_find_tool(&self, tool: QtTool) -> anyhow::Result<PathBuf> {
@@ -302,66 +188,6 @@ impl QtInstallation for QtInstallationQMake {
 }
 
 impl QtInstallationQMake {
-    /// Some prl files include their architecture in their naming scheme.
-    /// Just try all known architectures and fallback to non when they all failed.
-    fn find_qt_module_prl(
-        &self,
-        lib_path: &str,
-        prefix: &str,
-        version_major: u64,
-        qt_module: &str,
-    ) -> String {
-        for arch in ["", "_arm64-v8a", "_armeabi-v7a", "_x86", "_x86_64"] {
-            let prl_path = format!("{lib_path}/{prefix}Qt{version_major}{qt_module}{arch}.prl");
-            match Path::new(&prl_path).try_exists() {
-                Ok(exists) => {
-                    if exists {
-                        return prl_path;
-                    }
-                }
-                Err(e) => {
-                    println!("cargo::warning=failed checking for existence of {prl_path}: {e}");
-                }
-            }
-        }
-
-        format!("{lib_path}/{prefix}Qt{version_major}{qt_module}.prl")
-    }
-
-    fn link_qt_library(
-        &self,
-        name: &str,
-        prefix_path: &str,
-        lib_path: &str,
-        link_lib: &str,
-        prl_path: &str,
-        builder: &mut cc::Build,
-    ) {
-        println!("cargo::rustc-link-lib={link_lib}");
-
-        match std::fs::read_to_string(prl_path) {
-            Ok(prl) => {
-                for line in prl.lines() {
-                    if let Some(line) = line.strip_prefix("QMAKE_PRL_LIBS = ") {
-                        parse_cflags::parse_libs_cflags(
-                            name,
-                            line.replace(r"$$[QT_INSTALL_LIBS]", lib_path)
-                                .replace(r"$$[QT_INSTALL_PREFIX]", prefix_path)
-                                .as_bytes(),
-                            builder,
-                        );
-                    }
-                }
-            }
-            Err(e) => {
-                println!(
-                    "cargo::warning=Could not open {} file to read libraries to link: {}",
-                    &prl_path, e
-                );
-            }
-        }
-    }
-
     fn qmake_query(&self, var_name: &str) -> String {
         String::from_utf8_lossy(
             &Command::new(&self.qmake_path)

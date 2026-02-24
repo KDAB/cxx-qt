@@ -124,7 +124,7 @@ fn split_flags(link_args: &[u8]) -> Vec<String> {
     words
 }
 
-pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc::Build) {
+pub(crate) fn parse_libs_cflags(link_args: &[u8], _builder: &mut cc::Build) {
     let mut is_msvc = false;
     let target = env::var("TARGET");
     if let Ok(target) = &target {
@@ -218,7 +218,7 @@ pub(crate) fn parse_libs_cflags(name: &str, link_args: &[u8], _builder: &mut cc:
                                     println!("cargo::rustc-link-lib={lib_basename}");
                                 }
                                 None => {
-                                    println!("cargo::warning=File path {} found in .prl file for {name}, but could not extract library base name to pass to linker command line", path.display());
+                                    println!("cargo::warning=File path {} found in .prl file, but could not extract library base name to pass to linker command line", path.display());
                                 }
                             }
                         }

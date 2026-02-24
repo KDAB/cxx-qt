@@ -9,6 +9,8 @@ pub(crate) mod qmake;
 #[cfg(feature = "qt_minimal")]
 pub(crate) mod qt_minimal;
 
+mod shared;
+
 use semver::Version;
 use std::path::PathBuf;
 
