@@ -4,6 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
+use std::borrow::Borrow;
 use std::fmt;
 
 /// The `QHash` class is a template class that provides a hash-table-based dictionary.
@@ -222,6 +223,32 @@ where
 
     fn into_iter(self) -> Self::IntoIter {
         self.iter()
+    }
+}
+
+impl<T, K, V> Extend<(K, V)> for QHash<T>
+where
+    T: QHashPair,
+    K: Borrow<T::Key>,
+    V: Borrow<T::Value>,
+{
+    fn extend<I: IntoIterator<Item = (K, V)>>(&mut self, iter: I) {
+        for (key, value) in iter {
+            self.insert_clone(key.borrow(), value.borrow());
+        }
+    }
+}
+
+impl<T, K, V> FromIterator<(K, V)> for QHash<T>
+where
+    T: QHashPair,
+    K: Borrow<T::Key>,
+    V: Borrow<T::Value>,
+{
+    fn from_iter<I: IntoIterator<Item = (K, V)>>(iter: I) -> Self {
+        let mut qhash = Self::default();
+        qhash.extend(iter);
+        qhash
     }
 }
 
