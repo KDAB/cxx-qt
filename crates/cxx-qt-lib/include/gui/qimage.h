@@ -27,6 +27,22 @@ QImage
 qimageInitFromData(const rust::Slice<std::uint8_t const> data,
                    rust::Str format);
 
+QImage
+qimageInitFromRawParts(const std::uint8_t* data,
+                       int width,
+                       int height,
+                       QImageFormat format,
+                       QImageCleanupFunction cleanupFunction,
+                       void* cleanupInfo);
+
+QImage
+qimageInitFromRawParts(std::uint8_t* data,
+                       int width,
+                       int height,
+                       QImageFormat format,
+                       QImageCleanupFunction cleanupFunction,
+                       void* cleanupInfo);
+
 ::std::int64_t
 qimageCacheKey(const QImage& image);
 

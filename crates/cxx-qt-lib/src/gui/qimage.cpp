@@ -50,6 +50,38 @@ qimageInitFromData(const rust::Slice<std::uint8_t const> data, rust::Str format)
                           formatString.empty() ? nullptr : formatString.data());
 }
 
+QImage
+qimageInitFromRawParts(const std::uint8_t* data,
+                       int width,
+                       int height,
+                       QImageFormat format,
+                       QImageCleanupFunction cleanupFunction,
+                       void* cleanupInfo)
+{
+  return QImage(static_cast<const unsigned char*>(data),
+                width,
+                height,
+                format,
+                cleanupFunction,
+                cleanupInfo);
+}
+
+QImage
+qimageInitFromRawParts(std::uint8_t* data,
+                       int width,
+                       int height,
+                       QImageFormat format,
+                       QImageCleanupFunction cleanupFunction,
+                       void* cleanupInfo)
+{
+  return QImage(static_cast<unsigned char*>(data),
+                width,
+                height,
+                format,
+                cleanupFunction,
+                cleanupInfo);
+}
+
 ::std::int64_t
 qimageCacheKey(const QImage& image)
 {
