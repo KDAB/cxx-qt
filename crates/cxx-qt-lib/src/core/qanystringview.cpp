@@ -13,7 +13,7 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/text/qanystringview.h
 assert_alignment_and_size(QAnyStringView, {
   ::std::size_t a0;
-  void* a1;
+  ::std::size_t a1;
 });
 
 static_assert(::std::is_trivially_copy_assignable<QAnyStringView>::value);
