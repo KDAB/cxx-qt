@@ -145,6 +145,7 @@ impl QtBuild {
                     // Search existing installed qt_minimal versions
                     //
                     // TODO: have API to do this
+                    let _ = QtInstallationQtMinimal::local_artifacts();
 
                     // Download from Qt artifacts
                     //

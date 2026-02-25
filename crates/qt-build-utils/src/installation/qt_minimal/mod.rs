@@ -8,8 +8,10 @@ mod checksum;
 mod download;
 mod extract;
 
-use std::path::PathBuf;
+use std::fs::DirEntry;
+use std::path::{Path, PathBuf};
 
+use crate::installation::qt_minimal::artifact::ParsedQtArtifact;
 use crate::{QtBuildError, QtInstallation};
 
 /// A implementation of [QtInstallation] using qtminimal
@@ -84,7 +86,7 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
         let os = target_parts
             .get(2)
             .expect("TARGET to have a <sys> component");
-        let artifacts: Vec<artifact::ParsedQtArtifact> = manifest
+        let artifacts: Vec<ParsedQtArtifact> = manifest
             .artifacts
             .into_iter()
             .filter(|artifact| {
@@ -185,4 +187,70 @@ impl QtInstallationQtMinimal {
 
         path
     }
+
+    /// Get a collection of the locally installed Qt artifacts
+    pub(crate) fn local_artifacts() -> anyhow::Result<Vec<ParsedQtArtifact>> {
+        let base_dir = Self::qt_minimal_root();
+
+        // Expects folder structure like:
+        // version/os/arch/qt/{bin, include}
+        // e.g. will find an artifact at 6.10.0/linux/x86_64/qt/bin
+        let mut artifacts = vec![];
+
+        // Iterate versions
+        for version in list_dirs(&base_dir) {
+            let path = version;
+            // TODO: Later skip unknown folders,
+            // this will error if a directory exists which isn't a version number
+            let semver = semver::Version::parse(path.file_name().to_str().unwrap())
+                .expect("Could not parse semver from directory name");
+
+            for os in list_dirs(&path.path()) {
+                let path = os;
+                let os = path.file_name().to_str().unwrap().to_string();
+
+                for arch in list_dirs(&path.path()) {
+                    let path = arch;
+                    let dir_entries = list_dirs(&path.path());
+
+                    // Expects one qt dir
+                    let qt_dir_path = dir_entries
+                        .iter()
+                        .filter(|dir| dir.file_name() == "qt")
+                        .last()
+                        .expect("Expected to find a Qt dir in this folder");
+
+                    let qt_folders = list_dirs(&qt_dir_path.path());
+                    for dir in qt_folders {
+                        let filename = dir.file_name();
+                        // Will be set if bin or include dirs are found
+                        let mut artifact_type = None;
+
+                        if filename == "bin" {
+                            artifact_type = Some("bin");
+                        } else if filename == "include" {
+                            artifact_type = Some("include");
+                        }
+
+                        if let Some(artifact_type) = artifact_type {
+                            artifacts.push(ParsedQtArtifact::new(
+                                semver.clone(),
+                                path.file_name().to_string_lossy().to_string(),
+                                os.clone(),
+                                qt_dir_path.path().to_string_lossy().to_string(),
+                                artifact_type.to_string(),
+                            ))
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(artifacts)
+    }
+}
+
+/// Get all valid directories in path bufs, ignoring errors
+fn list_dirs(path: &Path) -> Vec<DirEntry> {
+    path.read_dir().unwrap().flatten().collect()
 }
