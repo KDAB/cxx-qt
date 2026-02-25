@@ -18,6 +18,48 @@ pub struct QtInstallationQtMinimal {
     version: semver::Version,
 }
 
+impl TryFrom<PathBuf> for QtInstallationQtMinimal {
+    type Error = anyhow::Error;
+
+    fn try_from(path_qt: PathBuf) -> Result<Self, Self::Error> {
+        // Verify that the expected folders exist
+        for folder in ["bin", "include", "lib", "libexec"] {
+            if !path_qt.join(folder).exists() {
+                return Err(anyhow::anyhow!(
+                    "Failed to find {folder} in Qt path: {}",
+                    path_qt.display()
+                ));
+            }
+        }
+
+        // Find qtpaths binary
+        let Some(qtpaths) = ["bin", "libexec"]
+            .into_iter()
+            .map(|folder| {
+                path_qt
+                    .join(folder)
+                    .join(crate::QtTool::QtPaths.binary_name())
+            })
+            .find(|path| path.exists())
+        else {
+            return Err(anyhow::anyhow!(
+                "Failed to find qtpaths in Qt path: {}",
+                path_qt.display()
+            ));
+        };
+
+        // Determine the Qt version from qtpaths
+        let version = semver::Version::parse(
+            &crate::QtToolQtPaths::from_path_buf(qtpaths)
+                .query("QT_VERSION")
+                .expect("Could not query qtpaths for QT_VERSION"),
+        )
+        .expect("Could not parse Qt version");
+
+        Ok(Self { path_qt, version })
+    }
+}
+
 impl TryFrom<semver::Version> for QtInstallationQtMinimal {
     type Error = anyhow::Error;
 
@@ -73,10 +115,7 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
             artifact_include.download_and_extract(&extract_target_dir);
         }
 
-        Ok(Self {
-            path_qt: extract_target_dir.join("qt"),
-            version,
-        })
+        Self::try_from(extract_target_dir.join("qt"))
     }
 }
 
@@ -111,13 +150,11 @@ impl QtInstallation for QtInstallationQtMinimal {
 
     fn try_find_tool(&self, tool: crate::QtTool) -> anyhow::Result<std::path::PathBuf> {
         // Tools could be either in libexec or bin
-        let path_bin = self.path_qt.join("bin").join(tool.binary_name());
-        let path_libexec = self.path_qt.join("libexec").join(tool.binary_name());
-
-        if path_bin.exists() {
-            return Ok(path_bin);
-        } else if path_libexec.exists() {
-            return Ok(path_libexec);
+        for folder in ["bin", "libexec"] {
+            let path = self.path_qt.join(folder).join(tool.binary_name());
+            if path.exists() {
+                return Ok(path);
+            }
         }
 
         Err(anyhow::anyhow!(
