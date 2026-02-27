@@ -74,16 +74,20 @@ impl QtInstallationQMake {
             // Use the first non-errored installation
             // If there are no valid installations we display the last error
             .fold(None, |acc, qmake_path| {
-                Some(acc.map_or_else(
-                    // Value is None so try to create installation
-                    || QtInstallationQMake::try_from(PathBuf::from(qmake_path)),
-                    // Value is Some so pass through or create if Err
-                    |prev: anyhow::Result<Self>| {
-                        prev.or_else(|_|
+                if let Ok(qmake_path) = which::which(qmake_path) {
+                    Some(acc.map_or_else(
+                        // Value is None so try to create installation
+                        || QtInstallationQMake::try_from(qmake_path.clone()),
+                        // Value is Some so pass through or create if Err
+                        |prev: anyhow::Result<Self>| {
+                            prev.or_else(|_|
                             // Value is Err so try to create installation
-                            QtInstallationQMake::try_from(PathBuf::from(qmake_path)))
-                    },
-                ))
+                            QtInstallationQMake::try_from(qmake_path.clone()))
+                        },
+                    ))
+                } else {
+                    None
+                }
             })
             .unwrap_or_else(|| Err(QtBuildError::QtMissing.into()))
     }
