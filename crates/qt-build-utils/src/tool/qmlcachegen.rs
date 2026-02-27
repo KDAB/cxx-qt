@@ -83,6 +83,9 @@ impl QtToolQmlCacheGen {
 
         let cmd = Command::new(&self.executable)
             .args(common_args.iter().chain(&specific_args))
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
             .output()
             .unwrap_or_else(|_| {
                 panic!(
@@ -140,6 +143,9 @@ impl QtToolQmlCacheGen {
                     .chain(&specific_args)
                     .chain(qml_resource_paths),
             )
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
             .output()
             .unwrap_or_else(|_| panic!("qmlcachegen failed for QML module {uri}"));
         if !cmd.status.success() {

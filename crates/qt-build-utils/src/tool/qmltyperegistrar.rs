@@ -72,6 +72,9 @@ impl QtToolQmlTypeRegistrar {
         args.extend(metatypes_json);
         let cmd = Command::new(&self.executable)
             .args(args)
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
             .output()
             .unwrap_or_else(|_| panic!("qmltyperegistrar failed for {uri}"));
         if !cmd.status.success() {

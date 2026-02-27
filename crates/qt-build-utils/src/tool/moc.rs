@@ -123,6 +123,9 @@ impl QtToolMoc {
             .arg(output_path.to_str().unwrap())
             .arg("--output-json");
         let cmd = cmd
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
             .output()
             .unwrap_or_else(|_| panic!("moc failed for {}", input_path.display()));
 
