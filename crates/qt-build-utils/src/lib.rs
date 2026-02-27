@@ -245,6 +245,11 @@ impl QtBuild {
         self.qt_installation.include_paths(&self.qt_modules)
     }
 
+    /// Get the inner [QtInstallation] implementation
+    pub fn installation(&self) -> &dyn QtInstallation {
+        self.qt_installation.as_ref()
+    }
+
     /// Version of the detected Qt installation
     pub fn version(&self) -> Version {
         self.qt_installation.version()
