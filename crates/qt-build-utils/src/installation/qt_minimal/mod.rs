@@ -8,6 +8,7 @@ mod checksum;
 mod download;
 mod extract;
 
+use std::collections::HashMap;
 use std::fs::DirEntry;
 use std::path::{Path, PathBuf};
 
@@ -24,6 +25,8 @@ impl TryFrom<PathBuf> for QtInstallationQtMinimal {
     type Error = anyhow::Error;
 
     fn try_from(path_qt: PathBuf) -> Result<Self, Self::Error> {
+        println!("cargo::rerun-if-changed={}", path_qt.display());
+
         // Verify that the expected folders exist
         for folder in ["bin", "include", "lib", "libexec"] {
             if !path_qt.join(folder).exists() {
@@ -70,29 +73,8 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
         let manifest: artifact::ParsedQtManifest =
             serde_json::from_str(qt_artifacts::QT_MANIFEST_JSON)?;
 
-        // Find artifacts matching Qt version
-        //
-        // Arch could be x86_64
-        // OS could be linux
-        // https://doc.rust-lang.org/cargo/appendix/glossary.html#target
-        //
-        // TODO: is there a better way to find the arch and os ?
-        // and should this be configurable via env var overrides?
-        let target = std::env::var("TARGET").expect("TARGET to be set");
-        let target_parts: Vec<_> = target.split("-").collect();
-        let arch = target_parts
-            .first()
-            .expect("TARGET to have a <arch><sub> component");
-        let os = target_parts
-            .get(2)
-            .expect("TARGET to have a <sys> component");
-        let artifacts: Vec<ParsedQtArtifact> = manifest
-            .artifacts
-            .into_iter()
-            .filter(|artifact| {
-                artifact.arch == *arch && artifact.os == *os && artifact.version == version
-            })
-            .collect();
+        // Find artifacts for the Qt version
+        let artifacts = Self::match_artifact_requirements(manifest.artifacts, &[version.clone()]);
 
         // Find the first bin / include
         let artifact_bin = artifacts
@@ -110,8 +92,8 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
                 "{}.{}.{}",
                 version.major, version.minor, version.patch
             ))
-            .join(os)
-            .join(arch);
+            .join(&artifact_bin.os)
+            .join(&artifact_bin.arch);
         artifact_bin.download_and_extract(&extract_target_dir);
         if artifact_bin != artifact_include {
             artifact_include.download_and_extract(&extract_target_dir);
@@ -174,6 +156,7 @@ impl QtInstallation for QtInstallationQtMinimal {
 impl QtInstallationQtMinimal {
     fn qt_minimal_root() -> PathBuf {
         // Check if a custom root has been set
+        println!("cargo::rerun-if-env-changed=QT_MINIMAL_DOWNLOAD_ROOT");
         let path = if let Ok(root) = std::env::var("QT_MINIMAL_DOWNLOAD_ROOT") {
             PathBuf::from(root)
         } else {
@@ -183,7 +166,10 @@ impl QtInstallationQtMinimal {
                 .join("qt_minimal_download")
         };
 
-        std::fs::create_dir_all(&path).expect("Could not create Qt minimal root path");
+        // Only create when it doesn't exist to avoid file modifications
+        if !path.exists() {
+            std::fs::create_dir_all(&path).expect("Could not create Qt minimal root path");
+        }
 
         path
     }
@@ -191,6 +177,7 @@ impl QtInstallationQtMinimal {
     /// Get a collection of the locally installed Qt artifacts
     pub(crate) fn local_artifacts() -> anyhow::Result<Vec<ParsedQtArtifact>> {
         let base_dir = Self::qt_minimal_root();
+        println!("cargo::rerun-if-changed={}", base_dir.display());
 
         // Expects folder structure like:
         // version/os/arch/qt/{bin, include}
@@ -199,6 +186,8 @@ impl QtInstallationQtMinimal {
 
         // Iterate versions
         for version in list_dirs(&base_dir) {
+            println!("cargo::rerun-if-changed={}", version.path().display());
+
             let path = version;
             // TODO: Later skip unknown folders,
             // this will error if a directory exists which isn't a version number
@@ -206,10 +195,14 @@ impl QtInstallationQtMinimal {
                 .expect("Could not parse semver from directory name");
 
             for os in list_dirs(&path.path()) {
+                println!("cargo::rerun-if-changed={}", os.path().display());
+
                 let path = os;
                 let os = path.file_name().to_str().unwrap().to_string();
 
                 for arch in list_dirs(&path.path()) {
+                    println!("cargo::rerun-if-changed={}", arch.path().display());
+
                     let path = arch;
                     let dir_entries = list_dirs(&path.path());
 
@@ -219,6 +212,7 @@ impl QtInstallationQtMinimal {
                         .filter(|dir| dir.file_name() == "qt")
                         .last()
                         .expect("Expected to find a Qt dir in this folder");
+                    println!("cargo::rerun-if-changed={}", qt_dir_path.path().display());
 
                     let qt_folders = list_dirs(&qt_dir_path.path());
                     for dir in qt_folders {
@@ -247,6 +241,65 @@ impl QtInstallationQtMinimal {
         }
 
         Ok(artifacts)
+    }
+
+    /// Find artifacts matching Qt version
+    pub(crate) fn match_artifact_requirements(
+        artifacts: Vec<ParsedQtArtifact>,
+        versions: &[semver::Version],
+    ) -> Vec<ParsedQtArtifact> {
+        // Arch could be x86_64
+        // OS could be linux
+        // https://doc.rust-lang.org/cargo/appendix/glossary.html#target
+        //
+        // TODO: is there a better way to find the arch and os ?
+        // and should this be configurable via env var overrides?
+        println!("cargo::rerun-if-env-changed=TARGET");
+        let target = std::env::var("TARGET").expect("TARGET to be set");
+        let target_parts: Vec<_> = target.split("-").collect();
+        let arch = target_parts
+            .first()
+            .expect("TARGET to have a <arch><sub> component");
+        let os = target_parts
+            .get(2)
+            .expect("TARGET to have a <sys> component");
+
+        artifacts
+            .into_iter()
+            .filter(|artifact| {
+                artifact.arch == *arch && artifact.os == *os && versions.contains(&artifact.version)
+            })
+            .collect()
+    }
+
+    /// Merge together artifacts with the same version
+    /// so that we do not have bin/ and include/ split
+    //
+    // NOTE: later we may support bin and include folders being in different places
+    pub(crate) fn group_artifacts(artifacts: Vec<ParsedQtArtifact>) -> Vec<ParsedQtArtifact> {
+        artifacts.into_iter().fold(
+                            HashMap::<semver::Version, ParsedQtArtifact>::default(),
+                            |mut acc, mut artifact| {
+                                acc.entry(artifact.version.clone())
+                                    .and_modify(|value| {
+                                        assert!(value.url == artifact.url);
+                                        if value.url == artifact.url {
+                                            value.content.append(&mut artifact.content)
+                                        } else {
+                                            println!("cargo::warning=Found multiple minimal installations of the same version but different urls: {} and {}", value.url, artifact.url);
+                                        }
+                                    })
+                                    .or_insert(artifact);
+                                acc
+                            },
+                        )
+            .into_values()
+            // Ensure that artifacts contain bin/ and include/
+            .filter(|artifact| {
+                artifact.content.contains(&"bin".to_string())
+                    && artifact.content.contains(&"include".to_string())
+            })
+            .collect()
     }
 }
 

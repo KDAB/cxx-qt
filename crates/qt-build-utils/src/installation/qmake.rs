@@ -74,16 +74,20 @@ impl QtInstallationQMake {
             // Use the first non-errored installation
             // If there are no valid installations we display the last error
             .fold(None, |acc, qmake_path| {
-                Some(acc.map_or_else(
-                    // Value is None so try to create installation
-                    || QtInstallationQMake::try_from(PathBuf::from(qmake_path)),
-                    // Value is Some so pass through or create if Err
-                    |prev: anyhow::Result<Self>| {
-                        prev.or_else(|_|
+                if let Ok(qmake_path) = which::which(qmake_path) {
+                    Some(acc.map_or_else(
+                        // Value is None so try to create installation
+                        || QtInstallationQMake::try_from(qmake_path.clone()),
+                        // Value is Some so pass through or create if Err
+                        |prev: anyhow::Result<Self>| {
+                            prev.or_else(|_|
                             // Value is Err so try to create installation
-                            QtInstallationQMake::try_from(PathBuf::from(qmake_path)))
-                    },
-                ))
+                            QtInstallationQMake::try_from(qmake_path.clone()))
+                        },
+                    ))
+                } else {
+                    None
+                }
             })
             .unwrap_or_else(|| Err(QtBuildError::QtMissing.into()))
     }
@@ -114,6 +118,9 @@ impl TryFrom<PathBuf> for QtInstallationQMake {
         // Attempt to read the QT_VERSION from qmake
         let qmake_version = match Command::new(&qmake_path)
             .args(["-query", "QT_VERSION"])
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
             .output()
         {
             Err(e) if e.kind() == ErrorKind::NotFound => Err(QtBuildError::QtMissing),
@@ -207,6 +214,9 @@ impl QtInstallationQMake {
         String::from_utf8_lossy(
             &Command::new(&self.qmake_path)
                 .args(["-query", var_name])
+                // Binaries should work without environment and this prevents
+                // LD_LIBRARY_PATH from causing different Qt version clashes
+                .env_clear()
                 .output()
                 .unwrap()
                 .stdout,
@@ -263,7 +273,12 @@ impl QtInstallationQMake {
         // Find the first valid executable path
         .find_map(|qmake_query_var| {
             let executable_path = PathBuf::from(self.qmake_query(qmake_query_var)).join(tool_name);
-            let test_output = Command::new(&executable_path).args(["-help"]).output();
+            let test_output = Command::new(&executable_path)
+                .args(["-help"])
+                // Binaries should work without environment and this prevents
+                // LD_LIBRARY_PATH from causing different Qt version clashes
+                .env_clear()
+                .output();
             match test_output {
                 Err(_err) => {
                     failed_paths.push(executable_path);

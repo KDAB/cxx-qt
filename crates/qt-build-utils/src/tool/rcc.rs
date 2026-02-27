@@ -72,6 +72,9 @@ impl QtToolRcc {
         args.extend(self.custom_args.iter().cloned());
 
         let cmd = Command::new(&self.executable)
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
             .args(args)
             .output()
             .unwrap_or_else(|_| panic!("rcc failed for {}", input_path.display()));
@@ -104,6 +107,9 @@ impl QtToolRcc {
         let input_path = input_file.as_ref();
         let cmd_list = Command::new(&self.executable)
             .args(["--list", input_path.to_str().unwrap()])
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
             .output()
             .unwrap_or_else(|_| panic!("rcc --list failed for {}", input_path.display()));
 
