@@ -192,7 +192,8 @@ impl QtBuild {
                     }
                 }
 
-                // TODO: will qt_minimal work without qt_version?
+                // NOTE: qt_minimal feature implies qt_version feature
+                // so we do not need to check for qt_minimal
             }
 
             Err(QtBuildError::QtMissing.into())
