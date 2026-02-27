@@ -74,6 +74,9 @@ impl QtToolQtPaths {
         // Run the qtpaths command and trim the output
         let output = Command::new(&self.executable)
             .args(args)
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
             // NOTE: Qt 5 will fail as there is no -query parameter
             .output()
             .ok()?
