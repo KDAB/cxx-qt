@@ -25,6 +25,8 @@ impl TryFrom<PathBuf> for QtInstallationQtMinimal {
     type Error = anyhow::Error;
 
     fn try_from(path_qt: PathBuf) -> Result<Self, Self::Error> {
+        println!("cargo::rerun-if-changed={}", path_qt.display());
+
         // Verify that the expected folders exist
         for folder in ["bin", "include", "lib", "libexec"] {
             if !path_qt.join(folder).exists() {
@@ -154,6 +156,7 @@ impl QtInstallation for QtInstallationQtMinimal {
 impl QtInstallationQtMinimal {
     fn qt_minimal_root() -> PathBuf {
         // Check if a custom root has been set
+        println!("cargo::rerun-if-env-changed=QT_MINIMAL_DOWNLOAD_ROOT");
         let path = if let Ok(root) = std::env::var("QT_MINIMAL_DOWNLOAD_ROOT") {
             PathBuf::from(root)
         } else {
@@ -163,7 +166,10 @@ impl QtInstallationQtMinimal {
                 .join("qt_minimal_download")
         };
 
-        std::fs::create_dir_all(&path).expect("Could not create Qt minimal root path");
+        // Only create when it doesn't exist to avoid file modifications
+        if !path.exists() {
+            std::fs::create_dir_all(&path).expect("Could not create Qt minimal root path");
+        }
 
         path
     }
@@ -171,6 +177,7 @@ impl QtInstallationQtMinimal {
     /// Get a collection of the locally installed Qt artifacts
     pub(crate) fn local_artifacts() -> anyhow::Result<Vec<ParsedQtArtifact>> {
         let base_dir = Self::qt_minimal_root();
+        println!("cargo::rerun-if-changed={}", base_dir.display());
 
         // Expects folder structure like:
         // version/os/arch/qt/{bin, include}
@@ -179,6 +186,8 @@ impl QtInstallationQtMinimal {
 
         // Iterate versions
         for version in list_dirs(&base_dir) {
+            println!("cargo::rerun-if-changed={}", version.path().display());
+
             let path = version;
             // TODO: Later skip unknown folders,
             // this will error if a directory exists which isn't a version number
@@ -186,10 +195,14 @@ impl QtInstallationQtMinimal {
                 .expect("Could not parse semver from directory name");
 
             for os in list_dirs(&path.path()) {
+                println!("cargo::rerun-if-changed={}", os.path().display());
+
                 let path = os;
                 let os = path.file_name().to_str().unwrap().to_string();
 
                 for arch in list_dirs(&path.path()) {
+                    println!("cargo::rerun-if-changed={}", arch.path().display());
+
                     let path = arch;
                     let dir_entries = list_dirs(&path.path());
 
@@ -199,6 +212,7 @@ impl QtInstallationQtMinimal {
                         .filter(|dir| dir.file_name() == "qt")
                         .last()
                         .expect("Expected to find a Qt dir in this folder");
+                    println!("cargo::rerun-if-changed={}", qt_dir_path.path().display());
 
                     let qt_folders = list_dirs(&qt_dir_path.path());
                     for dir in qt_folders {
@@ -240,6 +254,7 @@ impl QtInstallationQtMinimal {
         //
         // TODO: is there a better way to find the arch and os ?
         // and should this be configurable via env var overrides?
+        println!("cargo::rerun-if-env-changed=TARGET");
         let target = std::env::var("TARGET").expect("TARGET to be set");
         let target_parts: Vec<_> = target.split("-").collect();
         let arch = target_parts
