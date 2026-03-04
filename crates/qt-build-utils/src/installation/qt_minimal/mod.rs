@@ -61,7 +61,12 @@ impl TryFrom<PathBuf> for QtInstallationQtMinimal {
         )
         .expect("Could not parse Qt version");
 
-        Ok(Self { path_qt, version })
+        let link_location = Self::symlink_install_location()?;
+        let linked_path = link_location.join(path_qt.strip_prefix(Self::qt_minimal_root())?);
+        Ok(Self {
+            path_qt: linked_path.to_path_buf(),
+            version,
+        })
     }
 }
 
@@ -74,7 +79,8 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
             serde_json::from_str(qt_artifacts::QT_MANIFEST_JSON)?;
 
         // Find artifacts for the Qt version
-        let artifacts = Self::match_artifact_requirements(manifest.artifacts, &[version.clone()]);
+        let artifacts =
+            Self::match_artifact_requirements(manifest.artifacts, core::slice::from_ref(&version));
 
         // Find the first bin / include
         let artifact_bin = artifacts
@@ -104,12 +110,12 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
 }
 
 impl QtInstallation for QtInstallationQtMinimal {
-    fn framework_paths(&self, qt_modules: &[String]) -> Vec<std::path::PathBuf> {
+    fn framework_paths(&self, qt_modules: &[String]) -> Vec<PathBuf> {
         let path_lib = self.path_qt.join("lib");
         super::shared::framework_paths_for_qt_modules(qt_modules, path_lib)
     }
 
-    fn include_paths(&self, qt_modules: &[String]) -> Vec<std::path::PathBuf> {
+    fn include_paths(&self, qt_modules: &[String]) -> Vec<PathBuf> {
         let path_include = self.path_qt.join("include");
         let path_lib = self.path_qt.join("lib");
         super::shared::include_paths_for_qt_modules(qt_modules, path_include, path_lib)
@@ -132,7 +138,7 @@ impl QtInstallation for QtInstallationQtMinimal {
         );
     }
 
-    fn try_find_tool(&self, tool: crate::QtTool) -> anyhow::Result<std::path::PathBuf> {
+    fn try_find_tool(&self, tool: crate::QtTool) -> anyhow::Result<PathBuf> {
         // Tools could be either in libexec or bin
         for folder in ["bin", "libexec"] {
             let path = self.path_qt.join(folder).join(tool.binary_name());
@@ -174,6 +180,45 @@ impl QtInstallationQtMinimal {
         path
     }
 
+    /// Make sure a local install folder is linked to the build directory
+    pub fn symlink_install_location() -> anyhow::Result<PathBuf> {
+        let out_dir = std::env::var("OUT_DIR")?;
+        let qt_location = QtInstallationQtMinimal::qt_minimal_root();
+
+        let new_location = Path::new(&out_dir).join("qt_minimal_root");
+
+        println!("cargo::rerun-if-changed={}", new_location.display());
+        if let Ok(existing_link) = new_location.read_link() {
+            if existing_link == qt_location {
+                return Ok(new_location);
+            }
+            #[cfg(unix)]
+            {
+                std::fs::remove_file(&new_location)?;
+            }
+            // On windows symlink will be a directory as opposed to a file
+            #[cfg(windows)]
+            {
+                std::fs::remove_dir(&new_location)?;
+            }
+        }
+        // Different symlinking calls per OS
+        #[cfg(unix)]
+        {
+            std::os::unix::fs::symlink(qt_location, &new_location)?;
+        }
+        #[cfg(windows)]
+        {
+            std::os::windows::fs::symlink_dir(qt_location, &new_location)?;
+        }
+        #[cfg(not(any(unix, windows)))]
+        panic!(
+            "Unknown platform, cannot create symlink to OUT_DIR from {}",
+            qt_location.display()
+        );
+        Ok(new_location)
+    }
+
     /// Get a collection of the locally installed Qt artifacts
     pub(crate) fn local_artifacts() -> anyhow::Result<Vec<ParsedQtArtifact>> {
         let base_dir = Self::qt_minimal_root();
@@ -209,9 +254,8 @@ impl QtInstallationQtMinimal {
                     // Expects one qt dir
                     let qt_dir_path = dir_entries
                         .iter()
-                        .filter(|dir| dir.file_name() == "qt")
-                        .last()
-                        .expect("Expected to find a Qt dir in this folder");
+                        .rfind(|dir| dir.file_name() == "qt")
+                        .expect("Expected to find a Qt directory");
                     println!("cargo::rerun-if-changed={}", qt_dir_path.path().display());
 
                     let qt_folders = list_dirs(&qt_dir_path.path());

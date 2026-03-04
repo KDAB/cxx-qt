@@ -18,7 +18,6 @@
 //! stabilized in the future. For now, prefer use [cxx-qt-build] directly.
 
 #![allow(clippy::too_many_arguments)]
-
 mod cfg;
 pub use cfg::CfgGenerator;
 
