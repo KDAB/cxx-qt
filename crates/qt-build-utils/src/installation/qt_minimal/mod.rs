@@ -306,26 +306,30 @@ impl QtInstallationQtMinimal {
         artifacts: Vec<ParsedQtArtifact>,
         versions: &[semver::Version],
     ) -> Vec<ParsedQtArtifact> {
-        // Arch could be x86_64
-        // OS could be linux
+        // Map from the TARGET to an arch and OS pair for the artifacts for supported Qt platforms
         // https://doc.rust-lang.org/cargo/appendix/glossary.html#target
-        //
-        // TODO: is there a better way to find the arch and os ?
-        // and should this be configurable via env var overrides?
+        // https://doc.rust-lang.org/stable/rustc/platform-support.html
+        // https://doc.qt.io/qt-6/supported-platforms.html
         println!("cargo::rerun-if-env-changed=TARGET");
-        let target = std::env::var("TARGET").expect("TARGET to be set");
-        let target_parts: Vec<_> = target.split("-").collect();
-        let arch = target_parts
-            .first()
-            .expect("TARGET to have a <arch><sub> component");
-        let os = target_parts
-            .get(2)
-            .expect("TARGET to have a <sys> component");
+        let (arch, os) = match std::env::var("TARGET").expect("TARGET to be set").as_str() {
+            // Linux
+            "aarch64-unknown-linux-gnu" => ("arm64", "linux"),
+            "x86_64-unknown-linux-gnu" => ("x86_64", "linux"),
+            // macOS
+            "aarch64-apple-darwin" => ("arm64", "macos"),
+            "x86_64-apple-darwin" => ("x86_64", "macos"),
+            // Windows
+            //
+            // NOTE: only MSVC currently, how do we map MinGW later?
+            "aarch64-pc-windows-msvc" => ("arm64", "windows"),
+            "x86_64-pc-windows-msvc" => ("x86_64", "windows"),
+            _others => panic!("Unknown TARGET to map to Qt artifact"),
+        };
 
         artifacts
             .into_iter()
             .filter(|artifact| {
-                artifact.arch == *arch && artifact.os == *os && versions.contains(&artifact.version)
+                artifact.arch == arch && artifact.os == os && versions.contains(&artifact.version)
             })
             .collect()
     }
