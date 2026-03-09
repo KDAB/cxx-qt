@@ -74,11 +74,25 @@ impl TryFrom<semver::Version> for QtInstallationQtMinimal {
     type Error = anyhow::Error;
 
     fn try_from(version: semver::Version) -> Result<Self, Self::Error> {
-        // Parse all artifacts
+        // Read local artifacts and filter to requested version
+        let local_artifacts = Self::local_artifacts()?;
+        let local_matches_grouped = Self::group_artifacts(Self::match_artifact_requirements(
+            local_artifacts,
+            core::slice::from_ref(&version),
+        ));
+
+        // If there is a local artifact containing both bin and include, use that path and skip download
+        if let Some(artifact) = local_matches_grouped.first() {
+            if let Ok(qt_installation) = Self::try_from(Path::new(&artifact.url).to_path_buf()) {
+                return Ok(qt_installation);
+            }
+        }
+
+        // Parse all remote artifacts
         let manifest: artifact::ParsedQtManifest =
             serde_json::from_str(qt_artifacts::QT_MANIFEST_JSON)?;
 
-        // Find artifacts for the Qt version
+        // Find remote artifacts for the requested Qt version
         let artifacts =
             Self::match_artifact_requirements(manifest.artifacts, core::slice::from_ref(&version));
 
