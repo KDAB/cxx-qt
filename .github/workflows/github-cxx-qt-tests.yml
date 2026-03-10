@@ -129,6 +129,50 @@ jobs:
           path: ./target/debug/lcov.info
           if-no-files-found: ignore
 
+  build-qt-minimal:
+    name: Ubuntu 24.04 (gcc) Qt 6 Minimal
+    needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
+    runs-on: ubuntu-24.04
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v6
+      - name: Setup toolchain
+        run: |
+          rustup default 1.85.0
+          rustup component add rustfmt
+
+      - name: "Install clang-format"
+        # Note ensure that clang-format runner is updated too
+        run: |
+          pip install --user --break-system-packages --verbose clang-format==18.1.8
+          echo "Checking for path: ${{ matrix.clang_format_path }}"
+          test -x ${{ matrix.clang_format_path }}
+
+      - name: "[Ubuntu] Install dependencies"
+        if: runner.os == 'Linux'
+        run: >-
+          sudo apt-get update &&
+          sudo apt-get install -y
+          ninja-build
+          libdouble-conversion3
+          libgl1-mesa-dev
+          libssl-dev
+          libvulkan-dev
+          libxkbcommon-dev
+          pkg-config
+          valgrind
+
+      # Just test that we can build with no Qt install available
+      #
+      # NOTE: no compiler cache is needed as build is fast
+      - name: "Build"
+        run: cargo build --package qml-minimal-no-cmake
+      - name: Test output files exist
+        run: |
+          ! command -v qmake
+          test -x ./target/debug/qml-minimal-no-cmake
+          ldd ./target/debug/qml-minimal-no-cmake
+
   build-wasm:
     name: Ubuntu 24.04 (wasm_32) Qt 6
     needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
