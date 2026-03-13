@@ -312,7 +312,11 @@ fn main() {
     }
 
     if qt_qml_enabled() {
-        cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
+        cpp_files.extend([
+            "qml/qqmlapplicationengine",
+            "qml/qqmlengine",
+            "qml/qqmlimageproviderbase",
+        ]);
     }
 
     if !emscripten_targeted {

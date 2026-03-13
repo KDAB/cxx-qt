@@ -17,6 +17,9 @@ mod ffi {
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
 
+        include!("cxx-qt-lib/qqmlimageproviderbase.h");
+        type QQmlImageProviderBase;
+
         /// Adds `path` as a directory where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "add_import_path"]
         fn addImportPath(self: Pin<&mut QQmlApplicationEngine>, path: &QString);
@@ -71,6 +74,17 @@ mod ffi {
         /// Sets `path` as string for storing offline user data.
         #[rust_name = "set_offline_storage_path"]
         fn setOfflineStoragePath(self: Pin<&mut QQmlApplicationEngine>, dir: &QString);
+
+        #[rust_name = "add_image_provider"]
+        unsafe fn addImageProvider(
+            self: Pin<&mut QQmlApplicationEngine>,
+            provider_id: &QString,
+            provider: *mut QQmlImageProviderBase,
+        );
+
+        #[rust_name = "remove_image_provider"]
+        fn removeImageProvider(self: Pin<&mut QQmlApplicationEngine>, provider_id: &QString);
+
     }
 
     unsafe extern "C++Qt" {
