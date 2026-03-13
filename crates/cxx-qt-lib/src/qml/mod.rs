@@ -8,3 +8,7 @@ pub use qqmlapplicationengine::QQmlApplicationEngine;
 
 mod qqmlengine;
 pub use qqmlengine::QQmlEngine;
+
+mod qqmlimageproviderbase;
+pub use qqmlimageproviderbase::QQmlImageProviderBase;
+pub use qqmlimageproviderbase::QQmlImageProviderBaseImageType;

@@ -17,7 +17,7 @@ mod ffi {
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
 
-        include!(<QQmlImageProviderBase>);
+        include!("cxx-qt-lib/qqmlimageproviderbase.h");
         type QQmlImageProviderBase;
 
         /// Adds `path` as a directory where the engine searches for installed modules in a URL-based directory structure.
