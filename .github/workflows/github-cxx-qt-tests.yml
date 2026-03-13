@@ -130,9 +130,22 @@ jobs:
           if-no-files-found: ignore
 
   build-qt-minimal:
-    name: Ubuntu 24.04 (gcc) Qt 6 Minimal
     needs: [clang_format, license_check, rust_format_check, markdown_lint, shellcheck]
-    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS 15 (clang) Qt 6 Minimal
+            runs-on: macos-15
+            clang_format_path: /Users/runner/Library/Python/3.14/bin/clang-format
+          - name: Ubuntu 24.04 (gcc) Qt 6 Minimal
+            runs-on: ubuntu-24.04
+            clang_format_path: /home/runner/.local/bin/clang-format
+          - name: Windows 2022 (MSVC) Qt 6 Minimal
+            runs-on: windows-2022
+            clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python312\Scripts\clang-format.exe
+    runs-on: ${{ matrix.runs-on }}
+    name: ${{ matrix.name }}
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v6
@@ -153,14 +166,12 @@ jobs:
         run: >-
           sudo apt-get update &&
           sudo apt-get install -y
-          ninja-build
           libdouble-conversion3
           libgl1-mesa-dev
           libssl-dev
           libvulkan-dev
           libxkbcommon-dev
           pkg-config
-          valgrind
 
       # Just test that we can build with no Qt install available
       #
@@ -168,6 +179,7 @@ jobs:
       - name: "Build"
         run: cargo build --package qml-minimal-no-cmake
       - name: Test output files exist
+        if: runner.os == 'Linux'
         run: |
           ! command -v qmake
           test -x ./target/debug/qml-minimal-no-cmake
