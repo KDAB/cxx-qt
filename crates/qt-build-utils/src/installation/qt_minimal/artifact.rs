@@ -77,7 +77,12 @@ impl ParsedQtArtifact {
         }
 
         if self.sha256 != hash_string {
-            return Err(anyhow::anyhow!("sha256 does not match for: {}", &self.url));
+            return Err(anyhow::anyhow!(
+                "sha256 does not match for: {}, expected: {}, actual: {}",
+                &self.url,
+                self.sha256,
+                hash_string
+            ));
         }
 
         Ok(())
