@@ -12,8 +12,10 @@ mod ffi {
         ImageResponse,
     }
 
-    extern "C++" {
+    extern "C++Qt" {
         include!("cxx-qt-lib/qqmlimageproviderbase.h");
+
+        #[qobject]
         type QQmlImageProviderBase;
     }
 
