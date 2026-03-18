@@ -237,7 +237,11 @@ fn main() {
     }
 
     if qt_qml_enabled() {
-        rust_bridges.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
+        rust_bridges.extend([
+            "qml/qqmlapplicationengine",
+            "qml/qqmlengine",
+            "qml/qqmlimageproviderbase",
+        ]);
     }
 
     if qt_quickcontrols_enabled() {

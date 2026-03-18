@@ -18,7 +18,7 @@ mod ffi {
         type QUrl = crate::QUrl;
 
         include!("cxx-qt-lib/qqmlimageproviderbase.h");
-        type QQmlImageProviderBase;
+        type QQmlImageProviderBase = crate::QQmlImageProviderBase;
 
         /// Adds `path` as a directory where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "add_import_path"]

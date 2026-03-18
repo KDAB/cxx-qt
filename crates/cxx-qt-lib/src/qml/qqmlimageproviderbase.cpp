@@ -5,4 +5,4 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-#include "cxx-qt-lib/qqmlapplicationengine.h"
+#include "cxx-qt-lib/qqmlimageproviderbase.h"

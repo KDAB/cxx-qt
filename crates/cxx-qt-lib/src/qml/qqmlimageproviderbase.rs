@@ -3,23 +3,22 @@ mod ffi {
 
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
+    #[derive(Debug)]
     enum QQmlImageProviderBaseImageType {
-        Image = 1,
+        Invalid = 0,
+        Image,
         Pixmap,
         Texture,
         ImageResponse,
     }
 
-    unsafe extern "C++" {
-
+    extern "C++" {
         include!("cxx-qt-lib/qqmlimageproviderbase.h");
         type QQmlImageProviderBase;
-
-
     }
 
     #[namespace = "rust::cxxqtlib1"]
-    unsafe extern "C++"{
+    unsafe extern "C++" {
         type QQmlImageProviderBaseImageType;
     }
 }
