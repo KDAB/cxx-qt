@@ -1696,6 +1696,7 @@ dependencies = [
  "cxx-qt",
  "cxx-qt-build",
  "cxx-qt-lib",
+ "qt-build-utils",
 ]
 
 [[package]]
@@ -1745,9 +1746,9 @@ dependencies = [
 
 [[package]]
 name = "qt-artifacts"
-version = "0.1.0"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9981b93a954c77b49398b61387315eeb07c5fc7ffa381c10b9e86c836c5c1fce"
+checksum = "176a99b61f396903126c16ebc03c653561cd6ee6951e1f3339d9170adfabff85"
 
 [[package]]
 name = "qt-build-utils"
@@ -1772,9 +1773,9 @@ dependencies = [
 
 [[package]]
 name = "qt-version"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "669ac87d7a0f05f3a6144ba4a44527129ee837a8d62204095f57cc45519926d2"
+checksum = "59c82534a94f85b757d70fb917f34e8fe1e688c12a1bec21b86c27ec15d16ed5"
 dependencies = [
  "semver",
 ]
