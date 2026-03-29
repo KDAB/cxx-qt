@@ -137,11 +137,13 @@ pub struct QPolygonF {
     /// The layout has changed between Qt 5 and Qt 6
     ///
     /// Qt5 QPolygon has one pointer as a member
-    /// Qt6 QPolygon has one member, which contains two pointers and a size_t
+    /// Qt6 QPolygon has one member, which contains two pointers and a ssize_t
     #[cfg(cxxqt_qt_version_major = "5")]
-    _space: MaybeUninit<usize>,
+    _d: MaybeUninit<usize>,
     #[cfg(cxxqt_qt_version_major = "6")]
-    _space: MaybeUninit<[usize; 3]>,
+    _ptr: MaybeUninit<usize>,
+    #[cfg(cxxqt_qt_version_major = "6")]
+    _size: MaybeUninit<isize>,
 }
 
 impl Default for QPolygonF {

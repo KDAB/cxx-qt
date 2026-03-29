@@ -25,15 +25,13 @@
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/kernel/qvariant.h?h=v5.15.6-lts-lgpl#n411
 #if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
 assert_alignment_and_size(QVariant, {
-  ::std::size_t a0;
-  ::std::size_t a1;
-  ::std::size_t a2;
-  double a3;
+  double a0;
+  ::std::size_t a1[3];
 });
 #else
 assert_alignment_and_size(QVariant, {
-  ::std::uint32_t a0;
-  double a1;
+  double a0;
+  ::std::uint32_t a1;
 });
 #endif
 
