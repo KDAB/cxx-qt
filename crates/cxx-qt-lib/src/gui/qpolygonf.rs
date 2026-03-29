@@ -138,7 +138,6 @@ pub struct QPolygonF {
     ///
     /// Qt5 QPolygon has one pointer as a member
     /// Qt6 QPolygon has one member, which contains two pointers and a ssize_t
-    #[cfg(cxxqt_qt_version_major = "5")]
     _d: MaybeUninit<usize>,
     #[cfg(cxxqt_qt_version_major = "6")]
     _ptr: MaybeUninit<usize>,
