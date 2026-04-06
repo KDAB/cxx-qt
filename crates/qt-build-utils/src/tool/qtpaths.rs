@@ -55,7 +55,7 @@ impl QtToolQtPaths {
     /// Find the path for a given Qt property
     ///
     /// Note: this will fail on Qt 5
-    pub fn query(&self, query_args: impl Into<QtPathsQueryArguments>) -> Option<String> {
+    pub fn query(&self, query_args: impl Into<QtPathsQueryArguments>) -> anyhow::Result<String> {
         let query_args = query_args.into();
         let mut args = vec![];
 
@@ -79,9 +79,14 @@ impl QtToolQtPaths {
             .env_clear()
             // NOTE: Qt 5 will fail as there is no -query parameter
             .output()
-            .ok()?
-            .stdout;
-        Some(String::from_utf8_lossy(&output).trim().to_owned())
+            .map_err(|err| anyhow::anyhow!("qtpaths process failed to complete: '{}'", err))?;
+        if !output.status.success() {
+            return Err(anyhow::anyhow!(
+                "qtpaths unexpectedly exited a non-zero status code: '{:#?}'",
+                output
+            ));
+        }
+        Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
     }
 }
 
