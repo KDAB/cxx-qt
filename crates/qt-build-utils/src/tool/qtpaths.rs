@@ -55,7 +55,7 @@ impl QtToolQtPaths {
     /// Find the path for a given Qt property
     ///
     /// Note: this will fail on Qt 5
-    pub fn query(&self, query_args: impl Into<QtPathsQueryArguments>) -> anyhow::Result<String> {
+    pub fn query(&self, query_args: impl Into<QtPathsQueryArguments>) -> Option<String> {
         let query_args = query_args.into();
         let mut args = vec![];
 
@@ -79,14 +79,9 @@ impl QtToolQtPaths {
             .env_clear()
             // NOTE: Qt 5 will fail as there is no -query parameter
             .output()
-            .map_err(|err| anyhow::anyhow!("qtpaths process failed to complete: '{}'", err))?;
-        if !output.status.success() {
-            return Err(anyhow::anyhow!(
-                "qtpaths unexpectedly exited a non-zero status code: '{:#?}'",
-                output
-            ));
-        }
-        Ok(String::from_utf8_lossy(&output.stdout).trim().to_owned())
+            .ok()?
+            .stdout;
+        Some(String::from_utf8_lossy(&output).trim().to_owned())
     }
 }
 
@@ -95,5 +90,30 @@ impl QtToolQtPaths {
     /// Construct from an executable path this is used interally to allow for querying for the Qt version
     pub(crate) fn from_path_buf(executable: PathBuf) -> Self {
         Self { executable }
+            // Ensure that the command works as this is used to query the Qt version
+            // so if there are missing libraries the errors are not obvious
+            .check_command()
+    }
+
+    /// Ensure that the qtpaths command works
+    ///
+    /// As this can fail to run due to missing libraries and then cause errors
+    /// which choosing Qt versions that are non obvious.
+    fn check_command(self) -> Self {
+        let output = Command::new(&self.executable)
+            .arg("--help")
+            // Binaries should work without environment and this prevents
+            // LD_LIBRARY_PATH from causing different Qt version clashes
+            .env_clear()
+            .output()
+            .expect("Could not run qtpaths");
+        if !output.status.success() {
+            panic!(
+                "qtpaths unexpectedly exited a non-zero status code: '{:#?}'",
+                output
+            );
+        }
+
+        self
     }
 }
