@@ -126,7 +126,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qlinef_new"]
-        fn construct(pt1: QPointF, pt2: QPointF) -> QLineF;
+        fn construct(pt1: &QPointF, pt2: &QPointF) -> QLineF;
         #[doc(hidden)]
         #[rust_name = "qlinef_from_qline"]
         fn construct(line: &QLine) -> QLineF;
@@ -150,7 +150,7 @@ pub struct QLineF {
 impl QLineF {
     /// Constructs a line object that represents the line between `pt1` and `pt2`.
     pub fn new(pt1: QPointF, pt2: QPointF) -> Self {
-        ffi::qlinef_new(pt1, pt2)
+        ffi::qlinef_new(&pt1, &pt2)
     }
 }
 
@@ -167,12 +167,25 @@ impl From<&QLine> for QLineF {
         ffi::qlinef_from_qline(line)
     }
 }
+impl From<QLine> for QLineF {
+    /// Construct a `QLineF` object from the given integer-based line.
+    fn from(line: QLine) -> Self {
+        Self::from(&line)
+    }
+}
 
+impl From<&QLineF> for QLine {
+    /// Returns an integer-based copy of this line.
+    /// Note that the returned line's start and end points are rounded to the nearest integer.
+    fn from(line: &QLineF) -> Self {
+        line.to_line()
+    }
+}
 impl From<QLineF> for QLine {
     /// Returns an integer-based copy of this line.
     /// Note that the returned line's start and end points are rounded to the nearest integer.
-    fn from(value: QLineF) -> Self {
-        value.to_line()
+    fn from(line: QLineF) -> Self {
+        Self::from(&line)
     }
 }
 

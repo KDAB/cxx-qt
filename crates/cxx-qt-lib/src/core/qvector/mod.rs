@@ -196,11 +196,7 @@ where
     /// Convert a reference to a [`QVector`] into a [`Vec`] by making a deep copy of the data.
     /// The original `QVector` can still be used after constructing the `Vec`.
     fn from(qvec: &QVector<T>) -> Self {
-        let mut vec = Vec::with_capacity(qvec.len().try_into().unwrap());
-        for element in qvec.iter() {
-            vec.push(element.clone());
-        }
-        vec
+        qvec.iter().cloned().collect()
     }
 }
 
@@ -213,12 +209,7 @@ where
     /// by making a deep copy of the data.
     /// The original slice can still be used after constructing the `QVector`.
     fn from(vec: S) -> Self {
-        let mut qvec = Self::default();
-        qvec.reserve_usize(vec.as_ref().len());
-        for element in vec.as_ref() {
-            qvec.append_clone(element);
-        }
-        qvec
+        vec.as_ref().iter().collect()
     }
 }
 impl<'a, T> Extend<&'a T> for QVector<T>

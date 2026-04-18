@@ -19,6 +19,14 @@ pub enum QtBuildError {
     /// Qt was not found
     #[error("Could not find Qt")]
     QtMissing,
+    /// Qt was not found within the version requirements
+    #[error("Could not find matching Qt install for requested version(s): {1} from available local version(s): {0}", .available_versions.iter().map(|version| version.to_string()).collect::<Vec<_>>().join(", "), .requested_versions.iter().map(|version| version.to_string()).collect::<Vec<_>>().join(", "))]
+    QtMissingVersion {
+        /// The Qt versions found locally
+        available_versions: Vec<semver::Version>,
+        /// The Qt versions requested
+        requested_versions: Vec<semver::Version>,
+    },
     /// Executing `qmake -query` failed
     #[error("Executing `qmake -query` failed: {0:?}")]
     QmakeFailed(#[from] std::io::Error),

@@ -420,12 +420,12 @@ pub use ffi::{QImageFormat, QImageInvertMode};
 #[repr(C)]
 pub struct QImage {
     // Static checks on the C++ side ensure this is true.
-    // See qcolor.cpp
+    // See qimage.cpp
     _painters: MaybeUninit<u16>,
     #[cfg(cxxqt_qt_version_major = "5")]
-    _pointers: MaybeUninit<[usize; 3]>,
-    #[cfg(cxxqt_qt_version_major = "6")]
-    _pointers: MaybeUninit<[usize; 2]>,
+    _reserved: MaybeUninit<usize>,
+    _d: MaybeUninit<usize>,
+    _vtable: MaybeUninit<usize>,
 }
 
 impl Clone for QImage {

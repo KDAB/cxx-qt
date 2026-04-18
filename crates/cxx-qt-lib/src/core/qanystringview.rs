@@ -3,7 +3,6 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::{QByteArray, QString};
-use core::ffi::c_void;
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
 use cxx::{type_id, ExternType};
@@ -72,8 +71,8 @@ mod ffi {
 #[repr(C)]
 pub struct QAnyStringView<'a> {
     /// `QAnyStringView` has two members, a pointer and a `size_t`
-    _space: MaybeUninit<[usize; 1]>,
-    _space2: MaybeUninit<[c_void; 1]>,
+    _data: MaybeUninit<usize>,
+    _size: MaybeUninit<isize>,
 
     /// Needed to keep the lifetime in check
     _phantom: PhantomData<&'a usize>,

@@ -3,6 +3,37 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use std::{path::Path, process::Command};
+
+/// Ensure that the given executable runs
+///
+/// This allows for raising errors that point to linker failures
+/// as --help should always work
+pub(crate) fn check_executable_help(executable: &Path) -> anyhow::Result<()> {
+    let output = Command::new(executable)
+        .arg("--help")
+        // Binaries should work without environment and this prevents
+        // LD_LIBRARY_PATH from causing different Qt version clashes
+        .env_clear()
+        .output()
+        .map_err(|err| {
+            anyhow::anyhow!(
+                "{} process failed to complete: '{}'",
+                executable.display(),
+                err
+            )
+        })?;
+    if !output.status.success() {
+        return Err(anyhow::anyhow!(
+            "{} unexpectedly exited a non-zero status code: '{:#?}'",
+            executable.display(),
+            output
+        ));
+    }
+
+    Ok(())
+}
+
 /// Whether apple is the current target
 pub(crate) fn is_apple_target() -> bool {
     // TODO: should CARGO_CFG_* be used here instead?

@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QmlUri, QtInstallation, QtTool};
+use crate::{utils, QmlUri, QtInstallation, QtTool};
 use std::{
     path::{Path, PathBuf},
     process::Command,
@@ -39,6 +39,9 @@ impl QtToolQmlCacheGen {
         let executable = qt_installation
             .try_find_tool(QtTool::QmlCacheGen)
             .expect("Could not find qmlcachegen");
+
+        // Ensure that the executable works
+        utils::check_executable_help(&executable).unwrap();
 
         Self { executable }
     }

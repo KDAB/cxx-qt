@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{Initializer, QtInstallation, QtTool};
+use crate::{utils, Initializer, QtInstallation, QtTool};
 
 use semver::Version;
 use std::{
@@ -25,6 +25,10 @@ impl QtToolRcc {
         let executable = qt_installation
             .try_find_tool(QtTool::Rcc)
             .expect("Could not find rcc");
+
+        // Ensure that the executable works
+        utils::check_executable_help(&executable).unwrap();
+
         let qt_version = qt_installation.version();
 
         Self {

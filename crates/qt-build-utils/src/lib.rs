@@ -122,6 +122,9 @@ impl QtBuild {
                 }
             }
 
+            #[cfg(feature = "qt_version")]
+            let mut local_versions = std::collections::BTreeSet::new();
+
             // Auto determining Qt version from crates is enabled
             #[cfg(feature = "qt_version")]
             {
@@ -135,6 +138,8 @@ impl QtBuild {
                         if versions.contains(&qt_installation.version()) {
                             return Ok(Box::new(qt_installation));
                         }
+
+                        local_versions.insert(qt_installation.version());
                     }
                 }
 
@@ -145,7 +150,7 @@ impl QtBuild {
                     if let Ok(local_artifacts) = QtInstallationQtMinimal::local_artifacts() {
                         // Find artifacts with the version range for our OS and arch
                         let artifacts = QtInstallationQtMinimal::match_artifact_requirements(
-                            local_artifacts,
+                            local_artifacts.clone(),
                             &versions,
                         );
 
@@ -165,6 +170,9 @@ impl QtBuild {
                                 return Ok(Box::new(qt_installation));
                             }
                         }
+
+                        local_versions
+                            .extend(local_artifacts.into_iter().map(|artifact| artifact.version));
                     }
 
                     // Download from Qt artifacts
@@ -195,6 +203,16 @@ impl QtBuild {
                 // so we do not need to check for qt_minimal
             }
 
+            #[cfg(feature = "qt_version")]
+            {
+                Err(QtBuildError::QtMissingVersion {
+                    available_versions: local_versions.into_iter().collect(),
+                    requested_versions: qt_version::qt_versions(),
+                }
+                .into())
+            }
+
+            #[cfg(not(feature = "qt_version"))]
             Err(QtBuildError::QtMissing.into())
         };
 

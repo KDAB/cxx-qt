@@ -124,11 +124,12 @@ pub struct QStringList {
     /// The layout has changed between Qt 5 and Qt 6
     ///
     /// Qt5 QStringList has one pointer as a member
-    /// Qt6 QStringList has one member, which contains two pointers and a size_t
-    #[cfg(cxxqt_qt_version_major = "5")]
-    _space: MaybeUninit<usize>,
+    /// Qt6 QStringList has one member, which contains two pointers and a ssize_t
+    _d: MaybeUninit<usize>,
     #[cfg(cxxqt_qt_version_major = "6")]
-    _space: MaybeUninit<[usize; 3]>,
+    _ptr: MaybeUninit<usize>,
+    #[cfg(cxxqt_qt_version_major = "6")]
+    _size: MaybeUninit<isize>,
 }
 
 impl QStringList {
@@ -200,6 +201,22 @@ impl From<&QStringList> for QList<QString> {
     /// Converts a `QStringList` into a `QList<QString>`.
     fn from(list: &QStringList) -> Self {
         ffi::qstringlist_as_qlist_qstring(list)
+    }
+}
+
+impl<'a> FromIterator<&'a QString> for QStringList {
+    fn from_iter<I: IntoIterator<Item = &'a QString>>(iter: I) -> Self {
+        let mut qstringlist = Self::default();
+        qstringlist.extend(iter);
+        qstringlist
+    }
+}
+
+impl FromIterator<QString> for QStringList {
+    fn from_iter<I: IntoIterator<Item = QString>>(iter: I) -> Self {
+        let mut qstringlist = Self::default();
+        qstringlist.extend(iter);
+        qstringlist
     }
 }
 

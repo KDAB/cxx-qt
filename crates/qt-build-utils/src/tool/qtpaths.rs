@@ -5,7 +5,7 @@
 
 use std::{path::PathBuf, process::Command};
 
-use crate::{QtInstallation, QtTool};
+use crate::{utils, QtInstallation, QtTool};
 
 /// Arguments for [QtToolQtPaths::query]
 #[derive(Default)]
@@ -46,6 +46,9 @@ impl QtToolQtPaths {
         let executable = qt_installation
             .try_find_tool(QtTool::QtPaths)
             .expect("Could not find qtpaths");
+
+        // Ensure that the executable works
+        utils::check_executable_help(&executable).unwrap();
 
         Self { executable }
     }
@@ -89,6 +92,9 @@ impl QtToolQtPaths {
 impl QtToolQtPaths {
     /// Construct from an executable path this is used interally to allow for querying for the Qt version
     pub(crate) fn from_path_buf(executable: PathBuf) -> Self {
+        // Ensure that the executable works
+        utils::check_executable_help(&executable).unwrap();
+
         Self { executable }
     }
 }

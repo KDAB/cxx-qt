@@ -130,12 +130,25 @@ impl From<&QPoint> for QPointF {
         ffi::qpointf_from_qpoint(point)
     }
 }
+impl From<QPoint> for QPointF {
+    /// Constructs a copy of the given `point`.
+    fn from(point: QPoint) -> Self {
+        Self::from(&point)
+    }
+}
 
+impl From<&QPointF> for QPoint {
+    /// Rounds the coordinates of `point` to the nearest integer,
+    /// and returns a `QPoint` object with the rounded coordinates.
+    fn from(point: &QPointF) -> Self {
+        point.to_point()
+    }
+}
 impl From<QPointF> for QPoint {
     /// Rounds the coordinates of `point` to the nearest integer,
     /// and returns a `QPoint` object with the rounded coordinates.
     fn from(point: QPointF) -> Self {
-        point.to_point()
+        Self::from(&point)
     }
 }
 

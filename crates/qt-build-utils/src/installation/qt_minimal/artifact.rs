@@ -14,7 +14,7 @@ pub(crate) struct ParsedQtManifest {
     pub(crate) artifacts: Vec<ParsedQtArtifact>,
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 /// Descriptor for a Qt artifact, included download information
 pub(crate) struct ParsedQtArtifact {
     pub(crate) version: Version,
@@ -43,7 +43,14 @@ impl ParsedQtArtifact {
             .expect("Could not verify sha256 hash");
 
         // Extract into the target folder
-        super::extract::extract_archive(&archive_path, target_path)
+        let archive_format = if self.url.ends_with(".tar.gz") {
+            super::extract::ArchiveFormat::TarGz
+        } else if self.url.ends_with(".zip") {
+            super::extract::ArchiveFormat::Zip
+        } else {
+            panic!("Unknown archive format to decompress: {}", self.url);
+        };
+        super::extract::extract_archive(&archive_path, target_path, archive_format)
             .expect("Could not extract archive into target");
 
         target_path.to_path_buf()
@@ -77,7 +84,12 @@ impl ParsedQtArtifact {
         }
 
         if self.sha256 != hash_string {
-            return Err(anyhow::anyhow!("sha256 does not match for: {}", &self.url));
+            return Err(anyhow::anyhow!(
+                "sha256 does not match for: {}, expected: {}, actual: {}",
+                &self.url,
+                self.sha256,
+                hash_string
+            ));
         }
 
         Ok(())

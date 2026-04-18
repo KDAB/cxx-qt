@@ -167,11 +167,12 @@ pub struct QByteArray {
     /// The layout has changed between Qt 5 and Qt 6
     ///
     /// Qt5 QByteArray has one pointer as a member
-    /// Qt6 QByteArray has one member, which contains two pointers and a size_t
-    #[cfg(cxxqt_qt_version_major = "5")]
-    _space: MaybeUninit<usize>,
+    /// Qt6 QByteArray has one member, which contains two pointers and a ssize_t
+    _d: MaybeUninit<usize>,
     #[cfg(cxxqt_qt_version_major = "6")]
-    _space: MaybeUninit<[usize; 3]>,
+    _ptr: MaybeUninit<usize>,
+    #[cfg(cxxqt_qt_version_major = "6")]
+    _size: MaybeUninit<isize>,
 }
 
 impl AsRef<[u8]> for QByteArray {

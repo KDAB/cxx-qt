@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QmlUri, QtInstallation, QtTool};
+use crate::{utils, QmlUri, QtInstallation, QtTool};
 
 use std::{
     path::{Path, PathBuf},
@@ -71,6 +71,10 @@ impl QtToolMoc {
         let executable = qt_installation
             .try_find_tool(QtTool::Moc)
             .expect("Could not find moc");
+
+        // Ensure that the executable works
+        utils::check_executable_help(&executable).unwrap();
+
         let qt_include_paths = qt_installation.include_paths(qt_modules);
         let qt_framework_paths = qt_installation.framework_paths(qt_modules);
 

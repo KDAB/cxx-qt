@@ -16,10 +16,8 @@
 //
 // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/tools/qline.h?h=v6.2.4#n90
 assert_alignment_and_size(QLine, {
-  ::std::int32_t a0;
-  ::std::int32_t a1;
-  ::std::int32_t a2;
-  ::std::int32_t a3;
+  QPoint a0;
+  QPoint a1;
 });
 
 static_assert(::std::is_trivially_copyable<QLine>::value);

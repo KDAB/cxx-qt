@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::{QmlUri, QtInstallation, QtTool};
+use crate::{utils, QmlUri, QtInstallation, QtTool};
 use semver::Version;
 use std::{
     path::{Path, PathBuf},
@@ -21,6 +21,9 @@ impl QtToolQmlTypeRegistrar {
         let executable = qt_installation
             .try_find_tool(QtTool::QmlTypeRegistrar)
             .expect("Could not find qmltyperegistrar");
+
+        // Ensure that the executable works
+        utils::check_executable_help(&executable).unwrap();
 
         Self { executable }
     }
