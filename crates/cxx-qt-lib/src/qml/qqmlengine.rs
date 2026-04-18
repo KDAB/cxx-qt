@@ -29,6 +29,8 @@ mod ffi {
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
+        include!("cxx-qt-lib/qqmlimageproviderbase.h");
+        type QQmlImageProviderBase = crate::QQmlImageProviderBase;
 
         /// Adds `path` as a directory where the engine searches for installed modules in a URL-based directory structure.
         ///
@@ -98,6 +100,20 @@ mod ffi {
         /// Sets the list of directories where the engine searches for native plugins for imported modules (referenced in the `qmldir` file) to `paths`.
         #[rust_name = "set_plugin_path_list"]
         fn setPluginPathList(self: Pin<&mut QQmlEngine>, paths: &QStringList);
+
+        /// Sets the provider to use for images requested via the image: url scheme, with host providerId.
+        ///
+        /// Note: The QQmlEngine takes ownership of provider.
+        #[rust_name = "add_image_provider"]
+        unsafe fn addImageProvider(
+            self: Pin<&mut QQmlEngine>,
+            provider_id: &QString,
+            provider: *mut QQmlImageProviderBase,
+        );
+
+        /// Removes the image provider for providerId.
+        #[rust_name = "remove_image_provider"]
+        fn removeImageProvider(self: Pin<&mut QQmlEngine>, provider_id: &QString);
     }
 
     #[namespace = "rust::cxxqtlib1"]
