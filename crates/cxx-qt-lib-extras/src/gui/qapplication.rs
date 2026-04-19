@@ -39,6 +39,7 @@ mod ffi {
     unsafe extern "C++" {
         // Reuse the templated versions from QCoreApplication
         include!("cxx-qt-lib/qcoreapplication.h");
+        include!("cxx-qt-lib/qguiapplication.h");
 
         #[doc(hidden)]
         #[rust_name = "qapplication_add_library_path"]
@@ -46,6 +47,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qapplication_application_name"]
         fn qapplicationApplicationName(app: &QApplication) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qapplication_application_display_name"]
+        fn qguiapplicationApplicationDisplayName() -> QString;
         #[doc(hidden)]
         #[rust_name = "qapplication_remove_library_path"]
         fn qapplicationRemoveLibraryPath(app: &QApplication, path: &QString);
@@ -67,6 +71,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qapplication_set_application_name"]
         fn qapplicationSetApplicationName(app: Pin<&mut QApplication>, name: &QString);
+        #[doc(hidden)]
+        #[rust_name = "qapplication_set_application_display_name"]
+        fn qguiapplicationSetApplicationDisplayName(name: &QString);
         #[doc(hidden)]
         #[rust_name = "qapplication_set_application_version"]
         fn qapplicationSetApplicationVersion(app: Pin<&mut QApplication>, version: &QString);
@@ -107,6 +114,11 @@ impl QApplication {
     /// Returns the name of this application.
     pub fn application_name(&self) -> QString {
         ffi::qapplication_application_name(self)
+    }
+
+    /// Returns the user-visible name of this application.
+    pub fn application_display_name(&self) -> QString {
+        ffi::qapplication_application_display_name()
     }
 
     /// Returns the version of this application.
@@ -171,6 +183,11 @@ impl QApplication {
     /// Set the `name` of this application.
     pub fn set_application_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qapplication_set_application_name(self, name);
+    }
+
+    /// Set the user-visible name of this application.
+    pub fn set_application_display_name(self: Pin<&mut Self>, name: &QString) {
+        ffi::qapplication_set_application_display_name(name);
     }
 
     /// Removes `path` from the library path list. If `path` is empty or not in the path list, the list is not changed.
