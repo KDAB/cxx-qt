@@ -29,7 +29,10 @@ mod ffi {
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
+
+        #[cfg(cxxqt_qt_version_major = "6")]
         include!("cxx-qt-lib/qqmlimageproviderbase.h");
+        #[cfg(cxxqt_qt_version_major = "6")]
         type QQmlImageProviderBase = crate::QQmlImageProviderBase;
 
         /// Adds `path` as a directory where the engine searches for installed modules in a URL-based directory structure.
