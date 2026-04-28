@@ -104,6 +104,7 @@ mod ffi {
         /// Sets the provider to use for images requested via the image: url scheme, with host providerId.
         ///
         /// Note: The QQmlEngine takes ownership of provider.
+        #[cfg(cxxqt_qt_version_major = "6")]
         #[rust_name = "add_image_provider"]
         unsafe fn addImageProvider(
             self: Pin<&mut QQmlEngine>,
@@ -112,6 +113,7 @@ mod ffi {
         );
 
         /// Removes the image provider for providerId.
+        #[cfg(cxxqt_qt_version_major = "6")]
         #[rust_name = "remove_image_provider"]
         fn removeImageProvider(self: Pin<&mut QQmlEngine>, provider_id: &QString);
     }

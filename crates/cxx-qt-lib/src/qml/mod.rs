@@ -9,6 +9,9 @@ pub use qqmlapplicationengine::QQmlApplicationEngine;
 mod qqmlengine;
 pub use qqmlengine::QQmlEngine;
 
+#[cfg(cxxqt_qt_version_major = "6")]
 mod qqmlimageproviderbase;
+#[cfg(cxxqt_qt_version_major = "6")]
 pub use qqmlimageproviderbase::QQmlImageProviderBase;
+#[cfg(cxxqt_qt_version_major = "6")]
 pub use qqmlimageproviderbase::QQmlImageProviderBaseImageType;

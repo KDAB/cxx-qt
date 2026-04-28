@@ -237,11 +237,11 @@ fn main() {
     }
 
     if qt_qml_enabled() {
-        rust_bridges.extend([
-            "qml/qqmlapplicationengine",
-            "qml/qqmlengine",
-            "qml/qqmlimageproviderbase",
-        ]);
+        rust_bridges.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
+
+        if qtbuild.version().major > 5 {
+            rust_bridges.extend(["qml/qqmlimageproviderbase"]);
+        }
     }
 
     if qt_quickcontrols_enabled() {
@@ -316,11 +316,10 @@ fn main() {
     }
 
     if qt_qml_enabled() {
-        cpp_files.extend([
-            "qml/qqmlapplicationengine",
-            "qml/qqmlengine",
-            "qml/qqmlimageproviderbase",
-        ]);
+        cpp_files.extend(["qml/qqmlapplicationengine", "qml/qqmlengine"]);
+        if qtbuild.version().major > 5 {
+            cpp_files.extend(["qml/qqmlimageproviderbase"]);
+        }
     }
 
     if !emscripten_targeted {
