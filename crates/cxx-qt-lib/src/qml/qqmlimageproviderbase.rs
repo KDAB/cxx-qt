@@ -5,7 +5,6 @@
 
 #[cxx_qt::bridge]
 mod ffi {
-
     #[repr(i32)]
     #[namespace = "rust::cxxqtlib1"]
     #[derive(Debug)]
