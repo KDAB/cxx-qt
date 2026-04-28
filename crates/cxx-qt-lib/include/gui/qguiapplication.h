@@ -29,6 +29,12 @@ inline void (*qguiapplicationSetDesktopFileName)(const QString&) =
 inline QString (*qguiapplicationDesktopFileName)() =
   QGuiApplication::desktopFileName;
 
+inline void (*qguiapplicationSetApplicationDisplayName)(const QString&) =
+  QGuiApplication::setApplicationDisplayName;
+
+inline QString (*qguiapplicationApplicationDisplayName)() =
+  QGuiApplication::applicationDisplayName;
+
 inline Qt::KeyboardModifiers (*qguiapplicationKeyboardModifiers)() =
   QGuiApplication::keyboardModifiers;
 

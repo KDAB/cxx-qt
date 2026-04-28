@@ -62,6 +62,9 @@ mod ffi {
         #[rust_name = "qguiapplication_application_name"]
         fn qapplicationApplicationName(app: &QGuiApplication) -> QString;
         #[doc(hidden)]
+        #[rust_name = "qguiapplication_application_display_name"]
+        fn qguiapplicationApplicationDisplayName() -> QString;
+        #[doc(hidden)]
         #[rust_name = "qguiapplication_remove_library_path"]
         fn qapplicationRemoveLibraryPath(app: &QGuiApplication, path: &QString);
         #[doc(hidden)]
@@ -82,6 +85,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_application_name"]
         fn qapplicationSetApplicationName(app: Pin<&mut QGuiApplication>, name: &QString);
+        #[doc(hidden)]
+        #[rust_name = "qguiapplication_set_application_display_name"]
+        fn qguiapplicationSetApplicationDisplayName(name: &QString);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_application_version"]
         fn qapplicationSetApplicationVersion(app: Pin<&mut QGuiApplication>, version: &QString);
@@ -137,6 +143,11 @@ impl QGuiApplication {
     /// Returns the name of this application.
     pub fn application_name(&self) -> QString {
         ffi::qguiapplication_application_name(self)
+    }
+
+    /// Returns the user-visible name of this application.
+    pub fn application_display_name(&self) -> QString {
+        ffi::qguiapplication_application_display_name()
     }
 
     /// Returns the version of this application.
@@ -201,6 +212,11 @@ impl QGuiApplication {
     /// Set the `name` of this application.
     pub fn set_application_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qguiapplication_set_application_name(self, name);
+    }
+
+    /// Set the user-visible name of this application.
+    pub fn set_application_display_name(self: Pin<&mut Self>, name: &QString) {
+        ffi::qguiapplication_set_application_display_name(name);
     }
 
     /// Removes `path` from the library path list. If `path` is empty or not in the path list, the list is not changed.
