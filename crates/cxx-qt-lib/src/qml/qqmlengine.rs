@@ -106,7 +106,10 @@ mod ffi {
 
         /// Sets the provider to use for images requested via the image: url scheme, with host providerId.
         ///
-        /// Note: The QQmlEngine takes ownership of provider.
+        /// # Safety
+        ///
+        /// The QQmlEngine takes ownership of provider.
+        #[allow(clippy::missing_safety_doc)]
         #[cfg(cxxqt_qt_version_major = "6")]
         #[rust_name = "add_image_provider"]
         unsafe fn addImageProvider(
