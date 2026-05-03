@@ -8,6 +8,9 @@ pub use qbytearray::{
     QByteArray, QByteArrayBase64Option, QByteArrayBase64Options, QByteArrayFromBase64Error,
 };
 
+mod qchar;
+pub use qchar::QChar;
+
 mod qcoreapplication;
 pub use qcoreapplication::QCoreApplication;
 
