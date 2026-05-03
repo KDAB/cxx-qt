@@ -24,7 +24,6 @@ struct IsRelocatable<QString> : ::std::true_type
 
 namespace rust {
 namespace cxxqtlib1 {
-
 QString
 qstringInitFromRustString(::rust::Str string);
 
@@ -41,19 +40,37 @@ QString
 qstringArg(const QString& string, const QString& a);
 ::rust::isize
 qstringIndexOf(const QString& string,
+               QChar ch,
+               ::rust::isize from,
+               Qt::CaseSensitivity cs);
+::rust::isize
+qstringIndexOf(const QString& string,
                const QString& str,
                ::rust::isize from,
                Qt::CaseSensitivity cs);
+
+QString&
+qstringInsert(QString& string, ::rust::isize pos, QChar ch);
 QString&
 qstringInsert(QString& string, ::rust::isize pos, const QString& str);
+
 QString
 qstringLeft(const QString& string, ::rust::isize n);
+
 ::rust::isize
 qstringLen(const QString& string);
+
 QString
 qstringMid(const QString& string, ::rust::isize position, ::rust::isize n);
+
 QString
 qstringRight(const QString& string, ::rust::isize n);
+
+QStringList
+qstringSplit(const QString& string,
+             QChar sep,
+             Qt::SplitBehaviorFlags behavior,
+             Qt::CaseSensitivity cs);
 QStringList
 qstringSplit(const QString& string,
              const QString& sep,
