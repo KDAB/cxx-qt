@@ -9,29 +9,29 @@ use core::pin::Pin;
 
 #[cxx_qt::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    #[namespace = "Qt"]
+    extern "C++" {
+        include!("cxx-qt-lib/qt.h");
+        type KeyboardModifiers = crate::KeyboardModifiers;
+        type MouseButtons = crate::MouseButtons;
+    }
+
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
+        include!("cxx-qt-lib/qcoreapplication.h");
+        type QCoreApplication = crate::QCoreApplication;
+        include!("cxx-qt-lib/qfont.h");
+        type QFont = crate::QFont;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/core/qvector/qvector_QByteArray.h");
         type QVector_QByteArray = crate::QVector<QByteArray>;
-        include!("cxx-qt-lib/qfont.h");
-        type QFont = crate::QFont;
-
-        include!("cxx-qt-lib/qcoreapplication.h");
-        type QCoreApplication = crate::QCoreApplication;
     }
 
-    #[namespace = "Qt"]
-    unsafe extern "C++" {
-        type KeyboardModifiers = crate::KeyboardModifiers;
-        type MouseButtons = crate::MouseButtons;
-    }
-
-    unsafe extern "C++Qt" {
+    extern "C++Qt" {
         include!("cxx-qt-lib/qguiapplication.h");
 
         /// The `QGuiApplication` class manages the GUI application's control flow and main settings.

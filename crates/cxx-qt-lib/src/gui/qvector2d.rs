@@ -11,63 +11,66 @@ use crate::{QPoint, QPointF, QVector3D, QVector4D};
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
-
-        include!("cxx-qt-lib/qvector2d.h");
-        type QVector2D = super::QVector2D;
         include!("cxx-qt-lib/qvector3d.h");
         type QVector3D = crate::QVector3D;
         include!("cxx-qt-lib/qvector4d.h");
         type QVector4D = crate::QVector4D;
 
+        include!("cxx-qt-lib/qvector2d.h");
+    }
+
+    unsafe extern "C++" {
+        type QVector2D = super::QVector2D;
+
         /// Returns `true` if the x and y coordinates are set to 0.0, otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QVector2D) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the length of the vector from the origin.
-        fn length(self: &QVector2D) -> f32;
+        fn length(&self) -> f32;
 
         /// Returns the squared length of the vector from the origin.
         /// This is equivalent to the dot product of the vector with itself.
         #[rust_name = "length_squared"]
-        fn lengthSquared(self: &QVector2D) -> f32;
+        fn lengthSquared(&self) -> f32;
 
         /// Normalizes the current vector in place. Nothing happens
         /// if this vector is a null vector or the length of the vector is very close to 1.
-        fn normalize(self: &mut QVector2D);
+        fn normalize(&mut self);
 
         /// Returns the normalized unit vector form of this vector.
         ///
         /// If this vector is null, then a null vector is returned.
         /// If the length of the vector is very close to 1, then the vector will be returned as-is.
         /// Otherwise the normalized form of the vector of length 1 will be returned.
-        fn normalized(self: &QVector2D) -> QVector2D;
+        fn normalized(&self) -> QVector2D;
 
         /// Sets the x coordinate of this point to the given finite `x` coordinate.
         #[rust_name = "set_x"]
-        fn setX(self: &mut QVector2D, x: f32);
+        fn setX(&mut self, x: f32);
         /// Sets the y coordinate of this point to the given finite `y` coordinate.
         #[rust_name = "set_y"]
-        fn setY(self: &mut QVector2D, y: f32);
+        fn setY(&mut self, y: f32);
 
         // From trait is more idiomatic to Rust and implemented in QPoint and QPointF
         #[doc(hidden)]
         #[rust_name = "to_point"]
-        fn toPoint(self: &QVector2D) -> QPoint;
+        fn toPoint(&self) -> QPoint;
         #[doc(hidden)]
         #[rust_name = "to_pointf"]
-        fn toPointF(self: &QVector2D) -> QPointF;
+        fn toPointF(&self) -> QPointF;
 
         /// Returns the x coordinate of this point.
-        fn x(self: &QVector2D) -> f32;
+        fn x(&self) -> f32;
         /// Returns the y coordinate of this point.
-        fn y(self: &QVector2D) -> f32;
+        fn y(&self) -> f32;
 
     }
 

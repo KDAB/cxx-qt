@@ -143,210 +143,214 @@ mod ffi {
         Fantasy,
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qfont.h");
-        type QFont = super::QFont;
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
 
+        include!("cxx-qt-lib/qfont.h");
+    }
+
+    unsafe extern "C++" {
+        type QFont = super::QFont;
+
         /// Returns `true` if [weight](https://doc.qt.io/qt/qfont.html#weight)() is a value greater than 400; otherwise returns `false`.
-        fn bold(self: &QFont) -> bool;
+        fn bold(&self) -> bool;
 
         /// Returns the current capitalization type of the font.
-        fn capitalization(self: &QFont) -> QFontCapitalization;
+        fn capitalization(&self) -> QFontCapitalization;
 
         /// Returns the family name that corresponds to the current style hint.
         #[rust_name = "default_family"]
-        fn defaultFamily(self: &QFont) -> QString;
+        fn defaultFamily(&self) -> QString;
 
         /// Returns `true` if a window system font exactly matching
         /// the settings of this font is available.
         #[rust_name = "exact_match"]
-        fn exactMatch(self: &QFont) -> bool;
+        fn exactMatch(&self) -> bool;
 
         /// Returns the requested font family name. This will always be the same as the first entry in [`families`](Self::families).
         #[rust_name = "family_or_default"]
-        fn family(self: &QFont) -> QString;
+        fn family(&self) -> QString;
 
         /// Returns the requested font family names, i.e. the names set in the last [`set_families`](Self::set_families)
         /// call or via the constructor. Otherwise it returns an empty list.
-        fn families(self: &QFont) -> QStringList;
+        fn families(&self) -> QStringList;
 
         /// Returns `true` if fixed pitch has been set; otherwise returns `false`.
         #[rust_name = "fixed_pitch"]
-        fn fixedPitch(self: &QFont) -> bool;
+        fn fixedPitch(&self) -> bool;
 
         /// Sets this font to match the description `descrip`. The description is a comma-separated
         /// list of the font attributes, as returned by [`to_qstring`](Self::to_qstring).
         #[rust_name = "from_string"]
-        fn fromString(self: &mut QFont, descrip: &QString) -> bool;
+        fn fromString(&mut self, descrip: &QString) -> bool;
 
         /// Returns the currently preferred hinting level for glyphs rendered with this font.
         #[rust_name = "hinting_preference"]
-        fn hintingPreference(self: &QFont) -> QFontHintingPreference;
+        fn hintingPreference(&self) -> QFontHintingPreference;
 
         /// Returns `true` if this font and `f` are copies of each other, i.e. one of them was created
         /// as a copy of the other and neither has been modified since. This is much stricter than equality.
         #[rust_name = "is_copy_of"]
-        fn isCopyOf(self: &QFont, font: &QFont) -> bool;
+        fn isCopyOf(&self, font: &QFont) -> bool;
 
         /// Returns `true` if the [style](https://doc.qt.io/qt/qfont.html#style)() of the font is not [`QFontStyle::StyleNormal`].
-        fn italic(self: &QFont) -> bool;
+        fn italic(&self) -> bool;
 
         /// Returns `true` if kerning should be used when drawing text with this font.
-        fn kerning(self: &QFont) -> bool;
+        fn kerning(&self) -> bool;
 
         /// Returns the font's key, a textual representation of a font.
         /// It is typically used as the key for a cache or dictionary of fonts.
-        fn key(self: &QFont) -> QString;
+        fn key(&self) -> QString;
 
         /// Returns the letter spacing for the font.
         #[rust_name = "letter_spacing"]
-        fn letterSpacing(self: &QFont) -> f64;
+        fn letterSpacing(&self) -> f64;
 
         /// Returns the spacing type used for letter spacing.
         #[rust_name = "letter_spacing_type"]
-        fn letterSpacingType(self: &QFont) -> QFontSpacingType;
+        fn letterSpacingType(&self) -> QFontSpacingType;
 
         /// Returns `true` if overline has been set; otherwise returns `false`.
-        fn overline(self: &QFont) -> bool;
+        fn overline(&self) -> bool;
 
         /// Returns the pixel size of the font if it was set with [`set_pixel_size`](Self::set_pixel_size). Returns -1 if the size was not specified in pixels.
         #[rust_name = "pixel_size"]
-        fn pixelSize(self: &QFont) -> i32;
+        fn pixelSize(&self) -> i32;
 
         /// Returns the point size of the font. Returns -1 if the font size was specified in pixels.
         #[rust_name = "point_size"]
-        fn pointSize(self: &QFont) -> i32;
+        fn pointSize(&self) -> i32;
 
         /// Returns a new `QFont` that has attributes copied from other that have not been previously set on this font.
-        fn resolve(self: &QFont, other: &QFont) -> QFont;
+        fn resolve(&self, other: &QFont) -> QFont;
 
         /// If `enable` is `true` sets the font's weight to 700; otherwise sets the weight to 400.
         ///
         /// For finer boldness control use [setWeight](https://doc.qt.io/qt/qfont.html#setWeight)().
         #[rust_name = "set_bold"]
-        fn setBold(self: &mut QFont, enable: bool);
+        fn setBold(&mut self, enable: bool);
 
         /// Sets the capitalization of the text in this font to `caps`.
         ///
         /// A font's capitalization makes the text appear in the selected capitalization mode.
         #[rust_name = "set_capitalization"]
-        fn setCapitalization(self: &mut QFont, caps: QFontCapitalization);
+        fn setCapitalization(&mut self, caps: QFontCapitalization);
 
         /// Sets the family name of the font. The name is case insensitive and may include a foundry name.
         ///
         /// The family name may optionally also include a foundry name, e.g. "Helvetica [Cronyx]". If the family is available from more than one foundry and the foundry isn't specified, an arbitrary foundry is chosen. If the family isn't available a family will be set using the [font matching](https://doc.qt.io/qt/qfont.html#fontmatching) algorithm.
         #[rust_name = "set_family"]
-        fn setFamily(self: &mut QFont, family: &QString);
+        fn setFamily(&mut self, family: &QString);
 
         /// Sets the list of family names for the font. The names are case insensitive and may include
         /// a foundry name. The first family in `families` will be set as the main family for the font.
         ///
         /// Each family name entry in families may optionally also include a foundry name, e.g. "Helvetica [Cronyx]". If the family is available from more than one foundry and the foundry isn't specified, an arbitrary foundry is chosen. If the family isn't available a family will be set using the [font matching](https://doc.qt.io/qt/qfont.html#fontmatching) algorithm.
         #[rust_name = "set_families"]
-        fn setFamilies(self: &mut QFont, families: &QStringList);
+        fn setFamilies(&mut self, families: &QStringList);
 
         /// If `enable` is `true`, sets fixed pitch on; otherwise sets fixed pitch off.
         #[rust_name = "set_fixed_pitch"]
-        fn setFixedPitch(self: &mut QFont, enable: bool);
+        fn setFixedPitch(&mut self, enable: bool);
 
         /// Sets the style strategy for the font to `strategy`.
         #[rust_name = "set_style_strategy"]
-        fn setStyleStrategy(self: &mut QFont, strategy: QFontStyleStrategy);
+        fn setStyleStrategy(&mut self, strategy: QFontStyleStrategy);
 
         /// Set the preference for the hinting level of the glyphs to `hinting_preference`.
         ///  This is a hint to the underlying font rendering system to use a certain level of hinting, and has varying support across platforms.
         #[rust_name = "set_hinting_preference"]
-        fn setHintingPreference(self: &mut QFont, hinting_preference: QFontHintingPreference);
+        fn setHintingPreference(&mut self, hinting_preference: QFontHintingPreference);
 
         /// Sets the [style](https://doc.qt.io/qt/qfont.html#style)() of the font to [`QFontStyle::StyleItalic`] if `enable` is `true`; otherwise the style is set to [`QFontStyle::StyleNormal`].
         ///
         /// Note: If [`style_name`](Self::style_name) is set, this value may be ignored, or if supported on the platform, the font may be rendered tilted instead of picking a designed italic font-variant.
         #[rust_name = "set_italic"]
-        fn setItalic(self: &mut QFont, enable: bool);
+        fn setItalic(&mut self, enable: bool);
 
         /// Enables kerning for this font if `enable` is `true`; otherwise disables it. By default, kerning is enabled.
         ///
         /// When kerning is enabled, glyph metrics do not add up anymore, even for Latin text. In other words, the assumption that `width("a") + width("b") = width("ab")` is not necessarily true.
         #[rust_name = "set_kerning"]
-        fn setKerning(self: &mut QFont, enable: bool);
+        fn setKerning(&mut self, enable: bool);
 
         /// Sets the letter spacing for the font to `spacing` and the type of spacing to `spacing_type`.
         ///
         /// Letter spacing changes the default spacing between individual letters in the font. The spacing between the letters can be made smaller as well as larger either in percentage of the character width or in pixels, depending on the selected spacing type.
         #[rust_name = "set_letter_spacing"]
-        fn setLetterSpacing(self: &mut QFont, spacing_type: QFontSpacingType, spacing: f64);
+        fn setLetterSpacing(&mut self, spacing_type: QFontSpacingType, spacing: f64);
 
         /// If `enable` is `true`, sets overline on; otherwise sets overline off.
         #[rust_name = "set_overline"]
-        fn setOverline(self: &mut QFont, enable: bool);
+        fn setOverline(&mut self, enable: bool);
 
         /// Sets the font size to `pixel_size` pixels.
         #[rust_name = "set_pixel_size"]
-        fn setPixelSize(self: &mut QFont, pixel_size: i32);
+        fn setPixelSize(&mut self, pixel_size: i32);
 
         /// Sets the stretch `factor` for the font.
         #[rust_name = "set_stretch"]
-        fn setStretch(self: &mut QFont, factor: i32);
+        fn setStretch(&mut self, factor: i32);
 
         /// If `enable` is `true`, sets strikeout on; otherwise sets strikeout off.
         #[rust_name = "set_strikeout"]
-        fn setStrikeOut(self: &mut QFont, enable: bool);
+        fn setStrikeOut(&mut self, enable: bool);
 
         /// Sets the style of the font to `style`.
         #[rust_name = "set_style"]
-        fn setStyle(self: &mut QFont, style: QFontStyle);
+        fn setStyle(&mut self, style: QFontStyle);
 
         /// Sets the style hint and strategy to `hint` and `strategy`, respectively.
         /// Qt does not support style hints on X11 since this information is not provided by the window system.
         #[rust_name = "set_style_hint"]
-        fn setStyleHint(self: &mut QFont, hint: QFontStyleHint, strategy: QFontStyleStrategy);
+        fn setStyleHint(&mut self, hint: QFontStyleHint, strategy: QFontStyleStrategy);
 
         /// Sets the style name of the font to `style_name`.
         #[rust_name = "set_style_name"]
-        fn setStyleName(self: &mut QFont, style_name: &QString);
+        fn setStyleName(&mut self, style_name: &QString);
 
         /// If `enable` is `true`, sets underline on; otherwise sets underline off.
         #[rust_name = "set_underline"]
-        fn setUnderline(self: &mut QFont, enable: bool);
+        fn setUnderline(&mut self, enable: bool);
 
         /// Sets the word spacing for the font to `spacing`.
         #[rust_name = "set_word_spacing"]
-        fn setWordSpacing(self: &mut QFont, spacing: f64);
+        fn setWordSpacing(&mut self, spacing: f64);
 
         /// Returns the stretch factor for the font.
-        fn stretch(self: &QFont) -> i32;
+        fn stretch(&self) -> i32;
 
         /// Returns `true` if strikeout has been set; otherwise returns `false`.
         #[rust_name = "strike_out"]
-        fn strikeOut(self: &QFont) -> bool;
+        fn strikeOut(&self) -> bool;
 
         /// Returns the style hint.
         #[rust_name = "style_hint"]
-        fn styleHint(self: &QFont) -> QFontStyleHint;
+        fn styleHint(&self) -> QFontStyleHint;
 
         /// Returns the requested font style name. This can be used to match the font
         /// with irregular styles (that can't be normalized in other style properties).
         #[rust_name = "style_name"]
-        fn styleName(self: &QFont) -> QString;
+        fn styleName(&self) -> QString;
 
         /// Returns the style strategy.
         #[rust_name = "style_strategy"]
-        fn styleStrategy(self: &QFont) -> QFontStyleStrategy;
+        fn styleStrategy(&self) -> QFontStyleStrategy;
 
         /// Returns the font as a string.
         #[rust_name = "to_qstring"]
-        fn toString(self: &QFont) -> QString;
+        fn toString(&self) -> QString;
 
         /// Returns `true` if underline has been set; otherwise returns `false`.
-        fn underline(self: &QFont) -> bool;
+        fn underline(&self) -> bool;
 
         /// Returns the word spacing for the font.
         #[rust_name = "word_spacing"]
-        fn wordSpacing(self: &QFont) -> f64;
+        fn wordSpacing(&self) -> f64;
     }
 
     #[namespace = "rust::cxxqtlib1"]

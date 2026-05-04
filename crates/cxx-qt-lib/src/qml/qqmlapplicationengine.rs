@@ -10,12 +10,25 @@ mod ffi {
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qmap.h");
         type QMap_QString_QVariant = crate::QMap<crate::QMapPair_QString_QVariant>;
+        include!("cxx-qt-lib/qqmlengine.h");
+        type QQmlEngine = crate::QQmlEngine;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/qurl.h");
         type QUrl = crate::QUrl;
+
+        include!("cxx-qt-lib/qqmlapplicationengine.h");
+    }
+
+    unsafe extern "C++Qt" {
+        /// `QQmlApplicationEngine` provides a convenient way to load an application from a single QML file.
+        ///
+        /// Qt Documentation: [QQmlApplicationEngine](https://doc.qt.io/qt/qqmlapplicationengine.html#details)
+        #[qobject]
+        #[base = QQmlEngine]
+        type QQmlApplicationEngine;
 
         /// Adds `path` as a directory where the engine searches for installed modules in a URL-based directory structure.
         #[rust_name = "add_import_path"]
@@ -71,19 +84,7 @@ mod ffi {
         /// Sets `path` as string for storing offline user data.
         #[rust_name = "set_offline_storage_path"]
         fn setOfflineStoragePath(self: Pin<&mut QQmlApplicationEngine>, dir: &QString);
-    }
 
-    unsafe extern "C++Qt" {
-        include!("cxx-qt-lib/qqmlapplicationengine.h");
-        /// `QQmlApplicationEngine` provides a convenient way to load an application from a single QML file.
-        ///
-        /// Qt Documentation: [QQmlApplicationEngine](https://doc.qt.io/qt/qqmlapplicationengine.html#details)
-        #[qobject]
-        #[base = QQmlEngine]
-        type QQmlApplicationEngine;
-    }
-
-    unsafe extern "C++Qt" {
         /// This signal is emitted when an object finishes loading. If loading was successful, `object` contains a pointer to the loaded object, otherwise the pointer is null.
         ///
         /// The `url` to the component the `object` came from is also provided.
@@ -108,11 +109,6 @@ mod ffi {
         #[rust_name = "object_creation_failed"]
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         fn objectCreationFailed(self: Pin<&mut QQmlApplicationEngine>, url: &QUrl);
-    }
-
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qqmlengine.h");
-        type QQmlEngine = crate::QQmlEngine;
     }
 
     #[namespace = "rust::cxxqtlib1"]

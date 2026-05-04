@@ -9,17 +9,20 @@ use std::fmt;
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type DateFormat = crate::DateFormat;
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qtime.h");
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
-
-        type QTime = super::QTime;
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qtime.h");
+    }
+
+    unsafe extern "C++" {
+        type QTime = super::QTime;
 
         /// Returns a `QTime` object containing a time `ms` milliseconds later
         /// than the time of this object (or earlier if `ms` is negative).
@@ -28,7 +31,7 @@ mod ffi {
         ///
         /// Returns a null time if this time is invalid.
         #[rust_name = "add_msecs"]
-        fn addMSecs(self: &QTime, ms: i32) -> QTime;
+        fn addMSecs(&self, ms: i32) -> QTime;
 
         /// Returns a `QTime` object containing a time `s` seconds later than the
         /// time of this object (or earlier if `s` is negative).
@@ -37,53 +40,53 @@ mod ffi {
         ///
         /// Returns a null time if this time is invalid.
         #[rust_name = "add_secs"]
-        fn addSecs(self: &QTime, s: i32) -> QTime;
+        fn addSecs(&self, s: i32) -> QTime;
 
         /// Returns the hour part (0 to 23) of the time.
         ///
         /// Returns -1 if the time is invalid.
-        fn hour(self: &QTime) -> i32;
+        fn hour(&self) -> i32;
 
         /// Returns `true` if the time is null (i.e., the `QTime` object was
         /// constructed using the default constructor); otherwise returns `false`.
         /// A null time is also an invalid time.
         #[rust_name = "is_null"]
-        fn isNull(self: &QTime) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns `true` if the time is valid; otherwise returns `false`. For example, the time 23:30:55.746 is valid, but 24:12:30 is invalid.
         #[rust_name = "is_valid"]
-        fn isValid(self: &QTime) -> bool;
+        fn isValid(&self) -> bool;
 
         /// Returns the minute part (0 to 59) of the time.
         ///
         /// Returns -1 if the time is invalid.
-        fn minute(self: &QTime) -> i32;
+        fn minute(&self) -> i32;
 
         /// Returns the millisecond part (0 to 999) of the time.
         ///
         /// Returns -1 if the time is invalid.
-        fn msec(self: &QTime) -> i32;
+        fn msec(&self) -> i32;
 
         /// Returns the number of msecs since the start of the day, i.e. since 00:00:00.
         #[rust_name = "msecs_since_start_of_day"]
-        fn msecsSinceStartOfDay(self: &QTime) -> i32;
+        fn msecsSinceStartOfDay(&self) -> i32;
 
         /// Returns the second part (0 to 59) of the time.
         ///
         /// Returns -1 if the time is invalid.
-        fn second(self: &QTime) -> i32;
+        fn second(&self) -> i32;
 
         /// Sets the time to hour `h`, minute `m`, seconds `s` and milliseconds `ms`.
         #[rust_name = "set_hms"]
-        fn setHMS(self: &mut QTime, h: i32, m: i32, s: i32, ms: i32) -> bool;
+        fn setHMS(&mut self, h: i32, m: i32, s: i32, ms: i32) -> bool;
 
         /// Returns the time as a string. The `format` parameter determines the format of the string.
         #[rust_name = "format"]
-        fn toString(self: &QTime, format: &QString) -> QString;
+        fn toString(&self, format: &QString) -> QString;
 
         /// Returns the time as a string. The `format` parameter determines the format of the string.
         #[rust_name = "format_enum"]
-        fn toString(self: &QTime, format: DateFormat) -> QString;
+        fn toString(&self, format: DateFormat) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]

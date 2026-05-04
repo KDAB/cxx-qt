@@ -75,52 +75,52 @@ mod ffi {
         /// Returns the time zone abbreviation at the given `at_date_time`. The abbreviation may change depending on DST or even historical events.
         ///
         /// **Note:** The abbreviation is not guaranteed to be unique to this time zone and should not be used in place of the ID or display name.
-        fn abbreviation(self: &QTimeZone, at_date_time: &QDateTime) -> QString;
+        fn abbreviation(&self, at_date_time: &QDateTime) -> QString;
 
         /// Returns any comment for the time zone.
         ///
         /// A comment may be provided by the host platform to assist users in choosing the correct time zone. Depending on the platform this may not be localized.
-        fn comment(self: &QTimeZone) -> QString;
+        fn comment(&self) -> QString;
 
         /// Returns the daylight-saving time offset at the given `at_date_time`,
         /// i.e. the number of seconds to add to the standard time offset to obtain the local daylight-saving time.
         ///
         /// For example, for the time zone "Europe/Berlin" the DST offset is +3600 seconds. During standard time this function will return 0, and when daylight-saving is in effect it will return 3600.
         #[rust_name = "daylight_time_offset"]
-        fn daylightTimeOffset(self: &QTimeZone, at_date_time: &QDateTime) -> i32;
+        fn daylightTimeOffset(&self, at_date_time: &QDateTime) -> i32;
 
         /// Returns `true` if the time zone has practiced daylight-saving at any time.
         #[rust_name = "has_daylight_time"]
-        fn hasDaylightTime(self: &QTimeZone) -> bool;
+        fn hasDaylightTime(&self) -> bool;
 
         /// Returns `true` if the system backend supports obtaining transitions.
         #[rust_name = "has_transitions"]
-        fn hasTransitions(self: &QTimeZone) -> bool;
+        fn hasTransitions(&self) -> bool;
 
         /// Returns the IANA ID for the time zone.
-        fn id(self: &QTimeZone) -> QByteArray;
+        fn id(&self) -> QByteArray;
 
         /// Returns `true` if daylight-saving was in effect at the given `at_date_time`.
         #[rust_name = "is_daylight_time"]
-        fn isDaylightTime(self: &QTimeZone, at_date_time: &QDateTime) -> bool;
+        fn isDaylightTime(&self, at_date_time: &QDateTime) -> bool;
 
         /// Returns `true` if this time zone is valid.
         #[rust_name = "is_valid"]
-        fn isValid(self: &QTimeZone) -> bool;
+        fn isValid(&self) -> bool;
 
         /// Returns the total effective offset at the given `at_date_time`, i.e. the number of seconds to add to UTC to obtain the local time.
         /// This includes any DST offset that may be in effect, i.e. it is the sum of [`standard_time_offset`](QTimeZone::standard_time_offset) and [`daylight_time_offset`](QTimeZone::daylight_time_offset) for the given datetime.
         ///
         /// For example, for the time zone "Europe/Berlin" the standard time offset is +3600 seconds and the DST offset is +3600 seconds. During standard time this function will return 3600 (UTC+01:00), and during DST it will return 7200 (UTC+02:00).
         #[rust_name = "offset_from_utc"]
-        fn offsetFromUtc(self: &QTimeZone, at_date_time: &QDateTime) -> i32;
+        fn offsetFromUtc(&self, at_date_time: &QDateTime) -> i32;
 
         /// Returns the standard time offset at the given `at_date_time`, i.e. the number of seconds to add to UTC to obtain the local Standard Time.
         /// This excludes any DST offset that may be in effect.
         ///
         /// For example, for the time zone "Europe/Berlin" the standard time offset is +3600 seconds. During both standard and DST this function will return 3600 (UTC+01:00).
         #[rust_name = "standard_time_offset"]
-        fn standardTimeOffset(self: &QTimeZone, at_date_time: &QDateTime) -> i32;
+        fn standardTimeOffset(&self, at_date_time: &QDateTime) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]

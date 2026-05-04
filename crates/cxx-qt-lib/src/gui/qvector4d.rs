@@ -11,84 +11,87 @@ use crate::{QPoint, QPointF, QVector2D, QVector3D};
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
-
         include!("cxx-qt-lib/qvector2d.h");
         type QVector2D = crate::QVector2D;
         include!("cxx-qt-lib/qvector3d.h");
         type QVector3D = crate::QVector3D;
+
         include!("cxx-qt-lib/qvector4d.h");
+    }
+
+    unsafe extern "C++" {
         type QVector4D = super::QVector4D;
 
         /// Returns `true` if the x, y, z, and w coordinates are set to 0.0, otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QVector4D) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the length of the vector from the origin.
-        fn length(self: &QVector4D) -> f32;
+        fn length(&self) -> f32;
 
         /// Returns the squared length of the vector from the origin.
         /// This is equivalent to the dot product of the vector with itself.
         #[rust_name = "length_squared"]
-        fn lengthSquared(self: &QVector4D) -> f32;
+        fn lengthSquared(&self) -> f32;
 
         /// Normalizes the current vector in place. Nothing happens
         /// if this vector is a null vector or the length of the vector is very close to 1.
-        fn normalize(self: &mut QVector4D);
+        fn normalize(&mut self);
 
         /// Returns the normalized unit vector form of this vector.
         ///
         /// If this vector is null, then a null vector is returned.
         /// If the length of the vector is very close to 1, then the vector will be returned as-is.
         /// Otherwise the normalized form of the vector of length 1 will be returned.
-        fn normalized(self: &QVector4D) -> QVector4D;
+        fn normalized(&self) -> QVector4D;
 
         /// Sets the w coordinate of this point to the given finite `w` coordinate.
         #[rust_name = "set_w"]
-        fn setW(self: &mut QVector4D, w: f32);
+        fn setW(&mut self, w: f32);
         /// Sets the x coordinate of this point to the given finite `x` coordinate.
         #[rust_name = "set_x"]
-        fn setX(self: &mut QVector4D, x: f32);
+        fn setX(&mut self, x: f32);
         /// Sets the y coordinate of this point to the given finite `y` coordinate.
         #[rust_name = "set_y"]
-        fn setY(self: &mut QVector4D, y: f32);
+        fn setY(&mut self, y: f32);
         /// Sets the z coordinate of this point to the given finite `z` coordinate.
         #[rust_name = "set_z"]
-        fn setZ(self: &mut QVector4D, z: f32);
+        fn setZ(&mut self, z: f32);
 
         // From trait is more idiomatic to Rust and implemented in QPoint and QPointF
         #[doc(hidden)]
         #[rust_name = "to_point"]
-        fn toPoint(self: &QVector4D) -> QPoint;
+        fn toPoint(&self) -> QPoint;
         #[doc(hidden)]
         #[rust_name = "to_pointf"]
-        fn toPointF(self: &QVector4D) -> QPointF;
+        fn toPointF(&self) -> QPointF;
 
         /// Returns the 2D vector form of this 4D vector,
         /// dividing the x and y coordinates by the w coordinate and dropping the z coordinate.
         /// Returns a null vector if w is zero.
         #[rust_name = "to_vector_2d_affine"]
-        fn toVector2DAffine(self: &QVector4D) -> QVector2D;
+        fn toVector2DAffine(&self) -> QVector2D;
         /// Returns the 3D vector form of this 4D vector,
         /// dividing the x, y, and z coordinates by the w coordinate.
         /// Returns a null vector if w is zero.
         #[rust_name = "to_vector_3d_affine"]
-        fn toVector3DAffine(self: &QVector4D) -> QVector3D;
+        fn toVector3DAffine(&self) -> QVector3D;
 
         /// Returns the w coordinate of this point.
-        fn w(self: &QVector4D) -> f32;
+        fn w(&self) -> f32;
         /// Returns the x coordinate of this point.
-        fn x(self: &QVector4D) -> f32;
+        fn x(&self) -> f32;
         /// Returns the y coordinate of this point.
-        fn y(self: &QVector4D) -> f32;
+        fn y(&self) -> f32;
         /// Returns the z coordinate of this point.
-        fn z(self: &QVector4D) -> f32;
+        fn z(&self) -> f32;
     }
 
     #[namespace = "rust::cxxqtlib1"]

@@ -13,19 +13,19 @@ use crate::{QMatrix3x3, QVector3D, QVector4D};
 #[cxx::bridge]
 mod ffi {
     extern "C++" {
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
-
         include!("cxx-qt-lib/qgenericmatrix.h");
         type QMatrix3x3 = crate::QMatrix3x3;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
         include!("cxx-qt-lib/qvector3d.h");
         type QVector3D = crate::QVector3D;
         include!("cxx-qt-lib/qvector4d.h");
         type QVector4D = crate::QVector4D;
+
+        include!("cxx-qt-lib/qquaternion.h");
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qquaternion.h");
         type QQuaternion = super::QQuaternion;
 
         /// Returns the conjugate of this quaternion, which is (-x, -y, -z, scalar).

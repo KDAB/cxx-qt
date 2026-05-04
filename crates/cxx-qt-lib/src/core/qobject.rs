@@ -10,13 +10,14 @@ use std::ptr;
 
 #[cxx::bridge]
 pub mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qobject.h");
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qobject.h");
         #[rust_name = "QObjectExternal"]
         type QObject;
         #[rust_name = "block_signals"]

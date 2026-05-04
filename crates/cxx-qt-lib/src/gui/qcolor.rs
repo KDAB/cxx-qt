@@ -39,123 +39,127 @@ mod ffi {
         type GlobalColor = crate::GlobalColor;
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qcolor.h");
-        type QColor = super::QColor;
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
 
+        include!("cxx-qt-lib/qcolor.h");
+    }
+
+    unsafe extern "C++" {
+        type QColor = super::QColor;
+
         /// Returns the alpha color component of this color.
-        fn alpha(self: &QColor) -> i32;
+        fn alpha(&self) -> i32;
         /// Returns the black color component of this color.
-        fn black(self: &QColor) -> i32;
+        fn black(&self) -> i32;
         /// Returns the blue color component of this color.
-        fn blue(self: &QColor) -> i32;
+        fn blue(&self) -> i32;
         /// Creates a copy of this color in the format specified by `color_spec`.
         #[rust_name = "convert_to"]
-        fn convertTo(self: &QColor, color_spec: QColorSpec) -> QColor;
+        fn convertTo(&self, color_spec: QColorSpec) -> QColor;
         /// Returns the cyan color component of this color.
-        fn cyan(self: &QColor) -> i32;
+        fn cyan(&self) -> i32;
         /// Returns a darker (or lighter) color, but does not change this object.
         ///
         /// If the `factor` is greater than 100, this functions returns a darker color. Setting `factor` to 300 returns a color that has one-third the brightness. If the `factor` is less than 100, the return color is lighter, but we recommend using [`lighter`](Self::lighter) for this purpose. If the `factor` is 0 or negative, the return value is unspecified.
         ///
         /// The function converts the current color to HSV, divides the value (V) component by factor and converts the color back to it's original color spec.
-        fn darker(self: &QColor, factor: i32) -> QColor;
+        fn darker(&self, factor: i32) -> QColor;
         /// Returns the green color component of this color.
-        fn green(self: &QColor) -> i32;
+        fn green(&self) -> i32;
         /// Returns the HSL hue color component of this color.
         #[rust_name = "hsl_hue"]
-        fn hslHue(self: &QColor) -> i32;
+        fn hslHue(&self) -> i32;
         /// Returns the HSL saturation color component of this color.
         #[rust_name = "hsl_saturation"]
-        fn hslSaturation(self: &QColor) -> i32;
+        fn hslSaturation(&self) -> i32;
         /// Returns the HSV hue color component of this color.
         #[rust_name = "hsv_hue"]
-        fn hsvHue(self: &QColor) -> i32;
+        fn hsvHue(&self) -> i32;
         /// Returns the HSV saturation color component of this color.
         #[rust_name = "hsv_saturation"]
-        fn hsvSaturation(self: &QColor) -> i32;
+        fn hsvSaturation(&self) -> i32;
         /// Returns the HSV hue color component of this color.
         ///
         /// The color is implicitly converted to HSV.
-        fn hue(self: &QColor) -> i32;
+        fn hue(&self) -> i32;
         /// Returns `true` if the color is valid; otherwise returns `false`.
         #[rust_name = "is_valid"]
-        fn isValid(self: &QColor) -> bool;
+        fn isValid(&self) -> bool;
         /// Returns a lighter (or darker) color, but does not change this object.
         ///
         /// If the `factor` is greater than 100, this functions returns a lighter color. Setting `factor` to 150 returns a color that is 50% brighter. If the `factor` is less than 100, the return color is darker, but we recommend using [`darker`](Self::darker) for this purpose. If the `factor` is 0 or negative, the return value is unspecified.
         ///
         /// The function converts the current color to HSV, multiplies the value (V) component by factor and converts the color back to it's original color spec.
-        fn lighter(self: &QColor, factor: i32) -> QColor;
+        fn lighter(&self, factor: i32) -> QColor;
         /// Returns the lightness color component of this color.
-        fn lightness(self: &QColor) -> i32;
+        fn lightness(&self) -> i32;
         /// Returns the magenta color component of this color.
-        fn magenta(self: &QColor) -> i32;
+        fn magenta(&self) -> i32;
         /// Returns the name of the color in the specified `format`.
-        fn name(self: &QColor, format: QColorNameFormat) -> QString;
+        fn name(&self, format: QColorNameFormat) -> QString;
         /// Returns the red color component of this color.
-        fn red(self: &QColor) -> i32;
+        fn red(&self) -> i32;
         /// Returns the HSV saturation color component of this color.
         ///
         /// The color is implicitly converted to HSV.
-        fn saturation(self: &QColor) -> i32;
+        fn saturation(&self) -> i32;
         /// Sets the alpha of this color to `alpha`. Integer alpha is specified in the range 0-255.
         #[rust_name = "set_alpha"]
-        fn setAlpha(self: &mut QColor, alpha: i32);
+        fn setAlpha(&mut self, alpha: i32);
         /// Sets the blue color component of this color to 1. Integer components are specified in the range 0-255.
         #[rust_name = "set_blue"]
-        fn setBlue(self: &mut QColor, blue: i32);
+        fn setBlue(&mut self, blue: i32);
         /// Sets the color to CMYK values, `c` (cyan), `m` (magenta), `y` (yellow), `k` (black), and `a` (alpha-channel, i.e. transparency).
         ///
         /// All the values must be in the range 0-255.
         #[rust_name = "set_cmyk"]
-        fn setCmyk(self: &mut QColor, c: i32, m: i32, y: i32, k: i32, a: i32);
+        fn setCmyk(&mut self, c: i32, m: i32, y: i32, k: i32, a: i32);
         /// Sets the green color component of this color to `green`. Integer components are specified in the range 0-255.
         #[rust_name = "set_green"]
-        fn setGreen(self: &mut QColor, green: i32);
+        fn setGreen(&mut self, green: i32);
         /// Sets a HSL color value; `h` is the hue, `s` is the saturation, `l` is the lightness and `a` is the alpha component of the HSL color.
         ///
         /// The saturation, value and alpha-channel values must be in the range 0-255, and the hue value must be greater than -1.
         #[rust_name = "set_hsl"]
-        fn setHsl(self: &mut QColor, h: i32, s: i32, l: i32, a: i32);
+        fn setHsl(&mut self, h: i32, s: i32, l: i32, a: i32);
         /// Sets a HSV color value; `h` is the hue, `s` is the saturation, `v` is the value and `a` is the alpha component of the HSV color.
         ///
         /// The saturation, value and alpha-channel values must be in the range 0-255, and the hue value must be greater than -1.
         #[rust_name = "set_hsv"]
-        fn setHsv(self: &mut QColor, h: i32, s: i32, v: i32, a: i32);
+        fn setHsv(&mut self, h: i32, s: i32, v: i32, a: i32);
         /// Sets the red color component of this color to `red`. Integer components are specified in the range 0-255.
         #[rust_name = "set_red"]
-        fn setRed(self: &mut QColor, red: i32);
+        fn setRed(&mut self, red: i32);
         /// Sets the RGB value to `r`, `g`, `b` and the alpha value to `a`.
         ///
         /// All the values must be in the range 0-255.
         #[rust_name = "set_rgb"]
-        fn setRgb(self: &mut QColor, r: i32, g: i32, b: i32, a: i32);
+        fn setRgb(&mut self, r: i32, g: i32, b: i32, a: i32);
         /// Returns how the color was specified.
-        fn spec(self: &QColor) -> QColorSpec;
+        fn spec(&self) -> QColorSpec;
         /// Creates and returns a CMYK `QColor` based on this color.
         #[rust_name = "to_cmyk"]
-        fn toCmyk(self: &QColor) -> QColor;
+        fn toCmyk(&self) -> QColor;
         /// Create and returns an extended RGB `QColor` based on this color.
         #[rust_name = "to_extended_rgb"]
-        fn toExtendedRgb(self: &QColor) -> QColor;
+        fn toExtendedRgb(&self) -> QColor;
         /// Creates and returns an HSL `QColor` based on this color.
         #[rust_name = "to_hsl"]
-        fn toHsl(self: &QColor) -> QColor;
+        fn toHsl(&self) -> QColor;
         /// Creates and returns an HSV `QColor` based on this color.
         #[rust_name = "to_hsv"]
-        fn toHsv(self: &QColor) -> QColor;
+        fn toHsv(&self) -> QColor;
         /// Create and returns an RGB `QColor` based on this color.
         #[rust_name = "to_rgb"]
-        fn toRgb(self: &QColor) -> QColor;
+        fn toRgb(&self) -> QColor;
         /// Returns the value color component of this color.
-        fn value(self: &QColor) -> i32;
+        fn value(&self) -> i32;
         /// Returns the yellow color component of this color.
-        fn yellow(self: &QColor) -> i32;
+        fn yellow(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -434,7 +438,7 @@ impl QColor {
     /// Returns the HSV hue color component of this color.
     ///
     /// The color is implicitly converted to HSV.
-    pub fn hue_f(self: &QColor) -> f32 {
+    pub fn hue_f(&self) -> f32 {
         ffi::qcolor_hue_f(self)
     }
 
@@ -515,12 +519,12 @@ impl QColor {
     }
 
     /// Returns the value color component of this color.
-    pub fn value_f(self: &QColor) -> f32 {
+    pub fn value_f(&self) -> f32 {
         ffi::qcolor_value_f(self)
     }
 
     /// Returns the yellow color component of this color.
-    pub fn yellow_f(self: &QColor) -> f32 {
+    pub fn yellow_f(&self) -> f32 {
         ffi::qcolor_yellow_f(self)
     }
 }

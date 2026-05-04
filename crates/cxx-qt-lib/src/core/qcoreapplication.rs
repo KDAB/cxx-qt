@@ -9,7 +9,7 @@ use core::pin::Pin;
 
 #[cxx_qt::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qstring.h");
@@ -24,13 +24,6 @@ mod ffi {
         ///
         /// Qt Documentation: [QCoreApplication](https://doc.qt.io/qt/qcoreapplication.html#details)
         type QCoreApplication;
-    }
-
-    #[namespace = "rust::cxxqtlib1"]
-    unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "qcoreapplication_new"]
-        fn qcoreapplicationNew(args: &QVector_QByteArray) -> UniquePtr<QCoreApplication>;
     }
 
     unsafe extern "C++Qt" {
@@ -82,6 +75,13 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qcoreapplication_set_organization_name"]
         fn qapplicationSetOrganizationName(app: Pin<&mut QCoreApplication>, name: &QString);
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qcoreapplication_new"]
+        fn qcoreapplicationNew(args: &QVector_QByteArray) -> UniquePtr<QCoreApplication>;
     }
 
     // QCoreApplication is not a trivial to CXX and is not relocatable in Qt

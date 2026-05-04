@@ -12,12 +12,12 @@ use std::ops::{Deref, DerefMut};
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type CaseSensitivity = crate::CaseSensitivity;
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
@@ -25,26 +25,29 @@ mod ffi {
         type QList_QString = crate::QList<QString>;
 
         include!("cxx-qt-lib/qstringlist.h");
+    }
+
+    unsafe extern "C++" {
         type QStringList = super::QStringList;
 
         /// Returns `true` if the list contains the string `str`; otherwise returns `false`.
         ///
         /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the comparison is case-insensitive.
-        fn contains(self: &QStringList, str: &QString, cs: CaseSensitivity) -> bool;
+        fn contains(&self, str: &QString, cs: CaseSensitivity) -> bool;
 
         /// Returns a list of all the strings containing the substring `str`.
         ///
         /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the comparison is case-insensitive.
-        fn filter(self: &QStringList, str: &QString, cs: CaseSensitivity) -> QStringList;
+        fn filter(&self, str: &QString, cs: CaseSensitivity) -> QStringList;
 
         /// Joins all the string list's strings into a single string with each element
         /// separated by the given `separator` (which can be an empty string).
-        fn join(self: &QStringList, separator: &QString) -> QString;
+        fn join(&self, separator: &QString) -> QString;
 
         /// Sorts the list of strings in ascending order.
         ///
         /// If `cs` is [`CaseSensitivity::CaseSensitive`], the string comparison is case-sensitive; otherwise the comparison is case-insensitive.
-        fn sort(self: &mut QStringList, cs: CaseSensitivity);
+        fn sort(&mut self, cs: CaseSensitivity);
 
         /// Returns a string list where every string has had the `before` text replaced with the `after` text wherever the `before` text is found.
         ///
@@ -53,7 +56,7 @@ mod ffi {
         /// If `cs` is [`CaseSensitivity::CaseSensitive`], the string comparison is case-sensitive; otherwise the comparison is case-insensitive.
         #[rust_name = "replace_in_strings"]
         fn replaceInStrings(
-            self: &mut QStringList,
+            &mut self,
             before: &QString,
             after: &QString,
             cs: CaseSensitivity,

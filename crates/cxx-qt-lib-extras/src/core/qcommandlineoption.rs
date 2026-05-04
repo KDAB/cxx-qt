@@ -9,23 +9,27 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
-        type QCommandLineOption = super::QCommandLineOption;
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = cxx_qt_lib::QStringList;
 
+        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
+    }
+
+    unsafe extern "C++" {
+        type QCommandLineOption = super::QCommandLineOption;
+
         /// Returns the default values set for this option.
         #[rust_name = "default_values"]
-        fn defaultValues(self: &QCommandLineOption) -> QStringList;
+        fn defaultValues(&self) -> QStringList;
 
         /// Returns the description set for this option.
-        fn description(self: &QCommandLineOption) -> QString;
+        fn description(&self) -> QString;
 
         /// Returns the names set for this option.
-        fn names(self: &QCommandLineOption) -> QStringList;
+        fn names(&self) -> QStringList;
 
         /// Sets the default value used for this option to `default_value`.
         ///
@@ -33,20 +37,20 @@ mod ffi {
         ///
         /// If `default_value` is empty, the option has no default values.
         #[rust_name = "set_default_value"]
-        fn setDefaultValue(self: &mut QCommandLineOption, default_value: &QString);
+        fn setDefaultValue(&mut self, default_value: &QString);
 
         /// Sets the list of default values used for this option to `default_values`.
         ///
         /// The default values are used if the user of the application does not specify the option on the command line.
         #[rust_name = "set_default_values"]
-        fn setDefaultValues(self: &mut QCommandLineOption, default_values: &QStringList);
+        fn setDefaultValues(&mut self, default_values: &QStringList);
 
         /// Sets the description used for this option to `description`.
         /// It is customary to add a "." at the end of the description.
         ///
         /// The description is used by [QCommandLineParser::showHelp](https://doc.qt.io/qt/qcommandlineparser.html#showHelp)().
         #[rust_name = "set_description"]
-        fn setDescription(self: &mut QCommandLineOption, description: &QString);
+        fn setDescription(&mut self, description: &QString);
 
         /// Sets the name of the expected value, for the documentation, to `value_name`.
         ///
@@ -56,11 +60,11 @@ mod ffi {
         ///
         /// Call [`QCommandLineParser::value`](crate::QCommandLineParser::value) if you expect the option to be present only once, and [`QCommandLineParser::values`](crate::QCommandLineParser::values) if you expect that option to be present multiple times.
         #[rust_name = "set_value_name"]
-        fn setValueName(self: &mut QCommandLineOption, value_name: &QString);
+        fn setValueName(&mut self, value_name: &QString);
 
         /// Returns the name of the expected value.
         #[rust_name = "value_name"]
-        fn valueName(self: &QCommandLineOption) -> QString;
+        fn valueName(&self) -> QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]

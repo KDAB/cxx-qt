@@ -8,53 +8,57 @@ use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qmargins.h");
-        type QMargins = super::QMargins;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
+    extern "C++" {
         include!("cxx-qt-lib/qmarginsf.h");
         #[allow(dead_code)]
         type QMarginsF = crate::QMarginsF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        include!("cxx-qt-lib/qmargins.h");
+    }
+
+    unsafe extern "C++" {
+        type QMargins = super::QMargins;
 
         /// Returns the bottom margin.
-        fn bottom(self: &QMargins) -> i32;
+        fn bottom(&self) -> i32;
 
         /// Returns `true` if all margins are is 0; otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QMargins) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the left margin.
-        fn left(self: &QMargins) -> i32;
+        fn left(&self) -> i32;
 
         /// Returns the right margin.
-        fn right(self: &QMargins) -> i32;
+        fn right(&self) -> i32;
 
         /// Sets the bottom margin to `bottom`.
         #[rust_name = "set_bottom"]
-        fn setBottom(self: &mut QMargins, bottom: i32);
+        fn setBottom(&mut self, bottom: i32);
 
         /// Sets the left margin to `left`.
         #[rust_name = "set_left"]
-        fn setLeft(self: &mut QMargins, left: i32);
+        fn setLeft(&mut self, left: i32);
 
         /// Sets the right margin to `right`.
         #[rust_name = "set_right"]
-        fn setRight(self: &mut QMargins, right: i32);
+        fn setRight(&mut self, right: i32);
 
         /// Sets the top margin to `top`.
         #[rust_name = "set_top"]
-        fn setTop(self: &mut QMargins, top: i32);
+        fn setTop(&mut self, top: i32);
 
         /// Returns these margins as margins with floating point accuracy.
         ///
         /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_marginsf"]
-        fn toMarginsF(self: &QMargins) -> QMarginsF;
+        fn toMarginsF(&self) -> QMarginsF;
 
         /// Returns the top margin.
-        fn top(self: &QMargins) -> i32;
+        fn top(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]

@@ -11,44 +11,48 @@ use crate::QPoint;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
-        include!("cxx-qt-lib/qpointf.h");
-        type QPointF = super::QPointF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
+        include!("cxx-qt-lib/qpointf.h");
+    }
+
+    unsafe extern "C++" {
+        type QPointF = super::QPointF;
+
         /// Returns `true` if both the x and y coordinates are set to 0.0 (ignoring the sign); otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QPointF) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the sum of the absolute values of `self.x()` and `self.y()`,
         /// traditionally known as the "Manhattan length" of the vector from the origin to the point.
         #[rust_name = "manhattan_length"]
-        fn manhattanLength(self: &QPointF) -> f64;
+        fn manhattanLength(&self) -> f64;
 
         /// Sets the x coordinate of this point to the given finite `x` coordinate.
         #[rust_name = "set_x"]
-        fn setX(self: &mut QPointF, x: f64);
+        fn setX(&mut self, x: f64);
 
         /// Sets the y coordinate of this point to the given finite `y` coordinate.
         #[rust_name = "set_y"]
-        fn setY(self: &mut QPointF, y: f64);
+        fn setY(&mut self, y: f64);
 
         /// Rounds the coordinates of this point to the nearest integer,
         /// and returns a `QPoint` object with the rounded coordinates.
         #[rust_name = "to_point"]
-        fn toPoint(self: &QPointF) -> QPoint;
+        fn toPoint(&self) -> QPoint;
 
         /// Returns a point with x and y coordinates exchanged.
-        fn transposed(self: &QPointF) -> QPointF;
+        fn transposed(&self) -> QPointF;
 
         /// Returns the x coordinate of this point.
-        fn x(self: &QPointF) -> f64;
+        fn x(&self) -> f64;
 
         /// Returns the y coordinate of this point.
-        fn y(self: &QPointF) -> f64;
+        fn y(&self) -> f64;
     }
 
     #[namespace = "rust::cxxqtlib1"]

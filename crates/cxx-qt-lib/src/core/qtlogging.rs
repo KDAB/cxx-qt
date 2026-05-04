@@ -25,12 +25,14 @@ mod ffi {
         QtCriticalMsg = 2,
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+    }
 
+    unsafe extern "C++" {
         include!("cxx-qt-lib/qtlogging.h");
-        type QMessageLogContext<'a> = crate::QMessageLogContext<'a>;
+        type QMessageLogContext<'a> = super::QMessageLogContext<'a>;
         type QtMsgType;
 
         /// Outputs a message in the Qt message handler.

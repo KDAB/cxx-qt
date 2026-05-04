@@ -36,16 +36,20 @@ mod ffi {
         ParseAsLongOptions,
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib-extras/core/qcommandlineparser.h");
-        type QCommandLineParser = super::QCommandLineParser;
-        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
-        type QCommandLineOption = crate::QCommandLineOption;
-
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = cxx_qt_lib::QStringList;
+
+        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
+        type QCommandLineOption = crate::QCommandLineOption;
+
+        include!("cxx-qt-lib-extras/core/qcommandlineparser.h");
+    }
+
+    unsafe extern "C++" {
+        type QCommandLineParser = super::QCommandLineParser;
 
         /// Adds help options to the command-line parser.
         ///
@@ -53,7 +57,7 @@ mod ffi {
         ///
         /// These options are handled automatically by `QCommandLineParser`.
         #[rust_name = "add_help_option"]
-        fn addHelpOption(self: &mut QCommandLineParser) -> QCommandLineOption;
+        fn addHelpOption(&mut self) -> QCommandLineOption;
 
         /// Adds the option `option` to look for while parsing.
         /// Returns `true` if adding the option was successful; otherwise returns `false`.
@@ -61,29 +65,29 @@ mod ffi {
         /// Adding the option fails if there is no name attached to the option,
         /// or the option has a name that clashes with an option name added before.
         #[rust_name = "add_option"]
-        fn addOption(self: &mut QCommandLineParser, option: &QCommandLineOption) -> bool;
+        fn addOption(&mut self, option: &QCommandLineOption) -> bool;
 
         /// Adds the `-v` / `--version` option, which displays the version string of the application.
         ///
         /// This option is handled automatically by `QCommandLineParser`.
         #[rust_name = "add_version_option"]
-        fn addVersionOption(self: &mut QCommandLineParser) -> QCommandLineOption;
+        fn addVersionOption(&mut self) -> QCommandLineOption;
 
         /// Returns the application description.
         #[rust_name = "application_description"]
-        fn applicationDescription(self: &QCommandLineParser) -> QString;
+        fn applicationDescription(&self) -> QString;
 
         /// Clears the definitions of additional arguments from the help text.
         #[rust_name = "clear_positional_arguments"]
-        fn clearPositionalArguments(self: &mut QCommandLineParser);
+        fn clearPositionalArguments(&mut self);
 
         /// Returns a translated error text for the user. This should only be called when [`parse`](Self::parse) returns `false`.
         #[rust_name = "error_text"]
-        fn errorText(self: &QCommandLineParser) -> QString;
+        fn errorText(&self) -> QString;
 
         /// Returns a string containing the complete help information.
         #[rust_name = "help_text"]
-        fn helpText(self: &QCommandLineParser) -> QString;
+        fn helpText(&self) -> QString;
 
         /// Returns a list of option names that were found.
         ///
@@ -93,7 +97,7 @@ mod ffi {
         ///
         /// Any entry in the list can be used with [`value`](Self::value) or with [`values`](Self::values) to get any relevant option values.
         #[rust_name = "option_names"]
-        fn optionNames(self: &QCommandLineParser) -> QStringList;
+        fn optionNames(&self) -> QStringList;
 
         /// Parses the command line arguments.
         ///
@@ -109,13 +113,13 @@ mod ffi {
         ///
         /// [`process`]: Self::process
         /// [`error_text`]: Self::error_text
-        fn parse(self: &mut QCommandLineParser, arguments: &QStringList) -> bool;
+        fn parse(&mut self, arguments: &QStringList) -> bool;
 
         /// Returns a list of positional arguments.
         ///
         /// These are all of the arguments that were not recognized as part of an option.
         #[rust_name = "positional_arguments"]
-        fn positionalArguments(self: &QCommandLineParser) -> QStringList;
+        fn positionalArguments(&self) -> QStringList;
 
         /// Processes the command line arguments.
         ///
@@ -124,23 +128,23 @@ mod ffi {
         /// The builtin options are `--version` if [`add_version_option`](Self::add_version_option) was called and `--help` / `--help-all` if [`add_help_option`](Self::add_help_option) was called.
         ///
         /// When invoking one of these options, or when an error happens (for instance an unknown option was passed), the current process will then stop, using the [exit](https://doc.qt.io/qt/qcoreapplication.html#exit)() function.
-        fn process(self: &mut QCommandLineParser, arguments: &QStringList);
+        fn process(&mut self, arguments: &QStringList);
 
         /// Sets the application description shown by [`help_text`](Self::help_text).
         #[rust_name = "set_application_description"]
-        fn setApplicationDescription(self: &mut QCommandLineParser, description: &QString);
+        fn setApplicationDescription(&mut self, description: &QString);
 
         /// Sets the parsing mode to `single_dash_word_option_mode`. This must be called before [`process`](Self::process) or [`parse`](Self::parse).
         #[rust_name = "set_single_dash_word_option_mode"]
         fn setSingleDashWordOptionMode(
-            self: &mut QCommandLineParser,
+            &mut self,
             single_dash_word_option_mode: QCommandLineParserSingleDashWordOptionMode,
         );
 
         /// Sets the parsing mode to `parsing_mode`. This must be called before [`process`](Self::process) or [`parse`](Self::parse).
         #[rust_name = "set_options_after_positional_arguments_mode"]
         fn setOptionsAfterPositionalArgumentsMode(
-            self: &mut QCommandLineParser,
+            &mut self,
             parsing_mode: QCommandLineParserOptionsAfterPositionalArgumentsMode,
         );
 
@@ -148,7 +152,7 @@ mod ffi {
         ///
         ///  This is automatically triggered by the `–version` option, but can also be used to display the version when not using [`process`](Self::process). The exit code is set to `EXIT_SUCCESS` (0).
         #[rust_name = "show_version"]
-        fn showVersion(self: &mut QCommandLineParser);
+        fn showVersion(&mut self);
 
         /// Returns a list of unknown option names.
         ///
@@ -156,7 +160,7 @@ mod ffi {
         ///
         /// The names in this list do not include the preceding dash characters. Names may appear more than once in this list if they were encountered more than once by the parser.
         #[rust_name = "unknown_option_names"]
-        fn unknownOptionNames(self: &QCommandLineParser) -> QStringList;
+        fn unknownOptionNames(&self) -> QStringList;
     }
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {

@@ -10,7 +10,7 @@ use std::mem::MaybeUninit;
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type TransformationMode = crate::TransformationMode;
         type AspectRatioMode = crate::AspectRatioMode;
@@ -104,35 +104,39 @@ mod ffi {
         */
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qimage.h");
-        type QImage = super::QImage;
-        include!("cxx-qt-lib/qsize.h");
-        type QSize = crate::QSize;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
-        include!("cxx-qt-lib/qrect.h");
-        type QRect = crate::QRect;
+    extern "C++" {
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
+        include!("cxx-qt-lib/qrect.h");
+        type QRect = crate::QRect;
+        include!("cxx-qt-lib/qsize.h");
+        type QSize = crate::QSize;
         include!("cxx-qt-lib/qsizef.h");
         #[allow(dead_code)]
         type QSizeF = crate::QSizeF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        include!("cxx-qt-lib/qimage.h");
         type QImageCleanupFunction = super::QImageCleanupFunction;
+    }
+
+    unsafe extern "C++" {
+        type QImage = super::QImage;
 
         /// Returns `true` if all the colors in the image are shades of gray (i.e. their red, green and blue components are equal); otherwise `false`.
         ///
         /// Note that this function is slow for images without color table.
         #[rust_name = "all_gray"]
-        fn allGray(self: &QImage) -> bool;
+        fn allGray(&self) -> bool;
 
         /// Returns the number of bit planes in the image.
         ///
         /// The number of bit planes is the number of bits of color and transparency information for each pixel. This is different from (i.e. smaller than) the depth when the image format contains unused bits.
         #[rust_name = "bit_plane_count"]
-        fn bitPlaneCount(self: &QImage) -> i32;
+        fn bitPlaneCount(&self) -> i32;
 
         /// Returns a sub-area of the image as a new image.
         ///
@@ -141,7 +145,7 @@ mod ffi {
         /// In areas beyond this image, pixels are set to 0. For 32-bit RGB images, this means black; for 32-bit ARGB images, this means transparent black; for 8-bit images, this means the color with index 0 in the color table which can be anything; for 1-bit images, this means Qt::color0.
         ///
         /// If the given `rectangle` is a null rectangle the entire image is copied.
-        fn copy(self: &QImage, rectangle: &QRect) -> QImage;
+        fn copy(&self, rectangle: &QRect) -> QImage;
 
         /// Creates and returns a 1-bpp heuristic mask for this image.
         ///
@@ -153,20 +157,20 @@ mod ffi {
         ///
         /// Note that this function disregards the alpha buffer.
         #[rust_name = "create_heuristic_mask"]
-        fn createHeuristicMask(self: &QImage, clip_tight: bool) -> QImage;
+        fn createHeuristicMask(&self, clip_tight: bool) -> QImage;
 
         /// Returns the size of the color table for the image.
         ///
         /// Notice that this function returns 0 for 32-bpp images because these images do not use color tables, but instead encode pixel values as ARGB quadruplets.
         #[rust_name = "color_count"]
-        fn colorCount(self: &QImage) -> i32;
+        fn colorCount(&self) -> i32;
 
         /// Returns the depth of the image.
         ///
         /// The image depth is the number of bits used to store a single pixel, also called bits per pixel (bpp).
         ///
         /// The supported depths are 1, 8, 16, 24, 32 and 64.
-        fn depth(self: &QImage) -> i32;
+        fn depth(&self) -> i32;
 
         /// Returns the size of the image in device independent pixels.
         /// This value should be used when using the image size in user interface size calculations.
@@ -175,31 +179,31 @@ mod ffi {
         /// This function was introduced in Qt 6.2.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_2))]
         #[rust_name = "device_independent_size"]
-        fn deviceIndependentSize(self: &QImage) -> QSizeF;
+        fn deviceIndependentSize(&self) -> QSizeF;
 
         /// Returns the number of pixels that fit horizontally in a physical meter. Together with [`dots_per_meter_y`](Self::dots_per_meter_y), this number defines the intended scale and aspect ratio of the image.
         #[rust_name = "dots_per_meter_x"]
-        fn dotsPerMeterX(self: &QImage) -> i32;
+        fn dotsPerMeterX(&self) -> i32;
 
         /// Returns the number of pixels that fit vertically in a physical meter. Together with [`dots_per_meter_x`](Self::dots_per_meter_x), this number defines the intended scale and aspect ratio of the image.
         #[rust_name = "dots_per_meter_y"]
-        fn dotsPerMeterY(self: &QImage) -> i32;
+        fn dotsPerMeterY(&self) -> i32;
 
         /// Fills the entire image with the given `color`.
         ///
         /// If the depth of this image is 1, only the lowest bit is used. If you say fill(0), fill(2), etc., the image is filled with 0s. If you say fill(1), fill(3), etc., the image is filled with 1s. If the depth is 8, the lowest 8 bits are used and if the depth is 16 the lowest 16 bits are used.
         ///
         /// If the image depth is higher than 32bit the result is undefined.
-        fn fill(self: &mut QImage, color: &QColor);
+        fn fill(&mut self, color: &QColor);
 
         /// Flips or mirrors the image in the horizontal and/or the vertical direction depending on orient.
         ///
         /// This function was introduced in Qt 6.9.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_9))]
-        fn flip(self: &mut QImage, orient: Orientations);
+        fn flip(&mut self, orient: Orientations);
 
         /// Returns the format of the image.
-        fn format(self: &QImage) -> QImageFormat;
+        fn format(&self) -> QImageFormat;
 
         /// Inverts all pixel values in the image.
         ///
@@ -209,26 +213,26 @@ mod ffi {
         ///
         /// If the image has a premultiplied alpha channel, the image is first converted to an unpremultiplied image format to be inverted and then converted back.
         #[rust_name = "invert_pixels"]
-        fn invertPixels(self: &mut QImage, mode: QImageInvertMode);
+        fn invertPixels(&mut self, mode: QImageInvertMode);
 
         /// Returns `true` if it is a null image, otherwise returns `false`.
         ///
         /// A null image has all parameters set to zero and no allocated data.
         #[rust_name = "is_null"]
-        fn isNull(self: &QImage) -> bool;
+        fn isNull(&self) -> bool;
 
         /// For 32-bit images, this function is equivalent to [`all_gray`](Self::all_gray).
         /// For color indexed images, this function returns `true` if color(i) is QRgb(i, i, i)
         /// for all indexes of the color table; otherwise returns `false`.
         #[rust_name = "is_gray_scale"]
-        fn isGrayscale(self: &QImage) -> bool;
+        fn isGrayscale(&self) -> bool;
 
         /// Returns `true` if the image has a format that respects the alpha channel, otherwise returns `false`.
         #[rust_name = "has_alpha_channel"]
-        fn hasAlphaChannel(self: &QImage) -> bool;
+        fn hasAlphaChannel(&self) -> bool;
 
         /// Returns the height of the image.
-        fn height(self: &QImage) -> i32;
+        fn height(&self) -> i32;
 
         /// Mirrors of the image in the horizontal and/or the vertical direction depending on whether `horizontal` and `vertical` are set to `true` or `false`.
         ///
@@ -239,21 +243,21 @@ mod ffi {
             not(cxxqt_qt_version_at_least_6_13),
             not(cxxqt_qt_version_at_least_7)
         ))]
-        fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
+        fn mirror(&mut self, horizontal: bool, vertical: bool);
 
         /// Swaps the values of the red and blue components of all pixels, effectively converting an RGB image to an BGR image.
         ///
         /// This function was introduced in Qt 6.0.
         #[cfg(cxxqt_qt_version_at_least_6)]
         #[rust_name = "rgb_swap"]
-        fn rgbSwap(self: &mut QImage);
+        fn rgbSwap(&mut self);
 
         /// Returns the enclosing rectangle (`0`, `0`, `width()`, `height()`) of the image.
-        fn rect(self: &QImage) -> QRect;
+        fn rect(&self) -> QRect;
 
         /// Returns a copy of the image scaled to a rectangle with the given `width` and `height` according to the given `aspect_ratio_mode` and `transform_mode`.
         fn scaled(
-            self: &QImage,
+            &self,
             width: i32,
             height: i32,
             aspect_ratio_mode: AspectRatioMode,
@@ -266,7 +270,7 @@ mod ffi {
         ///
         /// If the given `height` is 0 or negative, a null image is returned.
         #[rust_name = "scaled_to_height"]
-        fn scaledToHeight(self: &QImage, height: i32, mode: TransformationMode) -> QImage;
+        fn scaledToHeight(&self, height: i32, mode: TransformationMode) -> QImage;
 
         /// Returns a scaled copy of the image. The returned image is scaled to the given `width` using the specified transformation `mode`.
         ///
@@ -274,7 +278,7 @@ mod ffi {
         ///
         /// If the given `width` is 0 or negative, a null image is returned.
         #[rust_name = "scaled_to_width"]
-        fn scaledToWidth(self: &QImage, width: i32, mode: TransformationMode) -> QImage;
+        fn scaledToWidth(&self, width: i32, mode: TransformationMode) -> QImage;
 
         /// Resizes the color table to contain `color_count` entries.
         ///
@@ -282,7 +286,7 @@ mod ffi {
         ///
         /// When the image is used, the color table must be large enough to have entries for all the pixel/index values present in the image, otherwise the results are undefined.
         #[rust_name = "set_color_count"]
-        fn setColorCount(self: &mut QImage, color_count: i32);
+        fn setColorCount(&mut self, color_count: i32);
 
         /// Sets the alpha channel of this image to the given `alpha_channel`.
         ///
@@ -290,31 +294,31 @@ mod ffi {
         ///
         /// If the image already has an alpha channel, the existing alpha channel is multiplied with the new one. If the image doesn't have an alpha channel it will be converted to a format that does.
         #[rust_name = "set_alpha_channel"]
-        fn setAlphaChannel(self: &mut QImage, alpha_channel: &QImage);
+        fn setAlphaChannel(&mut self, alpha_channel: &QImage);
 
         /// Sets the number of pixels that fit horizontally in a physical meter, to `x`.
         #[rust_name = "set_dots_per_meter_x"]
-        fn setDotsPerMeterX(self: &mut QImage, x: i32);
+        fn setDotsPerMeterX(&mut self, x: i32);
 
         /// Sets the number of pixels that fit vertically in a physical meter, to `y`.
         #[rust_name = "set_dots_per_meter_y"]
-        fn setDotsPerMeterY(self: &mut QImage, y: i32);
+        fn setDotsPerMeterY(&mut self, y: i32);
 
         /// Sets the number of pixels by which the image is intended to be offset by when positioning relative to other images, to `offset`.
         #[rust_name = "set_offset"]
-        fn setOffset(self: &mut QImage, offset: &QPoint);
+        fn setOffset(&mut self, offset: &QPoint);
 
         /// Sets the pixel color at (`x`, `y`) to `color`.
         ///
         /// If (`x`, `y`) is not a valid coordinate pair in the image, or the image's format is either monochrome or paletted, the result is undefined.
         #[rust_name = "set_pixel_color"]
-        fn setPixelColor(self: &mut QImage, x: i32, y: i32, color: &QColor);
+        fn setPixelColor(&mut self, x: i32, y: i32, color: &QColor);
 
         /// Returns the size of the image.
-        fn size(self: &QImage) -> QSize;
+        fn size(&self) -> QSize;
 
         /// Swaps image `other` with this image. This operation is very fast and never fails.
-        fn swap(self: &mut QImage, other: &mut QImage);
+        fn swap(&mut self, other: &mut QImage);
 
         /// Changes the format of the image to `format` without changing the data. Only works between formats of the same depth.
         ///
@@ -326,28 +330,28 @@ mod ffi {
         ///
         /// **Warning:** If the image is not detached, this will cause the data to be copied.
         #[rust_name = "reinterpret_as_format"]
-        fn reinterpretAsFormat(self: &mut QImage, format: QImageFormat) -> bool;
+        fn reinterpretAsFormat(&mut self, format: QImageFormat) -> bool;
 
         /// Returns the number of pixels by which the image is intended to be offset by when positioning relative to other images.
-        fn offset(self: &QImage) -> QPoint;
+        fn offset(&self) -> QPoint;
 
         /// Returns the color of the pixel at coordinates (`x`, `y`) as a `QColor`.
         ///
         /// If the position (`x`, `y`) is not valid, an invalid `QColor` is returned.
         #[rust_name = "pixel_color"]
-        fn pixelColor(self: &QImage, x: i32, y: i32) -> QColor;
+        fn pixelColor(&self, x: i32, y: i32) -> QColor;
 
         /// Returns the pixel index at (`x`, `y`).
         ///
         /// If the position (`x`, `y`) is not valid, or if the image is not a paletted image ([`depth`](Self::depth) > 8), the results are undefined.
         #[rust_name = "pixel_index"]
-        fn pixelIndex(self: &QImage, x: i32, y: i32) -> i32;
+        fn pixelIndex(&self, x: i32, y: i32) -> i32;
 
         /// Returns `true` if (`x`, `y`) is a valid coordinate pair within the image; otherwise returns `false`.
-        fn valid(self: &QImage, x: i32, y: i32) -> bool;
+        fn valid(&self, x: i32, y: i32) -> bool;
 
         /// Returns the width of the image.
-        fn width(self: &QImage) -> i32;
+        fn width(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]

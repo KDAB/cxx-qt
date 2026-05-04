@@ -7,7 +7,7 @@ use cxx::{type_id, ExternType};
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qtypes.h");
     }
 }
