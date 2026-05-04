@@ -10,15 +10,17 @@ use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qanystringview.h");
-        type QAnyStringView<'a> = super::QAnyStringView<'a>;
-
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
-
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qanystringview.h");
+    }
+
+    unsafe extern "C++" {
+        type QAnyStringView<'a> = super::QAnyStringView<'a>;
 
         /// Returns `true` if the string has no characters; otherwise returns `false`.
         #[rust_name = "is_empty"]

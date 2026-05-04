@@ -9,21 +9,25 @@ use std::fmt;
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode = crate::AspectRatioMode;
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qmargins.h");
         type QMargins = crate::QMargins;
-        include!("cxx-qt-lib/qsize.h");
-        type QSize = super::QSize;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
         include!("cxx-qt-lib/qsizef.h");
         #[allow(dead_code)]
         type QSizeF = crate::QSizeF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        include!("cxx-qt-lib/qsize.h");
+    }
+
+    unsafe extern "C++" {
+        type QSize = super::QSize;
 
         /// Returns a size holding the minimum width and height of this size and the given `other_size`.
         #[rust_name = "bounded_to"]

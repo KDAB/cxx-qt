@@ -8,14 +8,18 @@ use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qmargins.h");
-        type QMargins = super::QMargins;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
+    extern "C++" {
         include!("cxx-qt-lib/qmarginsf.h");
         #[allow(dead_code)]
         type QMarginsF = crate::QMarginsF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        include!("cxx-qt-lib/qmargins.h");
+    }
+
+    unsafe extern "C++" {
+        type QMargins = super::QMargins;
 
         /// Returns the bottom margin.
         fn bottom(self: &QMargins) -> i32;

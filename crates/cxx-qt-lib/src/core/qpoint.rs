@@ -8,16 +8,18 @@ use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qpoint.h");
-        include!("cxx-qt-lib/qstring.h");
-
-        type QPoint = super::QPoint;
-        type QString = crate::QString;
-
+    extern "C++" {
         include!("cxx-qt-lib/qpointf.h");
         #[allow(dead_code)]
         type QPointF = crate::QPointF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        include!("cxx-qt-lib/qpoint.h");
+    }
+
+    unsafe extern "C++" {
+        type QPoint = super::QPoint;
 
         /// Returns `true` if both the x and y coordinates are set to 0, otherwise returns `false`.
         #[rust_name = "is_null"]

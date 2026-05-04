@@ -10,14 +10,18 @@ use crate::{QByteArray, QString, QStringList};
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
+
         include!("cxx-qt-lib/qurl.h");
+    }
+
+    unsafe extern "C++" {
         type QUrl = super::QUrl;
 
         /// Resets the content of the `QUrl`. After calling this function,

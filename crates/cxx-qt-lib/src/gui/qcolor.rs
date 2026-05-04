@@ -39,13 +39,17 @@ mod ffi {
         type GlobalColor = crate::GlobalColor;
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qcolor.h");
-        type QColor = super::QColor;
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
+
+        include!("cxx-qt-lib/qcolor.h");
+    }
+
+    unsafe extern "C++" {
+        type QColor = super::QColor;
 
         /// Returns the alpha color component of this color.
         fn alpha(self: &QColor) -> i32;

@@ -143,13 +143,17 @@ mod ffi {
         Fantasy,
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qfont.h");
-        type QFont = super::QFont;
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
+
+        include!("cxx-qt-lib/qfont.h");
+    }
+
+    unsafe extern "C++" {
+        type QFont = super::QFont;
 
         /// Returns `true` if [weight](https://doc.qt.io/qt/qfont.html#weight)() is a value greater than 400; otherwise returns `false`.
         fn bold(self: &QFont) -> bool;

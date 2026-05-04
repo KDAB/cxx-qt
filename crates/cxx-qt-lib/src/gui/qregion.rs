@@ -23,6 +23,15 @@ mod ffi {
         type FillRule = crate::FillRule;
     }
 
+    extern "C++" {
+        include!("cxx-qt-lib/qpoint.h");
+        type QPoint = crate::QPoint;
+        include!("cxx-qt-lib/qpolygon.h");
+        type QPolygon = crate::QPolygon;
+        include!("cxx-qt-lib/qrect.h");
+        type QRect = crate::QRect;
+    }
+
     #[namespace = "rust::cxxqtlib1"]
     extern "C++" {
         include!("cxx-qt-lib/qregion.h");
@@ -31,15 +40,6 @@ mod ffi {
 
     unsafe extern "C++" {
         type QRegion = super::QRegion;
-
-        include!("cxx-qt-lib/qrect.h");
-        type QRect = crate::QRect;
-
-        include!("cxx-qt-lib/qpoint.h");
-        type QPoint = crate::QPoint;
-
-        include!("cxx-qt-lib/qpolygon.h");
-        type QPolygon = crate::QPolygon;
 
         /// Returns the bounding rectangle of this region. An empty region gives a rectangle that is [`QRect::is_null`].
         #[rust_name = "bounding_rect"]

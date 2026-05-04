@@ -10,19 +10,23 @@ use crate::{QMarginsF, QRect};
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qmarginsf.h");
         type QMarginsF = crate::QMarginsF;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qrect.h");
         type QRect = crate::QRect;
-        include!("cxx-qt-lib/qrectf.h");
-        type QRectF = super::QRectF;
         include!("cxx-qt-lib/qsizef.h");
         type QSizeF = crate::QSizeF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qrectf.h");
+    }
+
+    unsafe extern "C++" {
+        type QRectF = super::QRectF;
 
         /// Adds `dx1`, `dy1`, `dx2` and `dy2` respectively to the existing coordinates of the rectangle. All parameters must be finite.
         fn adjust(self: &mut QRectF, dx1: f64, dy1: f64, dx2: f64, dy2: f64);

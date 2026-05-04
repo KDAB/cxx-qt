@@ -13,25 +13,27 @@ use crate::{QPointF, QPolygon, QRectF, QVector};
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type FillRule = crate::FillRule;
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
+        include!("cxx-qt-lib/qpointf.h");
+        type QPointF = crate::QPointF;
+        include!("cxx-qt-lib/qpolygon.h");
+        type QPolygon = crate::QPolygon;
+        include!("cxx-qt-lib/qrectf.h");
+        type QRectF = crate::QRectF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
         include!("cxx-qt-lib/core/qvector/qvector_QPointF.h");
         type QVector_QPointF = crate::QVector<QPointF>;
 
-        include!("cxx-qt-lib/qpointf.h");
-        type QPointF = crate::QPointF;
-        include!("cxx-qt-lib/qrectf.h");
-        type QRectF = crate::QRectF;
-        include!("cxx-qt-lib/qpolygon.h");
-        type QPolygon = crate::QPolygon;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
-
         include!("cxx-qt-lib/qpolygonf.h");
+    }
+
+    unsafe extern "C++" {
         type QPolygonF = super::QPolygonF;
 
         /// Returns the bounding rectangle of the polygon, or QRectF(0, 0, 0, 0) if the polygon is empty.

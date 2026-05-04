@@ -9,16 +9,20 @@ use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qline.h");
-        type QLine = super::QLine;
+    extern "C++" {
+        include!("cxx-qt-lib/qlinef.h");
+        #[allow(dead_code)]
+        type QLineF = crate::QLineF;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
-        include!("cxx-qt-lib/qlinef.h");
-        #[allow(dead_code)]
-        type QLineF = crate::QLineF;
+
+        include!("cxx-qt-lib/qline.h");
+    }
+
+    unsafe extern "C++" {
+        type QLine = super::QLine;
 
         /// Returns the line's start point.
         fn p1(self: &QLine) -> QPoint;

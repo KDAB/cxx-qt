@@ -11,13 +11,17 @@ use crate::QPoint;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
-        include!("cxx-qt-lib/qpointf.h");
-        type QPointF = super::QPointF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qpointf.h");
+    }
+
+    unsafe extern "C++" {
+        type QPointF = super::QPointF;
 
         /// Returns `true` if both the x and y coordinates are set to 0.0 (ignoring the sign); otherwise returns `false`.
         #[rust_name = "is_null"]

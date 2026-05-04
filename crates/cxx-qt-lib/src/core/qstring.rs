@@ -13,19 +13,23 @@ use crate::{CaseSensitivity, QByteArray, QStringList, SplitBehaviorFlags};
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type CaseSensitivity = crate::CaseSensitivity;
         type SplitBehaviorFlags = crate::SplitBehaviorFlags;
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = crate::QByteArray;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = super::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
+
+        include!("cxx-qt-lib/qstring.h");
+    }
+
+    unsafe extern "C++" {
+        type QString = super::QString;
 
         /// Appends the string `str` onto the end of this string.
         fn append<'a>(self: &'a mut QString, str: &QString) -> &'a mut QString;

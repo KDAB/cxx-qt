@@ -5,15 +5,15 @@
 
 #[cxx_qt::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
         include!("cxx-qt-lib/qquickstyle.h");
         /// The `QQuickStyle` class allows configuring the application style.
         ///
         /// Qt Documentation: [QQuickStyle](https://doc.qt.io/qt/qquickstyle.html#details)
         type QQuickStyle;
-
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
     }
 
     #[namespace = "rust::cxxqtlib1"]

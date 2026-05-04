@@ -12,12 +12,12 @@ use std::ops::{Deref, DerefMut};
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type CaseSensitivity = crate::CaseSensitivity;
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
@@ -25,6 +25,9 @@ mod ffi {
         type QList_QString = crate::QList<QString>;
 
         include!("cxx-qt-lib/qstringlist.h");
+    }
+
+    unsafe extern "C++" {
         type QStringList = super::QStringList;
 
         /// Returns `true` if the list contains the string `str`; otherwise returns `false`.

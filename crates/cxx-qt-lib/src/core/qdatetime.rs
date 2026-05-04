@@ -13,28 +13,29 @@ use crate::{DateFormat, QDate, QString, QTime, QTimeZone};
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type TimeSpec = crate::TimeSpec;
         type DateFormat = crate::DateFormat;
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qtypes.h");
-        type qint64 = crate::qint64;
-    }
-
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qdate.h");
         type QDate = crate::QDate;
-        include!("cxx-qt-lib/qdatetime.h");
-        type QDateTime = super::QDateTime;
         include!("cxx-qt-lib/qtime.h");
         type QTime = crate::QTime;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qtimezone.h");
         type QTimeZone = crate::QTimeZone;
+        include!("cxx-qt-lib/qtypes.h");
+        type qint64 = crate::qint64;
+
+        include!("cxx-qt-lib/qdatetime.h");
+    }
+
+    unsafe extern "C++" {
+        type QDateTime = super::QDateTime;
 
         #[doc(hidden)]
         #[rust_name = "add_days_qint64"]

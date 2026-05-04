@@ -12,20 +12,24 @@ use crate::QSize;
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode = crate::AspectRatioMode;
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qmarginsf.h");
         type QMarginsF = crate::QMarginsF;
         include!("cxx-qt-lib/qsize.h");
         type QSize = crate::QSize;
-        include!("cxx-qt-lib/qsizef.h");
-        type QSizeF = super::QSizeF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qsizef.h");
+    }
+
+    unsafe extern "C++" {
+        type QSizeF = super::QSizeF;
 
         /// Returns a size holding the minimum width and height of this size and the given `other_size`.
         #[rust_name = "bounded_to"]

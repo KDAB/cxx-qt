@@ -9,17 +9,20 @@ use std::fmt;
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type DateFormat = crate::DateFormat;
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qtime.h");
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
-
-        type QTime = super::QTime;
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qtime.h");
+    }
+
+    unsafe extern "C++" {
+        type QTime = super::QTime;
 
         /// Returns a `QTime` object containing a time `ms` milliseconds later
         /// than the time of this object (or earlier if `ms` is negative).

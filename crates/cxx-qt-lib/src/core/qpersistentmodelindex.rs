@@ -8,15 +8,17 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qpersistentmodelindex.h");
-        include!("cxx-qt-lib/qstring.h");
-
-        type QPersistentModelIndex = super::QPersistentModelIndex;
-        type QString = crate::QString;
-
+    extern "C++" {
         include!("cxx-qt-lib/qmodelindex.h");
         type QModelIndex = crate::QModelIndex;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        include!("cxx-qt-lib/qpersistentmodelindex.h");
+    }
+
+    unsafe extern "C++" {
+        type QPersistentModelIndex = super::QPersistentModelIndex;
 
         /// Returns the column this persistent model index refers to.
         fn column(self: &QPersistentModelIndex) -> i32;

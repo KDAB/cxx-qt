@@ -150,42 +150,46 @@ mod ffi {
         LosslessImageRendering = 0x40,
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qpainter.h");
-        /// The `QPainter` class performs low-level painting on widgets and other paint devices.
-        ///
-        /// Qt Documentation: [QPainter](https://doc.qt.io/qt/qpainter.html#details)
-        type QPainter;
-        include!("cxx-qt-lib/qrect.h");
-        type QRect = crate::QRect;
-        include!("cxx-qt-lib/qrectf.h");
-        type QRectF = crate::QRectF;
-        include!("cxx-qt-lib/qpoint.h");
-        type QPoint = crate::QPoint;
+    extern "C++" {
+        include!("cxx-qt-lib/qcolor.h");
+        type QColor = crate::QColor;
+        include!("cxx-qt-lib/qfont.h");
+        type QFont = crate::QFont;
+        include!("cxx-qt-lib/qimage.h");
+        type QImage = crate::QImage;
         include!("cxx-qt-lib/qline.h");
         type QLine = crate::QLine;
         include!("cxx-qt-lib/qlinef.h");
         type QLineF = crate::QLineF;
-        include!("cxx-qt-lib/qcolor.h");
-        type QColor = crate::QColor;
-        include!("cxx-qt-lib/qimage.h");
-        type QImage = crate::QImage;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
         include!("cxx-qt-lib/qpainterpath.h");
         type QPainterPath = crate::QPainterPath;
-        include!("cxx-qt-lib/qfont.h");
-        type QFont = crate::QFont;
         include!("cxx-qt-lib/qpen.h");
         type QPen = crate::QPen;
+        include!("cxx-qt-lib/qpoint.h");
+        type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qpolygon.h");
         type QPolygon = crate::QPolygon;
+        include!("cxx-qt-lib/qrect.h");
+        type QRect = crate::QRect;
+        include!("cxx-qt-lib/qrectf.h");
+        type QRectF = crate::QRectF;
         include!("cxx-qt-lib/qregion.h");
         type QRegion = crate::QRegion;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
         include!("cxx-qt-lib/core/qvector/qvector_QLine.h");
-        include!("cxx-qt-lib/core/qvector/qvector_QLineF.h");
         type QVector_QLine = crate::QVector<QLine>;
+        include!("cxx-qt-lib/core/qvector/qvector_QLineF.h");
         type QVector_QLineF = crate::QVector<QLineF>;
+
+        include!("cxx-qt-lib/qpainter.h");
+    }
+
+    unsafe extern "C++" {
+        /// The `QPainter` class performs low-level painting on widgets and other paint devices.
+        ///
+        /// Qt Documentation: [QPainter](https://doc.qt.io/qt/qpainter.html#details)
+        type QPainter;
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]

@@ -10,13 +10,17 @@ use crate::QMargins;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qmargins.h");
         type QMargins = crate::QMargins;
-        include!("cxx-qt-lib/qmarginsf.h");
-        type QMarginsF = super::QMarginsF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qmarginsf.h");
+    }
+
+    unsafe extern "C++" {
+        type QMarginsF = super::QMarginsF;
 
         /// Returns the bottom margin.
         fn bottom(self: &QMarginsF) -> f64;

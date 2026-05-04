@@ -10,7 +10,7 @@ use std::mem::MaybeUninit;
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type TransformationMode = crate::TransformationMode;
         type AspectRatioMode = crate::AspectRatioMode;
@@ -104,23 +104,27 @@ mod ffi {
         */
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qimage.h");
-        type QImage = super::QImage;
-        include!("cxx-qt-lib/qsize.h");
-        type QSize = crate::QSize;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
-        include!("cxx-qt-lib/qrect.h");
-        type QRect = crate::QRect;
+    extern "C++" {
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
+        include!("cxx-qt-lib/qrect.h");
+        type QRect = crate::QRect;
+        include!("cxx-qt-lib/qsize.h");
+        type QSize = crate::QSize;
         include!("cxx-qt-lib/qsizef.h");
         #[allow(dead_code)]
         type QSizeF = crate::QSizeF;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        include!("cxx-qt-lib/qimage.h");
         type QImageCleanupFunction = super::QImageCleanupFunction;
+    }
+
+    unsafe extern "C++" {
+        type QImage = super::QImage;
 
         /// Returns `true` if all the colors in the image are shades of gray (i.e. their red, green and blue components are equal); otherwise `false`.
         ///

@@ -10,15 +10,19 @@ use std::fmt;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qlinef.h");
-        type QLineF = super::QLineF;
+    extern "C++" {
         include!("cxx-qt-lib/qline.h");
         type QLine = crate::QLine;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qlinef.h");
+    }
+
+    unsafe extern "C++" {
+        type QLineF = super::QLineF;
 
         /// Returns the angle of the line in degrees.
         fn angle(self: &QLineF) -> f64;

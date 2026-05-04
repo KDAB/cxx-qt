@@ -11,20 +11,24 @@ use crate::{PenStyle, QColor};
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type PenStyle = crate::PenStyle;
         type PenCapStyle = crate::PenCapStyle;
         type PenJoinStyle = crate::PenJoinStyle;
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qpen.h");
-        type QPen = super::QPen;
+    extern "C++" {
         include!("cxx-qt-lib/qcolor.h");
         type QColor = crate::QColor;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
+
+        include!("cxx-qt-lib/qpen.h");
+    }
+
+    unsafe extern "C++" {
+        type QPen = super::QPen;
 
         /// Returns the pen's cap style.
         #[rust_name = "cap_style"]

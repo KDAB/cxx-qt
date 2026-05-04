@@ -11,19 +11,22 @@ use crate::{QPoint, QPointF, QVector2D, QVector3D};
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qpoint.h");
         type QPoint = crate::QPoint;
         include!("cxx-qt-lib/qpointf.h");
         type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
-
         include!("cxx-qt-lib/qvector2d.h");
         type QVector2D = crate::QVector2D;
         include!("cxx-qt-lib/qvector3d.h");
         type QVector3D = crate::QVector3D;
+
         include!("cxx-qt-lib/qvector4d.h");
+    }
+
+    unsafe extern "C++" {
         type QVector4D = super::QVector4D;
 
         /// Returns `true` if the x, y, z, and w coordinates are set to 0.0, otherwise returns `false`.

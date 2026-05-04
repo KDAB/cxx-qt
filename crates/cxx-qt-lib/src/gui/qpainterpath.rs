@@ -10,27 +10,31 @@ use std::mem::MaybeUninit;
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type FillRule = crate::FillRule;
         type SizeMode = crate::SizeMode;
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qpainterpath.h");
-        type QPainterPath = super::QPainterPath;
-        include!("cxx-qt-lib/qrectf.h");
-        type QRectF = crate::QRectF;
-        include!("cxx-qt-lib/qpointf.h");
-        type QPointF = crate::QPointF;
+    extern "C++" {
         include!("cxx-qt-lib/qfont.h");
         type QFont = crate::QFont;
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
+        include!("cxx-qt-lib/qpointf.h");
+        type QPointF = crate::QPointF;
         include!("cxx-qt-lib/qpolygonf.h");
         type QPolygonF = crate::QPolygonF;
+        include!("cxx-qt-lib/qrectf.h");
+        type QRectF = crate::QRectF;
         include!("cxx-qt-lib/qregion.h");
         type QRegion = crate::QRegion;
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
+
+        include!("cxx-qt-lib/qpainterpath.h");
+    }
+
+    unsafe extern "C++" {
+        type QPainterPath = super::QPainterPath;
 
         /// Creates an ellipse within the specified `bounding_rectangle` and adds it to the painter
         /// path as a closed subpath.

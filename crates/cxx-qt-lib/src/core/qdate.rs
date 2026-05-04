@@ -12,21 +12,21 @@ use crate::QString;
 #[cxx::bridge]
 mod ffi {
     #[namespace = "Qt"]
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type DateFormat = crate::DateFormat;
     }
 
-    unsafe extern "C++" {
+    extern "C++" {
+        include!("cxx-qt-lib/qstring.h");
+        type QString = crate::QString;
         include!("cxx-qt-lib/qtypes.h");
         type qint64 = crate::qint64;
+
+        include!("cxx-qt-lib/qdate.h");
     }
 
     unsafe extern "C++" {
-        include!("cxx-qt-lib/qstring.h");
-        type QString = crate::QString;
-
-        include!("cxx-qt-lib/qdate.h");
         type QDate = super::QDate;
 
         #[doc(hidden)]
