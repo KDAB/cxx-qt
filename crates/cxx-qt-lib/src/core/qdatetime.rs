@@ -49,33 +49,25 @@ mod ffi {
         #[rust_name = "current_date_time"]
         fn currentDateTime() -> QDateTime;
 
-        /// Returns the current number of milliseconds since the start, in UTC, of the year 1970.
-        ///
-        /// This number is like the POSIX `time_t` variable, but expressed in milliseconds instead.
+        #[doc(hidden)]
         #[Self = "QDateTime"]
-        #[rust_name = "current_msecs_since_epoch"]
-        fn currentMSecsSinceEpoch() -> i64;
+        #[rust_name = "current_msecs_since_epoch_qint64"]
+        fn currentMSecsSinceEpoch() -> qint64;
 
-        /// Returns the number of seconds since the start, in UTC, of the year 1970.
-        ///
-        /// This number is like the POSIX `time_t` variable.
+        #[doc(hidden)]
         #[Self = "QDateTime"]
-        #[rust_name = "current_secs_since_epoch"]
-        fn currentSecsSinceEpoch() -> i64;
+        #[rust_name = "current_secs_since_epoch_qint64"]
+        fn currentSecsSinceEpoch() -> qint64;
 
-        /// Returns a datetime representing a moment the given number `msecs` of milliseconds after the start, in UTC, of the year 1970, described as specified by `time_zone`.
-        ///
-        /// Note that there are possible values for `msecs` that lie outside the valid range of `QDateTime`, both negative and positive. The behavior of this function is undefined for those values.
+        #[doc(hidden)]
         #[Self = "QDateTime"]
-        #[rust_name = "from_msecs_since_epoch"]
-        fn fromMSecsSinceEpoch(msecs: i64, time_zone: &QTimeZone) -> QDateTime;
+        #[rust_name = "from_msecs_since_epoch_qint64"]
+        fn fromMSecsSinceEpoch(msecs: qint64, time_zone: &QTimeZone) -> QDateTime;
 
-        /// Returns a datetime representing a moment the given number `secs` of seconds after the start, in UTC, of the year 1970, described as specified by `time_zone`.
-        ///
-        /// Note that there are possible values for `secs` that lie outside the valid range of `QDateTime`, both negative and positive. The behavior of this function is undefined for those values.
+        #[doc(hidden)]
         #[Self = "QDateTime"]
-        #[rust_name = "from_secs_since_epoch"]
-        fn fromSecsSinceEpoch(secs: i64, time_zone: &QTimeZone) -> QDateTime;
+        #[rust_name = "from_secs_since_epoch_qint64"]
+        fn fromSecsSinceEpoch(secs: qint64, time_zone: &QTimeZone) -> QDateTime;
 
         #[doc(hidden)]
         #[rust_name = "add_days_qint64"]
@@ -283,6 +275,34 @@ pub struct QDateTime {
 }
 
 impl QDateTime {
+    /// Returns the current number of milliseconds since the start, in UTC, of the year 1970.
+    ///
+    /// This number is like the POSIX `time_t` variable, but expressed in milliseconds instead.
+    pub fn current_msecs_since_epoch() -> i64 {
+        Self::current_msecs_since_epoch_qint64().into()
+    }
+
+    /// Returns the number of seconds since the start, in UTC, of the year 1970.
+    ///
+    /// This number is like the POSIX `time_t` variable.
+    pub fn current_secs_since_epoch() -> i64 {
+        Self::current_secs_since_epoch_qint64().into()
+    }
+
+    /// Returns a datetime representing a moment the given number `msecs` of milliseconds after the start, in UTC, of the year 1970, described as specified by `time_zone`.
+    ///
+    /// Note that there are possible values for `msecs` that lie outside the valid range of `QDateTime`, both negative and positive. The behavior of this function is undefined for those values.
+    pub fn from_msecs_since_epoch(msecs: i64, time_zone: &QTimeZone) -> QDateTime {
+        Self::from_msecs_since_epoch_qint64(msecs.into(), time_zone)
+    }
+
+    /// Returns a datetime representing a moment the given number `secs` of seconds after the start, in UTC, of the year 1970, described as specified by `time_zone`.
+    ///
+    /// Note that there are possible values for `secs` that lie outside the valid range of `QDateTime`, both negative and positive. The behavior of this function is undefined for those values.
+    pub fn from_secs_since_epoch(secs: i64, time_zone: &QTimeZone) -> QDateTime {
+        Self::from_secs_since_epoch_qint64(secs.into(), time_zone)
+    }
+
     /// Sets the time zone used in this datetime to `time_zone`.
     ///
     /// The datetime may refer to a different point in time. It uses the time representation of `time_zone`, which may change the meaning of its unchanged [`date`](Self::date) and [`time`](Self::time).
