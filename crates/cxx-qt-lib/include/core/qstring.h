@@ -38,6 +38,12 @@ qstringAt(const QString& string, ::rust::isize position);
 
 QString
 qstringArg(const QString& string, const QString& a);
+
+::rust::isize
+qstringCount(const QString& string, QChar ch, Qt::CaseSensitivity cs);
+::rust::isize
+qstringCount(const QString& string, const QString& str, Qt::CaseSensitivity cs);
+
 ::rust::isize
 qstringIndexOf(const QString& string,
                QChar ch,
@@ -54,6 +60,17 @@ qstringInsert(QString& string, ::rust::isize pos, QChar ch);
 QString&
 qstringInsert(QString& string, ::rust::isize pos, const QString& str);
 
+::rust::isize
+qstringLastIndexOf(const QString& string,
+                   QChar ch,
+                   ::rust::isize from,
+                   Qt::CaseSensitivity cs);
+::rust::isize
+qstringLastIndexOf(const QString& string,
+                   const QString& str,
+                   ::rust::isize from,
+                   Qt::CaseSensitivity cs);
+
 QString
 qstringLeft(const QString& string, ::rust::isize n);
 
@@ -62,6 +79,17 @@ qstringLen(const QString& string);
 
 QString
 qstringMid(const QString& string, ::rust::isize position, ::rust::isize n);
+
+QString&
+qstringReplace(QString& string,
+               ::rust::isize position,
+               ::rust::isize n,
+               QChar after);
+QString&
+qstringReplace(QString& string,
+               ::rust::isize position,
+               ::rust::isize n,
+               const QString& after);
 
 QString
 qstringRight(const QString& string, ::rust::isize n);

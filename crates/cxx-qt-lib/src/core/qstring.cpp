@@ -91,6 +91,17 @@ qstringArg(const QString& string, const QString& a)
 }
 
 ::rust::isize
+qstringCount(const QString& string, QChar ch, Qt::CaseSensitivity cs)
+{
+  return static_cast<::rust::isize>(string.count(ch, cs));
+}
+::rust::isize
+qstringCount(const QString& string, const QString& str, Qt::CaseSensitivity cs)
+{
+  return static_cast<::rust::isize>(string.count(str, cs));
+}
+
+::rust::isize
 qstringIndexOf(const QString& string,
                QChar ch,
                ::rust::isize from,
@@ -120,6 +131,23 @@ qstringInsert(QString& string, ::rust::isize pos, const QString& str)
   return string.insert(castIndex(pos), str);
 }
 
+::rust::isize
+qstringLastIndexOf(const QString& string,
+                   QChar ch,
+                   ::rust::isize from,
+                   Qt::CaseSensitivity cs)
+{
+  return static_cast<::rust::isize>(string.indexOf(ch, castIndex(from), cs));
+}
+::rust::isize
+qstringLastIndexOf(const QString& string,
+                   const QString& str,
+                   ::rust::isize from,
+                   Qt::CaseSensitivity cs)
+{
+  return static_cast<::rust::isize>(string.indexOf(str, castIndex(from), cs));
+}
+
 QString
 qstringLeft(const QString& string, ::rust::isize n)
 {
@@ -141,6 +169,23 @@ qstringMid(const QString& string, ::rust::isize position, ::rust::isize n)
   Q_ASSERT(position >= 0);
   Q_ASSERT(n >= -1);
   return string.mid(castIndex(position), castIndex(n));
+}
+
+QString&
+qstringReplace(QString& string,
+               ::rust::isize position,
+               ::rust::isize n,
+               QChar after)
+{
+  return string.replace(castIndex(position), castIndex(n), after);
+}
+QString&
+qstringReplace(QString& string,
+               ::rust::isize position,
+               ::rust::isize n,
+               const QString& after)
+{
+  return string.replace(castIndex(position), castIndex(n), after);
 }
 
 QString

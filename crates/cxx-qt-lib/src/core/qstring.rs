@@ -187,6 +187,12 @@ mod ffi {
         #[rust_name = "qstring_at"]
         unsafe fn qstringAt(string: &QString, position: isize) -> QChar;
         #[doc(hidden)]
+        #[rust_name = "qstring_count_char"]
+        fn qstringCount(string: &QString, ch: QChar, cs: CaseSensitivity) -> isize;
+        #[doc(hidden)]
+        #[rust_name = "qstring_count_str"]
+        fn qstringCount(string: &QString, str: &QString, cs: CaseSensitivity) -> isize;
+        #[doc(hidden)]
         #[rust_name = "qstring_index_of_char"]
         fn qstringIndexOf(string: &QString, ch: QChar, from: isize, cs: CaseSensitivity) -> isize;
         #[doc(hidden)]
@@ -205,6 +211,22 @@ mod ffi {
         fn qstringInsert<'a>(string: &'a mut QString, pos: isize, str: &QString)
             -> &'a mut QString;
         #[doc(hidden)]
+        #[rust_name = "qstring_last_index_of_char"]
+        fn qstringLastIndexOf(
+            string: &QString,
+            ch: QChar,
+            from: isize,
+            cs: CaseSensitivity,
+        ) -> isize;
+        #[doc(hidden)]
+        #[rust_name = "qstring_last_index_of_str"]
+        fn qstringLastIndexOf(
+            string: &QString,
+            str: &QString,
+            from: isize,
+            cs: CaseSensitivity,
+        ) -> isize;
+        #[doc(hidden)]
         #[rust_name = "qstring_left"]
         fn qstringLeft(string: &QString, n: isize) -> QString;
         #[doc(hidden)]
@@ -213,6 +235,22 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qstring_mid"]
         fn qstringMid(string: &QString, position: isize, n: isize) -> QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_replace_n_char"]
+        fn qstringReplace(
+            string: &mut QString,
+            position: isize,
+            n: isize,
+            after: QChar,
+        ) -> &mut QString;
+        #[doc(hidden)]
+        #[rust_name = "qstring_replace_n_str"]
+        fn qstringReplace<'a>(
+            string: &'a mut QString,
+            position: isize,
+            n: isize,
+            after: &QString,
+        ) -> &'a mut QString;
         #[doc(hidden)]
         #[rust_name = "qstring_right"]
         fn qstringRight(string: &QString, n: isize) -> QString;
@@ -463,6 +501,13 @@ impl QString {
         S::contains(self, str, cs)
     }
 
+    /// Returns the number of (potentially overlapping) occurrences of the string or character `str`` in this string.
+    ///
+    /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
+    pub fn count<S: QStringElement>(&self, str: S, cs: CaseSensitivity) -> isize {
+        S::count(self, str, cs)
+    }
+
     /// Returns `true` if the string ends with the string or character `s`; otherwise returns `false`.
     ///
     /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the search is case-insensitive.
@@ -498,6 +543,19 @@ impl QString {
         self.into_iter()
     }
 
+    /// Returns the index position of the last occurrence of the string or character `str` in this string,
+    /// searching backward from index position `from`. Returns -1 if `str` is not found.
+    ///
+    /// If `cs` is [`CaseSensitivity::CaseSensitive`], the search is case-sensitive; otherwise the comparison is case-insensitive.
+    pub fn last_index_of<S: QStringElement>(
+        &self,
+        str: S,
+        from: isize,
+        cs: CaseSensitivity,
+    ) -> isize {
+        S::last_index_of(self, str, from, cs)
+    }
+
     /// Returns a substring that contains the `n` leftmost characters of the string.
     pub fn left(&self, n: isize) -> Self {
         ffi::qstring_left(self, n)
@@ -528,6 +586,16 @@ impl QString {
         cs: CaseSensitivity,
     ) -> &mut QString {
         S::replace(self, before, after, cs)
+    }
+
+    /// Replaces `n` characters beginning at `index` position with the string or character `after` and returns a reference to this string.
+    pub fn replace_n<S: QStringElement>(
+        &mut self,
+        position: isize,
+        n: isize,
+        after: S,
+    ) -> &mut QString {
+        S::replace_n(self, position, n, after)
     }
 
     /// Removes every occurrence of the given `str` string or character in this string, and returns a mutable reference to this string.
@@ -646,13 +714,16 @@ mod private {
 /// Many `QString` operations can be performed on either a `QChar` or a `QString`.
 /// As such, `QChar` and `QString` both implement `QStringElement`.
 pub trait QStringElement: private::Sealed {
-    fn append(s: &mut QString, el: Self) -> &mut QString;
+    fn append(s: &mut QString, el: Self) -> &mut QString; //
     fn contains(s: &QString, el: Self, cs: CaseSensitivity) -> bool;
-    fn ends_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool;
+    fn count(s: &QString, el: Self, cs: CaseSensitivity) -> isize;
+    fn ends_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool; //
     fn index_of(s: &QString, el: Self, from: isize, cs: CaseSensitivity) -> isize;
-    fn insert(s: &mut QString, position: isize, el: Self) -> &mut QString;
-    fn prepend(s: &mut QString, el: Self) -> &mut QString;
+    fn insert(s: &mut QString, position: isize, el: Self) -> &mut QString; //
+    fn last_index_of(s: &QString, el: Self, from: isize, cs: CaseSensitivity) -> isize;
+    fn prepend(s: &mut QString, el: Self) -> &mut QString; //
     fn replace(s: &mut QString, from: Self, to: Self, cs: CaseSensitivity) -> &mut QString;
+    fn replace_n(s: &mut QString, position: isize, n: isize, after: Self) -> &mut QString;
     fn remove(s: &mut QString, el: Self, cs: CaseSensitivity) -> &mut QString;
     fn split(
         s: &QString,
@@ -672,6 +743,9 @@ impl QStringElement for QChar {
     fn contains(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
         s.contains_char(el, cs)
     }
+    fn count(s: &QString, el: Self, cs: CaseSensitivity) -> isize {
+        ffi::qstring_count_char(s, el, cs)
+    }
     fn ends_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
         s.ends_with_char(el, cs)
     }
@@ -681,11 +755,17 @@ impl QStringElement for QChar {
     fn insert(s: &mut QString, position: isize, el: Self) -> &mut QString {
         ffi::qstring_insert_char(s, position, el)
     }
+    fn last_index_of(s: &QString, el: Self, from: isize, cs: CaseSensitivity) -> isize {
+        ffi::qstring_last_index_of_char(s, el, from, cs)
+    }
     fn prepend(s: &mut QString, el: Self) -> &mut QString {
         s.prepend_char(el)
     }
     fn replace(s: &mut QString, from: Self, to: Self, cs: CaseSensitivity) -> &mut QString {
         s.replace_char(from, to, cs)
+    }
+    fn replace_n(s: &mut QString, position: isize, n: isize, after: Self) -> &mut QString {
+        ffi::qstring_replace_n_char(s, position, n, after)
     }
     fn remove(s: &mut QString, el: Self, cs: CaseSensitivity) -> &mut QString {
         s.remove_char(el, cs)
@@ -712,6 +792,9 @@ impl QStringElement for &QString {
     fn contains(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
         s.contains_str(el, cs)
     }
+    fn count(s: &QString, el: Self, cs: CaseSensitivity) -> isize {
+        ffi::qstring_count_str(s, el, cs)
+    }
     fn ends_with(s: &QString, el: Self, cs: CaseSensitivity) -> bool {
         s.ends_with_str(el, cs)
     }
@@ -721,11 +804,17 @@ impl QStringElement for &QString {
     fn insert(s: &mut QString, position: isize, el: Self) -> &mut QString {
         ffi::qstring_insert_str(s, position, el)
     }
+    fn last_index_of(s: &QString, el: Self, from: isize, cs: CaseSensitivity) -> isize {
+        ffi::qstring_last_index_of_str(s, el, from, cs)
+    }
     fn prepend(s: &mut QString, el: Self) -> &mut QString {
         s.prepend_str(el)
     }
     fn replace(s: &mut QString, from: Self, to: Self, cs: CaseSensitivity) -> &mut QString {
         s.replace_str(from, to, cs)
+    }
+    fn replace_n(s: &mut QString, position: isize, n: isize, after: Self) -> &mut QString {
+        ffi::qstring_replace_n_str(s, position, n, after)
     }
     fn remove(s: &mut QString, el: Self, cs: CaseSensitivity) -> &mut QString {
         s.remove_str(el, cs)
