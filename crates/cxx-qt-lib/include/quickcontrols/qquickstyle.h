@@ -15,17 +15,4 @@
 
 #include <QtQuickControls2/QQuickStyle>
 
-namespace rust {
-namespace cxxqtlib1 {
-
-inline QString (*qquickstyleName)() = QQuickStyle::name;
-
-inline void (*qquickstyleSetFallbackStyle)(const QString&) =
-  QQuickStyle::setFallbackStyle;
-
-inline void (*qquickstyleSetStyle)(const QString&) = QQuickStyle::setStyle;
-
-}
-}
-
 #endif

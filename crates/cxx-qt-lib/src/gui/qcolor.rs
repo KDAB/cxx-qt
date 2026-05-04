@@ -7,7 +7,7 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
-use crate::{GlobalColor, QString, QStringList};
+use crate::{GlobalColor, QString};
 
 #[cxx::bridge]
 mod ffi {
@@ -46,6 +46,33 @@ mod ffi {
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
+
+        /// Returns a `QStringList` containing the color names Qt knows about.
+        #[Self = "QColor"]
+        #[rust_name = "color_names"]
+        fn colorNames() -> QStringList;
+
+        /// Constructs a `QColor` from the CMYK value `c`, `m`, `y`, `k`, and the alpha-channel (transparency) value of `a`.
+        #[Self = "QColor"]
+        #[rust_name = "from_cmyka"]
+        fn fromCmyk(c: i32, m: i32, y: i32, k: i32, a: i32) -> QColor;
+
+        /// Constructs a `QColor` from the HSV value `h`, `s`, `v`, and the alpha-channel (transparency) value of `a`.
+        #[Self = "QColor"]
+        #[rust_name = "from_hsva"]
+        fn fromHsv(h: i32, s: i32, v: i32, a: i32) -> QColor;
+
+        /// Constructs a `QColor` with the RGB value `r`, `g`, `b`, and the alpha-channel (transparency) value of `a`.
+        ///
+        /// The color is left invalid if any of the arguments are invalid.
+        #[Self = "QColor"]
+        #[rust_name = "from_rgba"]
+        fn fromRgb(red: i32, green: i32, blue: i32, alpha: i32) -> QColor;
+
+        /// Constructs a `QColor` from the HSL value `h`, `s`, `l`, and the alpha-channel (transparency) value of `a`.
+        #[Self = "QColor"]
+        #[rust_name = "from_hsla"]
+        fn fromHsl(h: i32, s: i32, l: i32, a: i32) -> QColor;
 
         /// Returns the alpha color component of this color.
         fn alpha(self: &QColor) -> i32;
@@ -164,29 +191,14 @@ mod ffi {
         type QColorSpec;
 
         #[doc(hidden)]
-        #[rust_name = "qcolor_color_names"]
-        fn qcolorColorNames() -> QStringList;
-        #[doc(hidden)]
-        #[rust_name = "qcolor_init_from_cmyk"]
-        fn qcolorInitFromCmyk(c: i32, m: i32, y: i32, k: i32, a: i32) -> QColor;
-        #[doc(hidden)]
         #[rust_name = "qcolor_init_from_cmyk_f"]
         fn qcolorInitFromCmykF(c: f32, m: f32, y: f32, k: f32, a: f32) -> QColor;
-        #[doc(hidden)]
-        #[rust_name = "qcolor_init_from_hsl"]
-        fn qcolorInitFromHsl(h: i32, s: i32, l: i32, a: i32) -> QColor;
         #[doc(hidden)]
         #[rust_name = "qcolor_init_from_hsl_f"]
         fn qcolorInitFromHslF(h: f32, s: f32, l: f32, a: f32) -> QColor;
         #[doc(hidden)]
-        #[rust_name = "qcolor_init_from_hsv"]
-        fn qcolorInitFromHsv(h: i32, s: i32, v: i32, a: i32) -> QColor;
-        #[doc(hidden)]
         #[rust_name = "qcolor_init_from_hsv_f"]
         fn qcolorInitFromHsvF(h: f32, s: f32, v: f32, a: f32) -> QColor;
-        #[doc(hidden)]
-        #[rust_name = "qcolor_init_from_rgb"]
-        fn qcolorInitFromRgb(red: i32, green: i32, blue: i32, alpha: i32) -> QColor;
         #[doc(hidden)]
         #[rust_name = "qcolor_init_from_rgb_f"]
         fn qcolorInitFromRgbF(red: f32, green: f32, blue: f32, alpha: f32) -> QColor;
@@ -312,11 +324,6 @@ impl QColor {
         ffi::qcolor_blue_f(self)
     }
 
-    /// Returns a `QStringList` containing the color names Qt knows about.
-    pub fn color_names() -> QStringList {
-        ffi::qcolor_color_names()
-    }
-
     /// Returns the cyan color component of this color.
     pub fn cyan_f(&self) -> f32 {
         ffi::qcolor_cyan_f(self)
@@ -324,12 +331,7 @@ impl QColor {
 
     /// Constructs a QColor from the CMYK value `c`, `m`, `y`, and `k`.
     pub fn from_cmyk(c: i32, m: i32, y: i32, k: i32) -> Self {
-        ffi::qcolor_init_from_cmyk(c, m, y, k, 255)
-    }
-
-    /// Constructs a `QColor` from the CMYK value `c`, `m`, `y`, `k`, and the alpha-channel (transparency) value of `a`.
-    pub fn from_cmyka(c: i32, m: i32, y: i32, k: i32, a: i32) -> Self {
-        ffi::qcolor_init_from_cmyk(c, m, y, k, a)
+        Self::from_cmyka(c, m, y, k, 255)
     }
 
     /// Constructs a `QColor` from the CMYK value `c`, `m`, `y`, and `k`.
@@ -344,12 +346,7 @@ impl QColor {
 
     /// Constructs a `QColor` from the HSL value `h`, `s`, and `l`.
     pub fn from_hsl(h: i32, s: i32, l: i32) -> Self {
-        ffi::qcolor_init_from_hsl(h, s, l, 255)
-    }
-
-    /// Constructs a `QColor` from the HSL value `h`, `s`, `l`, and the alpha-channel (transparency) value of `a`.
-    pub fn from_hsla(h: i32, s: i32, l: i32, a: i32) -> Self {
-        ffi::qcolor_init_from_hsl(h, s, l, a)
+        Self::from_hsla(h, s, l, 255)
     }
 
     /// Constructs a `QColor` from the HSL value `h`, `s`, and `l`.
@@ -364,12 +361,7 @@ impl QColor {
 
     /// Constructs a `QColor` from the HSV value `h`, `s`, and `v`.
     pub fn from_hsv(h: i32, s: i32, v: i32) -> Self {
-        ffi::qcolor_init_from_hsv(h, s, v, 255)
-    }
-
-    /// Constructs a `QColor` from the HSV value `h`, `s`, `v`, and the alpha-channel (transparency) value of `a`.
-    pub fn from_hsva(h: i32, s: i32, v: i32, a: i32) -> Self {
-        ffi::qcolor_init_from_hsv(h, s, v, a)
+        Self::from_hsva(h, s, v, 255)
     }
 
     /// Constructs a `QColor` from the HSV value `h`, `s`, and `v`.
@@ -386,14 +378,7 @@ impl QColor {
     ///
     /// The color is left invalid if any of the arguments are invalid.
     pub fn from_rgb(red: i32, green: i32, blue: i32) -> Self {
-        ffi::qcolor_init_from_rgb(red, green, blue, 255)
-    }
-
-    /// Constructs a `QColor` with the RGB value `r`, `g`, `b`, and the alpha-channel (transparency) value of `a`.
-    ///
-    /// The color is left invalid if any of the arguments are invalid.
-    pub fn from_rgba(red: i32, green: i32, blue: i32, alpha: i32) -> Self {
-        ffi::qcolor_init_from_rgb(red, green, blue, alpha)
+        Self::from_rgba(red, green, blue, 255)
     }
 
     /// Constructs a `QColor` with the RGB value `r`, `g`, and `b`.

@@ -23,12 +23,6 @@ inline void (*qguiapplicationSetFont)(const QFont&) = QGuiApplication::setFont;
 
 inline QFont (*qguiapplicationFont)() = QGuiApplication::font;
 
-inline void (*qguiapplicationSetDesktopFileName)(const QString&) =
-  QGuiApplication::setDesktopFileName;
-
-inline QString (*qguiapplicationDesktopFileName)() =
-  QGuiApplication::desktopFileName;
-
 inline void (*qguiapplicationSetApplicationDisplayName)(const QString&) =
   QGuiApplication::setApplicationDisplayName;
 

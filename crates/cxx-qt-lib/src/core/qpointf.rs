@@ -19,6 +19,11 @@ mod ffi {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
 
+        /// Returns the dot product of `p1` and `p2`.
+        #[Self = "QPointF"]
+        #[rust_name = "dot_product"]
+        fn dotProduct(p1: &QPointF, p2: &QPointF) -> f64;
+
         /// Returns `true` if both the x and y coordinates are set to 0.0 (ignoring the sign); otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QPointF) -> bool;
@@ -49,13 +54,6 @@ mod ffi {
 
         /// Returns the y coordinate of this point.
         fn y(self: &QPointF) -> f64;
-    }
-
-    #[namespace = "rust::cxxqtlib1"]
-    unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "qpointf_dot_product"]
-        fn qpointfDotProduct(p1: &QPointF, p2: &QPointF) -> f64;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -100,11 +98,6 @@ pub struct QPointF {
 }
 
 impl QPointF {
-    /// Returns the dot product of `p1` and `p2`.
-    pub fn dot_product(p1: &QPointF, p2: &QPointF) -> f64 {
-        ffi::qpointf_dot_product(p1, p2)
-    }
-
     /// Constructs a point with the given coordinates (`xpos`, `ypos`).
     pub fn new(xpos: f64, ypos: f64) -> Self {
         ffi::qpointf_init(xpos, ypos)

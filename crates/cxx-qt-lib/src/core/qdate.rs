@@ -29,6 +29,16 @@ mod ffi {
         include!("cxx-qt-lib/qdate.h");
         type QDate = super::QDate;
 
+        /// Returns the system clock's current date.
+        #[Self = "QDate"]
+        #[rust_name = "current_date"]
+        fn currentDate() -> QDate;
+
+        /// Returns `true` if the specified `year` is a leap year in the Gregorian calendar; otherwise returns `false`.
+        #[Self = "QDate"]
+        #[rust_name = "is_leap_year"]
+        pub fn isLeapYear(year: i32) -> bool;
+
         #[doc(hidden)]
         #[rust_name = "add_days_qint64"]
         fn addDays(self: &QDate, ndays: qint64) -> QDate;
@@ -103,10 +113,6 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "qdate_current_date"]
-        fn qdateCurrentDate() -> QDate;
-
-        #[doc(hidden)]
         #[rust_name = "qdate_days_to"]
         fn qdateDaysTo(date: &QDate, d: QDate) -> qint64;
 
@@ -116,10 +122,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qdate_from_string_enum"]
         fn qdateFromString(string: &QString, format: DateFormat) -> QDate;
-
-        #[doc(hidden)]
-        #[rust_name = "qdate_is_leap_year"]
-        fn qdateIsLeapYear(year: i32) -> bool;
 
         #[doc(hidden)]
         #[rust_name = "qdate_to_format"]
@@ -178,11 +180,6 @@ impl QDate {
         self.add_days_qint64(ndays.into())
     }
 
-    /// Returns the system clock's current date.
-    pub fn current_date() -> Self {
-        ffi::qdate_current_date()
-    }
-
     /// Returns the number of days from this date to `date` (which is negative if `date` is earlier than this date).
     ///
     /// Returns 0 if either date is invalid.
@@ -220,11 +217,6 @@ impl QDate {
         } else {
             None
         }
-    }
-
-    /// Returns `true` if the specified `year` is a leap year in the Gregorian calendar; otherwise returns `false`.
-    pub fn is_leap_year(year: i32) -> bool {
-        ffi::qdate_is_leap_year(year)
     }
 
     /// Constructs a date with year `y`, month `m` and day `d`.

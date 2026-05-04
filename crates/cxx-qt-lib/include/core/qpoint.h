@@ -10,12 +10,3 @@
 #include <cstdint>
 
 #include <QtCore/QPoint>
-
-namespace rust {
-namespace cxxqtlib1 {
-
-inline ::std::int32_t (*qpointDotProduct)(const QPoint&,
-                                          const QPoint&) = QPoint::dotProduct;
-
-}
-}

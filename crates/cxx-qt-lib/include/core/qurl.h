@@ -37,14 +37,10 @@ QString
 qurlFragment(const QUrl& url);
 QUrl
 qurlFromEncoded(const QByteArray& input);
-inline QUrl (*qurlFromLocalFile)(const QString&) = QUrl::fromLocalFile;
-inline QString (*qurlFromPercentEncoding)(const QByteArray&) =
-  QUrl::fromPercentEncoding;
 QUrl
 qurlFromUserInput(const QString& userInput, const QString& workingDictionary);
 QString
 qurlHost(const QUrl& url);
-inline QStringList (*qurlIdnWhitelist)() = QUrl::idnWhitelist;
 QString
 qurlPath(const QUrl& url);
 QString
@@ -57,7 +53,6 @@ void
 qurlSetFragment(QUrl& url, const QString& fragment);
 void
 qurlSetHost(QUrl& url, const QString& host);
-inline void (*qurlSetIdnWhitelist)(const QStringList&) = QUrl::setIdnWhitelist;
 void
 qurlSetPassword(QUrl& url, const QString& password);
 void
@@ -78,10 +73,6 @@ QByteArray
 qurlToEncoded(const QUrl& url);
 QString
 qurlToQString(const QUrl& url);
-inline QByteArray (*qurlToPercentEncoding)(const QString&,
-                                           const QByteArray&,
-                                           const QByteArray&) =
-  QUrl::toPercentEncoding;
 QString
 qurlUserInfo(const QUrl& url);
 QString

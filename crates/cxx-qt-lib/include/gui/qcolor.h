@@ -34,30 +34,12 @@ namespace cxxqtlib1 {
 using QColorNameFormat = QColor::NameFormat;
 using QColorSpec = QColor::Spec;
 
-inline QStringList (*qcolorColorNames)() = QColor::colorNames;
-inline QColor (*qcolorInitFromCmyk)(::std::int32_t,
-                                    ::std::int32_t,
-                                    ::std::int32_t,
-                                    ::std::int32_t,
-                                    ::std::int32_t) = QColor::fromCmyk;
 QColor
 qcolorInitFromCmykF(float c, float m, float y, float k, float a);
-inline QColor (*qcolorInitFromHsl)(::std::int32_t,
-                                   ::std::int32_t,
-                                   ::std::int32_t,
-                                   ::std::int32_t) = QColor::fromHsl;
 QColor
 qcolorInitFromHslF(float h, float s, float l, float a);
-inline QColor (*qcolorInitFromHsv)(::std::int32_t,
-                                   ::std::int32_t,
-                                   ::std::int32_t,
-                                   ::std::int32_t) = QColor::fromHsv;
 QColor
 qcolorInitFromHsvF(float h, float s, float v, float a);
-inline QColor (*qcolorInitFromRgb)(::std::int32_t,
-                                   ::std::int32_t,
-                                   ::std::int32_t,
-                                   ::std::int32_t) = QColor::fromRgb;
 QColor
 qcolorInitFromRgbF(float red, float green, float blue, float alpha);
 

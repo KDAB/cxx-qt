@@ -41,12 +41,6 @@ quuidCreateUuidV3(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice)
 }
 
 QUuid
-quuidCreateUuid()
-{
-  return QUuid::createUuid();
-}
-
-QUuid
 quuidCreateUuidV5(const QUuid& ns, ::rust::Slice<const ::std::uint8_t> slice)
 {
   return QUuid::createUuidV5(ns, byteView(slice));

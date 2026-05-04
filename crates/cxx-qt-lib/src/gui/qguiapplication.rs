@@ -42,6 +42,16 @@ mod ffi {
         type QGuiApplication;
     }
 
+    unsafe extern "C++" {
+        #[Self = "QGuiApplication"]
+        #[rust_name = "desktop_file_name"]
+        fn desktopFileName() -> QString;
+
+        #[Self = "QGuiApplication"]
+        #[rust_name = "set_desktop_file_name"]
+        fn setDesktopFileName(name: &QString);
+    }
+
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
@@ -106,12 +116,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_organization_name"]
         fn qapplicationSetOrganizationName(app: Pin<&mut QGuiApplication>, name: &QString);
-        #[doc(hidden)]
-        #[rust_name = "qguiapplication_set_desktop_file_name"]
-        fn qguiapplicationSetDesktopFileName(name: &QString);
-        #[doc(hidden)]
-        #[rust_name = "qguiapplication_desktop_file_name"]
-        fn qguiapplicationDesktopFileName() -> QString;
         #[doc(hidden)]
         #[rust_name = "qguiapplication_keyboard_modifiers"]
         fn qguiapplicationKeyboardModifiers() -> KeyboardModifiers;
@@ -248,16 +252,6 @@ impl QGuiApplication {
     /// Sets the `name` of the organization that wrote this application.
     pub fn set_organization_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qguiapplication_set_organization_name(self, name);
-    }
-
-    /// Changes the desktop file name to `name`.
-    pub fn set_desktop_file_name(name: &QString) {
-        ffi::qguiapplication_set_desktop_file_name(name);
-    }
-
-    /// Returns the application desktop file name.
-    pub fn desktop_file_name() -> QString {
-        ffi::qguiapplication_desktop_file_name()
     }
 
     /// Returns the current state of the modifier keys on the keyboard. The current state is updated
