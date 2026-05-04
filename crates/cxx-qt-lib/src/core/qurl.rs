@@ -26,59 +26,59 @@ mod ffi {
 
         /// Resets the content of the `QUrl`. After calling this function,
         /// the `QUrl` is equal to one that has been constructed with the default empty constructor.
-        fn clear(self: &mut QUrl);
+        fn clear(&mut self);
 
         /// Returns an error message if the last operation that modified this `QUrl` object ran into a parsing error.
         /// If no error was detected, this function returns an empty string and [`is_valid`](Self::is_valid) returns `true`.
         #[rust_name = "error_string"]
-        fn errorString(self: &QUrl) -> QString;
+        fn errorString(&self) -> QString;
 
         /// Returns `true` if this URL contains a fragment (i.e., if # was seen on it).
         #[rust_name = "has_fragment"]
-        fn hasFragment(self: &QUrl) -> bool;
+        fn hasFragment(&self) -> bool;
 
         /// Returns `true` if this URL contains a Query (i.e., if ? was seen on it).
         #[rust_name = "has_query"]
-        fn hasQuery(self: &QUrl) -> bool;
+        fn hasQuery(&self) -> bool;
 
         /// Returns `true` if the URL has no data; otherwise returns `false`.
         #[rust_name = "is_empty"]
-        fn isEmpty(self: &QUrl) -> bool;
+        fn isEmpty(&self) -> bool;
 
         /// Returns `true` if this URL is pointing to a local file path. A URL is a local file path if the scheme is "file".
         ///
         /// Note that this function considers URLs with hostnames to be local file paths.
         #[rust_name = "is_local_file"]
-        fn isLocalFile(self: &QUrl) -> bool;
+        fn isLocalFile(&self) -> bool;
 
         /// Returns `true` if this URL is a parent of `child_url`.
         /// `child_url` is a child of this URL if the two URLs share the same scheme and authority,
         /// and this URL's path is a parent of the path of `child_url`.
         #[rust_name = "is_parent_of"]
-        fn isParentOf(self: &QUrl, child_url: &QUrl) -> bool;
+        fn isParentOf(&self, child_url: &QUrl) -> bool;
 
         /// Returns `true` if the URL is relative; otherwise returns `false`.
         /// A URL is relative reference if its scheme is undefined;
         /// this function is therefore equivalent to calling `self.scheme().is_empty()`.
         #[rust_name = "is_relative"]
-        fn isRelative(self: &QUrl) -> bool;
+        fn isRelative(&self) -> bool;
 
         /// Returns `true` if the URL is non-empty and valid; otherwise returns `false`.
         ///
         /// The URL is run through a conformance test. Every part of the URL must conform to the standard encoding rules of the URI standard for the URL to be reported as valid.
         #[rust_name = "is_valid"]
-        fn isValid(self: &QUrl) -> bool;
+        fn isValid(&self) -> bool;
 
         /// Returns the port of the URL, or `default_port` if the port is unspecified.
         #[rust_name = "port_or"]
-        fn port(self: &QUrl, default_port: i32) -> i32;
+        fn port(&self, default_port: i32) -> i32;
 
         /// Returns the result of the merge of this URL with `relative`. This URL is used as a base to convert `relative` to an absolute URL.
         ///
         /// If `relative` is not a relative URL, this function will return `relative` directly. Otherwise, the paths of the two URLs are merged, and the new URL returned has the scheme and authority of the base URL, but with the merged path.
         ///
         /// Calling this function with `".."` returns a `QUrl` whose directory is one level higher than the original. Similarly, calling this function with `"../.."` removes two levels from the path. If `relative` is `"/"`, the path becomes `"/"`.
-        fn resolved(self: &QUrl, relative: &QUrl) -> QUrl;
+        fn resolved(&self, relative: &QUrl) -> QUrl;
 
         /// Returns the scheme of the URL. If an empty string is returned,
         /// this means the scheme is undefined and the URL is then relative.
@@ -87,21 +87,21 @@ mod ffi {
         /// which means it cannot contain any character that would otherwise require encoding.
         /// Additionally, schemes are always returned in lowercase form.
         #[rust_name = "scheme_or_default"]
-        fn scheme(self: &QUrl) -> QString;
+        fn scheme(&self) -> QString;
 
         /// Sets the port of the URL to `port`.
         /// The port is part of the authority of the URL, as described in [`set_authority`](Self::set_authority).
         ///
         /// `port` must be between 0 and 65535 inclusive. Setting the port to -1 indicates that the port is unspecified.
         #[rust_name = "set_port"]
-        fn setPort(self: &mut QUrl, port: i32);
+        fn setPort(&mut self, port: i32);
 
         /// Returns the path of this URL formatted as a local file path.
         /// The path returned will use forward slashes, even if it was originally created from one with backslashes.
         ///
         /// If this URL contains a non-empty hostname, it will be encoded in the returned value in the form found on SMB networks (for example, `"//servername/path/to/file.txt"`).
         #[rust_name = "to_local_file_or_default"]
-        fn toLocalFile(self: &QUrl) -> QString;
+        fn toLocalFile(&self) -> QString;
     }
 
     // Bitwise enums don't work well with Rust and CXX, so lets just use the defaults for now

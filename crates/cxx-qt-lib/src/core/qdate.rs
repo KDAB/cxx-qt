@@ -31,73 +31,73 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "add_days_qint64"]
-        fn addDays(self: &QDate, ndays: qint64) -> QDate;
+        fn addDays(&self, ndays: qint64) -> QDate;
 
         /// Returns a `QDate` object containing a date `nmonths` later than the date of this object (or earlier if `nmonths` is negative).
         #[rust_name = "add_months"]
-        fn addMonths(self: &QDate, nmonths: i32) -> QDate;
+        fn addMonths(&self, nmonths: i32) -> QDate;
 
         /// Returns a `QDate` object containing a date `nyears` later than the date of this object (or earlier if `nyears` is negative).
         ///
         /// **Note:** If the ending day/month combination does not exist in the resulting year (e.g., for the Gregorian calendar, if the date was Feb 29 and the final year is not a leap year), this function will return a date that is the latest valid date in the given month (in the example, Feb 28).
         #[rust_name = "add_years"]
-        fn addYears(self: &QDate, nyears: i32) -> QDate;
+        fn addYears(&self, nyears: i32) -> QDate;
 
         /// Returns the day of the month for this date.
         ///
         /// Uses the Gregorian calendar (for which the return ranges from 1 to 31). Returns 0 if the date is invalid.
-        fn day(self: &QDate) -> i32;
+        fn day(&self) -> i32;
 
         /// Returns the weekday (1 = Monday to 7 = Sunday) for this date.
         ///
         /// Uses the Gregorian calendar. Returns 0 if the date is invalid.
         #[rust_name = "day_of_week"]
-        fn dayOfWeek(self: &QDate) -> i32;
+        fn dayOfWeek(&self) -> i32;
 
         /// Returns the day of the year (1 for the first day) for this date.
         ///
         /// Uses the Gregorian calendar. Returns 0 if either the date or the first day of its year is invalid.
         #[rust_name = "day_of_year"]
-        fn dayOfYear(self: &QDate) -> i32;
+        fn dayOfYear(&self) -> i32;
 
         /// Returns the number of days in the month for this date.
         ///
         /// Uses the Gregorian calendar (for which the result ranges from 28 to 31). Returns 0 if the date is invalid.
         #[rust_name = "days_in_monyth"]
-        fn daysInMonth(self: &QDate) -> i32;
+        fn daysInMonth(&self) -> i32;
 
         /// Returns the number of days in the year for this date.
         ///
         /// Uses the Gregorian calendar (for which the result is 365 or 366). Returns 0 if the date is invalid.
         #[rust_name = "days_in_year"]
-        fn daysInYear(self: &QDate) -> i32;
+        fn daysInYear(&self) -> i32;
 
         /// Returns `true` if the date is null; otherwise returns `false`. A null date is invalid.
         #[rust_name = "is_null"]
-        fn isNull(self: &QDate) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns `true` if this date is valid; otherwise returns `false`.
         #[rust_name = "is_valid"]
-        fn isValid(self: &QDate) -> bool;
+        fn isValid(&self) -> bool;
 
         /// Returns the month-number for the date.
         ///
         /// Uses the Gregorian calendar (for which the result ranges from 1 to 12). Returns 0 if the date is invalid.
-        fn month(self: &QDate) -> i32;
+        fn month(&self) -> i32;
 
         /// Sets this date to represent the date, in the Gregorian calendar, with the given `year`, `month` and `day` numbers.
         /// Returns `true` if the resulting date is valid, otherwise it sets this date to represent an invalid date and returns `false`.
         #[rust_name = "set_date"]
-        fn setDate(self: &mut QDate, y: i32, m: i32, d: i32) -> bool;
+        fn setDate(&mut self, y: i32, m: i32, d: i32) -> bool;
 
         /// Returns the date as a string. The `format` parameter determines the format of the string.
         #[rust_name = "format_enum"]
-        fn toString(self: &QDate, format: DateFormat) -> QString;
+        fn toString(&self, format: DateFormat) -> QString;
 
         /// Returns the year of this date.
         ///
         /// Uses the Gregorian calendar. Returns 0 if the date is invalid.
-        fn year(self: &QDate) -> i32;
+        fn year(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -174,7 +174,7 @@ impl QDate {
     /// Returns a `QDate` object containing a date `ndays` later than the date of this object (or earlier if `ndays` is negative).
     ///
     /// Returns a null date if the current date is invalid or the new date is out of range.
-    pub fn add_days(self: &QDate, ndays: i64) -> QDate {
+    pub fn add_days(&self, ndays: i64) -> QDate {
         self.add_days_qint64(ndays.into())
     }
 

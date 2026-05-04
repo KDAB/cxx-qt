@@ -193,34 +193,34 @@ mod ffi {
 
         /// Returns the current background mode.
         #[rust_name = "background_mode"]
-        fn backgroundMode(self: &QPainter) -> BGMode;
+        fn backgroundMode(&self) -> BGMode;
 
         /// Returns the currently set brush origin.
         #[rust_name = "brush_origin"]
-        fn brushOrigin(self: &QPainter) -> QPoint;
+        fn brushOrigin(&self) -> QPoint;
 
         /// Returns the bounding rectangle of the current clip if there is a clip;
         /// otherwise returns an empty rectangle. Note that the clip region is given in logical coordinates.
         ///
         /// The bounding rectangle is not guaranteed to be tight.
         #[rust_name = "clip_bounding_rect_or_empty"]
-        fn clipBoundingRect(self: &QPainter) -> QRectF;
+        fn clipBoundingRect(&self) -> QRectF;
 
         /// Returns the current clip path in logical coordinates.
         ///
         /// **Warning:** `QPainter` does not store the combined clip explicitly as this is handled by the underlying [QPaintEngine](https://doc.qt.io/qt/qpaintengine.html), so the path is recreated on demand and transformed to the current logical coordinate system. This is potentially an expensive operation.
         #[rust_name = "clip_path"]
-        fn clipPath(self: &QPainter) -> QPainterPath;
+        fn clipPath(&self) -> QPainterPath;
 
         /// Returns the currently set clip region. Note that the clip region is given in logical coordinates.
         ///
         /// **Warning:** `QPainter` does not store the combined clip explicitly as this is handled by the underlying [QPaintEngine](https://doc.qt.io/qt/qpaintengine.html), so the path is recreated on demand and transformed to the current logical coordinate system. This is potentially an expensive operation.
         #[rust_name = "clip_region"]
-        fn clipRegion(self: &QPainter) -> QRegion;
+        fn clipRegion(&self) -> QRegion;
 
         /// Returns the current composition mode.
         #[rust_name = "composition_mode"]
-        fn compositionMode(self: &QPainter) -> QPainterCompositionMode;
+        fn compositionMode(&self) -> QPainterCompositionMode;
 
         /// Draws the arc defined by the rectangle beginning at (`x`, `y`) with the specified `width` and `height`,
         /// and the given `start_angle` and `span_angle`.
@@ -228,7 +228,7 @@ mod ffi {
         /// The `start_angle` and `span_angle` must be specified in 1/16th of a degree, i.e. a full circle equals 5760 (16 * 360). Positive values for the angles mean counter-clockwise while negative values mean the clockwise direction. Zero degrees is at the 3 o'clock position.
         #[rust_name = "draw_arc"]
         fn drawArc(
-            self: Pin<&mut QPainter>,
+            self: Pin<&mut Self>,
             x: i32,
             y: i32,
             width: i32,
@@ -242,7 +242,7 @@ mod ffi {
         /// The `start_angle` and `span_angle` must be specified in 1/16th of a degree, i.e. a full circle equals 5760 (16 * 360). Positive values for the angles mean counter-clockwise while negative values mean the clockwise direction. Zero degrees is at the 3 o'clock position.
         #[rust_name = "draw_chord"]
         fn drawChord(
-            self: Pin<Pin<&mut QPainter>>,
+            self: Pin<Pin<&mut Self>>,
             rectangle: &QRect,
             start_angle: i32,
             span_angle: i32,
@@ -252,11 +252,11 @@ mod ffi {
         ///
         /// If the supplied polygon is not convex, i.e. it contains at least one angle larger than 180 degrees, the results are undefined.
         #[rust_name = "draw_convex_polygon"]
-        fn drawConvexPolygon(self: Pin<&mut QPainter>, polygon: &QPolygon);
+        fn drawConvexPolygon(self: Pin<&mut Self>, polygon: &QPolygon);
 
         /// Draws the ellipse defined by the given `rectangle`.
         #[rust_name = "draw_ellipse"]
-        fn drawEllipse(self: Pin<&mut QPainter>, rectangle: &QRect);
+        fn drawEllipse(self: Pin<&mut Self>, rectangle: &QRect);
 
         /// Draws the given `image` into the given `rectangle`.
         ///
@@ -264,53 +264,53 @@ mod ffi {
         ///
         /// **Note:** See [Drawing High Resolution Versions of Pixmaps and Images](https://doc.qt.io/qt/qpainter.html#drawing-high-resolution-versions-of-pixmaps-and-images) on how this is affected by [QImage::devicePixelRatio](https://doc.qt.io/qt/qimage.html#devicePixelRatio)().
         #[rust_name = "draw_image"]
-        fn drawImage(self: Pin<&mut QPainter>, rectangle: &QRect, image: &QImage);
+        fn drawImage(self: Pin<&mut Self>, rectangle: &QRect, image: &QImage);
 
         /// Draws a line defined by `line`.
         #[rust_name = "draw_line"]
-        fn drawLine(self: Pin<&mut QPainter>, line: &QLine);
+        fn drawLine(self: Pin<&mut Self>, line: &QLine);
 
         /// Draws a line defined by `line`.
         #[rust_name = "draw_linef"]
-        fn drawLine(self: Pin<&mut QPainter>, line: &QLineF);
+        fn drawLine(self: Pin<&mut Self>, line: &QLineF);
 
         /// Draws the set of lines defined by the list `lines` using the current pen and brush.
         #[rust_name = "draw_lines"]
-        fn drawLines(self: Pin<&mut QPainter>, lines: &QVector_QLine);
+        fn drawLines(self: Pin<&mut Self>, lines: &QVector_QLine);
 
         /// Draws the set of lines defined by the list `lines` using the current pen and brush.
         #[rust_name = "draw_linefs"]
-        fn drawLines(self: Pin<&mut QPainter>, lines: &QVector_QLineF);
+        fn drawLines(self: Pin<&mut Self>, lines: &QVector_QLineF);
 
         /// Draws the given painter `path` using the current pen for outline and the current brush for filling.
         #[rust_name = "draw_path"]
-        fn drawPath(self: Pin<&mut QPainter>, path: &QPainterPath);
+        fn drawPath(self: Pin<&mut Self>, path: &QPainterPath);
 
         /// Draws a pie defined by the given `rectangle`, `start_angle` and `span_angle`.
         ///
         /// The `start_angle` and `span_angle` must be specified in 1/16th of a degree, i.e. a full circle equals 5760 (16 * 360). Positive values for the angles mean counter-clockwise while negative values mean the clockwise direction. Zero degrees is at the 3 o'clock position.
         #[rust_name = "draw_pie"]
-        fn drawPie(self: Pin<&mut QPainter>, rectangle: &QRectF, start_angle: i32, span_angle: i32);
+        fn drawPie(self: Pin<&mut Self>, rectangle: &QRectF, start_angle: i32, span_angle: i32);
 
         /// Draws a single point at the given `position` using the current pen's color.
         #[rust_name = "draw_point"]
-        fn drawPoint(self: Pin<&mut QPainter>, point: &QPoint);
+        fn drawPoint(self: Pin<&mut Self>, point: &QPoint);
 
         /// Draws the points in the vector `points`.
         #[rust_name = "draw_points"]
-        fn drawPoints(self: Pin<&mut QPainter>, points: &QPolygon);
+        fn drawPoints(self: Pin<&mut Self>, points: &QPolygon);
 
         /// Draws the polygon defined by the given `points` using the fill rule `fill_rule`.
         #[rust_name = "draw_polygon"]
-        fn drawPolygon(self: Pin<&mut QPainter>, points: &QPolygon, fill_rule: FillRule);
+        fn drawPolygon(self: Pin<&mut Self>, points: &QPolygon, fill_rule: FillRule);
 
         /// Draws the polyline defined by the given `points` using the current pen.
         #[rust_name = "draw_polyline"]
-        fn drawPolyline(self: Pin<&mut QPainter>, points: &QPolygon);
+        fn drawPolyline(self: Pin<&mut Self>, points: &QPolygon);
 
         /// Draws the current `rectangle` with the current pen and brush.
         #[rust_name = "draw_rect_f"]
-        fn drawRect(self: Pin<&mut QPainter>, rectangle: &QRectF);
+        fn drawRect(self: Pin<&mut Self>, rectangle: &QRectF);
 
         /// Draws the given rectangle `rect` with rounded corners.
         ///
@@ -319,7 +319,7 @@ mod ffi {
         /// A filled rectangle has a size of `rect.size()`. A stroked rectangle has a size of `rect.size()` plus the pen width.
         #[rust_name = "draw_rounded_rect"]
         fn drawRoundedRect(
-            self: Pin<&mut QPainter>,
+            self: Pin<&mut Self>,
             rect: &QRectF,
             x_radiu: f64,
             y_radius: f64,
@@ -334,40 +334,40 @@ mod ffi {
         ///
         /// Note: The y-position is used as the baseline of the font.
         #[rust_name = "draw_text"]
-        fn drawText(self: Pin<&mut QPainter>, position: &QPoint, text: &QString);
+        fn drawText(self: Pin<&mut Self>, position: &QPoint, text: &QString);
 
         /// Erases the area inside the given `rectangle`.
         #[rust_name = "erase_rect"]
-        fn eraseRect(self: Pin<&mut QPainter>, rectangle: &QRectF);
+        fn eraseRect(self: Pin<&mut Self>, rectangle: &QRectF);
 
         /// Fills the given `rectangle` with the `color` specified.
         #[rust_name = "fill_rect"]
-        fn fillRect(self: Pin<&mut QPainter>, rectangle: &QRectF, color: &QColor);
+        fn fillRect(self: Pin<&mut Self>, rectangle: &QRectF, color: &QColor);
 
         /// Returns the currently set font used for drawing text.
-        fn font(self: &QPainter) -> &QFont;
+        fn font(&self) -> &QFont;
 
         /// Returns `true` if clipping has been set; otherwise returns `false`.
         #[rust_name = "has_clipping"]
-        fn hasClipping(self: &QPainter) -> bool;
+        fn hasClipping(&self) -> bool;
 
         /// Returns `true` if [begin](https://doc.qt.io/qt/qpainter.html#begin)() has been called and [end](https://doc.qt.io/qt/qpainter.html#end)() has not yet been called; otherwise returns `false`.
         #[rust_name = "is_active"]
-        fn isActive(self: &QPainter) -> bool;
+        fn isActive(&self) -> bool;
 
         /// Returns the layout direction used by the painter when drawing text.
         #[rust_name = "layout_direction"]
-        fn layoutDirection(self: &QPainter) -> LayoutDirection;
+        fn layoutDirection(&self) -> LayoutDirection;
 
         /// Returns the opacity of the painter. The default value is 1.
-        fn opacity(self: &QPainter) -> f64;
+        fn opacity(&self) -> f64;
 
         /// Returns the painter's current pen.
-        fn pen(self: &QPainter) -> &QPen;
+        fn pen(&self) -> &QPen;
 
         /// Saves the current painter state (pushes the state onto a stack).
         /// A save() must be followed by a corresponding [restore](Self::restore)(); the [end](https://doc.qt.io/qt/qpainter.html#end)() function unwinds the stack.
-        fn save(self: Pin<&mut QPainter>);
+        fn save(self: Pin<&mut Self>);
 
         /// Sets the background mode of the painter to the given `mode`.
         ///
@@ -375,63 +375,63 @@ mod ffi {
         ///
         /// Note that in order to draw a bitmap or pixmap transparently, you must use [QPixmap::setMask](https://doc.qt.io/qt/qpixmap.html#setMask)().
         #[rust_name = "set_background_mode"]
-        fn setBackgroundMode(self: Pin<&mut QPainter>, mode: BGMode);
+        fn setBackgroundMode(self: Pin<&mut Self>, mode: BGMode);
 
         /// Enables clipping if `enable` is `true`, or disables clipping if `enable` is `false`.
         #[rust_name = "set_clipping"]
-        fn setClipping(self: Pin<&mut QPainter>, enable: bool);
+        fn setClipping(self: Pin<&mut Self>, enable: bool);
 
         /// Enables clipping, and sets the clip path for the painter to the given `path`, with the clip `operation`.
         ///
         /// Note that the clip path is specified in logical (painter) coordinates.
         #[rust_name = "set_clip_path"]
-        fn setClipPath(self: Pin<&mut QPainter>, path: &QPainterPath, operation: ClipOperation);
+        fn setClipPath(self: Pin<&mut Self>, path: &QPainterPath, operation: ClipOperation);
 
         /// Enables clipping, and sets the clip region to the given `rectangle` using the given clip `operation`.
         ///
         /// Note that the clip rectangle is specified in logical (painter) coordinates.
         #[rust_name = "set_clip_rect"]
-        fn setClipRect(self: Pin<&mut QPainter>, rectangle: &QRect, operation: ClipOperation);
+        fn setClipRect(self: Pin<&mut Self>, rectangle: &QRect, operation: ClipOperation);
 
         /// Sets the clip region to the given `region` using the specified clip `operation`.
         ///
         /// Note that the clip region is given in logical coordinates.
         #[rust_name = "set_clip_region"]
-        fn setClipRegion(self: Pin<&mut QPainter>, region: &QRegion, operation: ClipOperation);
+        fn setClipRegion(self: Pin<&mut Self>, region: &QRegion, operation: ClipOperation);
 
         /// Sets the composition mode to the given `mode`.
         ///
         /// Warning: Only a `QPainter` operating on a [`QImage`](crate::QImage) fully supports all composition modes. The RasterOp modes are supported for X11 as described in [`composition_mode`](Self::composition_mode).
         #[rust_name = "set_composition_mode"]
-        fn setCompositionMode(self: Pin<&mut QPainter>, mode: QPainterCompositionMode);
+        fn setCompositionMode(self: Pin<&mut Self>, mode: QPainterCompositionMode);
 
         /// Sets the painter's font to the given font.
         /// This font is used by subsequent [`draw_text`](Self::draw_text) functions. The text color is the same as the pen color.
         ///
         /// If you set a font that isn't available, Qt finds a close match. [`font`](Self::font) will return what you set using this function and [fontInfo](https://doc.qt.io/qt/qpainter.html#fontInfo)() returns the font actually being used (which may be the same).
         #[rust_name = "set_font"]
-        fn setFont(self: Pin<&mut QPainter>, font: &QFont);
+        fn setFont(self: Pin<&mut Self>, font: &QFont);
 
         /// Sets the layout direction used by the painter when drawing text, to the specified `direction`.
         #[rust_name = "set_layout_direction"]
-        fn setLayoutDirection(self: Pin<&mut QPainter>, direction: LayoutDirection);
+        fn setLayoutDirection(self: Pin<&mut Self>, direction: LayoutDirection);
 
         /// Sets the opacity of the painter to `opacity`. The value should be in the range 0.0 to 1.0,
         /// where 0.0 is fully transparent and 1.0 is fully opaque.
         ///
         /// Opacity set on the painter will apply to all drawing operations individually.
         #[rust_name = "set_opacity"]
-        fn setOpacity(self: Pin<&mut QPainter>, opacity: f64);
+        fn setOpacity(self: Pin<&mut Self>, opacity: f64);
 
         /// Sets the painter's pen to be the given `pen`.
         ///
         /// The `pen` defines how to draw lines and outlines, and it also defines the text color.
         #[rust_name = "set_pen"]
-        fn setPen(self: Pin<&mut QPainter>, pen: &QPen);
+        fn setPen(self: Pin<&mut Self>, pen: &QPen);
 
         /// Sets the given render `hint` on the painter if `on` is `true`; otherwise clears the render hint.
         #[rust_name = "set_render_hint"]
-        fn setRenderHint(self: Pin<&mut QPainter>, hint: QPainterRenderHint, on: bool);
+        fn setRenderHint(self: Pin<&mut Self>, hint: QPainterRenderHint, on: bool);
 
         /// Sets the painter's viewport rectangle to the given `rectangle`, and enables view transformations.
         ///
@@ -439,7 +439,7 @@ mod ffi {
         ///
         /// The default viewport rectangle is the same as the device's rectangle.
         #[rust_name = "set_viewport"]
-        fn setViewport(self: Pin<&mut QPainter>, rectangle: &QRect);
+        fn setViewport(self: Pin<&mut Self>, rectangle: &QRect);
 
         /// Sets the painter's window to the given `rectangle`, and enables view transformations.
         ///
@@ -447,34 +447,34 @@ mod ffi {
         ///
         /// The default window rectangle is the same as the device's rectangle.
         #[rust_name = "set_window"]
-        fn setWindow(self: Pin<&mut QPainter>, rectangle: &QRect);
+        fn setWindow(self: Pin<&mut Self>, rectangle: &QRect);
 
         /// Draws the outline (strokes) the path `path` with the pen specified by `pen`.
         #[rust_name = "stroke_path"]
-        fn strokePath(self: Pin<&mut QPainter>, path: &QPainterPath, pen: &QPen);
+        fn strokePath(self: Pin<&mut Self>, path: &QPainterPath, pen: &QPen);
 
         /// Returns `true` if `hint` is set; otherwise returns `false`.
         #[rust_name = "test_render_hint"]
-        fn testRenderHint(self: &QPainter, hint: QPainterRenderHint) -> bool;
+        fn testRenderHint(&self, hint: QPainterRenderHint) -> bool;
 
         /// Restores the current painter state (pops a saved state off the stack).
-        fn restore(self: Pin<&mut QPainter>);
+        fn restore(self: Pin<&mut Self>);
 
         /// Rotates the coordinate system clockwise. The given `angle` parameter is in degrees.
-        fn rotate(self: Pin<&mut QPainter>, angle: f64);
+        fn rotate(self: Pin<&mut Self>, angle: f64);
 
         /// Translates the coordinate system by the given `offset`; i.e. the given `offset` is added to points.
-        fn translate(self: Pin<&mut QPainter>, offset: &QPoint);
+        fn translate(self: Pin<&mut Self>, offset: &QPoint);
 
         /// Returns `true` if view transformation is enabled; otherwise returns `false`.
         #[rust_name = "view_transform_enabled"]
-        fn viewTransformEnabled(self: &QPainter) -> bool;
+        fn viewTransformEnabled(&self) -> bool;
 
         /// Returns the viewport rectangle.
-        fn viewport(self: &QPainter) -> QRect;
+        fn viewport(&self) -> QRect;
 
         /// Returns the window rectangle.
-        fn window(self: &QPainter) -> QRect;
+        fn window(&self) -> QRect;
     }
 
     #[namespace = "rust::cxxqtlib1"]

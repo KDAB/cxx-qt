@@ -31,64 +31,64 @@ mod ffi {
 
         /// Returns a size holding the minimum width and height of this size and the given `other_size`.
         #[rust_name = "bounded_to"]
-        fn boundedTo(self: &QSize, other_size: &QSize) -> QSize;
+        fn boundedTo(&self, other_size: &QSize) -> QSize;
 
         /// Returns a size holding the maximum width and height of this size and the given `other_size`.
         #[rust_name = "expanded_to"]
-        fn expandedTo(self: &QSize, other_size: &QSize) -> QSize;
+        fn expandedTo(&self, other_size: &QSize) -> QSize;
 
         /// Returns the height.
-        fn height(self: &QSize) -> i32;
+        fn height(&self) -> i32;
 
         /// Returns `true` if either of the width and height is less than or equal to 0; otherwise returns `false`.
         #[rust_name = "is_empty"]
-        fn isEmpty(self: &QSize) -> bool;
+        fn isEmpty(&self) -> bool;
 
         /// Returns `true` if both the width and height is 0; otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QSize) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns `true` if both the width and height is equal to or greater than 0; otherwise returns `false`.
         #[rust_name = "is_valid"]
-        fn isValid(self: &QSize) -> bool;
+        fn isValid(&self) -> bool;
 
         /// Returns the size that results from growing this size by `margins`.
         #[rust_name = "grown_by"]
-        fn grownBy(self: &QSize, margins: QMargins) -> QSize;
+        fn grownBy(&self, margins: QMargins) -> QSize;
 
         /// Scales the size to a rectangle with the given `size`, according to the specified `mode`.
-        fn scale(self: &mut QSize, size: &QSize, mode: AspectRatioMode);
+        fn scale(&mut self, size: &QSize, mode: AspectRatioMode);
 
         /// Return a size scaled to a rectangle with the given size `s`, according to the specified `mode`.
-        fn scaled(self: &QSize, s: &QSize, mode: AspectRatioMode) -> QSize;
+        fn scaled(&self, s: &QSize, mode: AspectRatioMode) -> QSize;
 
         /// Sets the height to the given `height`.
         #[rust_name = "set_height"]
-        fn setHeight(self: &mut QSize, height: i32);
+        fn setHeight(&mut self, height: i32);
 
         /// Sets the width to the given `width`.
         #[rust_name = "set_width"]
-        fn setWidth(self: &mut QSize, width: i32);
+        fn setWidth(&mut self, width: i32);
 
         /// Returns the size that results from shrinking this size by `margins`.
         #[rust_name = "shrunk_by"]
-        fn shrunkBy(self: &QSize, margins: QMargins) -> QSize;
+        fn shrunkBy(&self, margins: QMargins) -> QSize;
 
         /// Returns this size as a size with floating point accuracy.
         ///
         /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_sizef"]
-        fn toSizeF(self: &QSize) -> QSizeF;
+        fn toSizeF(&self) -> QSizeF;
 
         /// Swaps the width and height values.
-        fn transpose(self: &mut QSize);
+        fn transpose(&mut self);
 
         /// Returns a `QSize` with width and height swapped.
-        fn transposed(self: &QSize) -> QSize;
+        fn transposed(&self) -> QSize;
 
         /// Returns the width.
-        fn width(self: &QSize) -> i32;
+        fn width(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]

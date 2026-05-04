@@ -31,59 +31,59 @@ mod ffi {
 
         /// Returns `true` if the x, y, and z coordinates are set to 0.0, otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QVector3D) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the length of the vector from the origin.
-        fn length(self: &QVector3D) -> f32;
+        fn length(&self) -> f32;
 
         /// Returns the squared length of the vector from the origin.
         /// This is equivalent to the dot product of the vector with itself.
         #[rust_name = "length_squared"]
-        fn lengthSquared(self: &QVector3D) -> f32;
+        fn lengthSquared(&self) -> f32;
 
         /// Normalizes the currect vector in place. Nothing happens if this vector is a null vector
         /// or the length of the vector is very close to 1.
-        fn normalize(self: &mut QVector3D);
+        fn normalize(&mut self);
 
         /// Returns the normalized unit vector form of this vector.
         ///
         /// If this vector is null, then a null vector is returned.
         /// If the length of the vector is very close to 1, then the vector will be returned as-is.
         /// Otherwise the normalized form of the vector of length 1 will be returned.
-        fn normalized(self: &QVector3D) -> QVector3D;
+        fn normalized(&self) -> QVector3D;
 
         /// Sets the x coordinate of this point to the given finite `x` coordinate.
         #[rust_name = "set_x"]
-        fn setX(self: &mut QVector3D, x: f32);
+        fn setX(&mut self, x: f32);
         /// Sets the y coordinate of this point to the given finite `y` coordinate.
         #[rust_name = "set_y"]
-        fn setY(self: &mut QVector3D, y: f32);
+        fn setY(&mut self, y: f32);
         /// Sets the z coordinate of this point to the given finite `z` coordinate.
         #[rust_name = "set_z"]
-        fn setZ(self: &mut QVector3D, z: f32);
+        fn setZ(&mut self, z: f32);
 
         // From trait is more idiomatic to Rust and implemented in QPoint and QPointF
         #[doc(hidden)]
         #[rust_name = "to_point"]
-        fn toPoint(self: &QVector3D) -> QPoint;
+        fn toPoint(&self) -> QPoint;
         #[doc(hidden)]
         #[rust_name = "to_pointf"]
-        fn toPointF(self: &QVector3D) -> QPointF;
+        fn toPointF(&self) -> QPointF;
 
         /// Returns the 2D vector form of this 3D vector, dropping the z coordinate.
         #[rust_name = "to_vector2d"]
-        fn toVector2D(self: &QVector3D) -> QVector2D;
+        fn toVector2D(&self) -> QVector2D;
 
         /// Returns the 4D form of this 3D vector, with the w coordinate set to zero.
         #[rust_name = "to_vector4d"]
-        fn toVector4D(self: &QVector3D) -> QVector4D;
+        fn toVector4D(&self) -> QVector4D;
 
         /// Returns the x coordinate of this point.
-        fn x(self: &QVector3D) -> f32;
+        fn x(&self) -> f32;
         /// Returns the y coordinate of this point.
-        fn y(self: &QVector3D) -> f32;
+        fn y(&self) -> f32;
         /// Returns the z coordinate of this point.
-        fn z(self: &QVector3D) -> f32;
+        fn z(&self) -> f32;
     }
 
     #[namespace = "rust::cxxqtlib1"]

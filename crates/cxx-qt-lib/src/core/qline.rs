@@ -25,64 +25,64 @@ mod ffi {
         type QLine = super::QLine;
 
         /// Returns the line's start point.
-        fn p1(self: &QLine) -> QPoint;
+        fn p1(&self) -> QPoint;
 
         /// Returns the line's end point.
-        fn p2(self: &QLine) -> QPoint;
+        fn p2(&self) -> QPoint;
 
         /// Returns the x-coordinate of the line's start point.
-        fn x1(self: &QLine) -> i32;
+        fn x1(&self) -> i32;
 
         /// Returns the x-coordinate of the line's end point.
-        fn x2(self: &QLine) -> i32;
+        fn x2(&self) -> i32;
 
         /// Returns the y-coordinate of the line's start point.
-        fn y1(self: &QLine) -> i32;
+        fn y1(&self) -> i32;
 
         /// Returns the y-coordinate of the line's end point.
-        fn y2(self: &QLine) -> i32;
+        fn y2(&self) -> i32;
 
         /// Returns the center point of this line. This is equivalent to `(self.p1() + self.p2()) / 2`, except it will never overflow.
-        fn center(self: &QLine) -> QPoint;
+        fn center(&self) -> QPoint;
 
         /// Returns the horizontal component of the line's vector.
-        fn dx(self: &QLine) -> i32;
+        fn dx(&self) -> i32;
 
         /// Returns the vertical component of the line's vector.
-        fn dy(self: &QLine) -> i32;
+        fn dy(&self) -> i32;
 
         /// Returns `true` if the line does not have distinct start and end points; otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QLine) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Sets the starting point of this line to `p1`.
         #[rust_name = "set_p1"]
-        fn setP1(self: &mut QLine, p1: &QPoint);
+        fn setP1(&mut self, p1: &QPoint);
 
         /// Sets the end point of this line to `p2`.
         #[rust_name = "set_p2"]
-        fn setP2(self: &mut QLine, p1: &QPoint);
+        fn setP2(&mut self, p1: &QPoint);
 
         /// Sets this line to the start in `x1`, `y1` and end in `x2`, `y2`.
         #[rust_name = "set_line"]
-        fn setLine(self: &mut QLine, x1: i32, y1: i32, x2: i32, y2: i32);
+        fn setLine(&mut self, x1: i32, y1: i32, x2: i32, y2: i32);
 
         /// Sets the start point of this line to `p1` and the end point of this line to `p2`.
         #[rust_name = "set_points"]
-        fn setPoints(self: &mut QLine, p1: &QPoint, p2: &QPoint);
+        fn setPoints(&mut self, p1: &QPoint, p2: &QPoint);
 
         /// Returns this line as a line with floating point accuracy.
         ///
         /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_linef"]
-        fn toLineF(self: &QLine) -> QLineF;
+        fn toLineF(&self) -> QLineF;
 
         /// Translates this line by the given `offset`.
-        fn translate(self: &mut QLine, offset: &QPoint);
+        fn translate(&mut self, offset: &QPoint);
 
         /// Returns this line translated by the given `offset`.
-        fn translated(self: &QLine, offset: &QPoint) -> QLine;
+        fn translated(&self, offset: &QPoint) -> QLine;
     }
 
     #[namespace = "rust::cxxqtlib1"]

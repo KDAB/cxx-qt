@@ -25,99 +25,99 @@ mod ffi {
         type QLineF = super::QLineF;
 
         /// Returns the angle of the line in degrees.
-        fn angle(self: &QLineF) -> f64;
+        fn angle(&self) -> f64;
 
         /// Returns the angle (in degrees) from this line to the given `line`, taking the direction of the lines into account.
         /// If the lines do not intersect within their range, it is the intersection point of the extended lines that serves as origin.
         ///
         /// The returned value represents the number of degrees you need to add to this line to make it have the same angle as the given `line`, going counter-clockwise.
         #[rust_name = "angle_to"]
-        fn angleTo(self: &QLineF, line: &QLineF) -> f64;
+        fn angleTo(&self, line: &QLineF) -> f64;
 
         /// Returns the line's start point.
-        fn p1(self: &QLineF) -> QPointF;
+        fn p1(&self) -> QPointF;
 
         /// Returns the line's end point.
-        fn p2(self: &QLineF) -> QPointF;
+        fn p2(&self) -> QPointF;
 
         /// Returns the x-coordinate of the line's start point.
-        fn x1(self: &QLineF) -> f64;
+        fn x1(&self) -> f64;
 
         /// Returns the x-coordinate of the line's end point.
-        fn x2(self: &QLineF) -> f64;
+        fn x2(&self) -> f64;
 
         /// Returns the y-coordinate of the line's start point.
-        fn y1(self: &QLineF) -> f64;
+        fn y1(&self) -> f64;
 
         /// Returns the y-coordinate of the line's end point.
-        fn y2(self: &QLineF) -> f64;
+        fn y2(&self) -> f64;
 
         /// Returns the center point of this line. This is equivalent to `(self.p1() + self.p2()) / 2`, except it will never overflow.
-        fn center(self: &QLineF) -> QPointF;
+        fn center(&self) -> QPointF;
 
         /// Returns the horizontal component of the line's vector.
-        fn dx(self: &QLineF) -> f64;
+        fn dx(&self) -> f64;
 
         /// Returns the vertical component of the line's vector.
-        fn dy(self: &QLineF) -> f64;
+        fn dy(&self) -> f64;
 
         /// Returns `true` if the line does not have distinct start and end points; otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QLineF) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the length of the line.
-        fn length(self: &QLineF) -> f64;
+        fn length(&self) -> f64;
 
         /// Returns a line that is perpendicular to this line with the same starting point and length.
         #[rust_name = "normal_vector"]
-        fn normalVector(self: &QLineF) -> QLineF;
+        fn normalVector(&self) -> QLineF;
 
         /// Returns the point at the parameterized position specified by `t`. The function returns the line's start point if `t` = 0, and its end point if `t` = 1.
         #[rust_name = "point_at"]
-        fn pointAt(self: &QLineF, t: f64) -> QPointF;
+        fn pointAt(&self, t: f64) -> QPointF;
 
         /// Sets the angle of the line to the given `angle` (in degrees). This will change the position of the second point of the line such that the line has the given angle.
         ///
         /// Positive values for the angles mean counter-clockwise while negative values mean the clockwise direction. Zero degrees is at the 3 o'clock position.
         #[rust_name = "set_angle"]
-        fn setAngle(self: &mut QLineF, angle: f64);
+        fn setAngle(&mut self, angle: f64);
 
         /// Sets the length of the line to the given length. `QLineF` will move the end point ([`p2`](QLineF::p2)) of the line to give the line its new length, unless [`length`](Self::length) was previously zero,
         /// in which case no scaling is attempted. For lines with very short lengths (represented by denormal floating-point values), results may be imprecise.
         #[rust_name = "set_length"]
-        fn setLength(self: &mut QLineF, length: f64);
+        fn setLength(&mut self, length: f64);
 
         /// Sets the starting point of this line to `p1`.
         #[rust_name = "set_p1"]
-        fn setP1(self: &mut QLineF, p1: &QPointF);
+        fn setP1(&mut self, p1: &QPointF);
 
         /// Sets the end point of this line to `p2`.
         #[rust_name = "set_p2"]
-        fn setP2(self: &mut QLineF, p1: &QPointF);
+        fn setP2(&mut self, p1: &QPointF);
 
         /// Sets this line to the start in `x1`, `y1` and end in `x2`, `y2`.
         #[rust_name = "set_line"]
-        fn setLine(self: &mut QLineF, x1: f64, y1: f64, x2: f64, y2: f64);
+        fn setLine(&mut self, x1: f64, y1: f64, x2: f64, y2: f64);
 
         /// Sets the start point of this line to `p1` and the end point of this line to `p2`.
         #[rust_name = "set_points"]
-        fn setPoints(self: &mut QLineF, p1: &QPointF, p2: &QPointF);
+        fn setPoints(&mut self, p1: &QPointF, p2: &QPointF);
 
         /// Returns an integer based copy of this line.
         ///
         /// Note that the returned line's start and end points are rounded to the nearest integer.
         #[rust_name = "to_line"]
-        fn toLine(self: &QLineF) -> QLine;
+        fn toLine(&self) -> QLine;
 
         /// Translates this line by the given `offset`.
-        fn translate(self: &mut QLineF, offset: &QPointF);
+        fn translate(&mut self, offset: &QPointF);
 
         /// Returns this line translated by the given `offset`.
-        fn translated(self: &QLineF, offset: &QPointF) -> QLineF;
+        fn translated(&self, offset: &QPointF) -> QLineF;
 
         /// Returns the unit vector for this line, i.e a line starting at the same point as this line with a length of 1.0, provided the line is non-null.
         #[rust_name = "unit_vector"]
-        fn unitVector(self: &QLineF) -> QLineF;
+        fn unitVector(&self) -> QLineF;
     }
 
     #[namespace = "rust::cxxqtlib1"]

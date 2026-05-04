@@ -43,45 +43,45 @@ mod ffi {
 
         /// Returns the bounding rectangle of this region. An empty region gives a rectangle that is [`QRect::is_null`].
         #[rust_name = "bounding_rect"]
-        fn boundingRect(self: &QRegion) -> QRect;
+        fn boundingRect(&self) -> QRect;
 
         /// Returns `true` if the region overlaps the rectangle `r`; otherwise returns `false`.
-        fn contains(self: &QRegion, r: &QRect) -> bool;
+        fn contains(&self, r: &QRect) -> bool;
 
         /// Returns a region which is the intersection of this region and `r`.
-        fn intersected(self: &QRegion, r: &QRegion) -> QRegion;
+        fn intersected(&self, r: &QRegion) -> QRegion;
 
         /// Returns `true` if the region is empty; otherwise returns `false`. An empty region is a region that contains no points.
         #[rust_name = "is_empty"]
-        fn isEmpty(self: &QRegion) -> bool;
+        fn isEmpty(&self) -> bool;
 
         /// Returns `true` if the region is empty; otherwise returns `false`. An empty region is a region that contains no points.
         /// This function is the same as [`is_empty`](Self::is_empty).
         #[rust_name = "is_null"]
-        fn isNull(self: &QRegion) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the number of rectangles that this region is composed of.
         #[rust_name = "rect_count"]
-        fn rectCount(self: &QRegion) -> i32;
+        fn rectCount(&self) -> i32;
 
         /// Returns a region which is `r` subtracted from this region.
-        fn subtracted(self: &QRegion, r: &QRegion) -> QRegion;
+        fn subtracted(&self, r: &QRegion) -> QRegion;
 
         /// Translates the region `point.x()` along the x axis and `point.y()` along the y axis, relative to the current position.
         /// Positive values move the region to the right and down.
         ///
         /// Translates to the given `point`.
-        fn translate(self: &mut QRegion, point: &QPoint);
+        fn translate(&mut self, point: &QPoint);
 
         /// Returns a copy of the region that is translated `p.x()` along the x axis and `p.y()` along the y axis,
         /// relative to the current position. Positive values move the rectangle to the right and down.
-        fn translated(self: &QRegion, p: &QPoint) -> QRegion;
+        fn translated(&self, p: &QPoint) -> QRegion;
 
         /// Returns a region which is the union of this region and `r`.
-        fn united(self: &QRegion, r: &QRegion) -> QRegion;
+        fn united(&self, r: &QRegion) -> QRegion;
 
         /// Returns a region which is the exclusive or (XOR) of this region and `r`.
-        fn xored(self: &QRegion, r: &QRegion) -> QRegion;
+        fn xored(&self, r: &QRegion) -> QRegion;
     }
 
     #[namespace = "rust::cxxqtlib1"]

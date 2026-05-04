@@ -32,14 +32,14 @@ mod ffi {
 
         /// Returns the pen's cap style.
         #[rust_name = "cap_style"]
-        fn capStyle(self: &QPen) -> PenCapStyle;
+        fn capStyle(&self) -> PenCapStyle;
 
         /// Returns the color of this pen's brush.
-        fn color(self: &QPen) -> QColor;
+        fn color(&self) -> QColor;
 
         /// Returns the dash offset for the pen.
         #[rust_name = "dash_offset"]
-        fn dashOffset(self: &QPen) -> f64;
+        fn dashOffset(&self) -> f64;
 
         /// Returns `true` if the pen is cosmetic; otherwise returns `false`.
         ///
@@ -47,46 +47,46 @@ mod ffi {
         ///
         /// A zero width pen is cosmetic by default.
         #[rust_name = "is_comestic"]
-        fn isCosmetic(self: &QPen) -> bool;
+        fn isCosmetic(&self) -> bool;
 
         /// Returns `true` if the pen has a solid fill, otherwise `false`.
         #[rust_name = "is_solid"]
-        fn isSolid(self: &QPen) -> bool;
+        fn isSolid(&self) -> bool;
 
         /// Returns the pen's join style.
         #[rust_name = "join_style"]
-        fn joinStyle(self: &QPen) -> PenJoinStyle;
+        fn joinStyle(&self) -> PenJoinStyle;
 
         /// Returns the miter limit of the pen. The miter limit is only
         /// relevant when the join style is set to [`PenJoinStyle::MiterJoin`].
         #[rust_name = "miter_limit"]
-        fn miterLimit(self: &QPen) -> f64;
+        fn miterLimit(&self) -> f64;
 
         /// Sets the pen's cap style to the given `style`. The default value is [`PenCapStyle::SquareCap`].
         #[rust_name = "set_cap_style"]
-        fn setCapStyle(self: &mut QPen, style: PenCapStyle);
+        fn setCapStyle(&mut self, style: PenCapStyle);
 
         /// Sets the color of this pen's brush to the given `color`.
         #[rust_name = "set_color"]
-        fn setColor(self: &mut QPen, color: &QColor);
+        fn setColor(&mut self, color: &QColor);
 
         /// Sets this pen to cosmetic or non-cosmetic, depending on the value of `cosmetic`.
         #[rust_name = "set_cosmetic"]
-        fn setCosmetic(self: &mut QPen, cosmetic: bool);
+        fn setCosmetic(&mut self, cosmetic: bool);
 
         /// Sets the dash offset (the starting point on the dash pattern) for this pen to
         /// the `offset` specified. The offset is measured in terms of the units used to
         /// specify the dash pattern.
         #[rust_name = "set_dash_offset"]
-        fn setDashOffset(self: &mut QPen, offset: f64);
+        fn setDashOffset(&mut self, offset: f64);
 
         /// Sets the pen's join style to the given style. The default value is [`PenJoinStyle::BevelJoin`].
         #[rust_name = "set_join_style"]
-        fn setJoinStyle(self: &mut QPen, style: PenJoinStyle);
+        fn setJoinStyle(&mut self, style: PenJoinStyle);
 
         /// Sets the pen style to the given `style`.
         #[rust_name = "set_style"]
-        fn setStyle(self: &mut QPen, style: PenStyle);
+        fn setStyle(&mut self, style: PenStyle);
 
         /// Sets the miter limit of this pen to the given `limit`.
         ///
@@ -94,7 +94,7 @@ mod ffi {
         ///
         /// This value does only have effect when the pen style is set to [`PenJoinStyle::MiterJoin`]. The value is specified in units of the pen's width, e.g. a miter limit of 5 in width 10 is 50 pixels long. The default miter limit is 2, i.e. twice the pen width in pixels.
         #[rust_name = "set_miter_limit"]
-        fn setMiterLimit(self: &mut QPen, limit: f64);
+        fn setMiterLimit(&mut self, limit: f64);
 
         /// Sets the pen width to the given `width` in pixels with integer precision.
         ///
@@ -102,13 +102,13 @@ mod ffi {
         ///
         /// Setting a pen width with a negative value is not supported.
         #[rust_name = "set_width"]
-        fn setWidth(self: &mut QPen, width: i32);
+        fn setWidth(&mut self, width: i32);
 
         /// Returns the pen style.
-        fn style(self: &QPen) -> PenStyle;
+        fn style(&self) -> PenStyle;
 
         /// Returns the pen width with integer precision.
-        fn width(self: &QPen) -> i32;
+        fn width(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]

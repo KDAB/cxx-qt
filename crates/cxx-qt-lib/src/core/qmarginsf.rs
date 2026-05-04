@@ -23,42 +23,42 @@ mod ffi {
         type QMarginsF = super::QMarginsF;
 
         /// Returns the bottom margin.
-        fn bottom(self: &QMarginsF) -> f64;
+        fn bottom(&self) -> f64;
 
         /// Returns `true` if all margins are very close to 0; otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QMarginsF) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the left margin.
-        fn left(self: &QMarginsF) -> f64;
+        fn left(&self) -> f64;
 
         /// Returns the right margin.
-        fn right(self: &QMarginsF) -> f64;
+        fn right(&self) -> f64;
 
         /// Sets the bottom margin to `abottom` (which must be finite).
         #[rust_name = "set_bottom"]
-        fn setBottom(self: &mut QMarginsF, abottom: f64);
+        fn setBottom(&mut self, abottom: f64);
 
         /// Sets the left margin to `aleft` (which must be finite).
         #[rust_name = "set_left"]
-        fn setLeft(self: &mut QMarginsF, aleft: f64);
+        fn setLeft(&mut self, aleft: f64);
 
         /// Sets the right margin to `aright` (which must be finite).
         #[rust_name = "set_right"]
-        fn setRight(self: &mut QMarginsF, aright: f64);
+        fn setRight(&mut self, aright: f64);
 
         /// Sets the top margin to `atop` (which must be finite).
         #[rust_name = "set_top"]
-        fn setTop(self: &mut QMarginsF, atop: f64);
+        fn setTop(&mut self, atop: f64);
 
         /// Returns an integer-based copy of this margins object.
         ///
         /// Note that the components in the returned margins will be rounded to the nearest integer.
         #[rust_name = "to_margins"]
-        fn toMargins(self: &QMarginsF) -> QMargins;
+        fn toMargins(&self) -> QMargins;
 
         /// Returns the top margin.
-        fn top(self: &QMarginsF) -> f64;
+        fn top(&self) -> f64;
     }
 
     #[namespace = "rust::cxxqtlib1"]

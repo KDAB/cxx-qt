@@ -30,227 +30,227 @@ mod ffi {
         type QRect = super::QRect;
 
         /// Adds `dx1`, `dy1`, `dx2` and `dy2` respectively to the existing coordinates of the rectangle.
-        fn adjust(self: &mut QRect, dx1: i32, dy1: i32, dx2: i32, dy2: i32);
+        fn adjust(&mut self, dx1: i32, dy1: i32, dx2: i32, dy2: i32);
 
         /// Returns a new rectangle with `dx1`, `dy1`, `dx2` and `dy2` added respectively to the existing coordinates of this rectangle.
-        fn adjusted(self: &QRect, dx1: i32, dy1: i32, dx2: i32, dy2: i32) -> QRect;
+        fn adjusted(&self, dx1: i32, dy1: i32, dx2: i32, dy2: i32) -> QRect;
 
         /// Returns the y-coordinate of the rectangle's bottom edge.
         ///
         /// Note that for historical reasons this function returns `self.top() + self.height() - 1`; use `self.y() + self.height()` to retrieve the true y-coordinate.
-        fn bottom(self: &QRect) -> i32;
+        fn bottom(&self) -> i32;
 
         /// Returns the position of the rectangle's bottom-left corner.
         ///
         /// Note that for historical reasons this function returns `QPoint::new(self.left(), self.top() + self.height() - 1)`.
         #[rust_name = "bottom_left"]
-        fn bottomLeft(self: &QRect) -> QPoint;
+        fn bottomLeft(&self) -> QPoint;
 
         /// Returns the position of the rectangle's bottom-right corner.
         ///
         /// Note that for historical reasons this function returns `QPoint::new(self.left() + width() - 1, self.top() + self.height() - 1)`.
         #[rust_name = "bottom_right"]
-        fn bottomRight(self: &QRect) -> QPoint;
+        fn bottomRight(&self) -> QPoint;
 
         /// Returns the center point of the rectangle.
-        fn center(self: &QRect) -> QPoint;
+        fn center(&self) -> QPoint;
 
         /// Returns `true` if the given point is inside or on the edge of the rectangle, otherwise returns `false`.
         /// If `proper` is `true`, this function only returns `true` if the given point is inside the rectangle (i.e., not on the edge).
-        fn contains(self: &QRect, point: &QPoint, proper: bool) -> bool;
+        fn contains(&self, point: &QPoint, proper: bool) -> bool;
 
         /// Returns the `height` of the rectangle.
-        fn height(self: &QRect) -> i32;
+        fn height(&self) -> i32;
 
         /// Returns the intersection of this rectangle and the given rectangle. Note that `r.intersected(s)` is equivalent to `r & s`.
-        fn intersected(self: &QRect, rectangle: &QRect) -> QRect;
+        fn intersected(&self, rectangle: &QRect) -> QRect;
 
         /// Returns `true` if this rectangle intersects with the given rectangle (i.e., there is at least one pixel that is within both rectangles), otherwise returns `false`.
-        fn intersects(self: &QRect, rectangle: &QRect) -> bool;
+        fn intersects(&self, rectangle: &QRect) -> bool;
 
         /// Returns `true` if the rectangle is empty, otherwise returns `false`.
         ///
         /// An empty rectangle has `self.left() > self.right()` or `self.top() > self.bottom()`. An empty rectangle is not valid (i.e., `self.is_empty() == !self.is_valid()`).
         #[rust_name = "is_empty"]
-        fn isEmpty(self: &QRect) -> bool;
+        fn isEmpty(&self) -> bool;
 
         /// Returns `true` if the rectangle is a null rectangle, otherwise returns `false`.
         ///
         /// A null rectangle has both the width and the height set to 0 (i.e., `self.right() == self.left() - 1` and `self.bottom() == self.top() - 1)`. A null rectangle is also empty, and hence is not valid.
         #[rust_name = "is_null"]
-        fn isNull(self: &QRect) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns `true` if the rectangle is valid, otherwise returns `false`.
         ///
         /// A valid rectangle has `self.left() <= self.right()` and `self.top() <= self.bottom()`. Note that non-trivial operations like intersections are not defined for invalid rectangles. A valid rectangle is not empty (i.e., `self.is_valid() == !self.is_empty()`).
         #[rust_name = "is_valid"]
-        fn isValid(self: &QRect) -> bool;
+        fn isValid(&self) -> bool;
 
         /// Returns the x-coordinate of the rectangle's left edge. Equivalent to `self.x()`.
-        fn left(self: &QRect) -> i32;
+        fn left(&self) -> i32;
 
         /// Returns a rectangle grown by the `margins`.
         #[rust_name = "margins_added"]
-        fn marginsAdded(self: &QRect, margins: &QMargins) -> QRect;
+        fn marginsAdded(&self, margins: &QMargins) -> QRect;
 
         /// Removes the `margins` from the rectangle, shrinking it.
         #[rust_name = "margins_removed"]
-        fn marginsRemoved(self: &QRect, margins: &QMargins) -> QRect;
+        fn marginsRemoved(&self, margins: &QMargins) -> QRect;
 
         /// Moves the rectangle vertically, leaving the rectangle's bottom edge at the given `y` coordinate. The rectangle's size is unchanged.
         #[rust_name = "move_bottom"]
-        fn moveBottom(self: &mut QRect, y: i32);
+        fn moveBottom(&mut self, y: i32);
 
         /// Moves the rectangle, leaving the bottom-left corner at the given `position`. The rectangle's size is unchanged.
         #[rust_name = "move_bottom_left"]
-        fn moveBottomLeft(self: &mut QRect, position: &QPoint);
+        fn moveBottomLeft(&mut self, position: &QPoint);
 
         /// Moves the rectangle, leaving the bottom-right corner at the given `position`. The rectangle's size is unchanged.
         #[rust_name = "move_bottom_right"]
-        fn moveBottomRight(self: &mut QRect, position: &QPoint);
+        fn moveBottomRight(&mut self, position: &QPoint);
 
         /// Moves the rectangle, leaving the center point at the given `position`. The rectangle's size is unchanged.
         #[rust_name = "move_center"]
-        fn moveCenter(self: &mut QRect, position: &QPoint);
+        fn moveCenter(&mut self, position: &QPoint);
 
         /// Moves the rectangle horizontally, leaving the rectangle's left edge at the given `x` coordinate. The rectangle's size is unchanged.
         #[rust_name = "move_left"]
-        fn moveLeft(self: &mut QRect, x: i32);
+        fn moveLeft(&mut self, x: i32);
 
         /// Moves the rectangle horizontally, leaving the rectangle's right edge at the given `x` coordinate. The rectangle's size is unchanged.
         #[rust_name = "move_right"]
-        fn moveRight(self: &mut QRect, x: i32);
+        fn moveRight(&mut self, x: i32);
 
         /// Moves the rectangle, leaving the top-left corner at the given `position`.
         #[rust_name = "move_to"]
-        fn moveTo(self: &mut QRect, position: &QPoint);
+        fn moveTo(&mut self, position: &QPoint);
 
         /// Moves the rectangle vertically, leaving the rectangle's top edge at the given `y` coordinate. The rectangle's size is unchanged.
         #[rust_name = "move_top"]
-        fn moveTop(self: &mut QRect, y: i32);
+        fn moveTop(&mut self, y: i32);
 
         /// Moves the rectangle, leaving the top-left corner at the given `position`. The rectangle's size is unchanged.
         #[rust_name = "move_top_left"]
-        fn moveTopLeft(self: &mut QRect, position: &QPoint);
+        fn moveTopLeft(&mut self, position: &QPoint);
 
         /// Moves the rectangle, leaving the top-right corner at the given `position`. The rectangle's size is unchanged.
         #[rust_name = "move_top_right"]
-        fn moveTopRight(self: &mut QRect, position: &QPoint);
+        fn moveTopRight(&mut self, position: &QPoint);
 
         /// Returns a normalized rectangle; i.e., a rectangle that has a non-negative width and height.
-        fn normalized(self: &QRect) -> QRect;
+        fn normalized(&self) -> QRect;
 
         /// Returns the x-coordinate of the rectangle's right edge.
         ///
         /// Note that for historical reasons this function returns `self.left() + width() - 1`; use `self.x() + width()` to retrieve the true x-coordinate.
-        fn right(self: &QRect) -> i32;
+        fn right(&self) -> i32;
 
         /// Sets the bottom edge of the rectangle to the given `y` coordinate.
         /// May change the height, but will never change the top edge of the rectangle.
         #[rust_name = "set_bottom"]
-        fn setBottom(self: &mut QRect, y: i32);
+        fn setBottom(&mut self, y: i32);
 
         /// Set the bottom-left corner of the rectangle to the given `position`.
         /// May change the size, but will never change the top-right corner of the rectangle.
         #[rust_name = "set_bottom_left"]
-        fn setBottomLeft(self: &mut QRect, position: &QPoint);
+        fn setBottomLeft(&mut self, position: &QPoint);
 
         /// Set the bottom-right corner of the rectangle to the given `position`.
         /// May change the size, but will never change the top-left corner of the rectangle.
         #[rust_name = "set_bottom_right"]
-        fn setBottomRight(self: &mut QRect, position: &QPoint);
+        fn setBottomRight(&mut self, position: &QPoint);
 
         /// Sets the coordinates of the rectangle's top-left corner to (`x1`, `y1`), and the coordinates of its bottom-right corner to (`x2`, `y2`).
         #[rust_name = "set_coords"]
-        fn setCoords(self: &mut QRect, x1: i32, y1: i32, x2: i32, y2: i32);
+        fn setCoords(&mut self, x1: i32, y1: i32, x2: i32, y2: i32);
 
         /// Sets the height of the rectangle to the given `height`. The bottom edge is changed, but not the top one.
         #[rust_name = "set_height"]
-        fn setHeight(self: &mut QRect, h: i32);
+        fn setHeight(&mut self, h: i32);
 
         /// Sets the left edge of the rectangle to the given `x` coordinate. May change the width, but will never change the right edge of the rectangle.
         #[rust_name = "set_left"]
-        fn setLeft(self: &mut QRect, x: i32);
+        fn setLeft(&mut self, x: i32);
 
         /// Sets the coordinates of the rectangle's top-left corner to (`x`, `y`), and its size to the given `width` and `height`.
         #[rust_name = "set_rect"]
-        fn setRect(self: &mut QRect, x: i32, y: i32, width: i32, height: i32);
+        fn setRect(&mut self, x: i32, y: i32, width: i32, height: i32);
 
         /// Sets the right edge of the rectangle to the given `x` coordinate. May change the width, but will never change the left edge of the rectangle.
         #[rust_name = "set_right"]
-        fn setRight(self: &mut QRect, x: i32);
+        fn setRight(&mut self, x: i32);
 
         /// Sets the size of the rectangle to the given `size`. The top-left corner is not moved.
         #[rust_name = "set_size"]
-        fn setSize(self: &mut QRect, size: &QSize);
+        fn setSize(&mut self, size: &QSize);
 
         /// Sets the top edge of the rectangle to the given `y` coordinate. May change the height, but will never change the bottom edge of the rectangle.
         #[rust_name = "set_top"]
-        fn setTop(self: &mut QRect, y: i32);
+        fn setTop(&mut self, y: i32);
 
         /// Set the top-left corner of the rectangle to the given `position`. May change the size, but will never change the bottom-right corner of the rectangle.
         #[rust_name = "set_top_left"]
-        fn setTopLeft(self: &mut QRect, position: &QPoint);
+        fn setTopLeft(&mut self, position: &QPoint);
 
         /// Set the top-right corner of the rectangle to the given `position`. May change the size, but will never change the bottom-left corner of the rectangle.
         #[rust_name = "set_top_right"]
-        fn setTopRight(self: &mut QRect, position: &QPoint);
+        fn setTopRight(&mut self, position: &QPoint);
 
         /// Sets the width of the rectangle to the given `width`. The right edge is changed, but not the left one.
         #[rust_name = "set_width"]
-        fn setWidth(self: &mut QRect, w: i32);
+        fn setWidth(&mut self, w: i32);
 
         /// Sets the left edge of the rectangle to the given `x` coordinate. May change the width, but will never change the right edge of the rectangle.
         #[rust_name = "set_x"]
-        fn setX(self: &mut QRect, x: i32);
+        fn setX(&mut self, x: i32);
 
         /// Sets the top edge of the rectangle to the given `y` coordinate. May change the height, but will never change the bottom edge of the rectangle.
         #[rust_name = "set_y"]
-        fn setY(self: &mut QRect, y: i32);
+        fn setY(&mut self, y: i32);
 
         /// Returns the size of the rectangle.
-        fn size(self: &QRect) -> QSize;
+        fn size(&self) -> QSize;
 
         /// Returns this rectangle as a rectangle with floating point accuracy.
         ///
         /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_rectf"]
-        fn toRectF(self: &QRect) -> QRectF;
+        fn toRectF(&self) -> QRectF;
 
         /// Returns the y-coordinate of the rectangle's top edge. Equivalent to `self.y()`.
-        fn top(self: &QRect) -> i32;
+        fn top(&self) -> i32;
 
         /// Returns the position of the rectangle's top-left corner.
         #[rust_name = "top_left"]
-        fn topLeft(self: &QRect) -> QPoint;
+        fn topLeft(&self) -> QPoint;
 
         /// Returns the position of the rectangle's top-right corner.
         ///
         /// Note that for historical reasons this function returns `QPoint::new(self.left() + width() -1, self.top())`.
         #[rust_name = "top_right"]
-        fn topRight(self: &QRect) -> QPoint;
+        fn topRight(&self) -> QPoint;
 
         /// Moves the rectangle `offset.x()` along the x axis and `offset.y()` along the y axis, relative to the current position.
-        fn translate(self: &mut QRect, offset: &QPoint);
+        fn translate(&mut self, offset: &QPoint);
 
         /// Returns a copy of the rectangle that is translated `offset.x()` along the x axis and `offset.y()` along the y axis, relative to the current position.
-        fn translated(self: &QRect, offset: &QPoint) -> QRect;
+        fn translated(&self, offset: &QPoint) -> QRect;
 
         /// Returns a copy of the rectangle that has its width and height exchanged.
-        fn transposed(self: &QRect) -> QRect;
+        fn transposed(&self) -> QRect;
 
         /// Returns the bounding rectangle of this rectangle and the given `rectangle`.
-        fn united(self: &QRect, rectangle: &QRect) -> QRect;
+        fn united(&self, rectangle: &QRect) -> QRect;
 
         /// Returns the width of the rectangle.
-        fn width(self: &QRect) -> i32;
+        fn width(&self) -> i32;
 
         /// Returns the x-coordinate of the rectangle's left edge.
-        fn x(self: &QRect) -> i32;
+        fn x(&self) -> i32;
 
         /// Returns the y-coordinate of the rectangle's top edge.
-        fn y(self: &QRect) -> i32;
+        fn y(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]

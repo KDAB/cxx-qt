@@ -21,31 +21,31 @@ mod ffi {
         type QModelIndex = super::QModelIndex;
 
         /// Returns the column this model index refers to.
-        fn column(self: &QModelIndex) -> i32;
+        fn column(&self) -> i32;
         /// Returns `true` if this model index is valid; otherwise returns `false`.
         ///
         /// A valid index belongs to a model, and has non-negative row and column numbers.
         #[rust_name = "is_valid"]
-        fn isValid(self: &QModelIndex) -> bool;
+        fn isValid(&self) -> bool;
         /// Returns the parent of the model index, or an invalid `QModelIndex` if it has no parent.
-        fn parent(self: &QModelIndex) -> QModelIndex;
+        fn parent(&self) -> QModelIndex;
         /// Returns the row this model index refers to.
-        fn row(self: &QModelIndex) -> i32;
+        fn row(&self) -> i32;
         /// Returns the sibling at `row` and `column`. If there is no sibling at this position, an invalid `QModelIndex` is returned.
-        fn sibling(self: &QModelIndex, row: i32, column: i32) -> QModelIndex;
+        fn sibling(&self, row: i32, column: i32) -> QModelIndex;
         /// Returns the sibling at `column` for the current row. If there is no sibling at this position, an invalid `QModelIndex` is returned.
         #[rust_name = "sibling_at_column"]
-        fn siblingAtColumn(self: &QModelIndex, column: i32) -> QModelIndex;
+        fn siblingAtColumn(&self, column: i32) -> QModelIndex;
         /// Returns the sibling at `row` for the current column. If there is no sibling at this position, an invalid `QModelIndex` is returned.
         #[rust_name = "sibling_at_row"]
-        fn siblingAtRow(self: &QModelIndex, row: i32) -> QModelIndex;
+        fn siblingAtRow(&self, row: i32) -> QModelIndex;
 
         #[doc(hidden)]
         #[rust_name = "internal_id_quintptr"]
-        fn internalId(self: &QModelIndex) -> quintptr;
+        fn internalId(&self) -> quintptr;
         /// Returns a `*mut c_void` pointer used by the model to associate the index with the internal data structure.
         #[rust_name = "internal_pointer_mut"]
-        fn internalPointer(self: &QModelIndex) -> *mut c_void;
+        fn internalPointer(&self) -> *mut c_void;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -106,7 +106,7 @@ impl fmt::Debug for QModelIndex {
 
 impl QModelIndex {
     /// Returns a `usize` used by the model to associate the index with the internal data structure.
-    pub fn internal_id(self: &QModelIndex) -> usize {
+    pub fn internal_id(&self) -> usize {
         self.internal_id_quintptr().into()
     }
 }

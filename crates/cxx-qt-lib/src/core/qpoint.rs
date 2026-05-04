@@ -23,36 +23,36 @@ mod ffi {
 
         /// Returns `true` if both the x and y coordinates are set to 0, otherwise returns `false`.
         #[rust_name = "is_null"]
-        fn isNull(self: &QPoint) -> bool;
+        fn isNull(&self) -> bool;
 
         /// Returns the sum of the absolute values of [`x`](Self::x) and [`y`](Self::y),
         /// traditionally known as the "Manhattan length" of the vector from the origin to the point.
         #[rust_name = "manhattan_length"]
-        fn manhattanLength(self: &QPoint) -> i32;
+        fn manhattanLength(&self) -> i32;
 
         /// Sets the x coordinate of this point to the given `x` coordinate.
         #[rust_name = "set_x"]
-        fn setX(self: &mut QPoint, x: i32);
+        fn setX(&mut self, x: i32);
 
         /// Sets the y coordinate of this point to the given `y` coordinate.
         #[rust_name = "set_y"]
-        fn setY(self: &mut QPoint, y: i32);
+        fn setY(&mut self, y: i32);
 
         /// Returns this point as a point with floating point accuracy.
         ///
         /// This function was introduced in Qt 6.4.
         #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_4))]
         #[rust_name = "to_pointf"]
-        fn toPointF(self: &QPoint) -> QPointF;
+        fn toPointF(&self) -> QPointF;
 
         /// Returns a point with x and y coordinates exchanged.
-        fn transposed(self: &QPoint) -> QPoint;
+        fn transposed(&self) -> QPoint;
 
         /// Returns the x coordinate of this point.
-        fn x(self: &QPoint) -> i32;
+        fn x(&self) -> i32;
 
         /// Returns the y coordinate of this point.
-        fn y(self: &QPoint) -> i32;
+        fn y(&self) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
