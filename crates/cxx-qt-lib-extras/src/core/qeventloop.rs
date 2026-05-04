@@ -149,7 +149,7 @@ impl QEventLoop {
     /// Enters an event loop, runs a `closure`, and exits the event loop when the closure completes.
     ///
     /// As with `QEventLoop`'s other methods, a [`QApplication`](crate::QApplication), [`QGuiApplication`](cxx_qt_lib::QGuiApplication), or [`QCoreApplication`](cxx_qt_lib::QCoreApplication) must be running.
-    pub fn exec_with<F>(self: Pin<&mut QEventLoop>, closure: F)
+    pub fn exec_with<F>(self: Pin<&mut Self>, closure: F)
     where
         F: FnOnce(),
     {
@@ -162,7 +162,7 @@ impl QEventLoop {
     /// Processes some pending events. Returns `true` if pending events were handled; otherwise returns `false`.
     ///
     /// This function is simply a wrapper for [QAbstractEventDispatcher::processEvents](https://doc.qt.io/qt/qabstracteventdispatcher.html#processEvents)(). See the documentation for that function for details.
-    pub fn process_all_events(self: Pin<&mut QEventLoop>) -> bool {
+    pub fn process_all_events(self: Pin<&mut Self>) -> bool {
         self.process_events(QEventLoopProcessEventsFlag::AllEvents.into())
     }
 
@@ -173,7 +173,7 @@ impl QEventLoop {
     /// * This function does not process events continuously; it returns after all available events are processed.
     /// * Specifying the [`QEventLoopProcessEventsFlag::WaitForMoreEvents`] flag makes no sense and will be ignored.
     pub fn process_events_until(
-        self: Pin<&mut QEventLoop>,
+        self: Pin<&mut Self>,
         flags: QEventLoopProcessEventsFlags,
         deadline: Duration,
     ) {
@@ -186,7 +186,7 @@ impl QEventLoop {
     /// Process pending events until `deadline` has expired, or until there are no more events to process, whichever happens first.
     ///
     /// **Note:** This function does not process events continuously; it returns after all available events are processed.
-    pub fn process_all_events_until<T>(self: Pin<&mut QEventLoop>, deadline: Duration) {
+    pub fn process_all_events_until<T>(self: Pin<&mut Self>, deadline: Duration) {
         self.process_events_until(QEventLoopProcessEventsFlag::AllEvents.into(), deadline);
     }
 }

@@ -16,17 +16,17 @@ mod ffi {
 
         /// Returns `false` if the timer has never been started or invalidated by a call to [`invalidate`](Self::invalidate).
         #[rust_name = "is_valid"]
-        fn isValid(self: &QElapsedTimer) -> bool;
+        fn isValid(&self) -> bool;
 
         /// Marks this `QElapsedTimer` object as invalid.
         ///
         /// An invalid object can be checked with [`is_valid`](Self::is_valid). Calculations of timer elapsed since invalid data are undefined and will likely produce bizarre results.
-        fn invalidate(self: &mut QElapsedTimer);
+        fn invalidate(&mut self);
 
         /// Starts this timer. Once started, a timer value can be checked with [elapsed](https://doc.qt.io/qt/qelapsedtimer.html#elapsed)() or [msecsSinceReference](https://doc.qt.io/qt/qelapsedtimer.html#msecsSinceReference)().
         ///
         /// Also, starting a timer makes it valid again.
-        fn start(self: &mut QElapsedTimer);
+        fn start(&mut self);
     }
 
     #[namespace = "rust::cxxqtlib1"]
