@@ -36,16 +36,20 @@ mod ffi {
         ParseAsLongOptions,
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib-extras/core/qcommandlineparser.h");
-        type QCommandLineParser = super::QCommandLineParser;
-        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
-        type QCommandLineOption = crate::QCommandLineOption;
-
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = cxx_qt_lib::QStringList;
+
+        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
+        type QCommandLineOption = crate::QCommandLineOption;
+
+        include!("cxx-qt-lib-extras/core/qcommandlineparser.h");
+    }
+
+    unsafe extern "C++" {
+        type QCommandLineParser = super::QCommandLineParser;
 
         /// Adds help options to the command-line parser.
         ///

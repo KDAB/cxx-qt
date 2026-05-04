@@ -35,10 +35,6 @@ mod ffi {
         type QEventLoopProcessEventsFlags = super::QEventLoopProcessEventsFlags;
     }
 
-    extern "Rust" {
-        type EventLoopClosure<'a>;
-    }
-
     unsafe extern "C++Qt" {
         /// The `QEventLoop` class provides a means of entering and leaving an event loop.
         ///
@@ -90,6 +86,10 @@ mod ffi {
         /// Wakes up the event loop.
         #[rust_name = "wake_up"]
         fn wakeUp(self: Pin<&mut QEventLoop>);
+    }
+
+    extern "Rust" {
+        type EventLoopClosure<'a>;
     }
 
     #[namespace = "rust::cxxqtlib1"]

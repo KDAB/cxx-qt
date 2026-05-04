@@ -8,7 +8,7 @@ use cxx_qt_lib::{QByteArray, QFont, QString, QStringList, QVector};
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
+    extern "C++" {
         include!("cxx-qt-lib/qbytearray.h");
         type QByteArray = cxx_qt_lib::QByteArray;
         include!("cxx-qt-lib/qstring.h");

@@ -9,13 +9,17 @@ use std::mem::MaybeUninit;
 
 #[cxx::bridge]
 mod ffi {
-    unsafe extern "C++" {
-        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
-        type QCommandLineOption = super::QCommandLineOption;
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = cxx_qt_lib::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = cxx_qt_lib::QStringList;
+
+        include!("cxx-qt-lib-extras/core/qcommandlineoption.h");
+    }
+
+    unsafe extern "C++" {
+        type QCommandLineOption = super::QCommandLineOption;
 
         /// Returns the default values set for this option.
         #[rust_name = "default_values"]
