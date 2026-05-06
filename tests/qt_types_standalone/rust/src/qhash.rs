@@ -40,7 +40,7 @@ fn read_qhash_qstring_qvariant(h: &QHash<QHashPair_QString_QVariant>) -> bool {
         None => false,
     };
     let value_qt = match h.get_or_default(&QString::from("Qt")).value::<QString>() {
-        Some(value) => String::from(&value) == "Rust",
+        Some(value) => value == "Rust",
         _ => false,
     };
 
