@@ -8,6 +8,8 @@ use std::ffi::CStr;
 use std::marker::PhantomData;
 use std::mem::size_of;
 
+use crate::util::new_in_place;
+
 #[cxx::bridge]
 mod ffi {
     /// The level the message is sent to the message handler at.
@@ -82,12 +84,13 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "construct_qmessagelogcontext"]
-        unsafe fn construct<'a>(
+        unsafe fn constructInPlace<'a>(
+            uninit: *mut QMessageLogContext<'a>,
             file_name: *const c_char,
             line_number: i32,
             function_name: *const c_char,
             category_name: *const c_char,
-        ) -> QMessageLogContext<'a>;
+        );
     }
 }
 
@@ -117,12 +120,15 @@ impl<'a> QMessageLogContext<'a> {
         category: &'a CStr,
     ) -> QMessageLogContext<'a> {
         unsafe {
-            ffi::construct_qmessagelogcontext(
-                file.as_ptr(),
-                line,
-                function.as_ptr(),
-                category.as_ptr(),
-            )
+            new_in_place(|uninit| {
+                ffi::construct_qmessagelogcontext(
+                    uninit,
+                    file.as_ptr(),
+                    line,
+                    function.as_ptr(),
+                    category.as_ptr(),
+                )
+            })
         }
     }
 

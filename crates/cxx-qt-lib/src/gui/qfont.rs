@@ -6,6 +6,7 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
+use crate::util::new_in_place;
 use crate::QString;
 
 #[cxx::bridge]
@@ -143,14 +144,17 @@ mod ffi {
         Fantasy,
     }
 
-    unsafe extern "C++" {
-        include!("cxx-qt-lib/qfont.h");
-        type QFont = super::QFont;
+    extern "C++" {
         include!("cxx-qt-lib/qstring.h");
         type QString = crate::QString;
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = crate::QStringList;
 
+        include!("cxx-qt-lib/qfont.h");
+    }
+
+    unsafe extern "C++" {
+        type QFont = super::QFont;
         /// Returns `true` if [weight](https://doc.qt.io/qt/qfont.html#weight)() is a value greater than 400; otherwise returns `false`.
         fn bold(self: &QFont) -> bool;
 
@@ -220,9 +224,6 @@ mod ffi {
         /// Returns the point size of the font. Returns -1 if the font size was specified in pixels.
         #[rust_name = "point_size"]
         fn pointSize(self: &QFont) -> i32;
-
-        /// Returns a new `QFont` that has attributes copied from other that have not been previously set on this font.
-        fn resolve(self: &QFont, other: &QFont) -> QFont;
 
         /// If `enable` is `true` sets the font's weight to 700; otherwise sets the weight to 400.
         ///
@@ -351,6 +352,12 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        #[rust_name = "qfont_resolve"]
+        unsafe fn qfontResolve(font: &QFont, other: &QFont, uninit: *mut QFont);
+    }
+
+    #[namespace = "rust::cxxqtlib1"]
+    unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
         type QFontStyle;
         type QFontHintingPreference;
@@ -361,7 +368,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qfont_init_default"]
-        fn construct() -> QFont;
+        unsafe fn constructInPlace(uninit: *mut QFont);
 
         #[doc(hidden)]
         #[rust_name = "qfont_drop"]
@@ -369,7 +376,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qfont_clone"]
-        fn construct(font: &QFont) -> QFont;
+        unsafe fn constructInPlace(uninit: *mut QFont, font: &QFont);
 
         #[doc(hidden)]
         #[rust_name = "qfont_eq"]
@@ -393,7 +400,7 @@ pub struct QFont {
 
 impl Default for QFont {
     fn default() -> Self {
-        ffi::qfont_init_default()
+        unsafe { new_in_place(|uninit| ffi::qfont_init_default(uninit)) }
     }
 }
 
@@ -405,7 +412,7 @@ impl Drop for QFont {
 
 impl Clone for QFont {
     fn clone(&self) -> Self {
-        ffi::qfont_clone(self)
+        unsafe { new_in_place(|uninit| ffi::qfont_clone(uninit, self)) }
     }
 }
 
@@ -439,6 +446,11 @@ impl QFont {
         } else {
             Some(result)
         }
+    }
+
+    /// Returns a new `QFont` that has attributes copied from other that have not been previously set on this font.
+    pub fn resolve(self: &QFont, other: &QFont) -> QFont {
+        unsafe { new_in_place(|uninit| ffi::qfont_resolve(self, other, uninit)) }
     }
 }
 

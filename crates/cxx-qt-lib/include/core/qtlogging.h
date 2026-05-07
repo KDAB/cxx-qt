@@ -6,7 +6,6 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
-#include "rust/cxx.h"
 #include <QDebug>
 #include <QtCore/qlogging.h>
 
@@ -27,13 +26,3 @@ qmessagelogcontext_function(const QMessageLogContext& context);
 
 const char*
 qmessagelogcontext_category(const QMessageLogContext& context);
-
-// Define namespace otherwise we hit a GCC bug
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-namespace rust {
-
-template<>
-struct IsRelocatable<QMessageLogContext> : ::std::true_type
-{};
-
-} // namespace rust

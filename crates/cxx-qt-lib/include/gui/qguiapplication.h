@@ -19,9 +19,10 @@ namespace cxxqtlib1 {
 ::std::unique_ptr<QGuiApplication>
 qguiapplicationNew(const QVector<QByteArray>& args);
 
-inline void (*qguiapplicationSetFont)(const QFont&) = QGuiApplication::setFont;
+void
+qguiapplicationFont(QFont* uninit);
 
-inline QFont (*qguiapplicationFont)() = QGuiApplication::font;
+inline void (*qguiapplicationSetFont)(const QFont&) = QGuiApplication::setFont;
 
 inline void (*qguiapplicationSetDesktopFileName)(const QString&) =
   QGuiApplication::setDesktopFileName;
