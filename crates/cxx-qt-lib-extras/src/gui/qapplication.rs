@@ -5,6 +5,7 @@
 
 use core::pin::Pin;
 use cxx_qt_lib::{QByteArray, QFont, QString, QStringList, QVector};
+use crate::util::new_in_place;
 
 #[cxx::bridge]
 mod ffi {
@@ -82,7 +83,7 @@ mod ffi {
         fn qapplicationSetFont(app: Pin<&mut QApplication>, font: &QFont);
         #[doc(hidden)]
         #[rust_name = "qapplication_font"]
-        fn qapplicationFont(app: &QApplication) -> QFont;
+        unsafe fn qapplicationFont(app: &QApplication, uninit: *mut QFont);
         #[doc(hidden)]
         #[rust_name = "qapplication_set_library_paths"]
         fn qapplicationSetLibraryPaths(app: Pin<&mut QApplication>, paths: &QStringList);
@@ -137,7 +138,7 @@ impl QApplication {
 
     /// Returns the default application font.
     pub fn font(&self) -> QFont {
-        ffi::qapplication_font(self)
+        unsafe { new_in_place(|uninit| ffi::qapplication_font(self, uninit)) }
     }
 
     /// Returns a list of paths that the application will search when dynamically loading libraries.

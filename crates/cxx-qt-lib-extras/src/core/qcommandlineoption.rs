@@ -7,6 +7,8 @@ use cxx::{type_id, ExternType};
 use cxx_qt_lib::{QString, QStringList};
 use std::mem::MaybeUninit;
 
+use crate::util::new_in_place;
+
 #[cxx::bridge]
 mod ffi {
     unsafe extern "C++" {
@@ -73,15 +75,18 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qcommandlineoption_init_from_qcommandlineoption"]
-        fn construct(commandLineOption: &QCommandLineOption) -> QCommandLineOption;
+        unsafe fn constructInPlace(
+            uninit: *mut QCommandLineOption,
+            commandLineOption: &QCommandLineOption,
+        );
 
         #[doc(hidden)]
         #[rust_name = "qcommandlineoption_init_from_qstring"]
-        fn construct(string: &QString) -> QCommandLineOption;
+        unsafe fn constructInPlace(uninit: *mut QCommandLineOption, string: &QString);
 
         #[doc(hidden)]
         #[rust_name = "qcommandlineoption_init_from_qstringlist"]
-        fn construct(names: &QStringList) -> QCommandLineOption;
+        unsafe fn constructInPlace(uninit: *mut QCommandLineOption, names: &QStringList);
     }
 }
 
@@ -96,7 +101,11 @@ pub struct QCommandLineOption {
 impl Clone for QCommandLineOption {
     /// Constructs a copy of this `QCommandLineOption`.
     fn clone(&self) -> Self {
-        ffi::qcommandlineoption_init_from_qcommandlineoption(self)
+        unsafe {
+            new_in_place(|uninit| {
+                ffi::qcommandlineoption_init_from_qcommandlineoption(uninit, self)
+            })
+        }
     }
 }
 
@@ -110,14 +119,16 @@ impl Drop for QCommandLineOption {
 impl From<&QString> for QCommandLineOption {
     /// Constructs a command line option object with the name name.
     fn from(name: &QString) -> Self {
-        ffi::qcommandlineoption_init_from_qstring(name)
+        unsafe { new_in_place(|uninit| ffi::qcommandlineoption_init_from_qstring(uninit, name)) }
     }
 }
 
 impl From<&QStringList> for QCommandLineOption {
     /// Constructs a command line option object with the name name.
     fn from(names: &QStringList) -> Self {
-        ffi::qcommandlineoption_init_from_qstringlist(names)
+        unsafe {
+            new_in_place(|uninit| ffi::qcommandlineoption_init_from_qstringlist(uninit, names))
+        }
     }
 }
 

@@ -34,10 +34,10 @@ qapplicationSetFont(QApplication& app, const QFont& font)
   app.setFont(font);
 }
 
-QFont
-qapplicationFont(const QApplication& app)
+void
+qapplicationFont(const QApplication& app, QFont *uninit)
 {
-  return app.font();
+  new (uninit) QFont(app.font());
 }
 
 }

@@ -6,6 +6,9 @@ use cxx::{type_id, ExternType};
 use cxx_qt_lib::{QString, QStringList};
 use std::mem::MaybeUninit;
 
+use crate::QCommandLineOption;
+use crate::util::new_in_place;
+
 #[cxx::bridge]
 mod ffi {
     /// This enum describes the way the parser interprets options that occur after positional arguments.
@@ -47,14 +50,6 @@ mod ffi {
         include!("cxx-qt-lib/qstringlist.h");
         type QStringList = cxx_qt_lib::QStringList;
 
-        /// Adds help options to the command-line parser.
-        ///
-        /// The options specified for this command-line are described by `-h` or `--help`. On Windows, the alternative `-?` is also supported. The option `--help-all` extends that to include generic Qt options, not defined by this command, in the output.
-        ///
-        /// These options are handled automatically by `QCommandLineParser`.
-        #[rust_name = "add_help_option"]
-        fn addHelpOption(self: &mut QCommandLineParser) -> QCommandLineOption;
-
         /// Adds the option `option` to look for while parsing.
         /// Returns `true` if adding the option was successful; otherwise returns `false`.
         ///
@@ -62,12 +57,6 @@ mod ffi {
         /// or the option has a name that clashes with an option name added before.
         #[rust_name = "add_option"]
         fn addOption(self: &mut QCommandLineParser, option: &QCommandLineOption) -> bool;
-
-        /// Adds the `-v` / `--version` option, which displays the version string of the application.
-        ///
-        /// This option is handled automatically by `QCommandLineParser`.
-        #[rust_name = "add_version_option"]
-        fn addVersionOption(self: &mut QCommandLineParser) -> QCommandLineOption;
 
         /// Returns the application description.
         #[rust_name = "application_description"]
@@ -160,6 +149,18 @@ mod ffi {
     }
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
+        #[rust_name = "qcommandlineparser_add_help_option"]
+        unsafe fn qcommandlineparserAddHelpOption(
+            parser: &mut QCommandLineParser,
+            uninit: *mut QCommandLineOption,
+        );
+
+        #[rust_name = "qcommandlineparser_add_version_option"]
+        unsafe fn qcommandlineparserAddVersionOption(
+            parser: &mut QCommandLineParser,
+            uninit: *mut QCommandLineOption,
+        );
+
         #[rust_name = "qcommandlineparser_value"]
         fn qcommandlineparserValue(parser: &QCommandLineParser, optionName: &QString) -> QString;
 
@@ -185,7 +186,7 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "qcommandlineparser_init_default"]
-        fn construct() -> QCommandLineParser;
+        unsafe fn constructInPlace(uninit: *mut QCommandLineParser);
     }
 }
 
@@ -199,6 +200,22 @@ pub struct QCommandLineParser {
 }
 
 impl QCommandLineParser {
+    /// Adds help options to the command-line parser.
+    ///
+    /// The options specified for this command-line are described by `-h` or `--help`. On Windows, the alternative `-?` is also supported. The option `--help-all` extends that to include generic Qt options, not defined by this command, in the output.
+    ///
+    /// These options are handled automatically by `QCommandLineParser`.
+    pub fn add_help_option(&mut self) -> QCommandLineOption {
+        unsafe { new_in_place(|uninit| ffi::qcommandlineparser_add_help_option(self, uninit)) }
+    }
+
+    /// Adds the `-v` / `--version` option, which displays the version string of the application.
+    ///
+    /// This option is handled automatically by `QCommandLineParser`.
+    pub fn add_version_option(&mut self) -> QCommandLineOption {
+        unsafe { new_in_place(|uninit| ffi::qcommandlineparser_add_version_option(self, uninit)) }
+    }
+
     /// Returns the option value found for the given option name `option_name`, or an empty string if not found.
     ///
     /// The name provided can be any long or short name of any option that was added with [`add_option`](Self::add_option). All the option names are treated as being equivalent. If the name is not recognized or that option was not present, an empty string is returned.
@@ -234,7 +251,7 @@ impl QCommandLineParser {
 impl Default for QCommandLineParser {
     /// Constructs a command line parser object.
     fn default() -> Self {
-        ffi::qcommandlineparser_init_default()
+        unsafe { new_in_place(|uninit| ffi::qcommandlineparser_init_default(uninit)) }
     }
 }
 
@@ -258,7 +275,7 @@ mod tests {
 
     #[test]
     fn test_default_value() {
-        let commandlineparser = ffi::qcommandlineparser_init_default();
+        let commandlineparser = QCommandLineParser::default();
         assert!(commandlineparser.error_text().is_empty());
         assert!(commandlineparser.application_description().is_empty());
     }

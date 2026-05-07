@@ -22,8 +22,8 @@ qapplicationNew(const QVector<QByteArray>& args);
 void
 qapplicationSetFont(QApplication& app, const QFont& font);
 
-QFont
-qapplicationFont(const QApplication& app);
+void
+qapplicationFont(const QApplication& app, QFont* uninit);
 
 }
 }
