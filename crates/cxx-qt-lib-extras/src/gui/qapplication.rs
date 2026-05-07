@@ -3,9 +3,9 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::util::new_in_place;
 use core::pin::Pin;
 use cxx_qt_lib::{QByteArray, QFont, QString, QStringList, QVector};
-use crate::util::new_in_place;
 
 #[cxx::bridge]
 mod ffi {
