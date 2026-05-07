@@ -6,8 +6,8 @@ use cxx::{type_id, ExternType};
 use cxx_qt_lib::{QString, QStringList};
 use std::mem::MaybeUninit;
 
-use crate::QCommandLineOption;
 use crate::util::new_in_place;
+use crate::QCommandLineOption;
 
 #[cxx::bridge]
 mod ffi {

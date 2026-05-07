@@ -35,7 +35,7 @@ qapplicationSetFont(QApplication& app, const QFont& font)
 }
 
 void
-qapplicationFont(const QApplication& app, QFont *uninit)
+qapplicationFont(const QApplication& app, QFont* uninit)
 {
   new (uninit) QFont(app.font());
 }
