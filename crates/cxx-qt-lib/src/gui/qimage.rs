@@ -234,7 +234,10 @@ mod ffi {
         ///
         /// This function was introduced in Qt 6.0.
         /// This function is scheduled for deprecation in version 6.13.
-        #[cfg(not(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_9)))]
+        #[cfg(all(
+            cxxqt_qt_version_at_least_6_0,
+            not(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_9))
+        ))]
         fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
 
         /// Swaps the values of the red and blue components of all pixels, effectively converting an RGB image to an BGR image.
