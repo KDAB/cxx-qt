@@ -63,6 +63,13 @@ mod ffi {
     unsafe extern "C++" {
         type QUuid = super::QUuid;
 
+        /// On any platform other than Windows, this function returns a new UUID with variant
+        /// [`QUuidVariant::DCE`] and version [`QUuidVersion::Random`]. On Windows, a GUID is generated using
+        /// the Windows API and will be of the type that the API decides to create.
+        #[Self = "QUuid"]
+        #[rust_name = "create_uuid"]
+        fn createUuid() -> QUuid;
+
         /// Returns the binary representation of this UUID. The byte array is in big endian format,
         /// and formatted according to RFC 4122, section 4.1.2 - "Layout and byte order".
         #[rust_name = "to_rfc_4122"]
@@ -74,9 +81,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "quuid_create_uuid_v3"]
         fn quuidCreateUuidV3(ns: &QUuid, data: &[u8]) -> QUuid;
-        #[doc(hidden)]
-        #[rust_name = "quuid_create_uuid"]
-        fn quuidCreateUuid() -> QUuid;
         #[doc(hidden)]
         #[rust_name = "quuid_create_uuid_v5"]
         fn quuidCreateUuidV5(ns: &QUuid, data: &[u8]) -> QUuid;
@@ -163,13 +167,6 @@ impl QUuid {
     /// by RFC 4122.
     pub fn create_uuid_v3(namespace: &Self, data: &[u8]) -> Self {
         ffi::quuid_create_uuid_v3(namespace, data)
-    }
-
-    /// On any platform other than Windows, this function returns a new UUID with variant
-    /// [`QUuidVariant::DCE`] and version [`QUuidVersion::Random`]. On Windows, a GUID is generated using
-    /// the Windows API and will be of the type that the API decides to create.
-    pub fn create_uuid() -> Self {
-        ffi::quuid_create_uuid()
     }
 
     /// This function returns a new UUID with variant [`QUuidVariant::DCE`] and version

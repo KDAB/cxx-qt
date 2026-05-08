@@ -8,7 +8,7 @@ use std::mem::MaybeUninit;
 
 use cxx::{type_id, ExternType};
 
-use crate::{QMatrix3x3, QVector3D, QVector4D};
+use crate::{QVector3D, QVector4D};
 
 #[cxx::bridge]
 mod ffi {
@@ -27,6 +27,59 @@ mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/qquaternion.h");
         type QQuaternion = super::QQuaternion;
+
+        /// Returns the dot product of `q1` and `q2`.
+        #[Self = "QQuaternion"]
+        #[rust_name = "dot_product"]
+        fn dotProduct(q1: &QQuaternion, q2: &QQuaternion) -> f32;
+
+        /// Interpolates along the shortest linear path between the rotational positions `q1` and `q2`. The value `t` should be between 0 and 1, indicating the distance to travel between `q1` and `q2`. The result will be [`normalized`](Self::normalized).
+        ///
+        /// If `t` is less than or equal to 0, then `q1` will be returned. If `t` is greater than or equal to 1, then `q2` will be returned.
+        ///
+        /// This function is typically faster than [`slerp`](Self::slerp) and will give approximate results to spherical interpolation that are good enough for some applications.
+        #[Self = "QQuaternion"]
+        fn nlerp(q1: &QQuaternion, q2: &QQuaternion, t: f32) -> QQuaternion;
+
+        /// Returns the shortest arc quaternion to rotate from the direction described by the vector `from` to the direction described by the vector `to`.
+        #[Self = "QQuaternion"]
+        #[rust_name = "rotation_to"]
+        fn rotationTo(from: &QVector3D, to: &QVector3D) -> QQuaternion;
+
+        /// Interpolates along the shortest linear path between the rotational positions `q1` and `q2`. The value `t` should be between 0 and 1, indicating the distance to travel between `q1` and `q2`. The result will be [`normalized`](Self::normalized).
+        ///
+        /// If `t` is less than or equal to 0, then `q1` will be returned. If `t` is greater than or equal to 1, then `q2` will be returned.
+        #[Self = "QQuaternion"]
+        fn slerp(q1: &QQuaternion, q2: &QQuaternion, t: f32) -> QQuaternion;
+
+        /// Constructs the quaternion using 3 axes (`x_axis`, `y_axis`, `z_axis`).
+        ///
+        /// **Note:** The axes are assumed to be orthonormal.
+        #[Self = "QQuaternion"]
+        #[rust_name = "from_axes"]
+        fn fromAxes(x_axis: &QVector3D, y_axis: &QVector3D, z_axis: &QVector3D) -> QQuaternion;
+
+        /// Creates a normalized quaternion that corresponds to rotating through `angle` degrees about the specified 3D `axis`.
+        #[Self = "QQuaternion"]
+        #[rust_name = "from_axis_and_angle"]
+        fn fromAxisAndAngle(x: f32, y: f32, z: f32, angle: f32) -> QQuaternion;
+
+        /// Constructs the quaternion using specified forward direction `direction` and upward direction `up`. If the upward direction was not specified or the forward and upward vectors are collinear, a new orthonormal upward direction will be generated.
+        #[Self = "QQuaternion"]
+        #[rust_name = "from_direction"]
+        fn fromDirection(direction: &QVector3D, up: &QVector3D) -> QQuaternion;
+
+        /// Creates a quaternion that corresponds to a rotation of `roll` degrees around the z axis, `pitch` degrees around the x axis, and `yaw` degrees around the y axis (in that order).
+        #[Self = "QQuaternion"]
+        #[rust_name = "from_euler_angles"]
+        fn fromEulerAngles(pitch: f32, yaw: f32, roll: f32) -> QQuaternion;
+
+        /// Creates a quaternion that corresponds to a rotation matrix `rot3x3`.
+        ///
+        /// **Note:** If a given rotation matrix is not normalized, the resulting quaternion will contain scaling information.
+        #[Self = "QQuaternion"]
+        #[rust_name = "from_rotation_matrix"]
+        fn fromRotationMatrix(rot3x3: &QMatrix3x3) -> QQuaternion;
 
         /// Returns the conjugate of this quaternion, which is (-x, -y, -z, scalar).
         fn conjugated(&self) -> QQuaternion;
@@ -132,41 +185,6 @@ mod ffi {
 
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "qquaternion_dot_product"]
-        fn qquaternionDotProduct(q1: &QQuaternion, q2: &QQuaternion) -> f32;
-
-        #[doc(hidden)]
-        #[rust_name = "qquaternion_from_axes"]
-        fn qquaternionFromAxes(
-            x_axis: &QVector3D,
-            y_axis: &QVector3D,
-            z_axis: &QVector3D,
-        ) -> QQuaternion;
-        #[doc(hidden)]
-        #[rust_name = "qquaternion_from_axis_and_angle"]
-        fn qquaternionFromAxisAndAngle(x: f32, y: f32, z: f32, angle: f32) -> QQuaternion;
-        #[doc(hidden)]
-        #[rust_name = "qquaternion_from_euler_angles"]
-        fn qquaternionFromEulerAngles(pitch: f32, yaw: f32, roll: f32) -> QQuaternion;
-        #[doc(hidden)]
-        #[rust_name = "qquaternion_from_rotation_matrix"]
-        fn qquaternionFromRotationMatrix(rot3x3: &QMatrix3x3) -> QQuaternion;
-
-        #[doc(hidden)]
-        #[rust_name = "qquaternion_nlerp"]
-        fn qquaternionNlerp(q1: &QQuaternion, q2: &QQuaternion, t: f32) -> QQuaternion;
-        #[doc(hidden)]
-        #[rust_name = "qquaternion_slerp"]
-        fn qquaternionSlerp(q1: &QQuaternion, q2: &QQuaternion, t: f32) -> QQuaternion;
-
-        #[doc(hidden)]
-        #[rust_name = "qquaternion_rotation_to"]
-        fn qquaternionRotationTo(from: &QVector3D, to: &QVector3D) -> QQuaternion;
-    }
-
-    #[namespace = "rust::cxxqtlib1"]
-    unsafe extern "C++" {
         include!("cxx-qt-lib/common.h");
 
         #[doc(hidden)]
@@ -214,59 +232,9 @@ pub struct QQuaternion {
 }
 
 impl QQuaternion {
-    /// Returns the dot product of `q1` and `q2`.
-    pub fn dot_product(q1: &QQuaternion, q2: &QQuaternion) -> f32 {
-        ffi::qquaternion_dot_product(q1, q2)
-    }
-
-    /// Interpolates along the shortest linear path between the rotational positions `q1` and `q2`. The value `t` should be between 0 and 1, indicating the distance to travel between `q1` and `q2`. The result will be [`normalized`](Self::normalized).
-    ///
-    /// If `t` is less than or equal to 0, then `q1` will be returned. If `t` is greater than or equal to 1, then `q2` will be returned.
-    ///
-    /// This function is typically faster than [`slerp`](Self::slerp) and will give approximate results to spherical interpolation that are good enough for some applications.
-    pub fn nlerp(q1: &Self, q2: &Self, t: f32) -> Self {
-        ffi::qquaternion_nlerp(q1, q2, t)
-    }
-
-    /// Returns the shortest arc quaternion to rotate from the direction described by the vector `from` to the direction described by the vector `to`.
-    pub fn rotation_to(from: &QVector3D, to: &QVector3D) -> Self {
-        ffi::qquaternion_rotation_to(from, to)
-    }
-
-    /// Interpolates along the shortest linear path between the rotational positions `q1` and `q2`. The value `t` should be between 0 and 1, indicating the distance to travel between `q1` and `q2`. The result will be [`normalized`](Self::normalized).
-    ///
-    /// If `t` is less than or equal to 0, then `q1` will be returned. If `t` is greater than or equal to 1, then `q2` will be returned.
-    pub fn slerp(q1: &Self, q2: &Self, t: f32) -> Self {
-        ffi::qquaternion_slerp(q1, q2, t)
-    }
-
     /// Constructs a quaternion vector from the specified `vector` and `scalar`.
     pub fn new(scalar: f32, vector: &QVector3D) -> Self {
         ffi::qquaternion_init_float_qvector3d(scalar, vector)
-    }
-
-    /// Constructs the quaternion using 3 axes (`x_axis`, `y_axis`, `z_axis`).
-    ///
-    /// **Note:** The axes are assumed to be orthonormal.
-    pub fn from_axes(x_axis: &QVector3D, y_axis: &QVector3D, z_axis: &QVector3D) -> Self {
-        ffi::qquaternion_from_axes(x_axis, y_axis, z_axis)
-    }
-
-    /// Creates a normalized quaternion that corresponds to rotating through `angle` degrees about the specified 3D `axis`.
-    pub fn from_axis_and_angle(x: f32, y: f32, z: f32, angle: f32) -> Self {
-        ffi::qquaternion_from_axis_and_angle(x, y, z, angle)
-    }
-
-    /// Creates a quaternion that corresponds to a rotation of `roll` degrees around the z axis, `pitch` degrees around the x axis, and `yaw` degrees around the y axis (in that order).
-    pub fn from_euler_angles(pitch: f32, yaw: f32, roll: f32) -> Self {
-        ffi::qquaternion_from_euler_angles(pitch, yaw, roll)
-    }
-
-    /// Creates a quaternion that corresponds to a rotation matrix `rot3x3`.
-    ///
-    /// **Note:** If a given rotation matrix is not normalized, the resulting quaternion will contain scaling information.
-    pub fn from_rotation_matrix(rot3x3: &QMatrix3x3) -> Self {
-        ffi::qquaternion_from_rotation_matrix(rot3x3)
     }
 
     /// Returns the 3 orthonormal axes (`x_axis`, `y_axis`, `z_axis`) defining the quaternion.

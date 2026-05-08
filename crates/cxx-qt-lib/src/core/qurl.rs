@@ -6,7 +6,7 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
-use crate::{QByteArray, QString, QStringList};
+use crate::{QByteArray, QString};
 
 #[cxx::bridge]
 mod ffi {
@@ -19,6 +19,44 @@ mod ffi {
         type QStringList = crate::QStringList;
         include!("cxx-qt-lib/qurl.h");
         type QUrl = super::QUrl;
+
+        /// Returns a `QUrl` representation of `local_file`, interpreted as a local file.
+        /// This function accepts paths separated by slashes as well as the native separator for this platform.
+        ///
+        /// This function also accepts paths with a doubled leading slash (or backslash) to indicate a remote file, as in `"//servername/path/to/file.txt"`.
+        #[Self = "QUrl"]
+        #[rust_name = "from_local_file"]
+        fn fromLocalFile(local_file: &QString) -> QUrl;
+
+        /// Returns a decoded copy of `input`. `input` is first decoded from percent encoding,
+        /// then converted from UTF-8 to unicode.
+        ///
+        /// **Note:** Given invalid input (such as a string containing the sequence `"%G5"`, which is not a valid hexadecimal number) the output will be invalid as well. As an example: the sequence `"%G5"` could be decoded to `"W"`.
+        #[Self = "QUrl"]
+        #[rust_name = "from_percent_encoding"]
+        fn fromPercentEncoding(input: &QByteArray) -> QString;
+
+        /// Returns the current whitelist of top-level domains that are allowed to have non-ASCII characters in their compositions.
+        #[Self = "QUrl"]
+        #[rust_name = "idn_whitelist"]
+        fn idnWhitelist() -> QStringList;
+
+        /// Sets the whitelist of Top-Level Domains (TLDs) that are allowed to have non-ASCII characters in domains to the value of `list`.
+        #[Self = "QUrl"]
+        #[rust_name = "set_idn_whitelist"]
+        fn setIdnWhitelist(list: &QStringList);
+
+        /// Returns an encoded copy of `input`. `input` is first converted to UTF-8,
+        /// and all ASCII-characters that are not in the unreserved group are percent encoded.
+        /// To prevent characters from being percent encoded pass them to `exclude`.
+        /// To force characters to be percent encoded pass them to `include`.
+        #[Self = "QUrl"]
+        #[rust_name = "to_percent_encoding"]
+        fn toPercentEncoding(
+            input: &QString,
+            exclude: &QByteArray,
+            include: &QByteArray,
+        ) -> QByteArray;
 
         /// Resets the content of the `QUrl`. After calling this function,
         /// the `QUrl` is equal to one that has been constructed with the default empty constructor.
@@ -111,16 +149,10 @@ mod ffi {
         fn qurlFragment(url: &QUrl) -> QString;
         #[rust_name = "qurl_from_encoded"]
         fn qurlFromEncoded(input: &QByteArray) -> QUrl;
-        #[rust_name = "qurl_from_local_file"]
-        fn qurlFromLocalFile(local_file: &QString) -> QUrl;
-        #[rust_name = "qurl_from_percent_encoding"]
-        fn qurlFromPercentEncoding(input: &QByteArray) -> QString;
         #[rust_name = "qurl_from_user_input"]
         fn qurlFromUserInput(user_input: &QString, working_directory: &QString) -> QUrl;
         #[rust_name = "qurl_host"]
         fn qurlHost(url: &QUrl) -> QString;
-        #[rust_name = "qurl_idn_whitelist"]
-        fn qurlIdnWhitelist() -> QStringList;
         #[rust_name = "qurl_path"]
         fn qurlPath(url: &QUrl) -> QString;
         #[rust_name = "qurl_password"]
@@ -133,8 +165,6 @@ mod ffi {
         fn qurlSetFragment(url: &mut QUrl, fragment: &QString);
         #[rust_name = "qurl_set_host"]
         fn qurlSetHost(url: &mut QUrl, host: &QString);
-        #[rust_name = "qurl_set_idn_whitelist"]
-        fn qurlSetIdnWhitelist(list: &QStringList);
         #[rust_name = "qurl_set_password"]
         fn qurlSetPassword(url: &mut QUrl, password: &QString);
         #[rust_name = "qurl_set_path"]
@@ -155,12 +185,6 @@ mod ffi {
         fn qurlToEncoded(url: &QUrl) -> QByteArray;
         #[rust_name = "qurl_to_qstring"]
         fn qurlToQString(url: &QUrl) -> QString;
-        #[rust_name = "qurl_to_percent_encoding"]
-        fn qurlToPercentEncoding(
-            input: &QString,
-            exclude: &QByteArray,
-            include: &QByteArray,
-        ) -> QByteArray;
         #[rust_name = "qurl_user_info"]
         fn qurlUserInfo(url: &QUrl) -> QString;
         #[rust_name = "qurl_user_name"]
@@ -239,22 +263,6 @@ impl QUrl {
         ffi::qurl_from_encoded(input)
     }
 
-    /// Returns a `QUrl` representation of `local_file`, interpreted as a local file.
-    /// This function accepts paths separated by slashes as well as the native separator for this platform.
-    ///
-    /// This function also accepts paths with a doubled leading slash (or backslash) to indicate a remote file, as in `"//servername/path/to/file.txt"`.
-    pub fn from_local_file(local_file: &QString) -> Self {
-        ffi::qurl_from_local_file(local_file)
-    }
-
-    /// Returns a decoded copy of `input`. `input` is first decoded from percent encoding,
-    /// then converted from UTF-8 to unicode.
-    ///
-    /// **Note:** Given invalid input (such as a string containing the sequence `"%G5"`, which is not a valid hexadecimal number) the output will be invalid as well. As an example: the sequence `"%G5"` could be decoded to `"W"`.
-    pub fn from_percent_encoding(input: &QByteArray) -> QString {
-        ffi::qurl_from_percent_encoding(input)
-    }
-
     /// Returns a valid URL from a user supplied `user_input` string if one can be deduced.
     /// In the case that is not possible, an invalid `QUrl` is returned.
     ///
@@ -272,11 +280,6 @@ impl QUrl {
     /// Returns the host of the URL if it is defined; otherwise an empty string is returned.
     pub fn host_or_default(&self) -> QString {
         ffi::qurl_host(self)
-    }
-
-    /// Returns the current whitelist of top-level domains that are allowed to have non-ASCII characters in their compositions.
-    pub fn idn_whitelist() -> QStringList {
-        ffi::qurl_idn_whitelist()
     }
 
     /// Returns the password of the URL if it is defined; otherwise an empty string is returned.
@@ -332,11 +335,6 @@ impl QUrl {
     /// Sets the host of the URL to `host`. The host is part of the authority.
     pub fn set_host(&mut self, host: &QString) {
         ffi::qurl_set_host(self, host)
-    }
-
-    /// Sets the whitelist of Top-Level Domains (TLDs) that are allowed to have non-ASCII characters in domains to the value of `list`.
-    pub fn set_idn_whitelist(list: &QStringList) {
-        ffi::qurl_set_idn_whitelist(list)
     }
 
     /// Sets the URL's password to `password`.
@@ -405,18 +403,6 @@ impl QUrl {
         } else {
             None
         }
-    }
-
-    /// Returns an encoded copy of `input`. `input` is first converted to UTF-8,
-    /// and all ASCII-characters that are not in the unreserved group are percent encoded.
-    /// To prevent characters from being percent encoded pass them to `exclude`.
-    /// To force characters to be percent encoded pass them to `include`.
-    pub fn to_percent_encoding(
-        input: &QString,
-        exclude: &QByteArray,
-        include: &QByteArray,
-    ) -> QByteArray {
-        ffi::qurl_to_percent_encoding(input, exclude, include)
     }
 
     /// Returns a `QString` representation of the URL.

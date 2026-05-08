@@ -15,10 +15,6 @@
 namespace rust {
 namespace cxxqtlib1 {
 
-inline QDate (*qdateCurrentDate)() = QDate::currentDate;
-
-inline bool (*qdateIsLeapYear)(int) = QDate::isLeapYear;
-
 QDate
 qdateFromString(const QString& string, const QString& format);
 QDate

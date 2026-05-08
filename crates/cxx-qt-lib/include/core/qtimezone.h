@@ -18,9 +18,6 @@ namespace cxxqtlib1 {
 using QTimeZoneNameType = QTimeZone::NameType;
 using QTimeZoneTimeType = QTimeZone::TimeType;
 
-inline QList<QByteArray> (*qtimezoneAvailableTimeZoneIds)() =
-  QTimeZone::availableTimeZoneIds;
-
 ::std::unique_ptr<QTimeZone>
 qtimezoneClone(const QTimeZone& timezone);
 ::std::unique_ptr<QTimeZone>
@@ -35,7 +32,6 @@ qtimezoneFromOffsetSeconds(::std::int32_t offsetSeconds);
 qtimezoneFromIana(const QByteArray& ianaId);
 ::std::unique_ptr<QTimeZone>
 qtimezoneSystemTimeZone();
-inline QByteArray (*qtimezoneSystemTimeZoneId)() = QTimeZone::systemTimeZoneId;
 ::std::unique_ptr<QTimeZone>
 qtimezoneUtc();
 

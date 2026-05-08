@@ -21,6 +21,29 @@ mod ffi {
         type QTime = super::QTime;
         type QString = crate::QString;
 
+        /// Returns the current time as reported by the system clock.
+        ///
+        /// Note that the accuracy depends on the accuracy of the underlying operating system; not all systems provide 1-millisecond accuracy.
+        ///
+        /// Furthermore, the value only increases within each day; it shall drop by 24 hours each time midnight passes; and, beside this, changes in it may not correspond to elapsed time, if a daylight-saving transition intervenes.
+        #[Self = "QTime"]
+        #[rust_name = "current_time"]
+        fn currentTime() -> QTime;
+
+        /// Returns a new `QTime` instance with the time set to the number of `msecs`
+        /// since the start of the day, i.e. since 00:00:00.
+        ///
+        /// If `msecs` falls outside the valid range an invalid `QTime` will be returned.
+        #[Self = "QTime"]
+        #[rust_name = "from_msecs_since_start_of_day"]
+        fn fromMSecsSinceStartOfDay(msecs: i32) -> QTime;
+
+        /// Returns `true` if the specified time is valid; otherwise returns `false`.
+        /// The time is valid if `h` is in the range 0 to 23, `m` and `s` are in the range 0 to 59, and `ms` is in the range 0 to 999.
+        #[Self = "QTime"]
+        #[rust_name = "is_valid_time"]
+        pub fn isValid(h: i32, m: i32, s: i32, ms: i32) -> bool;
+
         /// Returns a `QTime` object containing a time `ms` milliseconds later
         /// than the time of this object (or earlier if `ms` is negative).
         ///
@@ -89,14 +112,6 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "qtime_current_time"]
-        fn qtimeCurrentTime() -> QTime;
-
-        #[doc(hidden)]
-        #[rust_name = "qtime_from_msecs_since_start_of_day"]
-        fn qtimeFromMSecsSinceStartOfDay(msecs: i32) -> QTime;
-
-        #[doc(hidden)]
         #[rust_name = "qtime_from_string"]
         fn qtimeFromString(string: &QString, format: &QString) -> QTime;
         #[doc(hidden)]
@@ -110,10 +125,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qtime_secs_to"]
         fn qtimeSecsTo(time: &QTime, t: QTime) -> i32;
-
-        #[doc(hidden)]
-        #[rust_name = "qtime_is_valid"]
-        fn qtimeIsValid(h: i32, m: i32, s: i32, ms: i32) -> bool;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -142,23 +153,6 @@ pub struct QTime {
 }
 
 impl QTime {
-    /// Returns the current time as reported by the system clock.
-    ///
-    /// Note that the accuracy depends on the accuracy of the underlying operating system; not all systems provide 1-millisecond accuracy.
-    ///
-    /// Furthermore, the value only increases within each day; it shall drop by 24 hours each time midnight passes; and, beside this, changes in it may not correspond to elapsed time, if a daylight-saving transition intervenes.
-    pub fn current_time() -> Self {
-        ffi::qtime_current_time()
-    }
-
-    /// Returns a new `QTime` instance with the time set to the number of `msecs`
-    /// since the start of the day, i.e. since 00:00:00.
-    ///
-    /// If `msecs` falls outside the valid range an invalid `QTime` will be returned.
-    pub fn from_msecs_since_start_of_day(msecs: i32) -> Self {
-        ffi::qtime_from_msecs_since_start_of_day(msecs)
-    }
-
     /// Returns the time represented in the `string` as a `QTime` using the `format` given, or an invalid time if the string cannot be parsed.
     pub fn from_string(string: &QString, format: &QString) -> Self {
         ffi::qtime_from_string(string, format)
@@ -194,12 +188,6 @@ impl QTime {
     /// Returns 0 if either time is invalid.
     pub fn secs_to(&self, t: Self) -> i32 {
         ffi::qtime_secs_to(self, t)
-    }
-
-    /// Returns `true` if the specified time is valid; otherwise returns `false`.
-    /// The time is valid if `h` is in the range 0 to 23, `m` and `s` are in the range 0 to 59, and `ms` is in the range 0 to 999.
-    pub fn is_valid_time(h: i32, m: i32, s: i32, ms: i32) -> bool {
-        ffi::qtime_is_valid(h, m, s, ms)
     }
 }
 

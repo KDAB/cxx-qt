@@ -19,6 +19,11 @@ mod ffi {
         #[allow(dead_code)]
         type QPointF = crate::QPointF;
 
+        /// Returns the dot product of `p1` and `p2`.
+        #[Self = "QPoint"]
+        #[rust_name = "dot_product"]
+        fn dotProduct(p1: &QPoint, p2: &QPoint) -> i32;
+
         /// Returns `true` if both the x and y coordinates are set to 0, otherwise returns `false`.
         #[rust_name = "is_null"]
         fn isNull(self: &QPoint) -> bool;
@@ -51,13 +56,6 @@ mod ffi {
 
         /// Returns the y coordinate of this point.
         fn y(self: &QPoint) -> i32;
-    }
-
-    #[namespace = "rust::cxxqtlib1"]
-    unsafe extern "C++" {
-        #[doc(hidden)]
-        #[rust_name = "qpoint_dot_product"]
-        fn qpointDotProduct(p1: &QPoint, p2: &QPoint) -> i32;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -105,11 +103,6 @@ pub struct QPoint {
 }
 
 impl QPoint {
-    /// Returns the dot product of `p1` and `p2`.
-    pub fn dot_product(p1: &QPoint, p2: &QPoint) -> i32 {
-        ffi::qpoint_dot_product(p1, p2)
-    }
-
     /// Constructs a point with the given coordinates (`xpos`, `ypos`).
     pub fn new(xpos: i32, ypos: i32) -> Self {
         ffi::qpoint_init(xpos, ypos)

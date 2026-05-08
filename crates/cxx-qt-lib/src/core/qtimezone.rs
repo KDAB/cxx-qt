@@ -4,7 +4,7 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use std::fmt;
 
-use crate::{QByteArray, QList, QString};
+use crate::{QByteArray, QString};
 
 #[cxx::bridge]
 mod ffi {
@@ -72,6 +72,16 @@ mod ffi {
         // Therefore the internal QSharedDataPointer is incremented causing a memory leak, so use an opaque type.
         type QTimeZone;
 
+        /// Returns a list of all available IANA time zone IDs on this system.
+        #[Self = "QTimeZone"]
+        #[rust_name = "available_time_zone_ids"]
+        fn availableTimeZoneIds() -> QList_QByteArray;
+
+        /// Returns the current system time zone IANA ID.
+        #[Self = "QTimeZone"]
+        #[rust_name = "system_time_zone_id"]
+        fn systemTimeZoneId() -> QByteArray;
+
         /// Returns the time zone abbreviation at the given `at_date_time`. The abbreviation may change depending on DST or even historical events.
         ///
         /// **Note:** The abbreviation is not guaranteed to be unique to this time zone and should not be used in place of the ID or display name.
@@ -126,9 +136,6 @@ mod ffi {
     #[namespace = "rust::cxxqtlib1"]
     unsafe extern "C++" {
         #[doc(hidden)]
-        #[rust_name = "qtimezone_available_time_zone_ids"]
-        fn qtimezoneAvailableTimeZoneIds() -> QList_QByteArray;
-        #[doc(hidden)]
         #[rust_name = "qtimezone_clone"]
         fn qtimezoneClone(timezone: &QTimeZone) -> UniquePtr<QTimeZone>;
         #[doc(hidden)]
@@ -150,9 +157,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qtimezone_system_time_zone"]
         fn qtimezoneSystemTimeZone() -> UniquePtr<QTimeZone>;
-        #[doc(hidden)]
-        #[rust_name = "qtimezone_system_time_zone_id"]
-        fn qtimezoneSystemTimeZoneId() -> QByteArray;
         #[doc(hidden)]
         #[rust_name = "qtimezone_utc"]
         fn qtimezoneUtc() -> UniquePtr<QTimeZone>;
@@ -187,11 +191,6 @@ impl Default for QTimeZoneNameType {
 }
 
 impl QTimeZone {
-    /// Returns a list of all available IANA time zone IDs on this system.
-    pub fn available_time_zone_ids() -> QList<QByteArray> {
-        ffi::qtimezone_available_time_zone_ids()
-    }
-
     /// Returns the localized time zone display name.
     ///
     /// The name returned is the one for the application default locale, applicable when the given `time_type` is in effect and of the form indicated by `name_type`.
@@ -229,11 +228,6 @@ impl QTimeZone {
     /// Returns a `QTimeZone` object that refers to the local system time, as specified by [`system_time_zone_id`](Self::system_time_zone_id).
     pub fn system_time_zone() -> cxx::UniquePtr<Self> {
         ffi::qtimezone_system_time_zone()
-    }
-
-    /// Returns the current system time zone IANA ID.
-    pub fn system_time_zone_id() -> QByteArray {
-        ffi::qtimezone_system_time_zone_id()
     }
 
     /// Copy constructor, create a copy of the `QTimeZone`.
