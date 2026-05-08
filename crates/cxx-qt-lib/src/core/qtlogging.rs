@@ -84,8 +84,8 @@ mod ffi {
 
         #[doc(hidden)]
         #[rust_name = "construct_qmessagelogcontext"]
-        unsafe fn constructInPlace<'a>(
-            uninit: *mut QMessageLogContext<'a>,
+        unsafe fn constructInPlace(
+            uninit: *mut QMessageLogContext<'_>,
             file_name: *const c_char,
             line_number: i32,
             function_name: *const c_char,
