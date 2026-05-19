@@ -235,9 +235,8 @@ mod ffi {
         /// This function was introduced in Qt 6.0.
         /// This function is scheduled for deprecation in version 6.13.
         #[cfg(all(
-            cxxqt_qt_version_at_least_6,
-            not(cxxqt_qt_version_at_least_6_13),
-            not(cxxqt_qt_version_at_least_7)
+            cxxqt_qt_version_at_least_6_0,
+            not(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_9))
         ))]
         fn mirror(self: &mut QImage, horizontal: bool, vertical: bool);
 
@@ -579,6 +578,21 @@ impl QImage {
     /// Construct a `QImage` from a given `width`, `height`, and image `format`.
     pub fn from_width_height_and_format(width: i32, height: i32, format: QImageFormat) -> Self {
         ffi::qimage_init_from_width_and_height_and_image_format(width, height, format)
+    }
+
+    /// Mirrors of the image in the horizontal and/or the vertical direction depending on whether `horizontal` and `vertical` are set to `true` or `false`.
+    ///
+    /// This function was introduced in Qt 6.0.
+    /// This function is scheduled for deprecation in version 6.13.
+    #[cfg(any(cxxqt_qt_version_at_least_7, cxxqt_qt_version_at_least_6_9))]
+    #[deprecated = "use QImage::flip instead"]
+    pub fn mirror(self: &mut QImage, horizontal: bool, vertical: bool) {
+        use crate::{Orientation, Orientations};
+
+        let mut orientations = Orientations::new();
+        orientations.set_flag(Orientation::Horizontal, horizontal);
+        orientations.set_flag(Orientation::Vertical, vertical);
+        self.flip(orientations);
     }
 }
 
