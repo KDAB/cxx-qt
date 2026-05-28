@@ -17,6 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.8.1...HEAD)
 
+### Fixed
+
+- `qt-build-utils`: drop redundant explicit `qmldir` alias from the generated
+  QML module `.qrc` so `rcc` no longer emits
+  `Warning: potential duplicate alias detected: 'qmldir'` on every build.
+
 ## [0.8.1](https://github.com/KDAB/cxx-qt/compare/v0.8.0...v0.8.1) - 2026-02-16
 
 ### Fixed

@@ -346,15 +346,24 @@ impl QtBuild {
             let qml_module_dir_str = qml_module_dir.to_str().unwrap();
             let qml_uri_dirs_prefix = format!("/qt/qml/{qml_uri_dirs}");
             let mut qrc = File::create(&qrc_path).expect("Could not create qrc file");
+            // The first <qresource> registers the QML module's generated
+            // directory (which contains the generated `qmldir` and
+            // `plugin.qmltypes`); rcc walks it and registers every file
+            // inside under the module's resource prefix. The second
+            // <qresource> then adds the source-tree `.qml` files (which
+            // live outside that directory) with explicit aliases.
+            //
+            // We deliberately do NOT add an explicit `qmldir` alias to
+            // the second block — the directory walk above already covers
+            // it, and adding it again makes rcc emit
+            //   Warning: potential duplicate alias detected: 'qmldir'
+            // on every build.
             QResources::new()
                 .resource(QResource::new().prefix("/".to_string()).file(
                     QResourceFile::new(qml_module_dir_str).alias(qml_uri_dirs_prefix.clone()),
                 ))
                 .resource({
-                    let mut resource = QResource::new().prefix(qml_uri_dirs_prefix.clone()).file(
-                        QResourceFile::new(format!("{qml_module_dir_str}/qmldir"))
-                            .alias("qmldir".to_string()),
-                    );
+                    let mut resource = QResource::new().prefix(qml_uri_dirs_prefix.clone());
 
                     fn resource_add_path(resource: QResource, path: &Path) -> QResource {
                         let resolved = std::fs::canonicalize(path)
