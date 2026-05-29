@@ -347,9 +347,6 @@ impl QtBuild {
             let qml_uri_dirs_prefix = format!("/qt/qml/{qml_uri_dirs}");
             let mut qrc = File::create(&qrc_path).expect("Could not create qrc file");
             QResources::new()
-                .resource(QResource::new().prefix("/".to_string()).file(
-                    QResourceFile::new(qml_module_dir_str).alias(qml_uri_dirs_prefix.clone()),
-                ))
                 .resource({
                     let mut resource = QResource::new().prefix(qml_uri_dirs_prefix.clone()).file(
                         QResourceFile::new(format!("{qml_module_dir_str}/qmldir"))
