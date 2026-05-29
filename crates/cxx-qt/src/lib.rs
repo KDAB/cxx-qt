@@ -216,6 +216,11 @@ pub trait Threading: Sized {
     fn threading_drop(cxx_qt_thread: core::pin::Pin<&mut CxxQtThread<Self>>);
 }
 
+#[doc(hidden)]
+// This is implemented when using `impl cxx_qt::Constructor<...> for ... {}` and allows Constructor to be implemented.
+// This is done with a trait bound on `Constructor` which avoids declaring constructors outside the bridge which aren't actually used.
+pub trait ConstructorDeclared<Arguments> {}
+
 /// This trait can be implemented on any [CxxQtType] to define a
 /// custom constructor in C++ for the QObject.
 ///
@@ -223,10 +228,13 @@ pub trait Threading: Sized {
 ///
 /// If this trait is implemented for a given [CxxQtType], it must also be declared inside the
 /// [cxx_qt::bridge](bridge) macro.
+/// Under the hood, this works by implementing a shim trait called [ConstructorDeclared].
+/// If this is not present, you cannot use your constructor, so if you encounter an error regarding this trait,
+/// it is most likely you have forgotten to declare your constructor inside the bridge.
 /// See the example below.
 ///
 /// Note that declaring an implementation of this trait will stop CXX-Qt from generating a default constructor.
-/// Therefore an implementation of [Default] is no longer required for the Rust type.
+/// Therefore, an implementation of [Default] is no longer required for the Rust type.
 ///
 /// # Minimal Example
 ///
@@ -238,7 +246,9 @@ pub trait Threading: Sized {
 ///         type MyStruct = super::MyStructRust;
 ///     }
 ///
-///     // Declare that we want to use a custom constructor
+///     // Declare that we want to use a custom constructor,
+///     // which will implement `ConstructorDeclared` for these particular args.
+///     //
 ///     // Note that the arguments must be a tuple of CXX types.
 ///     // Any associated types that aren't included here are assumed to be `()`.
 ///     impl cxx_qt::Constructor<(i32, String), NewArguments=(i32, String)> for MyStruct {}
@@ -250,6 +260,7 @@ pub trait Threading: Sized {
 ///     pub string: String
 /// }
 ///
+/// // After declaring we want a custom constructor in the bridge, we must implement it.
 /// impl cxx_qt::Constructor<(i32, String)> for qobject::MyStruct {
 ///     type BaseArguments = (); // Will be passed to the base class constructor
 ///     type InitializeArguments = (); // Will be passed to the "initialize" function
@@ -307,7 +318,7 @@ pub trait Threading: Sized {
 ///
 /// If a QObject implements the `Initialize` trait, and the inner Rust struct is [Default]-constructible it will automatically implement `cxx_qt::Constructor<()>`.
 /// Additionally, implementing `impl cxx_qt::Initialize` will act as shorthand for `cxx_qt::Constructor<()>`.
-pub trait Constructor<Arguments>: CxxQtType {
+pub trait Constructor<Arguments>: CxxQtType + ConstructorDeclared<Arguments> {
     /// The arguments that are passed to the [`new()`](Self::new) function to construct the inner Rust struct.
     /// This must be a tuple of CXX compatible types.
     ///
@@ -394,7 +405,7 @@ pub trait Constructor<Arguments>: CxxQtType {
 /// ```
 // TODO: Once the QObject type is available in the cxx-qt crate, also auto-generate a default
 // constructor that takes QObject and passes it to the parent.
-pub trait Initialize: CxxQtType {
+pub trait Initialize: CxxQtType + ConstructorDeclared<()> {
     /// This function is called to initialize the QObject after construction.
     fn initialize(self: core::pin::Pin<&mut Self>);
 }

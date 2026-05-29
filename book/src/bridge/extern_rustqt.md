@@ -111,7 +111,7 @@ is equivalent to writing
 impl cxx_qt::Constructor<()> for x {}
 ```
 
-inside the bridge.
+inside the bridge. You can then implement your constructors outside the bridge, using either of these traits.
 
 For further documentation see the [traits page](./traits.md).
 
