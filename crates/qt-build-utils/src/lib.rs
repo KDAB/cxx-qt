@@ -157,16 +157,16 @@ impl QtBuild {
                         // Merge artifacts into combined bin/ and include/
                         let mut artifacts = QtInstallationQtMinimal::group_artifacts(artifacts);
 
-                        // Sort the artifacts by version, largest first
+                        // Sort the artifacts by version
                         artifacts.sort_by_key(|artifact| artifact.version.clone());
-                        artifacts.reverse();
 
-                        // Pick the first found version
-                        if let Some(artifact) = artifacts.first() {
+                        // Try all the local available Qt minimal installs
+                        // starting with the largest Qt version
+                        for artifact in artifacts.into_iter().rev() {
                             // Try building a Qt installation from the url
-                            if let Ok(qt_installation) = QtInstallationQtMinimal::try_from(
-                                PathBuf::from(artifact.url.clone()),
-                            ) {
+                            if let Ok(qt_installation) =
+                                QtInstallationQtMinimal::try_from(PathBuf::from(artifact.url))
+                            {
                                 return Ok(Box::new(qt_installation));
                             }
                         }
