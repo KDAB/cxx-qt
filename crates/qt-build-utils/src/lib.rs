@@ -177,11 +177,11 @@ impl QtBuild {
 
                     // Download from Qt artifacts
                     //
-                    // NOTE: we assume the last version is the newest
-                    if let Some(version_last) = versions.last() {
-                        if let Ok(qt_installation) =
-                            QtInstallationQtMinimal::try_from(version_last.clone())
-                        {
+                    // NOTE: we assume the last version is the newest and
+                    // try each version in case there is a mismatch between
+                    // qt_artifacts and qt_versions
+                    for version in versions.into_iter().rev() {
+                        if let Ok(qt_installation) = QtInstallationQtMinimal::try_from(version) {
                             return Ok(Box::new(qt_installation));
                         }
                     }
