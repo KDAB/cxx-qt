@@ -1,0 +1,53 @@
+// SPDX-FileCopyrightText: 2022 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+digraph {
+    graph [fontname = "sans-serif"; nodesep = 1;];
+    edge [fontname = "sans-serif";];
+    node [color = "#0077c8"; fontcolor = white; fontname = "sans-serif"; shape = box; style = "filled,rounded";];
+
+    // Define our nodes
+    rust [group = left;label = "Rust implementation";];
+    bridge [group = center;label = "CXX-Qt Bridge\nQt/Rust boundary description";];
+    qobject [group = right;label = "QObject subclasses\nQt-side representation";];
+
+    // Define our fake nodes for layout as splines=ortho doesn't suppoort ports
+    subgraph {
+        node [shape = point; style = invis; width = 0;];
+
+        left [group = left;];
+        center [group = center;];
+        right [group = right;];
+    }
+
+    // Define our ranks and specific order so nodes are in the correct positions
+    subgraph {
+        edge [style = invis;];
+
+        subgraph {
+            rank = same;
+            left -> center -> right;
+        }
+        subgraph {
+            rank = same;
+            rust -> qobject;
+        }
+    }
+
+    // Connect bridge to our fake nodes
+    subgraph {
+        edge [dir = none;];
+
+        bridge -> center;
+        center -> left [label = "Macro Expansion";];
+        center -> right [label = "Code Generation";];
+    }
+
+    // Connect our fake nodes to qobject and rust
+    left -> rust;
+    right -> qobject;
+
+    // Connect qobject and rust
+    rust -> qobject [dir = both; label = "Safe Interop using CXX"; style = dashed;];
+}
