@@ -32,16 +32,16 @@ We'll need `cxx`, `cxx-qt`, `cxx-qt-lib`, `cxx-qt-build`, `qt-build-utils`, and 
 {{#include ../../../examples/qml_minimal/rust/Cargo.toml:book_package_name}}
 {{#include ../../../examples/cargo_without_cmake/Cargo.toml:book_cargo_toml_no_cmake}}
 cxx = "1.0.95"
-cxx-qt = "0.8"
-cxx-qt-lib = { version="0.8", features = ["qt_full"] }
+cxx-qt = "0.9"
+cxx-qt-lib = { version="0.9", features = ["qt_full"] }
 
 [build-dependencies]
 # The link_qt_object_files feature is required for statically linking Qt 6.
-cxx-qt-build = { version = "0.8", features = [ "link_qt_object_files" ] }
+cxx-qt-build = { version = "0.9", features = [ "link_qt_object_files" ] }
 
 # Enable the qt_minimal feature in qt-build-utils
 # this allows for automatically downloading Qt when not found with qmake
-qt-build-utils = { version = "0.8", features = ["qt_minimal"] }
+qt-build-utils = { version = "0.9", features = ["qt_minimal"] }
 # Indicate which Qt version is required via features
 qt-version = { version = "0.1", features = ["qt_version_at_least_6_10"] }
 ```
