@@ -31,6 +31,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Deprecation message about `QImage::mirror`
 - Fix `qenum` attribute breaking builds in certain situations
 
+### Added
+
+- `QByteArray` now implements `PartialEq` for `[u8]` and `Vec<u8>`.
+- `QString` now implements `PartialEq` for `str` and `String`.
+
 ## [0.8.1](https://github.com/KDAB/cxx-qt/compare/v0.8.0...v0.8.1) - 2026-02-16
 
 ### Fixed

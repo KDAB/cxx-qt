@@ -170,7 +170,7 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
             None => false,
         },
         VariantTest::QString => match v.value::<QString>() {
-            Some(s) => String::from(&s) == "C++ string",
+            Some(s) => s == "C++ string",
             None => false,
         },
         VariantTest::QTime => match v.value::<QTime>() {
