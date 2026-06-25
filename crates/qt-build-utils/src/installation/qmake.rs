@@ -86,7 +86,7 @@ impl QtInstallationQMake {
                         },
                     ))
                 } else {
-                    None
+                    acc
                 }
             })
             .unwrap_or_else(|| Err(QtBuildError::QtMissing.into()))
