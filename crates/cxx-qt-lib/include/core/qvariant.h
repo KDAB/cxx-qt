@@ -72,6 +72,13 @@ qvariantConstruct(const T& value) noexcept
 }
 
 template<typename T>
+void
+qvariantInitValueOrDefault(const QVariant& variant, T* uninit)
+{
+  new (uninit) T(variant.value<T>());
+}
+
+template<typename T>
 T
 qvariantValueOrDefault(const QVariant& variant) noexcept
 {
