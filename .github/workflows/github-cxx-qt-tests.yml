@@ -177,7 +177,7 @@ jobs:
       #
       # NOTE: no compiler cache is needed as build is fast
       - name: "Build"
-        run: cargo build --package qml-minimal-no-cmake
+        run: cargo build --package qml-minimal-no-cmake --features qt_minimal
       - name: Test output files exist
         if: runner.os == 'Linux'
         run: |
