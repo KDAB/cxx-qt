@@ -21,3 +21,13 @@ static_assert(!::std::is_trivially_copy_constructible<QFont>::value);
 
 static_assert(!::std::is_trivially_destructible<QFont>::value);
 static_assert(QTypeInfo<QFont>::isRelocatable);
+
+namespace rust {
+namespace cxxqtlib1 {
+void
+qfontResolve(const QFont& font, const QFont& other, QFont* uninit)
+{
+  new (uninit) QFont(font.resolve(other));
+}
+}
+}

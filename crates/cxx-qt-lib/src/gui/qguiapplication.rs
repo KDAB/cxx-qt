@@ -4,6 +4,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
+use crate::util::new_in_place;
 use crate::{KeyboardModifiers, MouseButtons, QByteArray, QFont, QString, QStringList, QVector};
 use core::pin::Pin;
 
@@ -106,7 +107,7 @@ mod ffi {
         fn qguiapplicationSetFont(font: &QFont);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_font"]
-        fn qguiapplicationFont() -> QFont;
+        unsafe fn qguiapplicationFont(uninit: *mut QFont);
         #[doc(hidden)]
         #[rust_name = "qguiapplication_set_library_paths"]
         fn qapplicationSetLibraryPaths(app: Pin<&mut QGuiApplication>, paths: &QStringList);
@@ -170,7 +171,7 @@ impl QGuiApplication {
 
     /// Returns the default application font.
     pub fn font(&self) -> QFont {
-        ffi::qguiapplication_font()
+        unsafe { new_in_place(|uninit| ffi::qguiapplication_font(uninit)) }
     }
 
     /// Returns a list of paths that the application will search when dynamically loading libraries.

@@ -8,16 +8,9 @@
 
 #include <QtGui/QFont>
 
-#include "rust/cxx.h"
-
 // Define namespace otherwise we hit a GCC bug
 // https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
 namespace rust {
-
-template<>
-struct IsRelocatable<QFont> : ::std::true_type
-{};
-
 namespace cxxqtlib1 {
 using QFontStyle = QFont::Style;
 using QFontHintingPreference = QFont::HintingPreference;
@@ -26,6 +19,9 @@ using QFontSpacingType = QFont::SpacingType;
 using QFontStyleStrategy = QFont::StyleStrategy;
 using QFontStyleHint = QFont::StyleHint;
 using QFontWeight = QFont::Weight;
+
+void
+qfontResolve(const QFont& font, const QFont& other, QFont* uninit);
 
 } // namespace cxxqtlib1
 } // namespace rust

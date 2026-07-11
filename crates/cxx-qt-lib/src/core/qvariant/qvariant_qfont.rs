@@ -19,8 +19,8 @@ pub mod ffi {
         fn qvariantCanConvertQFont(variant: &QVariant) -> bool;
         #[rust_name = "construct_QFont"]
         fn qvariantConstruct(value: &QFont) -> QVariant;
-        #[rust_name = "value_or_default_QFont"]
-        fn qvariantValueOrDefault(variant: &QVariant) -> QFont;
+        #[rust_name = "qvariant_init_value_or_default_QFont"]
+        unsafe fn qvariantInitValueOrDefault(variant: &QVariant, uninit: *mut QFont);
     }
 }
 
@@ -33,5 +33,5 @@ pub(crate) fn construct(value: &ffi::QFont) -> ffi::QVariant {
 }
 
 pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QFont {
-    ffi::value_or_default_QFont(variant)
+    unsafe { crate::util::new_in_place(|p| ffi::qvariant_init_value_or_default_QFont(variant, p)) }
 }

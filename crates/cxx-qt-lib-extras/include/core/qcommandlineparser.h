@@ -8,24 +8,20 @@
 
 #include <QtCore/QCommandLineParser>
 
-#include "rust/cxx.h"
-
-// Define namespace otherwise we hit a GCC bug
-// https://gcc.gnu.org/bugzilla/show_bug.cgi?id=56480
-namespace rust {
-
-template<>
-struct IsRelocatable<QCommandLineParser> : ::std::true_type
-{};
-
-} // namespace rust
-
 namespace rust {
 namespace cxxqtlib1 {
 using QCommandLineParserOptionsAfterPositionalArgumentsMode =
   QCommandLineParser::OptionsAfterPositionalArgumentsMode;
 using QCommandLineParserSingleDashWordOptionMode =
   QCommandLineParser::SingleDashWordOptionMode;
+
+void
+qcommandlineparserAddHelpOption(QCommandLineParser& parser,
+                                QCommandLineOption* uninit);
+
+void
+qcommandlineparserAddVersionOption(QCommandLineParser& parser,
+                                   QCommandLineOption* uninit);
 
 QString
 qcommandlineparserValue(const QCommandLineParser& parser,

@@ -18,6 +18,20 @@ static_assert(!::std::is_trivially_copy_assignable<QCommandLineParser>::value);
 
 namespace rust {
 namespace cxxqtlib1 {
+void
+qcommandlineparserAddHelpOption(QCommandLineParser& parser,
+                                QCommandLineOption* uninit)
+{
+  new (uninit) QCommandLineOption(parser.addHelpOption());
+}
+
+void
+qcommandlineparserAddVersionOption(QCommandLineParser& parser,
+                                   QCommandLineOption* uninit)
+{
+  new (uninit) QCommandLineOption(parser.addVersionOption());
+}
+
 QString
 qcommandlineparserValue(const QCommandLineParser& parser,
                         const QString& optionName)

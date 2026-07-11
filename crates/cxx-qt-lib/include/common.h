@@ -20,7 +20,14 @@ template<typename T, typename... Args>
 T
 construct(Args... args)
 {
-  return T(args...);
+  return T(std::forward<Args>(args)...);
+}
+
+template<typename T, typename... Args>
+void
+constructInPlace(T* uninit, Args... args)
+{
+  new (uninit) T(std::forward<Args>(args)...);
 }
 
 template<typename T>

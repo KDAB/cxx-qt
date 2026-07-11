@@ -29,5 +29,11 @@ qguiapplicationNew(const QVector<QByteArray>& args)
   return ptr;
 }
 
+void
+qguiapplicationFont(QFont* uninit)
+{
+  new (uninit) QFont(QGuiApplication::font());
+}
+
 }
 }
