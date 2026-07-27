@@ -221,6 +221,17 @@ impl_qvariant_value!(
     crate::QHash<crate::QHashPair_QString_QVariant>,
     qvariant_qvarianthash
 );
+impl_qvariant_value!(crate::QList<bool>, qvariant_qlist_bool);
+impl_qvariant_value!(crate::QList<f32>, qvariant_qlist_f32);
+impl_qvariant_value!(crate::QList<f64>, qvariant_qlist_f64);
+impl_qvariant_value!(crate::QList<i8>, qvariant_qlist_i8);
+impl_qvariant_value!(crate::QList<i16>, qvariant_qlist_i16);
+impl_qvariant_value!(crate::QList<i32>, qvariant_qlist_i32);
+impl_qvariant_value!(crate::QList<i64>, qvariant_qlist_i64);
+impl_qvariant_value!(crate::QList<u8>, qvariant_qlist_u8);
+impl_qvariant_value!(crate::QList<u16>, qvariant_qlist_u16);
+impl_qvariant_value!(crate::QList<u32>, qvariant_qlist_u32);
+impl_qvariant_value!(crate::QList<u64>, qvariant_qlist_u64);
 impl_qvariant_value!(crate::QList<QVariant>, qvariant_qvariantlist);
 impl_qvariant_value!(
     crate::QMap<crate::QMapPair_QString_QVariant>,

@@ -93,6 +93,49 @@ EOF
     rustfmt "$SCRIPTPATH/qvariant_$2.rs"
 }
 
+function generate_bridge_qlist() {
+    tee "$SCRIPTPATH/qvariant_qlist_$1.rs" <<EOF
+// SPDX-FileCopyrightText: 2026 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
+// SPDX-FileContributor: Yuri Knigavko <yuri.knigavko@qt.io>
+//
+// SPDX-License-Identifier: MIT OR Apache-2.0
+
+#[cxx::bridge]
+pub mod ffi {
+    unsafe extern "C++" {
+        include!("cxx-qt-lib/core/qlist/qlist_$1.h");
+        type QList_$1 = crate::QList<$1>;
+
+        include!("cxx-qt-lib/qvariant.h");
+        type QVariant = crate::QVariant;
+    }
+
+    #[namespace = "rust::cxxqtlib1::qvariant"]
+    unsafe extern "C++" {
+        #[rust_name = "can_convert_QList_$1"]
+        fn qvariantCanConvertQList_$1(variant: &QVariant) -> bool;
+        #[rust_name = "construct_QList_$1"]
+        fn qvariantConstruct(value: &QList_$1) -> QVariant;
+        #[rust_name = "value_or_default_QList_$1"]
+        fn qvariantValueOrDefault(variant: &QVariant) -> QList_$1;
+    }
+}
+
+pub(crate) fn can_convert(variant: &ffi::QVariant) -> bool {
+    ffi::can_convert_QList_$1(variant)
+}
+
+pub(crate) fn construct(value: &ffi::QList_$1) -> ffi::QVariant {
+    ffi::construct_QList_$1(value)
+}
+
+pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QList_$1 {
+    ffi::value_or_default_QList_$1(variant)
+}
+EOF
+    rustfmt "$SCRIPTPATH/qvariant_qlist_$1.rs"
+}
+
 generate_bridge_primitive "bool" "Bool"
 generate_bridge_primitive "f32" "F32"
 generate_bridge_primitive "f64" "F64"
@@ -134,3 +177,15 @@ generate_bridge_qt "QRegion" "qregion"
 generate_bridge_qt "QVector2D" "qvector2d"
 generate_bridge_qt "QVector3D" "qvector3d"
 generate_bridge_qt "QVector4D" "qvector4d"
+
+generate_bridge_qlist "bool"
+generate_bridge_qlist "f32"
+generate_bridge_qlist "f64"
+generate_bridge_qlist "i8"
+generate_bridge_qlist "i16"
+generate_bridge_qlist "i32"
+generate_bridge_qlist "i64"
+generate_bridge_qlist "u8"
+generate_bridge_qlist "u16"
+generate_bridge_qlist "u32"
+generate_bridge_qlist "u64"
