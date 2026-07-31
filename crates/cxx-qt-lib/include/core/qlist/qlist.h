@@ -23,6 +23,7 @@
 #include "qlist_QLineF.h"
 #include "qlist_QMargins.h"
 #include "qlist_QMarginsF.h"
+#include "qlist_QObjectMutPtr.h"
 #include "qlist_QPersistentModelIndex.h"
 #include "qlist_QPoint.h"
 #include "qlist_QPointF.h"

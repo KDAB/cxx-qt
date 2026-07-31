@@ -55,6 +55,9 @@ pub use qmodelindex::QModelIndex;
 mod qobject;
 pub use qobject::QObjectExt;
 
+mod qobjectmutptr;
+pub use qobjectmutptr::QObjectMutPtr;
+
 mod qpersistentmodelindex;
 pub use qpersistentmodelindex::QPersistentModelIndex;
 

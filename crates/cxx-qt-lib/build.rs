@@ -81,6 +81,7 @@ fn main() {
         "core/qlist/qlist_qlinef",
         "core/qlist/qlist_qmargins",
         "core/qlist/qlist_qmarginsf",
+        "core/qlist/qlist_qobjectmutptr",
         "core/qlist/qlist_qpersistentmodelindex",
         "core/qlist/qlist_qpoint",
         "core/qlist/qlist_qpointf",

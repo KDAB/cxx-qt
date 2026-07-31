@@ -8,8 +8,8 @@ use crate::QColor;
 #[cfg(not(target_os = "emscripten"))]
 use crate::QDateTime;
 use crate::{
-    QByteArray, QDate, QLine, QLineF, QMargins, QMarginsF, QPersistentModelIndex, QPoint, QPointF,
-    QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QUuid, QVariant,
+    QByteArray, QDate, QLine, QLineF, QMargins, QMarginsF, QObjectMutPtr, QPersistentModelIndex,
+    QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QUrl, QUuid, QVariant,
 };
 use core::{marker::PhantomData, mem::MaybeUninit};
 use cxx::{type_id, ExternType};
@@ -448,6 +448,7 @@ impl_qlist_element!(
     qlist_qpersistentmodelindex,
     "QList_QPersistentModelIndex"
 );
+impl_qlist_element!(QObjectMutPtr, qlist_qobjectmutptr, "QList_QObjectMutPtr");
 impl_qlist_element!(QPoint, qlist_qpoint, "QList_QPoint");
 impl_qlist_element!(QPointF, qlist_qpointf, "QList_QPointF");
 impl_qlist_element!(QRect, qlist_qrect, "QList_QRect");
