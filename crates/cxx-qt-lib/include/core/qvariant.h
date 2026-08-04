@@ -34,6 +34,8 @@
 #include <QtCore/QUrl>
 #include <QtCore/QUuid>
 
+#include <cxx-qt-lib/qobjectmutptr.h>
+
 #ifdef CXX_QT_GUI_FEATURE
 #include <QtGui/QColor>
 #include <QtGui/QFont>
@@ -128,6 +130,7 @@ CXX_QT_QVARIANT_CAN_CONVERT(QList_u8)
 CXX_QT_QVARIANT_CAN_CONVERT(QList_u16)
 CXX_QT_QVARIANT_CAN_CONVERT(QList_u32)
 CXX_QT_QVARIANT_CAN_CONVERT(QList_u64)
+CXX_QT_QVARIANT_CAN_CONVERT(QList_QObjectMutPtr)
 
 #ifdef CXX_QT_GUI_FEATURE
 CXX_QT_QVARIANT_CAN_CONVERT(QColor)
