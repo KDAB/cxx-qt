@@ -17,6 +17,9 @@
 #include <QtCore/QByteArray>
 #include <QtCore/QDate>
 #include <QtCore/QDateTime>
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonValue>
 #include <QtCore/QLine>
 #include <QtCore/QLineF>
 #include <QtCore/QList>
@@ -97,6 +100,9 @@ CXX_QT_QVARIANT_CAN_CONVERT(I64)
 CXX_QT_QVARIANT_CAN_CONVERT(QByteArray)
 CXX_QT_QVARIANT_CAN_CONVERT(QDate)
 CXX_QT_QVARIANT_CAN_CONVERT(QDateTime)
+CXX_QT_QVARIANT_CAN_CONVERT(QJsonArray)
+CXX_QT_QVARIANT_CAN_CONVERT(QJsonObject)
+CXX_QT_QVARIANT_CAN_CONVERT(QJsonValue)
 CXX_QT_QVARIANT_CAN_CONVERT(QLine)
 CXX_QT_QVARIANT_CAN_CONVERT(QLineF)
 CXX_QT_QVARIANT_CAN_CONVERT(QModelIndex)

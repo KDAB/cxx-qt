@@ -202,6 +202,9 @@ impl_qvariant_value!(crate::QByteArray, qvariant_qbytearray);
 impl_qvariant_value!(crate::QDate, qvariant_qdate);
 #[cfg(not(target_os = "emscripten"))]
 impl_qvariant_value!(crate::QDateTime, qvariant_qdatetime);
+impl_qvariant_value!(crate::QJsonArray, qvariant_qjsonarray);
+impl_qvariant_value!(crate::QJsonObject, qvariant_qjsonobject);
+impl_qvariant_value!(crate::QJsonValue, qvariant_qjsonvalue);
 impl_qvariant_value!(crate::QLine, qvariant_qline);
 impl_qvariant_value!(crate::QLineF, qvariant_qlinef);
 impl_qvariant_value!(crate::QModelIndex, qvariant_qmodelindex);
