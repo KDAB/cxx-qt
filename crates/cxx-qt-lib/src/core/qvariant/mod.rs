@@ -7,7 +7,7 @@ use cxx::{type_id, ExternType};
 use std::fmt;
 use std::mem::MaybeUninit;
 
-use crate::QMetaTypeType;
+use crate::{QMetaTypeType, QObjectMutPtr};
 
 #[cxx::bridge]
 mod ffi {
@@ -232,6 +232,7 @@ impl_qvariant_value!(crate::QList<u8>, qvariant_qlist_u8);
 impl_qvariant_value!(crate::QList<u16>, qvariant_qlist_u16);
 impl_qvariant_value!(crate::QList<u32>, qvariant_qlist_u32);
 impl_qvariant_value!(crate::QList<u64>, qvariant_qlist_u64);
+impl_qvariant_value!(crate::QList<QObjectMutPtr>, qvariant_qlist_qobjectmutptr);
 impl_qvariant_value!(crate::QList<QVariant>, qvariant_qvariantlist);
 impl_qvariant_value!(
     crate::QMap<crate::QMapPair_QString_QVariant>,

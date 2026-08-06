@@ -100,6 +100,7 @@ CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::std::uint8_t>, QList_u8)
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::std::uint16_t>, QList_u16)
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::std::uint32_t>, QList_u32)
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::std::uint64_t>, QList_u64)
+CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::QObjectMutPtr>, QList_QObjectMutPtr)
 
 #ifdef CXX_QT_GUI_FEATURE
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QColor, QColor)
