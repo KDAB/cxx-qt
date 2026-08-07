@@ -205,6 +205,7 @@ impl_qvariant_value!(crate::QDateTime, qvariant_qdatetime);
 impl_qvariant_value!(crate::QLine, qvariant_qline);
 impl_qvariant_value!(crate::QLineF, qvariant_qlinef);
 impl_qvariant_value!(crate::QModelIndex, qvariant_qmodelindex);
+impl_qvariant_value!(crate::QObjectMutPtr, qvariant_qobjectmutptr);
 impl_qvariant_value!(crate::QPersistentModelIndex, qvariant_qpersistentmodelindex);
 impl_qvariant_value!(crate::QPoint, qvariant_qpoint);
 impl_qvariant_value!(crate::QPointF, qvariant_qpointf);
