@@ -21,6 +21,7 @@
 #include <QtCore/QLineF>
 #include <QtCore/QList>
 #include <QtCore/QModelIndex>
+#include <QtCore/QObject>
 #include <QtCore/QPersistentModelIndex>
 #include <QtCore/QPoint>
 #include <QtCore/QPointF>
@@ -99,6 +100,7 @@ CXX_QT_QVARIANT_CAN_CONVERT(QDateTime)
 CXX_QT_QVARIANT_CAN_CONVERT(QLine)
 CXX_QT_QVARIANT_CAN_CONVERT(QLineF)
 CXX_QT_QVARIANT_CAN_CONVERT(QModelIndex)
+CXX_QT_QVARIANT_CAN_CONVERT(QObjectMutPtr)
 CXX_QT_QVARIANT_CAN_CONVERT(QPersistentModelIndex)
 CXX_QT_QVARIANT_CAN_CONVERT(QPoint)
 CXX_QT_QVARIANT_CAN_CONVERT(QPointF)

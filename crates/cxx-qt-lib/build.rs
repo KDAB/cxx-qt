@@ -161,6 +161,7 @@ fn main() {
         "core/qvariant/qvariant_qlist_u64",
         "core/qvariant/qvariant_qlist_u8",
         "core/qvariant/qvariant_qmodelindex",
+        "core/qvariant/qvariant_qobjectmutptr",
         "core/qvariant/qvariant_qpersistentmodelindex",
         "core/qvariant/qvariant_qpoint",
         "core/qvariant/qvariant_qpointf",
