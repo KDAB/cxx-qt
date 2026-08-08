@@ -4,8 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt_lib::{
-    QByteArray, QColor, QDate, QDateTime, QPoint, QPointF, QRect, QRectF, QSize, QSizeF, QString,
-    QTime, QTimeZone, QUrl, QVariant,
+    QByteArray, QColor, QDate, QDateTime, QJsonArray, QJsonObject, QJsonValue, QPoint, QPointF,
+    QRect, QRectF, QSize, QSizeF, QString, QTime, QTimeZone, QUrl, QVariant,
 };
 
 #[cxx::bridge]
@@ -21,6 +21,9 @@ mod qvariant_cxx {
         QColor,
         QDate,
         QDateTime,
+        QJsonArray,
+        QJsonObject,
+        QJsonValue,
         QPoint,
         QPointF,
         QRect,
@@ -50,6 +53,26 @@ mod qvariant_cxx {
 
 use qvariant_cxx::VariantTest;
 
+fn construct_json_array() -> QJsonArray {
+    let mut array = QJsonArray::default();
+    array.append(&QJsonValue::from(&QString::from("Rust string")));
+    array.append(&QJsonValue::from(123_i64));
+    array
+}
+
+fn construct_json_object() -> QJsonObject {
+    let mut object = QJsonObject::default();
+    object.insert(
+        &QString::from("key"),
+        &QJsonValue::from(&QString::from("Rust string")),
+    );
+    object
+}
+
+fn construct_json_value() -> QJsonValue {
+    QJsonValue::from(&QString::from("Rust string"))
+}
+
 fn construct_qvariant(test: VariantTest) -> QVariant {
     match test {
         VariantTest::Bool => QVariant::from(&true),
@@ -66,6 +89,9 @@ fn construct_qvariant(test: VariantTest) -> QVariant {
             &QTime::new(1, 2, 3, 4),
             &QTimeZone::from_offset_seconds(0),
         )),
+        VariantTest::QJsonArray => QVariant::from(&construct_json_array()),
+        VariantTest::QJsonObject => QVariant::from(&construct_json_object()),
+        VariantTest::QJsonValue => QVariant::from(&construct_json_value()),
         VariantTest::QPoint => QVariant::from(&QPoint::new(1, 3)),
         VariantTest::QPointF => QVariant::from(&QPointF::new(1.0, 3.0)),
         VariantTest::QRect => QVariant::from(&QRect::new(123, 456, 246, 912)),
@@ -136,6 +162,25 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
                     && date_time.time().msec() == 1
                     && date_time.offset_from_utc() == 0
             }
+            None => false,
+        },
+        VariantTest::QJsonArray => match v.value::<QJsonArray>() {
+            Some(array) => {
+                array.len() == 2
+                    && array.at(0).to_string() == QString::from("C++ string")
+                    && array.at(1).to_int() == 8910
+            }
+            None => false,
+        },
+        VariantTest::QJsonObject => match v.value::<QJsonObject>() {
+            Some(object) => {
+                let value = object.value(&QString::from("key"));
+                object.len() == 1 && value.to_string() == QString::from("C++ string")
+            }
+            None => false,
+        },
+        VariantTest::QJsonValue => match v.value::<QJsonValue>() {
+            Some(value) => value.is_string() && value.to_string() == QString::from("C++ string"),
             None => false,
         },
         VariantTest::QPoint => match v.value::<QPoint>() {
