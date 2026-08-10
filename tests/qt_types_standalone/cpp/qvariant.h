@@ -6,6 +6,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 #pragma once
 
+#include <QtCore/QJsonArray>
+#include <QtCore/QJsonObject>
+#include <QtCore/QJsonValue>
 #include <QtCore/QVariant>
 #include <QtTest/QTest>
 
@@ -15,6 +18,48 @@
 Q_DECLARE_METATYPE(VariantTest)
 
 namespace {
+
+// The JSON values that the Rust side of the test constructs.
+QJsonArray
+rustJsonArray()
+{
+  return QJsonArray(
+    { QJsonValue(QStringLiteral("Rust string")), QJsonValue(123) });
+}
+
+QJsonObject
+rustJsonObject()
+{
+  return QJsonObject(
+    { { QStringLiteral("key"), QJsonValue(QStringLiteral("Rust string")) } });
+}
+
+QJsonValue
+rustJsonValue()
+{
+  return QJsonValue(QStringLiteral("Rust string"));
+}
+
+// The JSON values that the Rust side of the test reads.
+QJsonArray
+cppJsonArray()
+{
+  return QJsonArray(
+    { QJsonValue(QStringLiteral("C++ string")), QJsonValue(8910) });
+}
+
+QJsonObject
+cppJsonObject()
+{
+  return QJsonObject(
+    { { QStringLiteral("key"), QJsonValue(QStringLiteral("C++ string")) } });
+}
+
+QJsonValue
+cppJsonValue()
+{
+  return QJsonValue(QStringLiteral("C++ string"));
+}
 
 bool
 test_constructed_qvariant(const QVariant& v, VariantTest test)
@@ -50,6 +95,12 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
              v.value<QDateTime>().time().second() == 3 &&
              v.value<QDateTime>().time().msec() == 4 &&
              v.value<QDateTime>().offsetFromUtc() == 0;
+    case VariantTest::QJsonArray:
+      return v.value<QJsonArray>() == rustJsonArray();
+    case VariantTest::QJsonObject:
+      return v.value<QJsonObject>() == rustJsonObject();
+    case VariantTest::QJsonValue:
+      return v.value<QJsonValue>() == rustJsonValue();
     case VariantTest::QPoint:
       return v.value<QPoint>().x() == 1 && v.value<QPoint>().y() == 3;
     case VariantTest::QPointF:
@@ -116,6 +167,9 @@ private Q_SLOTS:
     QTest::newRow("QColor") << VariantTest::QColor;
     QTest::newRow("QDate") << VariantTest::QDate;
     QTest::newRow("QDateTime") << VariantTest::QDateTime;
+    QTest::newRow("QJsonArray") << VariantTest::QJsonArray;
+    QTest::newRow("QJsonObject") << VariantTest::QJsonObject;
+    QTest::newRow("QJsonValue") << VariantTest::QJsonValue;
     QTest::newRow("QPoint") << VariantTest::QPoint;
     QTest::newRow("QPointF") << VariantTest::QPointF;
     QTest::newRow("QRect") << VariantTest::QRect;
@@ -165,6 +219,15 @@ private Q_SLOTS:
       << QVariant::fromValue<QDateTime>(
            QDateTime(QDate(2021, 12, 31), QTime(4, 3, 2, 1), QTimeZone::utc()))
       << VariantTest::QDateTime;
+    QTest::newRow("QJsonArray")
+      << QVariant::fromValue<QJsonArray>(cppJsonArray())
+      << VariantTest::QJsonArray;
+    QTest::newRow("QJsonObject")
+      << QVariant::fromValue<QJsonObject>(cppJsonObject())
+      << VariantTest::QJsonObject;
+    QTest::newRow("QJsonValue")
+      << QVariant::fromValue<QJsonValue>(cppJsonValue())
+      << VariantTest::QJsonValue;
     QTest::newRow("QPoint")
       << QVariant::fromValue<QPoint>(QPoint(8, 9)) << VariantTest::QPoint;
     QTest::newRow("QPointF") << QVariant::fromValue<QPointF>(QPointF(8.0, 9.0))

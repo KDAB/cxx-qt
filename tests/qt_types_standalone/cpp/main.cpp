@@ -20,6 +20,9 @@
 #include "qgenericmatrix.h"
 #include "qguiapplication.h"
 #include "qhash.h"
+#include "qjsonarray.h"
+#include "qjsonobject.h"
+#include "qjsonvalue.h"
 #include "qline.h"
 #include "qlinef.h"
 #include "qlist.h"
@@ -77,6 +80,9 @@ main(int argc, char* argv[])
   runTest(QScopedPointer<QObject>(new QGenericMatrixTest));
   runTest(QScopedPointer<QObject>(new QGuiApplicationTest));
   runTest(QScopedPointer<QObject>(new QHashTest));
+  runTest(QScopedPointer<QObject>(new QJsonArrayTest));
+  runTest(QScopedPointer<QObject>(new QJsonObjectTest));
+  runTest(QScopedPointer<QObject>(new QJsonValueTest));
   runTest(QScopedPointer<QObject>(new QLineTest));
   runTest(QScopedPointer<QObject>(new QLineFTest));
   runTest(QScopedPointer<QObject>(new QListTest));

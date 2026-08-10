@@ -79,6 +79,9 @@ add_executable(${APP_NAME}
     cpp/qgenericmatrix.h
     cpp/qguiapplication.h
     cpp/qhash.h
+    cpp/qjsonarray.h
+    cpp/qjsonobject.h
+    cpp/qjsonvalue.h
     cpp/qline.h
     cpp/qlinef.h
     cpp/qlist.h

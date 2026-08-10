@@ -25,6 +25,15 @@ pub use qflags::{QFlag, QFlagRepr, QFlags};
 mod qhash;
 pub use qhash::{QHash, QHashPair, QHashPair_QString_QVariant, QHashPair_i32_QByteArray};
 
+mod qjsonarray;
+pub use qjsonarray::QJsonArray;
+
+mod qjsonobject;
+pub use qjsonobject::QJsonObject;
+
+mod qjsonvalue;
+pub use qjsonvalue::QJsonValue;
+
 mod qline;
 pub use qline::QLine;
 
