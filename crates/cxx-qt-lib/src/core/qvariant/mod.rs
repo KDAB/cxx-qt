@@ -58,6 +58,13 @@ mod ffi {
         #[rust_name = "qvariant_to_debug_qstring"]
         fn toDebugQString(variant: &QVariant) -> QString;
     }
+
+    #[namespace = "rust::cxxqtlib1::qvariant"]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qvariant_type_name"]
+        fn qvariantTypeName(variant: &QVariant) -> &[u8];
+    }
 }
 
 /// The `QVariant` class acts like a union for the most common Qt data types.
@@ -117,6 +124,16 @@ impl QVariant {
     /// Returns the storage type of the value stored in the variant.
     pub fn type_id(&self) -> QMetaTypeType {
         self.user_type().into()
+    }
+
+    /// Returns the name of the type stored in the variant.
+    ///
+    /// The returned string describes the C++ datatype used to store the data.
+    /// An invalid variant returns an empty string.
+    pub fn type_name(&self) -> &str {
+        // The slice is empty when the variant has no type name.
+        let slice = ffi::qvariant_type_name(self);
+        std::str::from_utf8(slice).expect("QVariant type name is not valid UTF-8")
     }
 
     /// Returns the stored value converted to the template type `T`, or `None` if the type cannot be converted to `T`.
