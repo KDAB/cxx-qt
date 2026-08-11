@@ -49,41 +49,5 @@ qjsonvalueFromI64(::rust::i64 value)
   return QJsonValue(static_cast<qint64>(value));
 }
 
-bool
-qjsonvalueToBool(const QJsonValue& value)
-{
-  return value.toBool(false);
-}
-
-::rust::f64
-qjsonvalueToDouble(const QJsonValue& value)
-{
-  return value.toDouble(0.0);
-}
-
-::rust::i32
-qjsonvalueToInt(const QJsonValue& value)
-{
-  return static_cast<::rust::i32>(value.toInt(0));
-}
-
-QString
-qjsonvalueToQString(const QJsonValue& value)
-{
-  return value.toString(QString{});
-}
-
-QJsonArray
-qjsonvalueToArray(const QJsonValue& value)
-{
-  return value.toArray(QJsonArray{});
-}
-
-QJsonObject
-qjsonvalueToObject(const QJsonValue& value)
-{
-  return value.toObject(QJsonObject{});
-}
-
 } // namespace cxxqtlib1
 } // namespace rust
