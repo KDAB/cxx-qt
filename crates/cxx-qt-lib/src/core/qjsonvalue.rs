@@ -50,6 +50,42 @@ mod ffi {
         /// Returns `true` if the value contains an object.
         #[rust_name = "is_object"]
         fn isObject(self: &QJsonValue) -> bool;
+
+        /// Converts the value to a `bool` and returns it.
+        ///
+        /// If the value does not contain a boolean, `default_value` is returned.
+        #[rust_name = "to_bool_or"]
+        fn toBool(self: &QJsonValue, default_value: bool) -> bool;
+
+        /// Converts the value to a `f64` and returns it.
+        ///
+        /// If the value does not contain a double, `default_value` is returned.
+        #[rust_name = "to_double_or"]
+        fn toDouble(self: &QJsonValue, default_value: f64) -> f64;
+
+        /// Converts the value to an `i32` and returns it.
+        ///
+        /// If the value does not contain a double, or is not a whole number, `default_value` is returned.
+        #[rust_name = "to_int_or"]
+        fn toInt(self: &QJsonValue, default_value: i32) -> i32;
+
+        /// Converts the value to a [`QString`] and returns it.
+        ///
+        /// If the value does not contain a string, `default_value` is returned.
+        #[rust_name = "to_string_or"]
+        fn toString(self: &QJsonValue, default_value: &QString) -> QString;
+
+        /// Converts the value to a [`QJsonArray`] and returns it.
+        ///
+        /// If the value does not contain an array, `default_value` is returned.
+        #[rust_name = "to_array_or"]
+        fn toArray(self: &QJsonValue, default_value: &QJsonArray) -> QJsonArray;
+
+        /// Converts the value to a [`QJsonObject`] and returns it.
+        ///
+        /// If the value does not contain an object, `default_value` is returned.
+        #[rust_name = "to_object_or"]
+        fn toObject(self: &QJsonValue, default_value: &QJsonObject) -> QJsonObject;
     }
 
     #[namespace = "rust::cxxqtlib1"]
@@ -99,30 +135,6 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qjsonvalue_to_debug_qstring"]
         fn toDebugQString(value: &QJsonValue) -> QString;
-
-        #[doc(hidden)]
-        #[rust_name = "to_bool"]
-        fn qjsonvalueToBool(value: &QJsonValue) -> bool;
-
-        #[doc(hidden)]
-        #[rust_name = "to_double"]
-        fn qjsonvalueToDouble(value: &QJsonValue) -> f64;
-
-        #[doc(hidden)]
-        #[rust_name = "to_int"]
-        fn qjsonvalueToInt(value: &QJsonValue) -> i32;
-
-        #[doc(hidden)]
-        #[rust_name = "to_string"]
-        fn qjsonvalueToQString(value: &QJsonValue) -> QString;
-
-        #[doc(hidden)]
-        #[rust_name = "to_array"]
-        fn qjsonvalueToArray(value: &QJsonValue) -> QJsonArray;
-
-        #[doc(hidden)]
-        #[rust_name = "to_object"]
-        fn qjsonvalueToObject(value: &QJsonValue) -> QJsonObject;
     }
 }
 
@@ -216,34 +228,34 @@ unsafe impl cxx::ExternType for QJsonValue {
 impl QJsonValue {
     /// Converts the value to a `bool`. Returns `false` if the value is not a boolean.
     pub fn to_bool(&self) -> bool {
-        ffi::to_bool(self)
+        self.to_bool_or(false)
     }
 
     /// Converts the value to a `f64`. Returns `0.0` if the value is not a double.
     pub fn to_double(&self) -> f64 {
-        ffi::to_double(self)
+        self.to_double_or(0.0)
     }
 
     /// Converts the value to a `i32`. Returns `0` if the value is not an integer.
     pub fn to_int(&self) -> i32 {
-        ffi::to_int(self)
+        self.to_int_or(0)
     }
 
     /// Converts the value to a [`QString`]. Returns an empty string if the value is
     /// not a string.
     pub fn to_string(&self) -> QString {
-        ffi::to_string(self)
+        self.to_string_or(&QString::default())
     }
 
     /// Converts the value to a [`QJsonArray`]. Returns an empty array if the value
     /// is not an array.
     pub fn to_array(&self) -> QJsonArray {
-        ffi::to_array(self)
+        self.to_array_or(&QJsonArray::default())
     }
 
     /// Converts the value to a [`QJsonObject`]. Returns an empty object if the value
     /// is not an object.
     pub fn to_object(&self) -> QJsonObject {
-        ffi::to_object(self)
+        self.to_object_or(&QJsonObject::default())
     }
 }

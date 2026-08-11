@@ -27,18 +27,6 @@ namespace cxxqtlib1 {
 
 QJsonValue
 qjsonvalueFromI64(::rust::i64 value);
-bool
-qjsonvalueToBool(const QJsonValue& value);
-::rust::f64
-qjsonvalueToDouble(const QJsonValue& value);
-::rust::i32
-qjsonvalueToInt(const QJsonValue& value);
-QString
-qjsonvalueToQString(const QJsonValue& value);
-QJsonArray
-qjsonvalueToArray(const QJsonValue& value);
-QJsonObject
-qjsonvalueToObject(const QJsonValue& value);
 
 } // namespace cxxqtlib1
 } // namespace rust
