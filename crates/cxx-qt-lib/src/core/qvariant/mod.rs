@@ -294,3 +294,37 @@ unsafe impl ExternType for QVariant {
     type Id = type_id!("QVariant");
     type Kind = cxx::kind::Trivial;
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{QList, QString};
+
+    #[test]
+    fn test_type_name() {
+        let variant = QVariant::from(&true);
+        assert_eq!(variant.type_name(), "bool");
+
+        let variant = QVariant::from(&123_i32);
+        assert_eq!(variant.type_name(), "int");
+
+        let variant = QVariant::from(&0.25f32);
+        assert_eq!(variant.type_name(), "float");
+
+        let variant = QVariant::from(&0.75f64);
+        assert_eq!(variant.type_name(), "double");
+
+        let variant = QVariant::from(&QList::<i32>::from_iter(&[1, 2, 3]));
+        assert_eq!(variant.type_name(), "QList<int>");
+
+        let variant = QVariant::from(&QString::from("ABC"));
+        assert_eq!(variant.type_name(), "QString");
+    }
+
+    #[test]
+    fn qvariant_type_name_invalid() {
+        let variant = QVariant::default();
+        assert!(!variant.is_valid());
+        assert_eq!(variant.type_name(), "");
+    }
+}
