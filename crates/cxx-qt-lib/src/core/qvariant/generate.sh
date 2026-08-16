@@ -197,3 +197,5 @@ generate_bridge_qlist "u16" "u16" "u16"
 generate_bridge_qlist "u32" "u32" "u32"
 generate_bridge_qlist "u64" "u64" "u64"
 generate_bridge_qlist "QObjectMutPtr" "qobjectmutptr" "crate::QObjectMutPtr"
+# In Qt 5 (unlike Qt 6), QList<QString> and QStringList are distinct types.
+generate_bridge_qlist "QString" "qstring" "crate::QString"

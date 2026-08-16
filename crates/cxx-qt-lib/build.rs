@@ -162,6 +162,7 @@ fn main() {
         "core/qvariant/qvariant_qlist_i64",
         "core/qvariant/qvariant_qlist_i8",
         "core/qvariant/qvariant_qlist_qobjectmutptr",
+        "core/qvariant/qvariant_qlist_qstring",
         "core/qvariant/qvariant_qlist_u16",
         "core/qvariant/qvariant_qlist_u32",
         "core/qvariant/qvariant_qlist_u64",
