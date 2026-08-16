@@ -9,6 +9,8 @@
 #include <QtCore/QJsonArray>
 #include <QtCore/QJsonObject>
 #include <QtCore/QJsonValue>
+#include <QtCore/QList>
+#include <QtCore/QString>
 #include <QtCore/QVariant>
 #include <QtTest/QTest>
 
@@ -61,6 +63,20 @@ cppJsonValue()
   return QJsonValue(QStringLiteral("C++ string"));
 }
 
+QList<QString>
+rustStringList()
+{
+  return QList<QString>{ QStringLiteral("Rust string 1"),
+                         QStringLiteral("Rust string 2") };
+}
+
+QList<QString>
+cppStringList()
+{
+  return QList<QString>{ QStringLiteral("C++ string 1"),
+                         QStringLiteral("C++ string 2") };
+}
+
 bool
 test_constructed_qvariant(const QVariant& v, VariantTest test)
 {
@@ -101,6 +117,8 @@ test_constructed_qvariant(const QVariant& v, VariantTest test)
       return v.value<QJsonObject>() == rustJsonObject();
     case VariantTest::QJsonValue:
       return v.value<QJsonValue>() == rustJsonValue();
+    case VariantTest::QListQString:
+      return v.value<QList<QString>>() == rustStringList();
     case VariantTest::QPoint:
       return v.value<QPoint>().x() == 1 && v.value<QPoint>().y() == 3;
     case VariantTest::QPointF:
@@ -170,6 +188,7 @@ private Q_SLOTS:
     QTest::newRow("QJsonArray") << VariantTest::QJsonArray;
     QTest::newRow("QJsonObject") << VariantTest::QJsonObject;
     QTest::newRow("QJsonValue") << VariantTest::QJsonValue;
+    QTest::newRow("QListQString") << VariantTest::QListQString;
     QTest::newRow("QPoint") << VariantTest::QPoint;
     QTest::newRow("QPointF") << VariantTest::QPointF;
     QTest::newRow("QRect") << VariantTest::QRect;
@@ -228,6 +247,9 @@ private Q_SLOTS:
     QTest::newRow("QJsonValue")
       << QVariant::fromValue<QJsonValue>(cppJsonValue())
       << VariantTest::QJsonValue;
+    QTest::newRow("QListQString")
+      << QVariant::fromValue<QList<QString>>(cppStringList())
+      << VariantTest::QListQString;
     QTest::newRow("QPoint")
       << QVariant::fromValue<QPoint>(QPoint(8, 9)) << VariantTest::QPoint;
     QTest::newRow("QPointF") << QVariant::fromValue<QPointF>(QPointF(8.0, 9.0))
