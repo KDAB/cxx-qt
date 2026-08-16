@@ -293,6 +293,82 @@ mod ffi {
         Vertical = 0x2,
     }
 
+    /// Bindings to the Qt::ItemDataRole enum.
+    /// Contains roles used by views to indicate to models which type of data they need.
+    /// Custom models should return data in these types.
+    ///
+    /// Qt docs for Qt::ItemDataRole: https://doc.qt.io/qt-6/qt.html#ItemDataRole-enum
+    #[repr(i32)]
+    enum ItemDataRole {
+        /// The key data to be rendered in the form of text. ([QString](crate::QString))
+        DisplayRole = 0,
+        /// The data to be rendered as a decoration in the form of an icon. ([QColor], QIcon, or QPixmap)
+        /// [QColor]: crate::QColor
+        DecorationRole = 1,
+        /// The data in a form suitable for editing in an editor. ([QString](crate::QString))
+        EditRole = 2,
+        /// The data displayed in the item's tooltip. ([QString](crate::QString))
+        ToolTipRole = 3,
+        /// The data displayed in the status bar. ([QString](crate::QString))
+        StatusTipRole = 4,
+        /// The data displayed for the item in "What's This?" mode. ([QString](crate::QString))
+        WhatsThisRole = 5,
+        /// The font used for items rendered with the default delegate. ([QFont](crate::QFont))
+        FontRole = 6,
+        /// The alignment of the text for items rendered with the default delegate. (Qt::Alignment)
+        TextAlignmentRole = 7,
+        /// The background brush used for items rendered with the default delegate. (QBrush)
+        BackgroundRole = 8,
+        /// The foreground brush (text color, typically) used for items rendered with the default delegate. (QBrush)
+        ForegroundRole = 9,
+        /// This role is used to obtain the checked state of an item. (Qt::CheckState)
+        CheckStateRole = 10,
+        /// The text to be used by accessibility extensions and plugins, such as screen readers. ([QString](crate::QString))
+        AccessibleTextRole = 11,
+        /// A description of the item for accessibility purposes. ([QString](crate::QString))
+        AccessibleDescriptionRole = 12,
+        /// The size hint for the item that will be supplied to views. ([QSize](crate::QSize))
+        SizeHintRole = 13,
+        /// This role is used to obtain the initial sort order of a header view section. (Qt::SortOrder)
+        InitialSortOrderRole = 14,
+        /// The first role that can be used for application-specific purposes.
+        UserRole = 0x0100,
+    }
+
+    /// Bindings to the Qt::ItemFlag enum.
+    /// Contains flags describing the properties of an item.
+    ///
+    /// Qt docs for Qt::ItemFlag: https://doc.qt.io/qt-6/qt.html#ItemFlag-enum
+    #[repr(u32)]
+    enum ItemFlag {
+        /// It does not have any properties set.
+        NoItemFlags = 0b000000000,
+        /// It can be selected.
+        ItemIsSelectable = 0b000000001,
+        /// It can be edited.
+        ItemIsEditable = 0b000000010,
+        /// It can be dragged.
+        ItemIsDragEnabled = 0b000000100,
+        /// It can be used as a drop target.
+        ItemIsDropEnabled = 0b000001000,
+        /// It can be checked or unchecked by the user.
+        ItemIsUserCheckable = 0b000010000,
+        /// The user can interact with the item.
+        ItemIsEnabled = 0b000100000,
+        /// The item's state depends on the state of its children. This enables automatic
+        /// management of the state of parent items in a `QTreeWidget` (checked if all children
+        /// are checked, unchecked if all children are unchecked, or partially checked if only
+        /// some children are checked).
+        ///
+        /// (see also: https://doc.qt.io/qt-6/qtreewidget.html)
+        ItemIsAutoTristate = 0b001000000,
+        /// The item never has child items. This is used for optimization purposes only.
+        ItemNeverHasChildren = 0b010000000,
+        /// The user can cycle through three separate states.
+        ItemIsUserTristate = 0b100000000,
+    }
+
+
     unsafe extern "C++" {
         include!("cxx-qt-lib/qt.h");
         type AspectRatioMode;
@@ -313,13 +389,15 @@ mod ffi {
         type KeyboardModifier;
         type Orientation;
         type GlobalColor;
+        type ItemDataRole;
+        type ItemFlag;
     }
 }
 
 pub use ffi::{
     AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, DateFormat, FillRule, GlobalColor,
-    KeyboardModifier, LayoutDirection, MouseButton, Orientation, PenCapStyle, PenJoinStyle,
-    PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec, TransformationMode,
+    ItemDataRole, ItemFlag, KeyboardModifier, LayoutDirection, MouseButton, Orientation,
+    PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags, TimeSpec, TransformationMode
 };
 
 // Reexport ConnectionType from cxx-qt
@@ -331,7 +409,10 @@ pub type MouseButtons = QFlags<MouseButton>;
 pub type KeyboardModifiers = QFlags<KeyboardModifier>;
 /// [`QFlags`] of [`Orientation`].
 pub type Orientations = QFlags<Orientation>;
+/// [`QFlags`] of [`ItemFlag`].
+pub type ItemFlags = QFlags<ItemFlag>;
 
 unsafe_impl_qflag!(MouseButton, "Qt::MouseButtons", u32);
 unsafe_impl_qflag!(KeyboardModifier, "Qt::KeyboardModifiers", u32);
 unsafe_impl_qflag!(Orientation, "Qt::Orientations", u32);
+unsafe_impl_qflag!(ItemFlag, "Qt::ItemFlags", u32);
