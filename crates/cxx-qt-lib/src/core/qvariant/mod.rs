@@ -58,6 +58,13 @@ mod ffi {
         #[rust_name = "qvariant_to_debug_qstring"]
         fn toDebugQString(variant: &QVariant) -> QString;
     }
+
+    #[namespace = "rust::cxxqtlib1::qvariant"]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[rust_name = "qvariant_type_name"]
+        fn qvariantTypeName(variant: &QVariant) -> &[u8];
+    }
 }
 
 /// The `QVariant` class acts like a union for the most common Qt data types.
@@ -117,6 +124,16 @@ impl QVariant {
     /// Returns the storage type of the value stored in the variant.
     pub fn type_id(&self) -> QMetaTypeType {
         self.user_type().into()
+    }
+
+    /// Returns the name of the type stored in the variant.
+    ///
+    /// The returned string describes the C++ datatype used to store the data.
+    /// An invalid variant returns an empty string.
+    pub fn type_name(&self) -> &str {
+        // The slice is empty when the variant has no type name.
+        let slice = ffi::qvariant_type_name(self);
+        std::str::from_utf8(slice).expect("QVariant type name is not valid UTF-8")
     }
 
     /// Returns the stored value converted to the template type `T`, or `None` if the type cannot be converted to `T`.
@@ -276,4 +293,38 @@ impl_qvariant_value!(crate::QVector4D, qvariant_qvector4d);
 unsafe impl ExternType for QVariant {
     type Id = type_id!("QVariant");
     type Kind = cxx::kind::Trivial;
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::{QList, QString};
+
+    #[test]
+    fn test_type_name() {
+        let variant = QVariant::from(&true);
+        assert_eq!(variant.type_name(), "bool");
+
+        let variant = QVariant::from(&123_i32);
+        assert_eq!(variant.type_name(), "int");
+
+        let variant = QVariant::from(&0.25f32);
+        assert_eq!(variant.type_name(), "float");
+
+        let variant = QVariant::from(&0.75f64);
+        assert_eq!(variant.type_name(), "double");
+
+        let variant = QVariant::from(&QList::<i32>::from_iter(&[1, 2, 3]));
+        assert_eq!(variant.type_name(), "QList<int>");
+
+        let variant = QVariant::from(&QString::from("ABC"));
+        assert_eq!(variant.type_name(), "QString");
+    }
+
+    #[test]
+    fn qvariant_type_name_invalid() {
+        let variant = QVariant::default();
+        assert!(!variant.is_valid());
+        assert_eq!(variant.type_name(), "");
+    }
 }

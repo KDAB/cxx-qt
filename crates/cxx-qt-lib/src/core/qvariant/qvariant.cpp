@@ -11,6 +11,8 @@
 
 #include <cxx-qt-lib/assertion_utils.h>
 
+#include <cstring>
+
 // The layout has changed between Qt 5 and Qt 6
 //
 // Qt6 QVariant has one member, which contains three pointers and a union
@@ -55,6 +57,17 @@ static_assert(QTypeInfo<QVariant>::isRelocatable);
 namespace rust {
 namespace cxxqtlib1 {
 namespace qvariant {
+
+::rust::Slice<const ::std::uint8_t>
+qvariantTypeName(const QVariant& variant) noexcept
+{
+  if (const char* name = variant.typeName()) {
+    const ::std::size_t len = ::std::strlen(name);
+    return ::rust::Slice{ reinterpret_cast<const ::std::uint8_t*>(name), len };
+  }
+
+  return {};
+}
 
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(bool, Bool)
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(float, F32)

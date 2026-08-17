@@ -85,6 +85,9 @@ qvariantValueOrDefault(const QVariant& variant) noexcept
   return variant.value<T>();
 }
 
+::rust::Slice<const ::std::uint8_t>
+qvariantTypeName(const QVariant& variant) noexcept;
+
 // Need to use a macro here as we can't template because the types
 // are always QVariant and bool. So then CXX can't decide which to use.
 #define CXX_QT_QVARIANT_CAN_CONVERT(name)                                      \
