@@ -93,8 +93,11 @@ EOF
     rustfmt "$SCRIPTPATH/qvariant_$2.rs"
 }
 
+# $1: Unqualified rust type name, used as the suffix of the Rust monomorphized type and the C++ header.
+# $2: Rust type ($1) in lowercase, used as the suffix of the Rust module name.
+# $3: Qualified Rust type name, allowing the CXX bridge to be generated without additional `use` imports.
 function generate_bridge_qlist() {
-    tee "$SCRIPTPATH/qvariant_qlist_$1.rs" <<EOF
+    tee "$SCRIPTPATH/qvariant_qlist_$2.rs" <<EOF
 // SPDX-FileCopyrightText: 2026 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 // SPDX-FileContributor: Yuri Knigavko <yuri.knigavko@qt.io>
 //
@@ -104,7 +107,7 @@ function generate_bridge_qlist() {
 pub mod ffi {
     unsafe extern "C++" {
         include!("cxx-qt-lib/core/qlist/qlist_$1.h");
-        type QList_$1 = crate::QList<$1>;
+        type QList_$1 = crate::QList<$3>;
 
         include!("cxx-qt-lib/qvariant.h");
         type QVariant = crate::QVariant;
@@ -133,7 +136,7 @@ pub(crate) fn value_or_default(variant: &ffi::QVariant) -> ffi::QList_$1 {
     ffi::value_or_default_QList_$1(variant)
 }
 EOF
-    rustfmt "$SCRIPTPATH/qvariant_qlist_$1.rs"
+    rustfmt "$SCRIPTPATH/qvariant_qlist_$2.rs"
 }
 
 generate_bridge_primitive "bool" "Bool"
@@ -182,14 +185,17 @@ generate_bridge_qt "QVector2D" "qvector2d"
 generate_bridge_qt "QVector3D" "qvector3d"
 generate_bridge_qt "QVector4D" "qvector4d"
 
-generate_bridge_qlist "bool"
-generate_bridge_qlist "f32"
-generate_bridge_qlist "f64"
-generate_bridge_qlist "i8"
-generate_bridge_qlist "i16"
-generate_bridge_qlist "i32"
-generate_bridge_qlist "i64"
-generate_bridge_qlist "u8"
-generate_bridge_qlist "u16"
-generate_bridge_qlist "u32"
-generate_bridge_qlist "u64"
+generate_bridge_qlist "bool" "bool" "bool"
+generate_bridge_qlist "f32" "f32" "f32"
+generate_bridge_qlist "f64" "f64" "f64"
+generate_bridge_qlist "i8" "i8" "i8"
+generate_bridge_qlist "i16" "i16" "i16"
+generate_bridge_qlist "i32" "i32" "i32"
+generate_bridge_qlist "i64" "i64" "i64"
+generate_bridge_qlist "u8" "u8" "u8"
+generate_bridge_qlist "u16" "u16" "u16"
+generate_bridge_qlist "u32" "u32" "u32"
+generate_bridge_qlist "u64" "u64" "u64"
+generate_bridge_qlist "QObjectMutPtr" "qobjectmutptr" "crate::QObjectMutPtr"
+# In Qt 5 (unlike Qt 6), QList<QString> and QStringList are distinct types.
+generate_bridge_qlist "QString" "qstring" "crate::QString"

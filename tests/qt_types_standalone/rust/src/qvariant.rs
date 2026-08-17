@@ -4,8 +4,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use cxx_qt_lib::{
-    QByteArray, QColor, QDate, QDateTime, QJsonArray, QJsonObject, QJsonValue, QPoint, QPointF,
-    QRect, QRectF, QSize, QSizeF, QString, QTime, QTimeZone, QUrl, QVariant,
+    QByteArray, QColor, QDate, QDateTime, QJsonArray, QJsonObject, QJsonValue, QList, QPoint,
+    QPointF, QRect, QRectF, QSize, QSizeF, QString, QTime, QTimeZone, QUrl, QVariant,
 };
 
 #[cxx::bridge]
@@ -24,6 +24,7 @@ mod qvariant_cxx {
         QJsonArray,
         QJsonObject,
         QJsonValue,
+        QListQString,
         QPoint,
         QPointF,
         QRect,
@@ -73,6 +74,10 @@ fn construct_json_value() -> QJsonValue {
     QJsonValue::from(&QString::from("Rust string"))
 }
 
+fn construct_qlist_qstring() -> QList<QString> {
+    QList::from(["Rust string 1".into(), "Rust string 2".into()])
+}
+
 fn construct_qvariant(test: VariantTest) -> QVariant {
     match test {
         VariantTest::Bool => QVariant::from(&true),
@@ -92,6 +97,7 @@ fn construct_qvariant(test: VariantTest) -> QVariant {
         VariantTest::QJsonArray => QVariant::from(&construct_json_array()),
         VariantTest::QJsonObject => QVariant::from(&construct_json_object()),
         VariantTest::QJsonValue => QVariant::from(&construct_json_value()),
+        VariantTest::QListQString => QVariant::from(&construct_qlist_qstring()),
         VariantTest::QPoint => QVariant::from(&QPoint::new(1, 3)),
         VariantTest::QPointF => QVariant::from(&QPointF::new(1.0, 3.0)),
         VariantTest::QRect => QVariant::from(&QRect::new(123, 456, 246, 912)),
@@ -181,6 +187,13 @@ fn read_qvariant(v: &cxx_qt_lib::QVariant, test: VariantTest) -> bool {
         },
         VariantTest::QJsonValue => match v.value::<QJsonValue>() {
             Some(value) => value.is_string() && value.to_string() == QString::from("C++ string"),
+            None => false,
+        },
+        VariantTest::QListQString => match v.value::<QList<QString>>() {
+            Some(list) => {
+                list.iter().cloned().collect::<Vec<QString>>()
+                    == vec![QString::from("C++ string 1"), QString::from("C++ string 2")]
+            }
             None => false,
         },
         VariantTest::QPoint => match v.value::<QPoint>() {

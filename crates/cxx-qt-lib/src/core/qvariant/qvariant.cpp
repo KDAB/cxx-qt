@@ -118,6 +118,10 @@ CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::std::uint16_t>, QList_u16)
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::std::uint32_t>, QList_u32)
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::std::uint64_t>, QList_u64)
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::QObjectMutPtr>, QList_QObjectMutPtr)
+// In Qt 5 QStringList is a subclass of QList<QString> but not an alias for it.
+// Therefore, these two are distinct types and each needs its own
+// implementation.
+CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QList<::QString>, QList_QString)
 
 #ifdef CXX_QT_GUI_FEATURE
 CXX_QT_QVARIANT_CAN_CONVERT_IMPL(::QColor, QColor)

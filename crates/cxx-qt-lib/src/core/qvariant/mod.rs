@@ -254,6 +254,9 @@ impl_qvariant_value!(crate::QList<u16>, qvariant_qlist_u16);
 impl_qvariant_value!(crate::QList<u32>, qvariant_qlist_u32);
 impl_qvariant_value!(crate::QList<u64>, qvariant_qlist_u64);
 impl_qvariant_value!(crate::QList<QObjectMutPtr>, qvariant_qlist_qobjectmutptr);
+// In Qt 5 QStringList is a subclass of QList<QString> but not an alias for it.
+// Therefore, these two are distinct types and each needs its own implementation.
+impl_qvariant_value!(crate::QList<crate::QString>, qvariant_qlist_qstring);
 impl_qvariant_value!(crate::QList<QVariant>, qvariant_qvariantlist);
 impl_qvariant_value!(
     crate::QMap<crate::QMapPair_QString_QVariant>,
