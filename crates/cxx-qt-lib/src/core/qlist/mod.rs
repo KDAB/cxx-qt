@@ -76,6 +76,42 @@ where
     }
 }
 
+impl<T, U> PartialEq<[U]> for QList<T>
+where
+    T: QListElement + PartialEq<U>,
+{
+    fn eq(&self, other: &[U]) -> bool {
+        self.len() as usize == other.len() && self.iter().eq(other.iter())
+    }
+}
+
+impl<T, U> PartialEq<&[U]> for QList<T>
+where
+    T: QListElement + PartialEq<U>,
+{
+    fn eq(&self, other: &&[U]) -> bool {
+        *self == **other
+    }
+}
+
+impl<T, U, const N: usize> PartialEq<[U; N]> for QList<T>
+where
+    T: QListElement + PartialEq<U>,
+{
+    fn eq(&self, other: &[U; N]) -> bool {
+        *self == other[..]
+    }
+}
+
+impl<T, U, const N: usize> PartialEq<&[U; N]> for QList<T>
+where
+    T: QListElement + PartialEq<U>,
+{
+    fn eq(&self, other: &&[U; N]) -> bool {
+        *self == other[..]
+    }
+}
+
 impl<T> Eq for QList<T> where T: QListElement + Eq {}
 
 impl<T> fmt::Debug for QList<T>
@@ -469,6 +505,8 @@ impl_qlist_element!(u64, qlist_u64, "QList_u64");
 mod test {
     use super::*;
 
+    const EMPTY: [u8; 0] = [];
+
     #[test]
     fn qlist_from_array_to_vec() {
         let array = [0, 1, 2];
@@ -481,5 +519,87 @@ mod test {
     fn qlist_serde() {
         let qlist = QList::<u8>::from([0, 1, 2]);
         assert_eq!(crate::serde_impl::roundtrip(&qlist), qlist);
+    }
+
+    #[test]
+    fn qlist_eq() {
+        let qlist = QList::<u8>::from([0, 1, 2]);
+
+        assert_eq!(qlist, [0, 1, 2]);
+        assert_eq!(qlist, &[0, 1, 2]);
+
+        assert_eq!(qlist, [0, 1, 2][..]);
+        assert_eq!(qlist, &[0, 1, 2][..]);
+
+        let vec = vec![0, 1, 2];
+        assert_eq!(qlist, vec[..]);
+        assert_eq!(qlist, vec.as_slice());
+    }
+
+    #[test]
+    fn qlist_eq_empty() {
+        let qlist = QList::<u8>::default();
+
+        assert_eq!(qlist, EMPTY);
+        assert_eq!(qlist, &EMPTY);
+        assert_eq!(qlist, EMPTY[..]);
+        assert_eq!(qlist, &EMPTY[..]);
+    }
+
+    #[test]
+    fn qlist_ne_empty() {
+        let qlist = QList::<u8>::default();
+
+        assert_ne!(qlist, [1]);
+        assert_ne!(qlist, &[1]);
+
+        assert_ne!(qlist, [2][..]);
+        assert_ne!(qlist, &[2][..]);
+    }
+
+    #[test]
+    fn qlist_ne_different_contents() {
+        let qlist = QList::<u8>::from([0, 1, 2]);
+
+        assert_ne!(qlist, [0, 1, 3]);
+        assert_ne!(qlist, &[0, 1, 3]);
+
+        assert_ne!(qlist, [2, 1, 0][..]);
+        assert_ne!(qlist, &[2, 1, 0][..]);
+
+        let vec = vec![1, 2, 0];
+        assert_ne!(qlist, vec[..]);
+        assert_ne!(qlist, vec.as_slice());
+    }
+
+    #[test]
+    fn qlist_ne_different_lengths() {
+        let qlist = QList::<u8>::from([0, 1, 2]);
+
+        assert_ne!(qlist, [0, 1]);
+        assert_ne!(qlist, &[0, 1, 2, 3]);
+
+        assert_ne!(qlist, [0, 1][..]);
+        assert_ne!(qlist, &[0, 1, 2, 3][..]);
+
+        assert_ne!(qlist, EMPTY[..]);
+        assert_ne!(qlist, &EMPTY[..]);
+        assert_ne!(qlist, EMPTY);
+        assert_ne!(qlist, &EMPTY);
+    }
+
+    #[test]
+    fn qlist_eq_qstrings() {
+        let qlist = QList::<QString>::from([QString::from("a"), QString::from("b")]);
+
+        assert_eq!(qlist, [QString::from("a"), QString::from("b")]);
+        assert_eq!(qlist, &[QString::from("a"), QString::from("b")]);
+        assert_eq!(qlist, [QString::from("a"), QString::from("b")][..]);
+        assert_eq!(qlist, &[QString::from("a"), QString::from("b")][..]);
+
+        assert_ne!(qlist, [QString::from("a"), QString::from("c")]);
+        assert_ne!(qlist, &[QString::from("a"), QString::from("c")]);
+        assert_ne!(qlist, [QString::from("a"), QString::from("c")][..]);
+        assert_ne!(qlist, &[QString::from("a"), QString::from("c")][..]);
     }
 }
