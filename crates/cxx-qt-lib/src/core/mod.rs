@@ -99,9 +99,9 @@ pub use qstringlist::QStringList;
 mod qt;
 pub use qt::{
     AspectRatioMode, BGMode, CaseSensitivity, ClipOperation, ConnectionType, DateFormat, FillRule,
-    GlobalColor, KeyboardModifier, KeyboardModifiers, LayoutDirection, MouseButton, MouseButtons,
-    Orientation, Orientations, PenCapStyle, PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags,
-    TimeSpec, TransformationMode,
+    GlobalColor, ItemDataRole, ItemFlag, ItemFlags, KeyboardModifier, KeyboardModifiers,
+    LayoutDirection, MouseButton, MouseButtons, Orientation, Orientations, PenCapStyle,
+    PenJoinStyle, PenStyle, SizeMode, SplitBehaviorFlags,  TimeSpec, TransformationMode,
 };
 
 mod qtime;
