@@ -112,6 +112,44 @@ where
     }
 }
 
+// The `PartialEq` implementations below mirror the ones above with the operands swapped,
+// allowing supported types to appear on either side.
+impl<T, U> PartialEq<QList<U>> for [T]
+where
+    U: QListElement + PartialEq<T>,
+{
+    fn eq(&self, other: &QList<U>) -> bool {
+        other == self
+    }
+}
+
+impl<T, U> PartialEq<QList<U>> for &[T]
+where
+    U: QListElement + PartialEq<T>,
+{
+    fn eq(&self, other: &QList<U>) -> bool {
+        other == self
+    }
+}
+
+impl<T, U, const N: usize> PartialEq<QList<U>> for [T; N]
+where
+    U: QListElement + PartialEq<T>,
+{
+    fn eq(&self, other: &QList<U>) -> bool {
+        other == self
+    }
+}
+
+impl<T, U, const N: usize> PartialEq<QList<U>> for &[T; N]
+where
+    U: QListElement + PartialEq<T>,
+{
+    fn eq(&self, other: &QList<U>) -> bool {
+        other == self
+    }
+}
+
 impl<T> Eq for QList<T> where T: QListElement + Eq {}
 
 impl<T> fmt::Debug for QList<T>
@@ -525,6 +563,7 @@ mod test {
     fn qlist_eq() {
         let qlist = QList::<u8>::from([0, 1, 2]);
 
+        // QList is on the LHS
         assert_eq!(qlist, [0, 1, 2]);
         assert_eq!(qlist, &[0, 1, 2]);
 
@@ -534,33 +573,59 @@ mod test {
         let vec = vec![0, 1, 2];
         assert_eq!(qlist, vec[..]);
         assert_eq!(qlist, vec.as_slice());
+
+        // QList is on the RHS
+        assert_eq!([0, 1, 2], qlist);
+        assert_eq!(&[0, 1, 2], qlist);
+
+        assert_eq!([0, 1, 2][..], qlist);
+        assert_eq!(&[0, 1, 2][..], qlist);
+
+        assert_eq!(vec[..], qlist);
+        assert_eq!(vec.as_slice(), qlist);
     }
 
     #[test]
     fn qlist_eq_empty() {
         let qlist = QList::<u8>::default();
 
+        // QList is on the LHS
         assert_eq!(qlist, EMPTY);
         assert_eq!(qlist, &EMPTY);
         assert_eq!(qlist, EMPTY[..]);
         assert_eq!(qlist, &EMPTY[..]);
+
+        // QList is on the RHS
+        assert_eq!(EMPTY, qlist);
+        assert_eq!(&EMPTY, qlist);
+        assert_eq!(EMPTY[..], qlist);
+        assert_eq!(&EMPTY[..], qlist);
     }
 
     #[test]
     fn qlist_ne_empty() {
         let qlist = QList::<u8>::default();
 
+        // QList is on the LHS
         assert_ne!(qlist, [1]);
         assert_ne!(qlist, &[1]);
 
         assert_ne!(qlist, [2][..]);
         assert_ne!(qlist, &[2][..]);
+
+        // QList is on the RHS
+        assert_ne!([1], qlist);
+        assert_ne!(&[1], qlist);
+
+        assert_ne!([2][..], qlist);
+        assert_ne!(&[2][..], qlist);
     }
 
     #[test]
     fn qlist_ne_different_contents() {
         let qlist = QList::<u8>::from([0, 1, 2]);
 
+        // QList is on the LHS
         assert_ne!(qlist, [0, 1, 3]);
         assert_ne!(qlist, &[0, 1, 3]);
 
@@ -570,12 +635,23 @@ mod test {
         let vec = vec![1, 2, 0];
         assert_ne!(qlist, vec[..]);
         assert_ne!(qlist, vec.as_slice());
+
+        // QList is on the RHS
+        assert_ne!([0, 1, 3], qlist);
+        assert_ne!(&[0, 1, 3], qlist);
+
+        assert_ne!([2, 1, 0][..], qlist);
+        assert_ne!(&[2, 1, 0][..], qlist);
+
+        assert_ne!(vec[..], qlist);
+        assert_ne!(vec.as_slice(), qlist);
     }
 
     #[test]
     fn qlist_ne_different_lengths() {
         let qlist = QList::<u8>::from([0, 1, 2]);
 
+        // QList is on the LHS
         assert_ne!(qlist, [0, 1]);
         assert_ne!(qlist, &[0, 1, 2, 3]);
 
@@ -586,12 +662,25 @@ mod test {
         assert_ne!(qlist, &EMPTY[..]);
         assert_ne!(qlist, EMPTY);
         assert_ne!(qlist, &EMPTY);
+
+        // QList is on the RHS
+        assert_ne!([0, 1], qlist);
+        assert_ne!(&[0, 1, 2, 3], qlist);
+
+        assert_ne!([0, 1][..], qlist);
+        assert_ne!(&[0, 1, 2, 3][..], qlist);
+
+        assert_ne!(EMPTY[..], qlist);
+        assert_ne!(&EMPTY[..], qlist);
+        assert_ne!(EMPTY, qlist);
+        assert_ne!(&EMPTY, qlist);
     }
 
     #[test]
     fn qlist_eq_qstrings() {
         let qlist = QList::<QString>::from([QString::from("a"), QString::from("b")]);
 
+        // QList is on the LHS
         assert_eq!(qlist, [QString::from("a"), QString::from("b")]);
         assert_eq!(qlist, &[QString::from("a"), QString::from("b")]);
         assert_eq!(qlist, [QString::from("a"), QString::from("b")][..]);
@@ -601,5 +690,16 @@ mod test {
         assert_ne!(qlist, &[QString::from("a"), QString::from("c")]);
         assert_ne!(qlist, [QString::from("a"), QString::from("c")][..]);
         assert_ne!(qlist, &[QString::from("a"), QString::from("c")][..]);
+
+        // QList is on the RHS
+        assert_eq!([QString::from("a"), QString::from("b")], qlist);
+        assert_eq!(&[QString::from("a"), QString::from("b")], qlist);
+        assert_eq!([QString::from("a"), QString::from("b")][..], qlist);
+        assert_eq!(&[QString::from("a"), QString::from("b")][..], qlist);
+
+        assert_ne!([QString::from("a"), QString::from("c")], qlist);
+        assert_ne!(&[QString::from("a"), QString::from("c")], qlist);
+        assert_ne!([QString::from("a"), QString::from("c")][..], qlist);
+        assert_ne!(&[QString::from("a"), QString::from("c")][..], qlist);
     }
 }
