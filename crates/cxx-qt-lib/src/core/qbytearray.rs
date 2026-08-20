@@ -200,13 +200,66 @@ impl Default for QByteArray {
     }
 }
 
-impl std::cmp::PartialEq for QByteArray {
+impl PartialEq for QByteArray {
     fn eq(&self, other: &Self) -> bool {
         ffi::qbytearray_eq(self, other)
     }
 }
 
-impl std::cmp::Eq for QByteArray {}
+impl Eq for QByteArray {}
+
+impl PartialEq<[u8]> for QByteArray {
+    fn eq(&self, other: &[u8]) -> bool {
+        self.as_slice() == other
+    }
+}
+impl PartialEq<QByteArray> for [u8] {
+    fn eq(&self, other: &QByteArray) -> bool {
+        other == self
+    }
+}
+impl PartialEq<&[u8]> for QByteArray {
+    fn eq(&self, other: &&[u8]) -> bool {
+        self == *other
+    }
+}
+impl PartialEq<QByteArray> for &[u8] {
+    fn eq(&self, other: &QByteArray) -> bool {
+        other == self
+    }
+}
+
+impl<const N: usize> PartialEq<[u8; N]> for QByteArray {
+    fn eq(&self, other: &[u8; N]) -> bool {
+        self.as_slice() == other.as_slice()
+    }
+}
+impl<const N: usize> PartialEq<QByteArray> for [u8; N] {
+    fn eq(&self, other: &QByteArray) -> bool {
+        other == self
+    }
+}
+impl<const N: usize> PartialEq<&[u8; N]> for QByteArray {
+    fn eq(&self, other: &&[u8; N]) -> bool {
+        self == *other
+    }
+}
+impl<const N: usize> PartialEq<QByteArray> for &[u8; N] {
+    fn eq(&self, other: &QByteArray) -> bool {
+        other == self
+    }
+}
+
+impl PartialEq<Vec<u8>> for QByteArray {
+    fn eq(&self, other: &Vec<u8>) -> bool {
+        self.as_slice() == other.as_slice()
+    }
+}
+impl PartialEq<QByteArray> for Vec<u8> {
+    fn eq(&self, other: &QByteArray) -> bool {
+        other == self
+    }
+}
 
 impl fmt::Display for QByteArray {
     /// Convert the `QByteArray` to a Rust string.
@@ -537,6 +590,16 @@ mod tests {
         let encoded = qbytearray.to_base64(options);
         let decoded = QByteArray::from_base64_encoding(&encoded, options);
         assert_eq!(decoded, Ok(qbytearray));
+    }
+
+    #[test]
+    fn qbytearray_eq_slice() {
+        assert_eq!(QByteArray::from("KDAB"), b"KDAB");
+    }
+
+    #[test]
+    fn qbytearray_eq_vec() {
+        assert_eq!(QByteArray::from("KDAB"), b"KDAB".to_owned());
     }
 
     #[cfg(feature = "bytes")]

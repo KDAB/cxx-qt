@@ -247,6 +247,39 @@ impl PartialEq for QString {
 
 impl Eq for QString {}
 
+impl PartialEq<str> for QString {
+    fn eq(&self, other: &str) -> bool {
+        self.as_slice().iter().copied().eq(other.encode_utf16())
+    }
+}
+impl PartialEq<QString> for str {
+    fn eq(&self, other: &QString) -> bool {
+        other == self
+    }
+}
+
+impl PartialEq<&str> for QString {
+    fn eq(&self, other: &&str) -> bool {
+        self == *other
+    }
+}
+impl PartialEq<QString> for &str {
+    fn eq(&self, other: &QString) -> bool {
+        other == self
+    }
+}
+
+impl PartialEq<String> for QString {
+    fn eq(&self, other: &String) -> bool {
+        self == other.as_str()
+    }
+}
+impl PartialEq<QString> for String {
+    fn eq(&self, other: &QString) -> bool {
+        other == self
+    }
+}
+
 impl PartialOrd for QString {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
@@ -505,6 +538,16 @@ impl<'de> serde::Deserialize<'de> for QString {
 #[cfg(test)]
 mod test {
     use super::*;
+
+    #[test]
+    fn qstring_eq_str() {
+        assert_eq!(QString::from("KDAB"), "KDAB");
+    }
+
+    #[test]
+    fn qstring_eq_string() {
+        assert_eq!(QString::from("KDAB"), "KDAB".to_owned());
+    }
 
     #[cfg(feature = "serde")]
     #[test]

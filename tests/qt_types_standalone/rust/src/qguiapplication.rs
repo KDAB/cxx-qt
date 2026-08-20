@@ -27,5 +27,5 @@ fn construct_qguiapplication() -> cxx::UniquePtr<QGuiApplication> {
 }
 
 fn read_qguiapplication(app: &QGuiApplication) -> bool {
-    String::from(&app.application_name()) == "kdab"
+    app.application_name() == "kdab"
 }
