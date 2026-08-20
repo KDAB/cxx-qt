@@ -93,6 +93,9 @@ mod ffi {
         #[rust_name = "qguiapplication_organization_name"]
         fn qapplicationOrganizationName(app: &QGuiApplication) -> QString;
         #[doc(hidden)]
+        #[rust_name = "qguiapplication_process_events"]
+        fn qapplicationProcessEvents(app: &QGuiApplication);
+        #[doc(hidden)]
         #[rust_name = "qguiapplication_set_application_name"]
         fn qapplicationSetApplicationName(app: Pin<&mut QGuiApplication>, name: &QString);
         #[doc(hidden)]
@@ -287,5 +290,13 @@ impl QGuiApplication {
     /// received.
     pub fn query_keyboard_modifiers(&self) -> KeyboardModifiers {
         ffi::qguiapplication_query_keyboard_modifiers()
+    }
+
+    /// Processes some pending events for the calling thread.
+    ///
+    /// Use of this function is discouraged. Instead, prefer to move long
+    /// operations out of the event loop thread into an auxiliary one.
+    pub fn process_events(&self) {
+        ffi::qguiapplication_process_events(self)
     }
 }
