@@ -139,6 +139,9 @@ mod ffi {
         #[doc(hidden)]
         #[rust_name = "qstring_cmp"]
         fn operatorCmp(a: &QString, b: &QString) -> i8;
+        #[doc(hidden)]
+        #[rust_name = "compare_qstring_str"]
+        fn qstringEqStr(a: &QString, b: &str) -> bool;
 
         #[doc(hidden)]
         #[rust_name = "qstring_as_slice"]
@@ -242,6 +245,18 @@ impl Default for QString {
 impl PartialEq for QString {
     fn eq(&self, other: &Self) -> bool {
         ffi::qstring_eq(self, other)
+    }
+}
+
+impl PartialEq<String> for QString {
+    fn eq(&self, other: &String) -> bool {
+        ffi::compare_qstring_str(self, other)
+    }
+}
+
+impl PartialEq<str> for QString {
+    fn eq(&self, other: &str) -> bool {
+        ffi::compare_qstring_str(self, other)
     }
 }
 
@@ -535,5 +550,11 @@ mod test {
             qstring_a.compare(&qstring_a, crate::CaseSensitivity::CaseInsensitive),
             Ordering::Equal
         );
+
+        let string_a = String::from("a");
+        let string_b = String::from("b");
+
+        assert!(qstring_a == string_a);
+        assert!(qstring_a != string_b);
     }
 }
