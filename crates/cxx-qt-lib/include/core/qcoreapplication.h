@@ -12,6 +12,7 @@
 
 #include <QtCore/QByteArray>
 #include <QtCore/QCoreApplication>
+#include <QtCore/QEventLoop>
 #include <QtCore/QStringList>
 #include <QtCore/QVector>
 
@@ -83,6 +84,13 @@ QString
 qapplicationOrganizationName(const T& app)
 {
   return app.organizationName();
+}
+
+template<typename T>
+void
+qapplicationProcessEvents(const T&)
+{
+  T::processEvents(QEventLoop::AllEvents);
 }
 
 template<typename T>

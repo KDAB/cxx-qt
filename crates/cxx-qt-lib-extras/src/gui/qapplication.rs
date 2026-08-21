@@ -69,6 +69,9 @@ mod ffi {
         #[rust_name = "qapplication_organization_name"]
         fn qapplicationOrganizationName(app: &QApplication) -> QString;
         #[doc(hidden)]
+        #[rust_name = "qapplication_process_events"]
+        fn qapplicationProcessEvents(app: &QApplication);
+        #[doc(hidden)]
         #[rust_name = "qapplication_set_application_name"]
         fn qapplicationSetApplicationName(app: Pin<&mut QApplication>, name: &QString);
         #[doc(hidden)]
@@ -219,5 +222,13 @@ impl QApplication {
     /// Sets the `name` of the organization that wrote this application.
     pub fn set_organization_name(self: Pin<&mut Self>, name: &QString) {
         ffi::qapplication_set_organization_name(self, name);
+    }
+
+    /// Processes some pending events for the calling thread.
+    ///
+    /// Use of this function is discouraged. Instead, prefer to move long
+    /// operations out of the event loop thread into an auxiliary one.
+    pub fn process_events(&self) {
+        ffi::qapplication_process_events(self)
     }
 }
