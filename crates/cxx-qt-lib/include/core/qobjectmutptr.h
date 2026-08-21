@@ -9,6 +9,6 @@
 #include <QtCore/QObject>
 
 // Mirrors the Rust
-// `#[repr(transparent)] struct QObjectMutPtr(pub *mut QObject)`
+// `#[repr(transparent)] struct QObjectMutPtr(*mut QObject)`
 // so it can be used as a shared type across the bridge.
 using QObjectMutPtr = ::QObject*;

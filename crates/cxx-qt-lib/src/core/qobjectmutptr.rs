@@ -7,20 +7,37 @@ use cxx_qt::QObject;
 
 /// A thin wrapper around `*mut QObject`.
 /// Using the 'newtype' idiom lets us implement `ExternType`
-/// for it, which wouldn't possible for pure `*mut QObject` itself.
+/// for it, which wouldn't be possible for pure `*mut QObject` itself.
 #[repr(transparent)]
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
-pub struct QObjectMutPtr(pub *mut QObject);
+pub struct QObjectMutPtr(*mut QObject);
 
-impl From<*mut QObject> for QObjectMutPtr {
-    fn from(value: *mut QObject) -> Self {
-        QObjectMutPtr(value)
+impl QObjectMutPtr {
+    /// Create a new instance from a raw pointer.
+    ///
+    /// # Safety
+    ///
+    /// The pointer is passed to C++ as a `QObject*` and may be dereferenced
+    /// there. This wrapper tracks neither ownership nor lifetime,
+    /// so the object must outlive every use of the underlying QObject pointer
+    /// (including any copy stored in a `QVariant` or `QList`).
+    pub unsafe fn from_raw(raw: *mut QObject) -> Self {
+        Self(raw)
     }
-}
 
-impl From<QObjectMutPtr> for *mut QObject {
-    fn from(value: QObjectMutPtr) -> Self {
-        value.0
+    /// Return a wrapped raw const pointer.
+    pub fn as_ptr(&self) -> *const QObject {
+        self.0
+    }
+
+    /// Return a wrapped raw mut pointer.
+    pub fn as_mut_ptr(&self) -> *mut QObject {
+        self.0
+    }
+
+    /// Consume an object a return a wrapped raw mut pointer.
+    pub fn into_raw(self) -> *mut QObject {
+        self.0
     }
 }
 
