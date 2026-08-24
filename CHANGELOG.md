@@ -15,7 +15,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.9.1...HEAD)
+## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.10.0...HEAD)
+
+## [0.10.0](https://github.com/KDAB/cxx-qt/compare/v0.9.1...v0.10.0) - 2026-08-24
+
+### Added
+
+- Add `QJsonArray`, `QJsonObject`, and `QJsonValue` types
+- Add `ItemFlag` and `ItemDataRole` enums
+- Implement `*mut QObject` for `QList` and `QVariantValue` via `QObjectMutPtr`
+- Implement `QVariantValue` for various `QList<T>` types
 
 ## [0.9.1](https://github.com/KDAB/cxx-qt/compare/v0.9.0...v0.9.1) - 2026-07-03
 
