@@ -33,7 +33,7 @@ fn construct_qstring(slice: bool) -> QString {
 }
 
 fn read_qstring(s: &cxx_qt_lib::QString) -> bool {
-    String::from(s) == "String constructed by C++"
+    s == "String constructed by C++"
 }
 
 fn modify_qstring(mut s: core::pin::Pin<&mut cxx_qt_lib::QString>) {
@@ -46,11 +46,11 @@ fn can_handle_qstring_change() -> bool {
 
     let short_s = "Short string";
     let mut short_s_ptr = QString::from(short_s);
-    assert!(String::from(&short_s_ptr) == short_s);
+    assert_eq!(short_s_ptr, short_s);
 
     short_s_ptr = long_s_ptr;
 
-    String::from(&short_s_ptr) == long_s
+    short_s_ptr == long_s
 }
 
 fn clone_qstring(s: &QString) -> QString {
