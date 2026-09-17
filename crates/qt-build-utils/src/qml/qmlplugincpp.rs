@@ -86,6 +86,35 @@ impl QmlPluginCppBuilder {
         }
         let declarations = declarations.join("\n");
         let usages = usages.join("\n");
+        let dynamic_qt_plugin_usage = if self.plugin_type == PluginType::Dynamic {
+            r#"
+            // When exporting as a dynamic plugin we need to ensure that extern "C"
+            // functions from the moc generation of the plugin remain in the final output
+            //
+            // This mainly means that we need to ensure that QT_MOC_EXPORT_PLUGIN
+            // and QT_MOC_EXPORT_PLUGIN_V2 exports remain
+            //
+            // Both macros make use of QT_MOC_EXPORT_PLUGIN_COMMON
+            // which exports qt_plugin_instance
+            // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/plugin/qplugin.h?h=6.11.1#n244
+            volatile auto qt_plugin_instance_usage = &qt_plugin_instance;
+            Q_UNUSED(qt_plugin_instance_usage);
+            
+            #ifdef QT_MOC_EXPORT_PLUGIN_V2
+              // QT_MOC_EXPORT_PLUGIN_V2 exports qt_plugin_query_metadata_v2
+              // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/plugin/qplugin.h?h=6.11.1#n255
+              volatile auto qt_plugin_query_metadata_v2_usage = &qt_plugin_query_metadata_v2;
+              Q_UNUSED(qt_plugin_query_metadata_v2_usage);
+            #else
+              // QT_MOC_EXPORT_PLUGIN exports qt_plugin_query_metadata
+              // https://code.qt.io/cgit/qt/qtbase.git/tree/src/corelib/plugin/qplugin.h?h=6.11.1#n249
+              volatile auto qt_plugin_query_metadata_usage = &qt_plugin_query_metadata;
+              Q_UNUSED(qt_plugin_query_metadata_usage);
+            #endif
+            "#
+        } else {
+            ""
+        };
         let init_fn_name = format!("init_cxx_qt_qml_module_{plugin_class_name}");
         write!(
             writer,
@@ -108,17 +137,19 @@ public:
     }}
 }};
 
+// The moc-generated cpp file doesn't compile on its own; it needs to be #included here.
+#include "moc_{plugin_class_name}.cpp.cpp"
+
 extern "C" {{
     // "drive-by initialization" causes the plugin class to be included in static linking scenarios
     // Any function that is called from within this file causes the entire object file to be linked in.
     // Therefore we provide an empty function that can be called at any point to ensure this file is linked in.
     bool {init_fn_name}() {{
+        {dynamic_qt_plugin_usage}
         return true;
     }}
 }}
 
-// The moc-generated cpp file doesn't compile on its own; it needs to be #included here.
-#include "moc_{plugin_class_name}.cpp.cpp"
 "#
         )?;
         let initializer = match self.plugin_type {
