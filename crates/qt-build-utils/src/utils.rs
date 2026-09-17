@@ -54,3 +54,19 @@ pub(crate) fn is_windows_target() -> bool {
 pub(crate) fn is_emscripten_target() -> bool {
     std::env::var("CARGO_CFG_TARGET_OS") == Ok("emscripten".to_owned())
 }
+
+/// Create a command to run qmake with a query.
+///
+/// On Windows, this wraps the invocation in `cmd /C` so that qmake can be a script.
+pub(crate) fn qmake_query_command(qmake_path: &Path, var_name: &str) -> Command {
+    let mut cmd;
+    if cfg!(target_os = "windows") {
+        cmd = Command::new("cmd");
+        let qmake_command = format!("\"{}\" -query {}", qmake_path.display(), var_name);
+        cmd.args(["/C", &qmake_command]);
+    } else {
+        cmd = Command::new(qmake_path);
+        cmd.args(["-query", var_name]);
+    }
+    cmd
+}
