@@ -98,6 +98,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "propertyNameChanged"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = "Notify for the Q_PROPERTY"]
         #[namespace = "cxx_qt::multi_object"]
         fn property_name_changed(self: Pin<&mut MyObject>);
@@ -125,6 +126,7 @@ pub mod ffi {
             handler: MyObjectCxxQtSignalHandlerpropertyNameChanged,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_propertyNameChanged(
             handler: &mut MyObjectCxxQtSignalHandlerpropertyNameChanged,
             self_value: Pin<&mut MyObject>,
@@ -138,6 +140,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "cxx_qt::multi_object"]
         fn ready(self: Pin<&mut MyObject>);
     }
@@ -160,6 +163,7 @@ pub mod ffi {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_ready(handler: MyObjectCxxQtSignalHandlerready);
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_ready(
             handler: &mut MyObjectCxxQtSignalHandlerready,
             self_value: Pin<&mut MyObject>,
@@ -219,6 +223,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "propertyNameChanged"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = "Notify for the Q_PROPERTY"]
         #[namespace = "second_object"]
         fn property_name_changed(self: Pin<&mut SecondObject>);
@@ -246,6 +251,7 @@ pub mod ffi {
             handler: SecondObjectCxxQtSignalHandlerpropertyNameChanged,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_SecondObject_signal_handler_propertyNameChanged(
             handler: &mut SecondObjectCxxQtSignalHandlerpropertyNameChanged,
             self_value: Pin<&mut SecondObject>,
@@ -265,6 +271,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "second_object"]
         fn ready(self: Pin<&mut SecondObject>);
     }
@@ -287,6 +294,7 @@ pub mod ffi {
         #[doc(hidden)]
         fn drop_SecondObject_signal_handler_ready(handler: SecondObjectCxxQtSignalHandlerready);
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_SecondObject_signal_handler_ready(
             handler: &mut SecondObjectCxxQtSignalHandlerready,
             self_value: Pin<&mut SecondObject>,
@@ -403,6 +411,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "clicked"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "cxx_qt::multi_object"]
         fn clicked(self: Pin<&mut QPushButton>, checked: bool);
     }
@@ -425,6 +434,7 @@ pub mod ffi {
         #[doc(hidden)]
         fn drop_QPushButton_signal_handler_clicked(handler: QPushButtonCxxQtSignalHandlerclicked);
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QPushButton_signal_handler_clicked(
             handler: &mut QPushButtonCxxQtSignalHandlerclicked,
             self_value: Pin<&mut QPushButton>,
@@ -433,6 +443,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "dataReady"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "mynamespace"]
         fn data_ready(self: Pin<&mut ExternObject>);
     }
@@ -458,6 +469,7 @@ pub mod ffi {
             handler: ExternObjectCxxQtSignalHandlerdataReady,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_ExternObject_signal_handler_dataReady(
             handler: &mut ExternObjectCxxQtSignalHandlerdataReady,
             self_value: Pin<&mut ExternObject>,
@@ -465,6 +477,7 @@ pub mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "errorOccurred"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "mynamespace"]
         fn error_occurred(self: Pin<&mut ExternObject>);
     }
@@ -491,6 +504,7 @@ pub mod ffi {
             handler: ExternObjectCxxQtSignalHandlererrorOccurred,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_ExternObject_signal_handler_errorOccurred(
             handler: &mut ExternObjectCxxQtSignalHandlererrorOccurred,
             self_value: Pin<&mut ExternObject>,
@@ -575,6 +589,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_propertyNameChanged;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_propertyNameChanged(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         MyObjectCxxQtSignalClosurepropertyNameChanged,
@@ -638,6 +653,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_ready;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_ready(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureready>,
     self_value: core::pin::Pin<&mut ffi::MyObject>,
@@ -753,6 +769,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::SecondObject>) + Send;
 }
 use core::mem::drop as drop_SecondObject_signal_handler_propertyNameChanged;
+#[allow(clippy::too_many_arguments)]
 fn call_SecondObject_signal_handler_propertyNameChanged(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         SecondObjectCxxQtSignalClosurepropertyNameChanged,
@@ -828,6 +845,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for SecondObjectCxxQtSigna
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::SecondObject>) + Send;
 }
 use core::mem::drop as drop_SecondObject_signal_handler_ready;
+#[allow(clippy::too_many_arguments)]
 fn call_SecondObject_signal_handler_ready(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<SecondObjectCxxQtSignalClosureready>,
     self_value: core::pin::Pin<&mut ffi::SecondObject>,
@@ -964,6 +982,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QPushButtonCxxQtSignal
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QPushButton>, bool) + Send;
 }
 use core::mem::drop as drop_QPushButton_signal_handler_clicked;
+#[allow(clippy::too_many_arguments)]
 fn call_QPushButton_signal_handler_clicked(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<QPushButtonCxxQtSignalClosureclicked>,
     self_value: core::pin::Pin<&mut ffi::QPushButton>,
@@ -1014,6 +1033,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for ExternObjectCxxQtSigna
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::ExternObject>) + Send;
 }
 use core::mem::drop as drop_ExternObject_signal_handler_dataReady;
+#[allow(clippy::too_many_arguments)]
 fn call_ExternObject_signal_handler_dataReady(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         ExternObjectCxxQtSignalClosuredataReady,
@@ -1086,6 +1106,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::ExternObject>) + Send;
 }
 use core::mem::drop as drop_ExternObject_signal_handler_errorOccurred;
+#[allow(clippy::too_many_arguments)]
 fn call_ExternObject_signal_handler_errorOccurred(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         ExternObjectCxxQtSignalClosureerrorOccurred,

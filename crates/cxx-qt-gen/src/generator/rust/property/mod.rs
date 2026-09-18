@@ -269,6 +269,7 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "trivialPropertyChanged"]
+                    #[allow(clippy::too_many_arguments)]
                     #[doc = "Notify for the Q_PROPERTY"]
                     fn trivial_property_changed(self: Pin<&mut MyObject>);
                 }
@@ -298,6 +299,7 @@ mod tests {
                     fn drop_MyObject_signal_handler_trivialPropertyChanged(handler: MyObjectCxxQtSignalHandlertrivialPropertyChanged);
 
                     #[doc(hidden)]
+                    #[allow(clippy::too_many_arguments)]
                     fn call_MyObject_signal_handler_trivialPropertyChanged(handler: &mut MyObjectCxxQtSignalHandlertrivialPropertyChanged, self_value: Pin<&mut MyObject>, );
                 }
             },
@@ -368,6 +370,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[11],
             parse_quote! {
+                #[allow(clippy::too_many_arguments)]
                 fn call_MyObject_signal_handler_trivialPropertyChanged(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuretrivialPropertyChanged>,
                     self_value: core::pin::Pin<&mut qobject::MyObject>,
@@ -396,6 +399,7 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "opaquePropertyChanged"]
+                    #[allow(clippy::too_many_arguments)]
                     #[doc = "Notify for the Q_PROPERTY"]
                     fn opaque_property_changed(self: Pin<&mut MyObject>);
                 }
@@ -425,6 +429,7 @@ mod tests {
                     fn drop_MyObject_signal_handler_opaquePropertyChanged(handler: MyObjectCxxQtSignalHandleropaquePropertyChanged);
 
                     #[doc(hidden)]
+                    #[allow(clippy::too_many_arguments)]
                     fn call_MyObject_signal_handler_opaquePropertyChanged(handler: &mut MyObjectCxxQtSignalHandleropaquePropertyChanged, self_value: Pin<&mut MyObject>, );
                 }
             },
@@ -495,6 +500,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[19],
             parse_quote! {
+                #[allow(clippy::too_many_arguments)]
                 fn call_MyObject_signal_handler_opaquePropertyChanged(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureopaquePropertyChanged>,
                     self_value: core::pin::Pin<&mut qobject::MyObject>,
@@ -523,6 +529,7 @@ mod tests {
             parse_quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "unsafePropertyChanged"]
+                    #[allow(clippy::too_many_arguments)]
                     #[doc = "Notify for the Q_PROPERTY"]
                     fn unsafe_property_changed(self: Pin<&mut MyObject>);
                 }
@@ -552,6 +559,7 @@ mod tests {
                     fn drop_MyObject_signal_handler_unsafePropertyChanged(handler: MyObjectCxxQtSignalHandlerunsafePropertyChanged);
 
                     #[doc(hidden)]
+                    #[allow(clippy::too_many_arguments)]
                     fn call_MyObject_signal_handler_unsafePropertyChanged(handler: &mut MyObjectCxxQtSignalHandlerunsafePropertyChanged, self_value: Pin<&mut MyObject>, );
                 }
             },
@@ -622,6 +630,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[27],
             parse_quote! {
+                #[allow(clippy::too_many_arguments)]
                 fn call_MyObject_signal_handler_unsafePropertyChanged(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureunsafePropertyChanged>,
                     self_value: core::pin::Pin<&mut qobject::MyObject>,

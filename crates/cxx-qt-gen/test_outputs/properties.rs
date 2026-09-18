@@ -149,6 +149,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "primitiveChanged"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = "Notify for the Q_PROPERTY"]
         #[namespace = "cxx_qt::my_object"]
         fn primitive_changed(self: Pin<&mut MyObject>);
@@ -175,6 +176,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlerprimitiveChanged,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_primitiveChanged(
             handler: &mut MyObjectCxxQtSignalHandlerprimitiveChanged,
             self_value: Pin<&mut MyObject>,
@@ -182,6 +184,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "trivialChanged"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = "Notify for the Q_PROPERTY"]
         #[namespace = "cxx_qt::my_object"]
         fn trivial_changed(self: Pin<&mut MyObject>);
@@ -208,6 +211,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlertrivialChanged,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_trivialChanged(
             handler: &mut MyObjectCxxQtSignalHandlertrivialChanged,
             self_value: Pin<&mut MyObject>,
@@ -215,6 +219,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "propAutoCxxNameChanged"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = "Notify for the Q_PROPERTY"]
         #[namespace = "cxx_qt::my_object"]
         fn prop_auto_cxx_name_changed(self: Pin<&mut MyObject>);
@@ -242,6 +247,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_propAutoCxxNameChanged(
             handler: &mut MyObjectCxxQtSignalHandlerpropAutoCxxNameChanged,
             self_value: Pin<&mut MyObject>,
@@ -249,6 +255,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "customFunctionPropChanged"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = "Notify for the Q_PROPERTY"]
         #[namespace = "cxx_qt::my_object"]
         fn custom_function_prop_changed(self: Pin<&mut MyObject>);
@@ -276,6 +283,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlercustomFunctionPropChanged,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_customFunctionPropChanged(
             handler: &mut MyObjectCxxQtSignalHandlercustomFunctionPropChanged,
             self_value: Pin<&mut MyObject>,
@@ -283,6 +291,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "renamedPropertyChanged"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = "Notify for the Q_PROPERTY"]
         #[namespace = "cxx_qt::my_object"]
         fn renamed_property_changed(self: Pin<&mut MyObject>);
@@ -310,6 +319,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlerrenamedPropertyChanged,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_renamedPropertyChanged(
             handler: &mut MyObjectCxxQtSignalHandlerrenamedPropertyChanged,
             self_value: Pin<&mut MyObject>,
@@ -317,6 +327,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "named_prop_2Changed"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = "Notify for the Q_PROPERTY"]
         #[namespace = "cxx_qt::my_object"]
         fn renamed_property_2_changed(self: Pin<&mut MyObject>);
@@ -344,6 +355,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlernamed_prop_2Changed,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_named_prop_2Changed(
             handler: &mut MyObjectCxxQtSignalHandlernamed_prop_2Changed,
             self_value: Pin<&mut MyObject>,
@@ -369,6 +381,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "my_on_changed"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "cxx_qt::my_object"]
         fn my_on_changed(self: Pin<&mut MyObject>);
     }
@@ -394,6 +407,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlermy_on_changed,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_my_on_changed(
             handler: &mut MyObjectCxxQtSignalHandlermy_on_changed,
             self_value: Pin<&mut MyObject>,
@@ -689,6 +703,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_primitiveChanged;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_primitiveChanged(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         MyObjectCxxQtSignalClosureprimitiveChanged,
@@ -743,6 +758,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_trivialChanged;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_trivialChanged(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         MyObjectCxxQtSignalClosuretrivialChanged,
@@ -813,6 +829,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_propAutoCxxNameChanged;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_propAutoCxxNameChanged(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         MyObjectCxxQtSignalClosurepropAutoCxxNameChanged,
@@ -887,6 +904,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_customFunctionPropChanged;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_customFunctionPropChanged(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         MyObjectCxxQtSignalClosurecustomFunctionPropChanged,
@@ -957,6 +975,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_renamedPropertyChanged;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_renamedPropertyChanged(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         MyObjectCxxQtSignalClosurerenamedPropertyChanged,
@@ -1027,6 +1046,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_named_prop_2Changed;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_named_prop_2Changed(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         MyObjectCxxQtSignalClosurenamed_prop_2Changed,
@@ -1079,6 +1099,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_my_on_changed;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_my_on_changed(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
         MyObjectCxxQtSignalClosuremy_on_changed,

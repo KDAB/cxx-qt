@@ -46,6 +46,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "ready"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "cxx_qt::my_object"]
         fn ready(self: Pin<&mut MyObject>);
     }
@@ -68,6 +69,7 @@ mod ffi {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_ready(handler: MyObjectCxxQtSignalHandlerready);
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_ready(
             handler: &mut MyObjectCxxQtSignalHandlerready,
             self_value: Pin<&mut MyObject>,
@@ -75,6 +77,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "data_changed"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "cxx_qt::my_object"]
         fn data_changed(
             self: Pin<&mut MyObject>,
@@ -106,6 +109,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlerdata_changed,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_data_changed(
             handler: &mut MyObjectCxxQtSignalHandlerdata_changed,
             self_value: Pin<&mut MyObject>,
@@ -117,6 +121,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "newData"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "cxx_qt::my_object"]
         fn base_class_new_data(
             self: Pin<&mut MyObject>,
@@ -145,6 +150,7 @@ mod ffi {
         #[doc(hidden)]
         fn drop_MyObject_signal_handler_newData(handler: MyObjectCxxQtSignalHandlernewData);
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_newData(
             handler: &mut MyObjectCxxQtSignalHandlernewData,
             self_value: Pin<&mut MyObject>,
@@ -218,6 +224,7 @@ mod ffi {
         #[doc(hidden)]
         fn drop_QTimer_signal_handler_timeout(handler: QTimerCxxQtSignalHandlertimeout);
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QTimer_signal_handler_timeout(
             handler: &mut QTimerCxxQtSignalHandlertimeout,
             self_value: Pin<&mut QTimer>,
@@ -225,6 +232,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "const_ready"]
+        #[allow(clippy::too_many_arguments)]
         #[doc = " A constant signal for when the timer is ready"]
         #[namespace = "cxx_qt::my_object"]
         fn const_ready(self: &QTimer);
@@ -248,6 +256,7 @@ mod ffi {
         #[doc(hidden)]
         fn drop_QTimer_signal_handler_const_ready(handler: QTimerCxxQtSignalHandlerconst_ready);
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QTimer_signal_handler_const_ready(
             handler: &mut QTimerCxxQtSignalHandlerconst_ready,
             self_value: &QTimer,
@@ -306,6 +315,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::MyObject>) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_ready;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_ready(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureready>,
     self_value: core::pin::Pin<&mut ffi::MyObject>,
@@ -382,6 +392,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
         ) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_data_changed;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_data_changed(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuredata_changed>,
     self_value: core::pin::Pin<&mut ffi::MyObject>,
@@ -473,6 +484,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
         ) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_newData;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_newData(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurenewData>,
     self_value: core::pin::Pin<&mut ffi::MyObject>,
@@ -574,6 +586,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QTimerCxxQtSignalClosu
     type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QTimer>) + Send;
 }
 use core::mem::drop as drop_QTimer_signal_handler_timeout;
+#[allow(clippy::too_many_arguments)]
 fn call_QTimer_signal_handler_timeout(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosuretimeout>,
     self_value: core::pin::Pin<&mut ffi::QTimer>,
@@ -635,6 +648,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QTimerCxxQtSignalClosu
     type FnType = dyn FnMut(&ffi::QTimer) + Send;
 }
 use core::mem::drop as drop_QTimer_signal_handler_const_ready;
+#[allow(clippy::too_many_arguments)]
 fn call_QTimer_signal_handler_const_ready(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosureconst_ready>,
     self_value: &ffi::QTimer,

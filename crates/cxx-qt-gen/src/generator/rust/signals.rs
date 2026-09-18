@@ -128,6 +128,7 @@ pub fn generate_rust_signal(
             #(#cfgs)*
             #unsafety_block extern "C++" {
                 #[cxx_name = #cpp_ident]
+                #[allow(clippy::too_many_arguments)]
                 #(#doc_comments)*
                 #namespace
                 #unsafe_call fn #signal_ident_cpp(#parameter_signatures) #return_type;
@@ -159,6 +160,7 @@ pub fn generate_rust_signal(
                 fn #signal_handler_drop(handler: #signal_handler_alias);
 
                 #[doc(hidden)]
+                #[allow(clippy::too_many_arguments)]
                 #unsafe_call fn #signal_handler_call(handler: &mut #signal_handler_alias, self_value: #self_type_cxx, #(#parameters_cxx),*);
             }
         }]);
@@ -225,6 +227,7 @@ pub fn generate_rust_signal(
             },
             parse_quote_spanned! {
                 span =>
+                #[allow(clippy::too_many_arguments)]
                 #(#cfgs)*
                 fn #signal_handler_call(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>,
@@ -312,6 +315,7 @@ mod tests {
                     fn drop_MyObject_signal_handler_ready(handler: MyObjectCxxQtSignalHandlerready);
 
                     #[doc(hidden)]
+                    #[allow(clippy::too_many_arguments)]
                     fn call_MyObject_signal_handler_ready(handler: &mut MyObjectCxxQtSignalHandlerready, self_value: Pin<&mut MyObject>, );
                 }
             },
@@ -382,6 +386,7 @@ mod tests {
         assert_tokens_eq(
             &cxx_qt_mod_contents[5],
             quote! {
+                #[allow(clippy::too_many_arguments)]
                 fn call_MyObject_signal_handler_ready(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureready>,
                     self_value: core::pin::Pin<&mut qobject::MyObject>,
@@ -432,6 +437,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "ready"]
+                    #[allow(clippy::too_many_arguments)]
                     fn ready(self: Pin<&mut MyObject>);
                 }
             },
@@ -464,6 +470,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "dataChanged"]
+                    #[allow(clippy::too_many_arguments)]
                     fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
                 }
             },
@@ -492,6 +499,7 @@ mod tests {
                     fn drop_MyObject_signal_handler_dataChanged(handler: MyObjectCxxQtSignalHandlerdataChanged);
 
                     #[doc(hidden)]
+                    #[allow(clippy::too_many_arguments)]
                     fn call_MyObject_signal_handler_dataChanged(handler: &mut MyObjectCxxQtSignalHandlerdataChanged, self_value: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
                 }
             },
@@ -562,6 +570,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[5],
             quote! {
+                #[allow(clippy::too_many_arguments)]
                 fn call_MyObject_signal_handler_dataChanged(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuredataChanged>,
                     self_value: core::pin::Pin<&mut qobject::MyObject>,
@@ -607,6 +616,7 @@ mod tests {
             quote! {
                 extern "C++" {
                     #[cxx_name = "unsafeSignal"]
+                    #[allow(clippy::too_many_arguments)]
                     unsafe fn unsafe_signal(self: Pin<&mut MyObject>, param: *mut T);
                 }
             },
@@ -635,6 +645,7 @@ mod tests {
                     fn drop_MyObject_signal_handler_unsafeSignal(handler: MyObjectCxxQtSignalHandlerunsafeSignal);
 
                     #[doc(hidden)]
+                    #[allow(clippy::too_many_arguments)]
                     unsafe fn call_MyObject_signal_handler_unsafeSignal(handler: &mut MyObjectCxxQtSignalHandlerunsafeSignal, self_value: Pin<&mut MyObject>, param: *mut T);
                 }
             },
@@ -705,6 +716,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[5],
             quote! {
+                #[allow(clippy::too_many_arguments)]
                 fn call_MyObject_signal_handler_unsafeSignal(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosureunsafeSignal>,
                     self_value: core::pin::Pin<&mut qobject::MyObject>,
@@ -752,6 +764,7 @@ mod tests {
             quote! {
                 unsafe extern "C++" {
                     #[cxx_name = "baseName"]
+                    #[allow(clippy::too_many_arguments)]
                     fn existing_signal(self: Pin<&mut MyObject>);
                 }
             },
@@ -780,6 +793,7 @@ mod tests {
                     fn drop_MyObject_signal_handler_baseName(handler: MyObjectCxxQtSignalHandlerbaseName);
 
                     #[doc(hidden)]
+                    #[allow(clippy::too_many_arguments)]
                     fn call_MyObject_signal_handler_baseName(handler: &mut MyObjectCxxQtSignalHandlerbaseName, self_value: Pin<&mut MyObject>, );
                 }
             },
@@ -850,6 +864,7 @@ mod tests {
         assert_tokens_eq(
             &generated.cxx_qt_mod_contents[5],
             quote! {
+                #[allow(clippy::too_many_arguments)]
                 fn call_MyObject_signal_handler_baseName(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosurebaseName>,
                     self_value: core::pin::Pin<&mut qobject::MyObject>,

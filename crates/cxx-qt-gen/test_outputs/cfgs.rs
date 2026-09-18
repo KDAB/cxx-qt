@@ -57,6 +57,7 @@ mod ffi {
     #[cfg(not(enabled))]
     unsafe extern "C++" {
         #[cxx_name = "signal_disabled"]
+        #[allow(clippy::too_many_arguments)]
         fn signal_disabled(self: Pin<&mut QObjectEnabled>);
     }
     #[cfg(not(enabled))]
@@ -84,6 +85,7 @@ mod ffi {
             handler: QObjectEnabledCxxQtSignalHandlersignal_disabled,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QObjectEnabled_signal_handler_signal_disabled(
             handler: &mut QObjectEnabledCxxQtSignalHandlersignal_disabled,
             self_value: Pin<&mut QObjectEnabled>,
@@ -92,6 +94,7 @@ mod ffi {
     #[cfg(enabled)]
     unsafe extern "C++" {
         #[cxx_name = "signal_enabled"]
+        #[allow(clippy::too_many_arguments)]
         fn signal_enabled(self: Pin<&mut QObjectEnabled>);
     }
     #[cfg(enabled)]
@@ -119,6 +122,7 @@ mod ffi {
             handler: QObjectEnabledCxxQtSignalHandlersignal_enabled,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QObjectEnabled_signal_handler_signal_enabled(
             handler: &mut QObjectEnabledCxxQtSignalHandlersignal_enabled,
             self_value: Pin<&mut QObjectEnabled>,
@@ -199,6 +203,7 @@ mod ffi {
     #[cfg(not(enabled))]
     unsafe extern "C++" {
         #[cxx_name = "signal_disabled"]
+        #[allow(clippy::too_many_arguments)]
         fn signal_disabled(self: Pin<&mut QObjectDisabled>);
     }
     #[cfg(not(enabled))]
@@ -226,6 +231,7 @@ mod ffi {
             handler: QObjectDisabledCxxQtSignalHandlersignal_disabled,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QObjectDisabled_signal_handler_signal_disabled(
             handler: &mut QObjectDisabledCxxQtSignalHandlersignal_disabled,
             self_value: Pin<&mut QObjectDisabled>,
@@ -234,6 +240,7 @@ mod ffi {
     #[cfg(enabled)]
     unsafe extern "C++" {
         #[cxx_name = "signal_enabled"]
+        #[allow(clippy::too_many_arguments)]
         fn signal_enabled(self: Pin<&mut QObjectDisabled>);
     }
     #[cfg(enabled)]
@@ -261,6 +268,7 @@ mod ffi {
             handler: QObjectDisabledCxxQtSignalHandlersignal_enabled,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QObjectDisabled_signal_handler_signal_enabled(
             handler: &mut QObjectDisabledCxxQtSignalHandlersignal_enabled,
             self_value: Pin<&mut QObjectDisabled>,
@@ -323,6 +331,7 @@ mod ffi {
     #[cfg(not(enabled))]
     unsafe extern "C++" {
         #[cxx_name = "signal_disabled1"]
+        #[allow(clippy::too_many_arguments)]
         fn signal_disabled1(self: Pin<&mut QObjectExternEnabled>);
     }
     #[cfg(not(enabled))]
@@ -350,6 +359,7 @@ mod ffi {
             handler: QObjectExternEnabledCxxQtSignalHandlersignal_disabled1,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QObjectExternEnabled_signal_handler_signal_disabled1(
             handler: &mut QObjectExternEnabledCxxQtSignalHandlersignal_disabled1,
             self_value: Pin<&mut QObjectExternEnabled>,
@@ -358,6 +368,7 @@ mod ffi {
     #[cfg(enabled)]
     unsafe extern "C++" {
         #[cxx_name = "signal_enabled1"]
+        #[allow(clippy::too_many_arguments)]
         fn signal_enabled1(self: Pin<&mut QObjectExternEnabled>);
     }
     #[cfg(enabled)]
@@ -385,6 +396,7 @@ mod ffi {
             handler: QObjectExternEnabledCxxQtSignalHandlersignal_enabled1,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QObjectExternEnabled_signal_handler_signal_enabled1(
             handler: &mut QObjectExternEnabledCxxQtSignalHandlersignal_enabled1,
             self_value: Pin<&mut QObjectExternEnabled>,
@@ -411,6 +423,7 @@ mod ffi {
     #[cfg(not(enabled))]
     unsafe extern "C++" {
         #[cxx_name = "signal_disabled2"]
+        #[allow(clippy::too_many_arguments)]
         fn signal_disabled2(self: Pin<&mut QObjectExternDisabled>);
     }
     #[cfg(not(enabled))]
@@ -438,6 +451,7 @@ mod ffi {
             handler: QObjectExternDisabledCxxQtSignalHandlersignal_disabled2,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QObjectExternDisabled_signal_handler_signal_disabled2(
             handler: &mut QObjectExternDisabledCxxQtSignalHandlersignal_disabled2,
             self_value: Pin<&mut QObjectExternDisabled>,
@@ -446,6 +460,7 @@ mod ffi {
     #[cfg(enabled)]
     unsafe extern "C++" {
         #[cxx_name = "signal_enabled2"]
+        #[allow(clippy::too_many_arguments)]
         fn signal_enabled2(self: Pin<&mut QObjectExternDisabled>);
     }
     #[cfg(enabled)]
@@ -473,6 +488,7 @@ mod ffi {
             handler: QObjectExternDisabledCxxQtSignalHandlersignal_enabled2,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_QObjectExternDisabled_signal_handler_signal_enabled2(
             handler: &mut QObjectExternDisabledCxxQtSignalHandlersignal_enabled2,
             self_value: Pin<&mut QObjectExternDisabled>,
@@ -557,6 +573,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 }
 #[cfg(not(enabled))]
 use core::mem::drop as drop_QObjectEnabled_signal_handler_signal_disabled;
+#[allow(clippy::too_many_arguments)]
 #[cfg(not(enabled))]
 fn call_QObjectEnabled_signal_handler_signal_disabled(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
@@ -633,6 +650,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 }
 #[cfg(enabled)]
 use core::mem::drop as drop_QObjectEnabled_signal_handler_signal_enabled;
+#[allow(clippy::too_many_arguments)]
 #[cfg(enabled)]
 fn call_QObjectEnabled_signal_handler_signal_enabled(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
@@ -740,6 +758,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 }
 #[cfg(not(enabled))]
 use core::mem::drop as drop_QObjectDisabled_signal_handler_signal_disabled;
+#[allow(clippy::too_many_arguments)]
 #[cfg(not(enabled))]
 fn call_QObjectDisabled_signal_handler_signal_disabled(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
@@ -816,6 +835,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 }
 #[cfg(enabled)]
 use core::mem::drop as drop_QObjectDisabled_signal_handler_signal_enabled;
+#[allow(clippy::too_many_arguments)]
 #[cfg(enabled)]
 fn call_QObjectDisabled_signal_handler_signal_enabled(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
@@ -936,6 +956,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 }
 #[cfg(not(enabled))]
 use core::mem::drop as drop_QObjectExternEnabled_signal_handler_signal_disabled1;
+#[allow(clippy::too_many_arguments)]
 #[cfg(not(enabled))]
 fn call_QObjectExternEnabled_signal_handler_signal_disabled1(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
@@ -1017,6 +1038,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 }
 #[cfg(enabled)]
 use core::mem::drop as drop_QObjectExternEnabled_signal_handler_signal_enabled1;
+#[allow(clippy::too_many_arguments)]
 #[cfg(enabled)]
 fn call_QObjectExternEnabled_signal_handler_signal_enabled1(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
@@ -1110,6 +1132,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 }
 #[cfg(not(enabled))]
 use core::mem::drop as drop_QObjectExternDisabled_signal_handler_signal_disabled2;
+#[allow(clippy::too_many_arguments)]
 #[cfg(not(enabled))]
 fn call_QObjectExternDisabled_signal_handler_signal_disabled2(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
@@ -1195,6 +1218,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
 }
 #[cfg(enabled)]
 use core::mem::drop as drop_QObjectExternDisabled_signal_handler_signal_enabled2;
+#[allow(clippy::too_many_arguments)]
 #[cfg(enabled)]
 fn call_QObjectExternDisabled_signal_handler_signal_enabled2(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
