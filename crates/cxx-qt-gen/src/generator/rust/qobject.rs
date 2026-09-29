@@ -34,6 +34,7 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 type_names,
                 structured_qobject,
+                &qobject.cfgs,
             )?,
             generate_rust_methods(&structured_qobject.methods, &qobject_names, type_names)?,
             inherit::generate(&qobject_names, &structured_qobject.inherited_methods)?,
@@ -65,6 +66,7 @@ impl GeneratedRustFragment {
             type_names,
             &structured_qobject.declaration.name,
             &structured_qobject.declaration.base_class,
+            &qobject.cfgs,
         )?);
 
         generated.extend(vec![

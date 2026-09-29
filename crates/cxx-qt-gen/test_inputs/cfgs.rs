@@ -56,6 +56,7 @@ mod ffi {
         #[cfg(enabled)]
         // TODO: should we allow for disabling properties?
         // #[qproperty(i32, property_disabled, cfg(not(enabled)))]
+        #[qproperty(i32, property_enabled)]
         type QObjectEnabled = super::QObjectEnabledRust;
 
         #[inherit]
@@ -107,6 +108,7 @@ mod ffi {
         #[cfg(not(enabled))]
         // TODO: should we allow for disabling properties?
         // #[qproperty(i32, property_disabled, cfg(not(enabled)))]
+        #[qproperty(i32, property_disabled)]
         type QObjectDisabled = super::QObjectDisabledRust;
 
         #[inherit]

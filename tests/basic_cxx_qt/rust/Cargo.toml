@@ -12,6 +12,11 @@ license = "MIT OR Apache-2.0"
 [lib]
 crate-type = ["staticlib"]
 
+[features]
+# See src/cfgs.rs: whichever way this feature is set, one of the two QObjects of
+# that bridge is compiled out, which is the case that used to fail to compile.
+cfg_enabled = []
+
 [dependencies]
 cxx.workspace = true
 cxx-qt.workspace = true

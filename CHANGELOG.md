@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.10.0...HEAD)
 
+### Fixed
+
+- `cfg` attributes on a `#[qobject]` are now applied to its casting implementation and its properties, so that a disabled QObject no longer fails to build
+
 ## [0.10.0](https://github.com/KDAB/cxx-qt/compare/v0.9.1...v0.10.0) - 2026-08-24
 
 ### Added

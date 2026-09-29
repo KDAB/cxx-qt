@@ -8,6 +8,12 @@
 class QObjectEnabled;
 
 namespace rust::cxxqtgen1 {
+using QObjectEnabledCxxQtSignalHandlerproperty_enabledChanged =
+  ::rust::cxxqt1::SignalHandler<
+    struct QObjectEnabledCxxQtSignalParamsproperty_enabledChanged*>;
+} // namespace rust::cxxqtgen1
+
+namespace rust::cxxqtgen1 {
 using QObjectEnabledCxxQtSignalHandlersignal_enabled =
   ::rust::cxxqt1::SignalHandler<
     struct QObjectEnabledCxxQtSignalParamssignal_enabled*>;
@@ -47,6 +53,15 @@ QObjectExternDisabled_signal_enabled2Connect(
 
 namespace rust::cxxqtgen1 {
 ::QMetaObject::Connection
+QObjectEnabled_property_enabledChangedConnect(
+  QObjectEnabled& self,
+  ::rust::cxxqtgen1::QObjectEnabledCxxQtSignalHandlerproperty_enabledChanged
+    closure,
+  ::Qt::ConnectionType type);
+} // namespace rust::cxxqtgen1
+
+namespace rust::cxxqtgen1 {
+::QMetaObject::Connection
 QObjectEnabled_signal_enabledConnect(
   QObjectEnabled& self,
   ::rust::cxxqtgen1::QObjectEnabledCxxQtSignalHandlersignal_enabled closure,
@@ -59,6 +74,8 @@ class QObjectEnabled
 {
   Q_OBJECT
 public:
+  Q_PROPERTY(::std::int32_t property_enabled READ getProperty_enabled WRITE
+               setProperty_enabled NOTIFY property_enabledChanged)
   enum class EnumEnabled1 : ::std::int32_t
   {
     A = 0
@@ -68,6 +85,9 @@ public:
   virtual ~QObjectEnabled() = default;
 
 public:
+  ::std::int32_t const& getProperty_enabled() const noexcept;
+  Q_SLOT void setProperty_enabled(::std::int32_t value) noexcept;
+  Q_SIGNAL void property_enabledChanged();
   Q_INVOKABLE void invokable_enabled() const noexcept;
   Q_SIGNAL void signal_enabled();
   template<class... Args>

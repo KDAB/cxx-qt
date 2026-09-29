@@ -32,6 +32,52 @@ mod ffi {
         #[cfg(enabled)]
         type QObjectEnabledRust;
     }
+    #[cfg(enabled)]
+    extern "Rust" {
+        #[cxx_name = "getProperty_enabled"]
+        unsafe fn property_enabled<'a>(self: &'a QObjectEnabled) -> &'a i32;
+    }
+    #[cfg(enabled)]
+    extern "Rust" {
+        #[cxx_name = "setProperty_enabled"]
+        fn set_property_enabled(self: Pin<&mut QObjectEnabled>, value: i32);
+    }
+    #[cfg(enabled)]
+    unsafe extern "C++" {
+        #[cxx_name = "property_enabledChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
+        fn property_enabled_changed(self: Pin<&mut QObjectEnabled>);
+    }
+    #[cfg(enabled)]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1"]
+        type QObjectEnabledCxxQtSignalHandlerproperty_enabledChanged =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                super::QObjectEnabledCxxQtSignalClosureproperty_enabledChanged,
+            >;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1"]
+        #[cxx_name = "QObjectEnabled_property_enabledChangedConnect"]
+        fn QObjectEnabled_connect_property_enabled_changed(
+            self_value: Pin<&mut QObjectEnabled>,
+            signal_handler: QObjectEnabledCxxQtSignalHandlerproperty_enabledChanged,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "rust::cxxqtgen1"]
+    #[cfg(enabled)]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_QObjectEnabled_signal_handler_property_enabledChanged(
+            handler: QObjectEnabledCxxQtSignalHandlerproperty_enabledChanged,
+        );
+        #[doc(hidden)]
+        fn call_QObjectEnabled_signal_handler_property_enabledChanged(
+            handler: &mut QObjectEnabledCxxQtSignalHandlerproperty_enabledChanged,
+            self_value: Pin<&mut QObjectEnabled>,
+        );
+    }
     extern "Rust" {
         #[cxx_name = "invokable_disabled"]
         #[cfg(not(enabled))]
@@ -124,6 +170,7 @@ mod ffi {
             self_value: Pin<&mut QObjectEnabled>,
         );
     }
+    #[cfg(enabled)]
     extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "upcastPtr"]
@@ -173,6 +220,52 @@ mod ffi {
     extern "Rust" {
         #[cfg(not(enabled))]
         type QObjectDisabledRust;
+    }
+    #[cfg(not(enabled))]
+    extern "Rust" {
+        #[cxx_name = "getProperty_disabled"]
+        unsafe fn property_disabled<'a>(self: &'a QObjectDisabled) -> &'a i32;
+    }
+    #[cfg(not(enabled))]
+    extern "Rust" {
+        #[cxx_name = "setProperty_disabled"]
+        fn set_property_disabled(self: Pin<&mut QObjectDisabled>, value: i32);
+    }
+    #[cfg(not(enabled))]
+    unsafe extern "C++" {
+        #[cxx_name = "property_disabledChanged"]
+        #[doc = "Notify for the Q_PROPERTY"]
+        fn property_disabled_changed(self: Pin<&mut QObjectDisabled>);
+    }
+    #[cfg(not(enabled))]
+    unsafe extern "C++" {
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1"]
+        type QObjectDisabledCxxQtSignalHandlerproperty_disabledChanged =
+            cxx_qt::signalhandler::CxxQtSignalHandler<
+                super::QObjectDisabledCxxQtSignalClosureproperty_disabledChanged,
+            >;
+        #[doc(hidden)]
+        #[namespace = "rust::cxxqtgen1"]
+        #[cxx_name = "QObjectDisabled_property_disabledChangedConnect"]
+        fn QObjectDisabled_connect_property_disabled_changed(
+            self_value: Pin<&mut QObjectDisabled>,
+            signal_handler: QObjectDisabledCxxQtSignalHandlerproperty_disabledChanged,
+            conn_type: CxxQtConnectionType,
+        ) -> CxxQtQMetaObjectConnection;
+    }
+    #[namespace = "rust::cxxqtgen1"]
+    #[cfg(not(enabled))]
+    extern "Rust" {
+        #[doc(hidden)]
+        fn drop_QObjectDisabled_signal_handler_property_disabledChanged(
+            handler: QObjectDisabledCxxQtSignalHandlerproperty_disabledChanged,
+        );
+        #[doc(hidden)]
+        fn call_QObjectDisabled_signal_handler_property_disabledChanged(
+            handler: &mut QObjectDisabledCxxQtSignalHandlerproperty_disabledChanged,
+            self_value: Pin<&mut QObjectDisabled>,
+        );
     }
     extern "Rust" {
         #[cxx_name = "invokable_disabled"]
@@ -266,6 +359,7 @@ mod ffi {
             self_value: Pin<&mut QObjectDisabled>,
         );
     }
+    #[cfg(not(enabled))]
     extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "upcastPtr"]
@@ -302,6 +396,7 @@ mod ffi {
             outer: Pin<&mut QObjectDisabled>,
         ) -> Pin<&mut QObjectDisabledRust>;
     }
+    #[cfg(enabled)]
     extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "upcastPtr"]
@@ -390,6 +485,7 @@ mod ffi {
             self_value: Pin<&mut QObjectExternEnabled>,
         );
     }
+    #[cfg(not(enabled))]
     extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "upcastPtr"]
@@ -500,6 +596,112 @@ mod ffi {
         type EnumEnabled2 = super::cxx_qt_private_qenum_EnumEnabled2::EnumEnabled2;
     }
 }
+#[cfg(enabled)]
+impl ffi::QObjectEnabled {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "property_enabled"]
+    pub fn property_enabled(&self) -> &i32 {
+        &self.property_enabled
+    }
+}
+#[cfg(enabled)]
+impl ffi::QObjectEnabled {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "property_enabled"]
+    pub fn set_property_enabled(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.property_enabled == value {
+            return;
+        }
+        self.as_mut().rust_mut().property_enabled = value;
+        self.as_mut().property_enabled_changed();
+    }
+}
+#[cfg(enabled)]
+impl ffi::QObjectEnabled {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "property_enabledChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
+    pub fn connect_property_enabled_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
+    >(
+        self: core::pin::Pin<&mut ffi::QObjectEnabled>,
+        closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::QObjectEnabled_connect_property_enabled_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    QObjectEnabledCxxQtSignalClosureproperty_enabledChanged,
+                >::new(Box::new(closure)),
+                conn_type,
+            ),
+        )
+    }
+}
+#[cfg(enabled)]
+impl ffi::QObjectEnabled {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "property_enabledChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
+    pub fn on_property_enabled_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + 'static + Send,
+    >(
+        self: core::pin::Pin<&mut ffi::QObjectEnabled>,
+        closure: F,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::QObjectEnabled_connect_property_enabled_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    QObjectEnabledCxxQtSignalClosureproperty_enabledChanged,
+                >::new(Box::new(closure)),
+                cxx_qt::ConnectionType::AutoConnection,
+            ),
+        )
+    }
+}
+#[cfg(enabled)]
+#[doc(hidden)]
+pub struct QObjectEnabledCxxQtSignalClosureproperty_enabledChanged {}
+#[cfg(enabled)]
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
+    for QObjectEnabledCxxQtSignalClosureproperty_enabledChanged
+{
+    type Id =
+        cxx::type_id!("::rust::cxxqtgen1::QObjectEnabledCxxQtSignalHandlerproperty_enabledChanged");
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectEnabled>) + Send;
+}
+#[cfg(enabled)]
+use core::mem::drop as drop_QObjectEnabled_signal_handler_property_enabledChanged;
+#[cfg(enabled)]
+fn call_QObjectEnabled_signal_handler_property_enabledChanged(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
+        QObjectEnabledCxxQtSignalClosureproperty_enabledChanged,
+    >,
+    self_value: core::pin::Pin<&mut ffi::QObjectEnabled>,
+) {
+    handler.closure()(self_value);
+}
+#[cfg(enabled)]
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<
+        QObjectEnabledCxxQtSignalClosureproperty_enabledChanged,
+    >,
+    usize
+);
+#[cfg(enabled)]
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<
+        QObjectEnabledCxxQtSignalClosureproperty_enabledChanged,
+    >,
+    [usize; 2]
+);
 #[cfg(not(enabled))]
 impl ffi::QObjectEnabled {
     #[doc = "Connect the given function pointer to the signal "]
@@ -652,6 +854,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QObjectEnabledCxxQtSignalClosuresignal_enabled>,
     [usize; 2]
 );
+#[cfg(enabled)]
 unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::QObjectEnabled {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectEnabled_upcastPtr(this)
@@ -683,6 +886,113 @@ impl ::cxx_qt::CxxQtType for ffi::QObjectEnabled {
         ffi::cxx_qt_ffi_QObjectEnabled_unsafeRustMut(self)
     }
 }
+#[cfg(not(enabled))]
+impl ffi::QObjectDisabled {
+    #[doc = "Getter for the Q_PROPERTY "]
+    #[doc = "property_disabled"]
+    pub fn property_disabled(&self) -> &i32 {
+        &self.property_disabled
+    }
+}
+#[cfg(not(enabled))]
+impl ffi::QObjectDisabled {
+    #[doc = "Setter for the Q_PROPERTY "]
+    #[doc = "property_disabled"]
+    pub fn set_property_disabled(mut self: core::pin::Pin<&mut Self>, value: i32) {
+        use cxx_qt::CxxQtType;
+        if self.property_disabled == value {
+            return;
+        }
+        self.as_mut().rust_mut().property_disabled = value;
+        self.as_mut().property_disabled_changed();
+    }
+}
+#[cfg(not(enabled))]
+impl ffi::QObjectDisabled {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "property_disabledChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[allow(dead_code)]
+    pub fn connect_property_disabled_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
+    >(
+        self: core::pin::Pin<&mut ffi::QObjectDisabled>,
+        closure: F,
+        conn_type: cxx_qt::ConnectionType,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::QObjectDisabled_connect_property_disabled_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    QObjectDisabledCxxQtSignalClosureproperty_disabledChanged,
+                >::new(Box::new(closure)),
+                conn_type,
+            ),
+        )
+    }
+}
+#[cfg(not(enabled))]
+impl ffi::QObjectDisabled {
+    #[doc = "Connect the given function pointer to the signal "]
+    #[doc = "property_disabledChanged"]
+    #[doc = ", so that when the signal is emitted the function pointer is executed."]
+    #[doc = "\n"]
+    #[doc = "Note that this method uses a AutoConnection connection type."]
+    #[allow(dead_code)]
+    pub fn on_property_disabled_changed<
+        F: FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + 'static + Send,
+    >(
+        self: core::pin::Pin<&mut ffi::QObjectDisabled>,
+        closure: F,
+    ) -> cxx_qt::QMetaObjectConnectionGuard {
+        cxx_qt::QMetaObjectConnectionGuard::from(
+            ffi::QObjectDisabled_connect_property_disabled_changed(
+                self,
+                cxx_qt::signalhandler::CxxQtSignalHandler::<
+                    QObjectDisabledCxxQtSignalClosureproperty_disabledChanged,
+                >::new(Box::new(closure)),
+                cxx_qt::ConnectionType::AutoConnection,
+            ),
+        )
+    }
+}
+#[cfg(not(enabled))]
+#[doc(hidden)]
+pub struct QObjectDisabledCxxQtSignalClosureproperty_disabledChanged {}
+#[cfg(not(enabled))]
+impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure
+    for QObjectDisabledCxxQtSignalClosureproperty_disabledChanged
+{
+    type Id = cxx::type_id!(
+        "::rust::cxxqtgen1::QObjectDisabledCxxQtSignalHandlerproperty_disabledChanged"
+    );
+    type FnType = dyn FnMut(core::pin::Pin<&mut ffi::QObjectDisabled>) + Send;
+}
+#[cfg(not(enabled))]
+use core::mem::drop as drop_QObjectDisabled_signal_handler_property_disabledChanged;
+#[cfg(not(enabled))]
+fn call_QObjectDisabled_signal_handler_property_disabledChanged(
+    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<
+        QObjectDisabledCxxQtSignalClosureproperty_disabledChanged,
+    >,
+    self_value: core::pin::Pin<&mut ffi::QObjectDisabled>,
+) {
+    handler.closure()(self_value);
+}
+#[cfg(not(enabled))]
+cxx_qt::static_assertions::assert_eq_align!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<
+        QObjectDisabledCxxQtSignalClosureproperty_disabledChanged,
+    >,
+    usize
+);
+#[cfg(not(enabled))]
+cxx_qt::static_assertions::assert_eq_size!(
+    cxx_qt::signalhandler::CxxQtSignalHandler<
+        QObjectDisabledCxxQtSignalClosureproperty_disabledChanged,
+    >,
+    [usize; 2]
+);
 #[cfg(not(enabled))]
 impl ffi::QObjectDisabled {
     #[doc = "Connect the given function pointer to the signal "]
@@ -835,6 +1145,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     cxx_qt::signalhandler::CxxQtSignalHandler<QObjectDisabledCxxQtSignalClosuresignal_enabled>,
     [usize; 2]
 );
+#[cfg(not(enabled))]
 unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::QObjectDisabled {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectDisabled_upcastPtr(this)
@@ -866,6 +1177,7 @@ impl ::cxx_qt::CxxQtType for ffi::QObjectDisabled {
         ffi::cxx_qt_ffi_QObjectDisabled_unsafeRustMut(self)
     }
 }
+#[cfg(enabled)]
 unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::QObjectExternEnabled {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectExternEnabled_upcastPtr(this)
@@ -1040,6 +1352,7 @@ cxx_qt::static_assertions::assert_eq_size!(
     >,
     [usize; 2]
 );
+#[cfg(not(enabled))]
 unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::QObjectExternDisabled {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_QObjectExternDisabled_upcastPtr(this)

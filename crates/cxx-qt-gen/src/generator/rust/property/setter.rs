@@ -13,13 +13,14 @@ use crate::{
     naming::TypeNames,
 };
 use quote::quote;
-use syn::{parse_quote, Result, Type};
+use syn::{parse_quote, Attribute, Result, Type};
 
 pub fn generate(
     idents: &QPropertyNames,
     qobject_names: &QObjectNames,
     cxx_ty: &Type,
     type_names: &TypeNames,
+    cfgs: &[Attribute],
 ) -> Result<Option<GeneratedRustFragment>> {
     let cpp_class_name_rust = &qobject_names.name.rust_unqualified();
 
@@ -53,6 +54,7 @@ pub fn generate(
 
         Ok(Some(GeneratedRustFragment {
             cxx_mod_contents: vec![parse_quote! {
+                #(#cfgs)*
                 extern "Rust" {
                     #[cxx_name = #setter_cpp]
                     // Needed for QObjects to have a namespace on their type or extern block
@@ -64,6 +66,7 @@ pub fn generate(
                 }
             }],
             cxx_qt_mod_contents: vec![parse_quote! {
+                #(#cfgs)*
                 impl #qualified_impl {
                     #[doc = "Setter for the Q_PROPERTY "]
                     #[doc = #ident_str]

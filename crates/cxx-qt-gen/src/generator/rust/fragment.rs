@@ -7,7 +7,7 @@ use crate::generator::naming::qobject::QObjectNames;
 use crate::naming::{Name, TypeNames};
 use proc_macro2::Ident;
 use quote::format_ident;
-use syn::{parse_quote, Item, Result};
+use syn::{parse_quote, Attribute, Item, Result};
 
 #[derive(Default, Eq, PartialEq, Debug)]
 pub struct GeneratedRustFragment {
@@ -42,6 +42,7 @@ impl GeneratedRustFragment {
         type_names: &TypeNames,
         type_name: &Name,
         base_class: &Option<Ident>,
+        cfgs: &[Attribute],
     ) -> Result<Self> {
         // Create name from base ident
         let base = base_class
@@ -67,6 +68,7 @@ impl GeneratedRustFragment {
 
         Ok(Self {
             cxx_mod_contents: vec![parse_quote! {
+                #(#cfgs)*
                 extern "C++" {
                     #[doc(hidden)]
                     #(#upcast_fn_attrs)*
@@ -78,6 +80,7 @@ impl GeneratedRustFragment {
                 }
             }],
             cxx_qt_mod_contents: vec![parse_quote! {
+                #(#cfgs)*
                 unsafe impl ::cxx_qt::casting::Upcast<#base_qualified> for #struct_name {
                     unsafe fn upcast_ptr(this: *const Self) -> *const #base_qualified {
                         #upcast_fn_qualified(this)

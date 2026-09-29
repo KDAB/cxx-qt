@@ -17,13 +17,14 @@ use crate::{
     naming::TypeNames,
     parser::property::ParsedQProperty,
 };
-use syn::Result;
+use syn::{Attribute, Result};
 
 pub fn generate_rust_properties(
     properties: &Vec<ParsedQProperty>,
     qobject_names: &QObjectNames,
     type_names: &TypeNames,
     structured_qobject: &StructuredQObject,
+    cfgs: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let mut generated = GeneratedRustFragment::default();
     let mut signals = vec![];
@@ -31,15 +32,19 @@ pub fn generate_rust_properties(
     for property in properties {
         let idents = QPropertyNames::try_from_property(property, structured_qobject)?;
 
-        if let Some(getter) = getter::generate(&idents, qobject_names, &property.ty, type_names)? {
+        if let Some(getter) =
+            getter::generate(&idents, qobject_names, &property.ty, type_names, cfgs)?
+        {
             generated.append(getter);
         };
 
-        if let Some(setter) = setter::generate(&idents, qobject_names, &property.ty, type_names)? {
+        if let Some(setter) =
+            setter::generate(&idents, qobject_names, &property.ty, type_names, cfgs)?
+        {
             generated.append(setter);
         }
 
-        if let Some(notify) = signal::generate(&idents, qobject_names) {
+        if let Some(notify) = signal::generate(&idents, qobject_names, cfgs) {
             signals.push(notify)
         }
     }
@@ -94,6 +99,7 @@ mod tests {
             &qobject_names,
             &type_names,
             &structured_qobject,
+            &[],
         )
         .unwrap();
 

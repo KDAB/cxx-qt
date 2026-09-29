@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use syn::ForeignItemFn;
+use syn::{Attribute, ForeignItemFn};
 
 use crate::parser::CaseConversion;
 use crate::{
@@ -14,7 +14,11 @@ use crate::{
     parser::signals::ParsedSignal,
 };
 
-pub fn generate(idents: &QPropertyNames, qobject_names: &QObjectNames) -> Option<ParsedSignal> {
+pub fn generate(
+    idents: &QPropertyNames,
+    qobject_names: &QObjectNames,
+    cfgs: &[Attribute],
+) -> Option<ParsedSignal> {
     // We build our signal in the generation phase as we need to use the naming
     // structs to build the signal name
     let cpp_class_rust = &qobject_names.name.rust_unqualified();
@@ -23,6 +27,7 @@ pub fn generate(idents: &QPropertyNames, qobject_names: &QObjectNames) -> Option
         let notify_cpp_str = notify.cxx_unqualified();
 
         let method: ForeignItemFn = syn::parse_quote! {
+            #(#cfgs)*
             #[doc = "Notify for the Q_PROPERTY"]
             #[cxx_name = #notify_cpp_str]
             fn #notify_rust(self: Pin<&mut #cpp_class_rust>);

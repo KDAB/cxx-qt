@@ -33,13 +33,6 @@ impl GeneratedRustFragment {
                 let mut generated = vec![];
                 let qobject_names = QObjectNames::from_extern_qobject(ty, type_names)?;
 
-                generated.push(GeneratedRustFragment::generate_casting_impl(
-                    &qobject_names,
-                    type_names,
-                    &ty.name,
-                    &ty.base_class,
-                )?);
-
                 let namespace = if let Some(namespace) = &ty.name.namespace() {
                     quote! { #[namespace = #namespace ] }
                 } else {
@@ -57,11 +50,12 @@ impl GeneratedRustFragment {
                         #[cxx_name = #cxx_name]
                     }
                 };
-                let cfgs: Vec<&Attribute> = ty
+                let cfgs: Vec<Attribute> = ty
                     .declaration
                     .attrs
                     .iter()
                     .filter(|attr| path_compare_str(attr.meta.path(), &["cfg"]))
+                    .cloned()
                     .collect();
                 let docs: Vec<&Attribute> = ty
                     .declaration
@@ -69,6 +63,13 @@ impl GeneratedRustFragment {
                     .iter()
                     .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
                     .collect();
+                generated.push(GeneratedRustFragment::generate_casting_impl(
+                    &qobject_names,
+                    type_names,
+                    &ty.name,
+                    &ty.base_class,
+                    &cfgs,
+                )?);
                 generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
                     #extern_block_namespace
                     #unsafety extern "C++" {
