@@ -15,32 +15,32 @@
 //! `--all-features`, as CI builds it, `CfgEnabled` is compiled in and
 //! `CfgDisabled` is compiled out; a plain build is the other way round.
 //!
-//! Note that the feature must not contain a `-`, as `CARGO_FEATURE_` variables
-//! spell it `_` and cxx-qt-build then never sees the feature as enabled, which
-//! makes the generated C++ disagree with the generated Rust.
+//! The feature name contains a `-` on purpose: Cargo spells it `_` in the
+//! `CARGO_FEATURE_` variables, and the generated C++ has to agree with the
+//! generated Rust anyway.
 
 #[cxx_qt::bridge]
 mod ffi {
     unsafe extern "RustQt" {
         #[qobject]
-        #[cfg(feature = "cfg_enabled")]
+        #[cfg(feature = "cfg-enabled")]
         #[qproperty(i32, number)]
         type CfgEnabled = super::CfgEnabledRust;
 
         #[qobject]
-        #[cfg(not(feature = "cfg_enabled"))]
+        #[cfg(not(feature = "cfg-enabled"))]
         #[qproperty(i32, number)]
         type CfgDisabled = super::CfgDisabledRust;
     }
 }
 
-#[cfg(feature = "cfg_enabled")]
+#[cfg(feature = "cfg-enabled")]
 #[derive(Default)]
 pub struct CfgEnabledRust {
     number: i32,
 }
 
-#[cfg(not(feature = "cfg_enabled"))]
+#[cfg(not(feature = "cfg-enabled"))]
 #[derive(Default)]
 pub struct CfgDisabledRust {
     number: i32,
