@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - `cfg` attributes on a `#[qobject]` are now applied to its casting implementation and its properties, so that a disabled QObject no longer fails to build
+- `cfg(feature = "...")` attributes now match features containing a `-` when generating C++, as Cargo passes them to build scripts with `_` instead
 
 ## [0.10.0](https://github.com/KDAB/cxx-qt/compare/v0.9.1...v0.10.0) - 2026-08-24
 
