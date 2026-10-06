@@ -1035,7 +1035,12 @@ impl CxxQtBuilder {
                     }
                     // Ignore if the file already exists
                     Err(err) if err.kind() == std::io::ErrorKind::AlreadyExists => {}
-                    Err(_err) => panic!("Could not create qmlls.ini file: {qmlls_ini_path:?}"),
+                    // If we failed to write it may be that we are building as a dependency
+                    // and the source folder is read-only. In this case only warn rather than
+                    // error, which is only displayed when building with -vv or path/local deps
+                    Err(_err) => println!(
+                        "cargo::warning=Could not create qmlls.ini file: {qmlls_ini_path:?}"
+                    ),
                 }
             }
 
