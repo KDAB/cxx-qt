@@ -1,6 +1,7 @@
 <!--
 SPDX-FileCopyrightText: 2023 Klarälvdalens Datakonsult AB, a KDAB Group company <info@kdab.com>
 SPDX-FileContributor: Andrew Hayzen <andrew.hayzen@kdab.com>
+SPDX-FileContributor: Wehrwolfmann <256216494+wehrwolfmann@users.noreply.github.com>
 
 SPDX-License-Identifier: MIT OR Apache-2.0
 -->
@@ -227,6 +228,18 @@ Implementations then have no difference to non invokable methods.
 
 ``` rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/invokables.rs:book_invokable_impl}}
+```
+
+### Raw pointers
+
+Methods which take a raw pointer, such as a `*mut QObject` that is handed over from QML, need to be declared as an `unsafe fn` in both the bridge and the implementation.
+Otherwise Clippy's deny by default [`not_unsafe_ptr_arg_deref`](https://rust-lang.github.io/rust-clippy/master/index.html#not_unsafe_ptr_arg_deref) lint fails the build as soon as the pointer is dereferenced.
+The `unsafe` applies to the Rust side only, the generated `Q_INVOKABLE` or `Q_PROPERTY` is unchanged.
+The same applies to a custom `WRITE` setter of a [property](#properties) with a pointer type.
+
+```rust,ignore,noplayground
+#[qinvokable]
+unsafe fn set_target(self: Pin<&mut MyObject>, target: *mut QObject);
 ```
 
 ### Inheritance
