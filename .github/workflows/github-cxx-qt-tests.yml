@@ -349,10 +349,10 @@ jobs:
           - name: Ubuntu 24.04 (gcc) Qt6
             os: ubuntu-24.04
             qt_version: 6
-            aqt_version: '6.10.1'
+            aqt_version: '6.12.0'
             aqt_arch: 'linux_gcc_64'
             aqt_host: 'linux'
-            qmake_path: /home/runner/work/cxx-qt/Qt/6.10.1/gcc_64/bin/qmake
+            qmake_path: /home/runner/work/cxx-qt/Qt/6.12.0/gcc_64/bin/qmake
             cores: 4
             # FIXME: valgrind complains about invalid debuginfo. Might be fixed when Ubuntu updates to valgrind 3.20
             # https://bugs.kde.org/show_bug.cgi?id=452758
@@ -395,11 +395,11 @@ jobs:
           - name: macOS 15 (clang) Qt6
             os: macos-15
             qt_version: 6
-            aqt_version: '6.10.1'
+            aqt_version: '6.12.0'
             aqt_arch: 'clang_64'
             aqt_host: 'mac'
-            qmake_path: /Users/runner/work/cxx-qt/Qt/6.10.1/macos/bin/qmake
-            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.10.1/macos/lib
+            qmake_path: /Users/runner/work/cxx-qt/Qt/6.12.0/macos/bin/qmake
+            dyld_framework_path: /Users/runner/work/cxx-qt/Qt/6.12.0/macos/lib
             # https://doc.qt.io/qt-6.7/macos.html#target-platforms
             macosx_deployment_target: '13.0'
             cores: 3
@@ -458,10 +458,10 @@ jobs:
           - name: Windows 2022 (MSVC2022) Qt6 Debug
             os: windows-2022
             qt_version: 6
-            aqt_version: '6.10.1'
+            aqt_version: '6.12.0'
             aqt_arch: 'win64_msvc2022_64'
             aqt_host: 'windows'
-            qmake_path: D:/a/cxx-qt/Qt/6.10.1/msvc2022_64/bin/qmake.exe
+            qmake_path: D:/a/cxx-qt/Qt/6.12.0/msvc2022_64/bin/qmake.exe
             cores: 4
             ctest_args: --exclude-regex '^(cargo_clippy|cargo_doc|cargo_build_rerun|.*valgrind)$'
             exe_suffix: .exe
