@@ -96,6 +96,15 @@ pub fn extract_cfgs(attrs: &[Attribute]) -> Vec<Attribute> {
         .collect()
 }
 
+/// Iterate the attributes of the method to extract allow attributes
+pub fn extract_allows(attrs: &[Attribute]) -> Vec<Attribute> {
+    attrs
+        .iter()
+        .filter(|attr| path_compare_str(attr.meta.path(), &["allow"]))
+        .cloned()
+        .collect()
+}
+
 /// Iterate the attributes of the method to extract Doc attributes (doc comments are parsed as this)
 pub fn extract_docs(attrs: &[Attribute]) -> Vec<Attribute> {
     attrs

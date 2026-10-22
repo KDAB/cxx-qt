@@ -273,6 +273,9 @@ A full example can be found in the [qml features example](https://github.com/KDA
 > **📝 Note**: using `pub(self)` as the visibility of the signal
 > allows for declaring private signals
 
+> **📝 Note**: `#[allow(...)]` on a signal is passed on to the code generated for it,
+> e.g. `#[allow(clippy::too_many_arguments)]` for a signal with many parameters
+
 ### Connecting to a signal
 
 For every signal, CXX-Qt will generate two methods to connect to it.

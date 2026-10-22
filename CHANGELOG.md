@@ -17,6 +17,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.10.0...HEAD)
 
+### Added
+
+- `#[allow(...)]` attributes on a `#[qsignal]` are now passed on to the generated code, so that lints such as `clippy::too_many_arguments` can be silenced for a single signal
+
 ### Fixed
 
 - `cfg` attributes on a `#[qobject]` are now applied to its casting implementation and its properties, so that a disabled QObject no longer fails to build
