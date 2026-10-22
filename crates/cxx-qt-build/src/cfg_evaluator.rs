@@ -5,19 +5,18 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 // Modified from
-// https://github.com/dtolnay/cxx/blob/2193addc308c99512b8757431abfaf87cc54c086/gen/build/src/cargo.rs
+// https://github.com/dtolnay/cxx/blob/de8799b62ee071926c079a2d0c60007034fee8e5/bridge/build/src/cargo.rs
 
 use cxx_gen::{CfgEvaluator, CfgResult};
 use std::borrow::Borrow;
 use std::cmp::Ordering;
-use std::collections::{BTreeMap as Map, BTreeSet as Set};
+use std::collections::BTreeMap as Map;
 use std::env;
 use std::sync::OnceLock;
 
 static ENV: OnceLock<CargoEnv> = OnceLock::new();
 
 struct CargoEnv {
-    features: Set<Name>,
     cfgs: Map<Name, String>,
 }
 
@@ -27,12 +26,12 @@ impl CfgEvaluator for CargoEnvCfgEvaluator {
     fn eval(&self, name: &str, query_value: Option<&str>) -> CfgResult {
         let env = ENV.get_or_init(CargoEnv::load);
         if name == "feature" {
-            return if let Some(query_value) = query_value {
-                CfgResult::from(env.features.contains(Lookup::new(query_value)))
-            } else {
+            if query_value.is_none() {
                 let msg = "expected `feature = \"...\"`".to_owned();
-                CfgResult::Undetermined { msg }
-            };
+                return CfgResult::Undetermined { msg };
+            } else if query_value == Some("") {
+                return CfgResult::False;
+            }
         }
         if name == "test" && query_value.is_none() {
             let msg = "cfg(test) is not supported because Cargo runs your build script only once across the lib and test build of the same crate".to_owned();
@@ -55,23 +54,16 @@ impl CfgEvaluator for CargoEnvCfgEvaluator {
 
 impl CargoEnv {
     fn load() -> Self {
-        const CARGO_FEATURE_PREFIX: &str = "CARGO_FEATURE_";
-        const CARGO_CFG_PREFIX: &str = "CARGO_CFG_";
-
-        let mut features = Set::new();
         let mut cfgs = Map::new();
         for (k, v) in env::vars_os() {
             let Some(k) = k.to_str() else { continue };
             let Ok(v) = v.into_string() else { continue };
-            if let Some(feature_name) = k.strip_prefix(CARGO_FEATURE_PREFIX) {
-                let feature_name = Name(feature_name.to_owned());
-                features.insert(feature_name);
-            } else if let Some(cfg_name) = k.strip_prefix(CARGO_CFG_PREFIX) {
+            if let Some(cfg_name) = k.strip_prefix("CARGO_CFG_") {
                 let cfg_name = Name(cfg_name.to_owned());
                 cfgs.insert(cfg_name, v);
             }
         }
-        CargoEnv { features, cfgs }
+        CargoEnv { cfgs }
     }
 }
 
@@ -157,5 +149,33 @@ impl Eq for CaseAgnosticByte {}
 impl PartialEq for CaseAgnosticByte {
     fn eq(&self, rhs: &Self) -> bool {
         self.cmp(rhs) == Ordering::Equal
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn eval_feature(query_value: Option<&str>) -> CfgResult {
+        CargoEnvCfgEvaluator.eval("feature", query_value)
+    }
+
+    // The environment is only read once, so everything is checked from a
+    // single test, which is the only one to evaluate cfgs in this crate.
+    #[test]
+    fn eval_features() {
+        // Cargo passes the enabled features to build scripts with their exact
+        // names, of the pairs foo-bar/foo_bar and baz-qux/baz_qux only one
+        // feature each is enabled here.
+        env::set_var("CARGO_CFG_FEATURE", "default,foo-bar,baz_qux");
+
+        assert!(matches!(eval_feature(Some("default")), CfgResult::True));
+        assert!(matches!(eval_feature(Some("foo-bar")), CfgResult::True));
+        assert!(matches!(eval_feature(Some("foo_bar")), CfgResult::False));
+        assert!(matches!(eval_feature(Some("baz_qux")), CfgResult::True));
+        assert!(matches!(eval_feature(Some("baz-qux")), CfgResult::False));
+        assert!(matches!(eval_feature(Some("foo")), CfgResult::False));
+        assert!(matches!(eval_feature(Some("")), CfgResult::False));
+        assert!(matches!(eval_feature(None), CfgResult::Undetermined { .. }));
     }
 }
