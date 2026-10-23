@@ -117,6 +117,7 @@ mod ffi {
         type QObject = cxx_qt::QObject;
     }
     extern "C++" {
+        #[allow(dead_code)]
         #[namespace = "cxx_qt::my_object"]
         type MyEnum = super::cxx_qt_private_qenum_MyEnum::MyEnum;
     }
@@ -125,6 +126,7 @@ mod ffi {
         type MyOtherEnum = super::cxx_qt_private_qenum_MyOtherEnum::MyOtherEnum;
     }
     #[repr(i32)]
+    #[allow(clippy::enum_variant_names)]
     #[namespace = "cxx_qt::my_object"]
     enum MyNamespacedEnum {
         A,
@@ -132,6 +134,7 @@ mod ffi {
         C,
     }
     extern "C++" {
+        #[allow(clippy::enum_variant_names)]
         #[namespace = "cxx_qt::my_object"]
         type MyNamespacedEnum;
     }
@@ -206,6 +209,7 @@ impl ::cxx_qt::CxxQtType for ffi::MyRenamedObject {
         ffi::cxx_qt_ffi_CxxName_unsafeRustMut(self)
     }
 }
+#[allow(dead_code)]
 mod cxx_qt_private_qenum_MyEnum {
     #[derive(PartialEq, Eq, Clone, Copy)]
     #[repr(transparent)]

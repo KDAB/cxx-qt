@@ -9,13 +9,21 @@
 //! reports on the function CXX generates to create the Rust struct of a QObject.
 //! A signal with this many parameters makes clippy report `too_many_arguments`
 //! on the generated signal and signal handler functions, and a signal that is
-//! never emitted is reported as `dead_code`. If the attributes are not passed
-//! on, `cargo clippy -- -D warnings` fails on this file.
+//! never emitted is reported as `dead_code`. So is a QEnum that is never used,
+//! and its name, which is not in camel case, is reported as
+//! `non_camel_case_types`. If the attributes are not passed on,
+//! `cargo clippy -- -D warnings` fails on this file.
 
 #![warn(clippy::unnecessary_box_returns)]
 
 #[cxx_qt::bridge]
 mod ffi {
+    #[qenum(LintsObject)]
+    #[allow(non_camel_case_types, dead_code)]
+    enum lints_enum {
+        Variant,
+    }
+
     unsafe extern "RustQt" {
         #[qobject]
         #[allow(clippy::unnecessary_box_returns)]
