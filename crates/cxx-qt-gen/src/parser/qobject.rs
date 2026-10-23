@@ -5,7 +5,7 @@
 
 use crate::{
     naming::Name,
-    parser::{extract_cfgs, property::ParsedQProperty, require_attributes},
+    parser::{extract_allows, extract_cfgs, property::ParsedQProperty, require_attributes},
     syntax::{expr::expr_to_string, foreignmod::ForeignTypeIdentAlias, path::path_compare_str},
 };
 #[cfg(test)]
@@ -44,10 +44,13 @@ pub struct ParsedQObject {
     pub declaration: ForeignTypeIdentAlias,
     /// Cfgs for the object
     pub cfgs: Vec<Attribute>,
+    /// All the allow attributes of the object, these are passed to the generated code
+    pub allows: Vec<Attribute>,
 }
 
 impl ParsedQObject {
-    const ALLOWED_ATTRS: [&'static str; 11] = [
+    const ALLOWED_ATTRS: [&'static str; 12] = [
+        "allow",
         "cxx_name",
         "rust_name",
         "namespace",
@@ -75,6 +78,7 @@ impl ParsedQObject {
                 ident_right: format_ident!("MyObjectRust"),
             },
             cfgs: vec![],
+            allows: vec![],
         }
     }
 
@@ -88,6 +92,7 @@ impl ParsedQObject {
         let attributes = require_attributes(&declaration.attrs, &Self::ALLOWED_ATTRS)?;
         // TODO: handle docs through to generation
         let cfgs = extract_cfgs(&declaration.attrs);
+        let allows = extract_allows(&declaration.attrs);
 
         let has_qobject_macro = attributes.contains_key("qobject");
 
@@ -126,6 +131,7 @@ impl ParsedQObject {
             qml_metadata,
             has_qobject_macro,
             cfgs,
+            allows,
         })
     }
 
@@ -219,6 +225,18 @@ pub mod tests {
         };
 
         assert_eq!(qobject.base_class.as_ref().unwrap(), "QStringListModel");
+    }
+
+    #[test]
+    fn test_parse_allow() {
+        let qobject = parse_qobject! {
+            #[qobject]
+            #[allow(deprecated)]
+            type MyObject = super::MyObjectRust;
+        };
+
+        assert_eq!(qobject.allows.len(), 1);
+        assert_eq!(qobject.allows[0], parse_quote! { #[allow(deprecated)] });
     }
 
     #[test]

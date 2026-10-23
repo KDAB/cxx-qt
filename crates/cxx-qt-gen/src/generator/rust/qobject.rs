@@ -26,15 +26,23 @@ impl GeneratedRustFragment {
         // Create the base object
         let qobject_names = QObjectNames::from_qobject(qobject, type_names)?;
         let namespace_idents = NamespaceName::from(qobject);
+        // The allows of the QObject go where its cfgs go, so that a lint which fires
+        // on the code generated for the QObject can be silenced
+        let attrs = qobject
+            .cfgs
+            .iter()
+            .chain(&qobject.allows)
+            .cloned()
+            .collect::<Vec<Attribute>>();
 
         let mut generated = vec![
-            generate_qobject_definitions(&qobject_names, &qobject.cfgs)?,
+            generate_qobject_definitions(&qobject_names, &qobject.cfgs, &qobject.allows)?,
             generate_rust_properties(
                 &qobject.properties,
                 &qobject_names,
                 type_names,
                 structured_qobject,
-                &qobject.cfgs,
+                &attrs,
             )?,
             generate_rust_methods(&structured_qobject.methods, &qobject_names, type_names)?,
             inherit::generate(&qobject_names, &structured_qobject.inherited_methods)?,
@@ -56,7 +64,7 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
-                &qobject.cfgs,
+                &attrs,
             )?);
         }
 
@@ -66,7 +74,7 @@ impl GeneratedRustFragment {
             type_names,
             &structured_qobject.declaration.name,
             &structured_qobject.declaration.base_class,
-            &qobject.cfgs,
+            &attrs,
         )?);
 
         generated.extend(vec![
@@ -75,9 +83,9 @@ impl GeneratedRustFragment {
                 &qobject_names,
                 &namespace_idents,
                 type_names,
-                &qobject.cfgs,
+                &attrs,
             )?,
-            cxxqttype::generate(&qobject_names, type_names, &qobject.cfgs)?,
+            cxxqttype::generate(&qobject_names, type_names, &attrs)?,
         ]);
 
         Ok(GeneratedRustFragment::flatten(generated))
@@ -88,6 +96,7 @@ impl GeneratedRustFragment {
 fn generate_qobject_definitions(
     qobject_idents: &QObjectNames,
     cfgs: &[Attribute],
+    allows: &[Attribute],
 ) -> Result<GeneratedRustFragment> {
     let cpp_class_name_rust = &qobject_idents.name.rust_unqualified();
     let cpp_class_name_cpp = &qobject_idents.name.cxx_unqualified();
@@ -95,6 +104,17 @@ fn generate_qobject_definitions(
     let rust_struct_name_rust = &qobject_idents.rust_struct.rust_unqualified();
     let rust_struct_name_rust_str = rust_struct_name_rust.to_string();
     let namespace = qobject_idents.namespace_tokens();
+    // CXX also places the attributes of the Rust struct on the `use` it generates
+    // for it, where clippy reports any lint that cannot fire on a `use` as
+    // useless_attribute
+    let rust_struct_allows = if allows.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+            #[allow(clippy::useless_attribute)]
+            #(#allows)*
+        }
+    };
     let cxx_name = if cpp_class_name_rust.to_string() == *cpp_class_name_cpp {
         quote! {}
     } else {
@@ -118,6 +138,7 @@ fn generate_qobject_definitions(
                     #namespace
                     #cxx_name
                     #(#cfgs)*
+                    #(#allows)*
                     type #cpp_class_name_rust;
                 }
             },
@@ -129,6 +150,7 @@ fn generate_qobject_definitions(
                     // but to apply it to only certain types, it is needed here too
                     #namespace
                     #(#cfgs)*
+                    #rust_struct_allows
                     type #rust_struct_name_rust;
                 }
             },
@@ -145,6 +167,7 @@ mod tests {
     use crate::generator::structuring::Structures;
     use crate::parser::Parser;
     use crate::tests::assert_tokens_eq;
+    use quote::ToTokens;
     use syn::{parse_quote, ItemMod};
 
     #[test]
@@ -167,6 +190,67 @@ mod tests {
             &parser.type_names,
         )
         .is_ok());
+    }
+
+    #[test]
+    fn test_generated_rust_qobject_allow() {
+        let module: ItemMod = parse_quote! {
+            #[cxx_qt::bridge(namespace = "cxx_qt")]
+            mod ffi {
+                extern "RustQt" {
+                    #[qobject]
+                    #[allow(clippy::unnecessary_box_returns)]
+                    type MyObject = super::MyObjectRust;
+                }
+            }
+        };
+        let parser = Parser::from(module).unwrap();
+        let structures = Structures::new(&parser.cxx_qt_data).unwrap();
+
+        let rust = GeneratedRustFragment::from_qobject(
+            structures.qobjects.first().unwrap(),
+            &parser.type_names,
+        )
+        .unwrap();
+        assert_tokens_eq(
+            &rust.cxx_mod_contents[0],
+            quote! {
+                unsafe extern "C++" {
+                    #[doc = "The C++ type for the QObject "]
+                    #[doc = "MyObjectRust"]
+                    #[doc = "\n"]
+                    #[doc = "Use this type when referring to the QObject as a pointer"]
+                    #[doc = "\n"]
+                    #[doc = "See the book for more information: <https://kdab.github.io/cxx-qt/book/concepts/generated_qobject.html>"]
+                    #[namespace = "cxx_qt"]
+                    #[allow(clippy::unnecessary_box_returns)]
+                    type MyObject;
+                }
+            },
+        );
+        // CXX also places the attributes of the Rust struct on a use of it, where
+        // clippy would report the allow as useless
+        assert_tokens_eq(
+            &rust.cxx_mod_contents[1],
+            quote! {
+                extern "Rust" {
+                    #[namespace = "cxx_qt"]
+                    #[allow(clippy::useless_attribute)]
+                    #[allow(clippy::unnecessary_box_returns)]
+                    type MyObjectRust;
+                }
+            },
+        );
+
+        // Everything that is generated for the QObject has the allow
+        let allow = quote! { #[allow(clippy::unnecessary_box_returns)] }.to_string();
+        for item in rust
+            .cxx_mod_contents
+            .iter()
+            .chain(&rust.cxx_qt_mod_contents)
+        {
+            assert!(item.to_token_stream().to_string().contains(&allow));
+        }
     }
 
     #[test]

@@ -3,17 +3,22 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-//! Checks that an `#[allow(...)]` on a `#[qsignal]` reaches the generated code.
+//! Checks that an `#[allow(...)]` in a bridge reaches the generated code.
 //!
+//! The pedantic `unnecessary_box_returns` lint is enabled here, which clippy
+//! reports on the function CXX generates to create the Rust struct of a QObject.
 //! A signal with this many parameters makes clippy report `too_many_arguments`
 //! on the generated signal and signal handler functions, and a signal that is
-//! never emitted is reported as `dead_code`. If the attribute is not passed on,
-//! `cargo clippy -- -D warnings` fails on this file.
+//! never emitted is reported as `dead_code`. If the attributes are not passed
+//! on, `cargo clippy -- -D warnings` fails on this file.
+
+#![warn(clippy::unnecessary_box_returns)]
 
 #[cxx_qt::bridge]
 mod ffi {
     unsafe extern "RustQt" {
         #[qobject]
+        #[allow(clippy::unnecessary_box_returns)]
         type LintsObject = super::LintsObjectRust;
 
         #[qsignal]
