@@ -16,6 +16,9 @@ Qt allows exposing enums to Qt's meta-object system, and thereby QML, with a set
 
 CXX-Qt has support for both of these macros through the `#[qenum]` attribute.
 
+> **📝 Note**: `#[allow(...)]` on a `#[qenum]` is passed on to the code generated for it,
+> e.g. `#[allow(dead_code)]` for a class enum that is not used from Rust
+
 ## `QObject` class enum (`Q_ENUM`)
 
 CXX-Qt relies on CXX to expose enums from Rust to C++ and vice-versa.
