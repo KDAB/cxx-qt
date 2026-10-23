@@ -50,6 +50,7 @@ pub fn generate(
             }
             let doc_comments = &method.docs;
             let cfgs = &method.cfgs;
+            let allows = &method.allows;
             let namespace = qobject_names.namespace_tokens();
 
             syn::parse2(quote_spanned! {
@@ -58,6 +59,7 @@ pub fn generate(
                     #[cxx_name = #cxx_name_string]
                     #namespace
                     #(#cfgs)*
+                    #(#allows)*
                     #(#doc_comments)*
                     #unsafe_call fn #ident(#self_param, #(#parameters),*) #return_type;
                 }
@@ -98,6 +100,27 @@ mod tests {
                 unsafe extern "C++" {
                     #[cxx_name = "testCxxQtInherit"]
                     fn test(self: Pin<&mut MyObject>, a: B, b: C);
+                }
+            },
+        );
+    }
+
+    #[test]
+    fn test_allow() {
+        let generated = generate_from_foreign(parse_quote! {
+            #[allow(dead_code)]
+            fn test(self: &MyObject, a: B, b: C);
+        })
+        .unwrap();
+
+        assert_eq!(generated.cxx_mod_contents.len(), 1);
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[0],
+            quote! {
+                unsafe extern "C++" {
+                    #[cxx_name = "testCxxQtInherit"]
+                    #[allow(dead_code)]
+                    fn test(self: &MyObject, a: B, b: C);
                 }
             },
         );

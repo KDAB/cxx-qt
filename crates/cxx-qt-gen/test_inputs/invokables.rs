@@ -28,6 +28,7 @@ mod ffi {
         fn invokable_mutable(self: Pin<&mut MyObject>);
 
         #[qinvokable]
+        #[allow(clippy::too_many_arguments)]
         fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
 
         #[qinvokable]

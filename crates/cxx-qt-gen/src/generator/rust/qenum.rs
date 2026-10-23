@@ -42,6 +42,7 @@ fn generate_member_qenum(qenum: &ParsedQEnum) -> GeneratedRustFragment {
     let item = &qenum.item;
     let docs = &qenum.docs;
     let cfgs = &qenum.cfgs;
+    let allows = &qenum.allows;
     let (qenum_ident, qenum_attrs, _qualified) = qenum.name.clone().into_cxx_parts();
     let qenum_ident_str = qenum_ident.to_string();
 
@@ -68,6 +69,7 @@ fn generate_member_qenum(qenum: &ParsedQEnum) -> GeneratedRustFragment {
             item.span() =>
             #(#cfgs)*
             extern "C++" {
+                #(#allows)*
                 #(#docs)*
                 #(#qenum_attrs)*
                 type #qenum_ident = super::#module_name::#qenum_ident;
@@ -77,6 +79,7 @@ fn generate_member_qenum(qenum: &ParsedQEnum) -> GeneratedRustFragment {
             item.span() =>
 
             #(#cfgs)*
+            #(#allows)*
             mod #module_name {
                 #(#docs)*
                 #[derive(PartialEq, Eq, Clone, Copy)]
@@ -108,6 +111,7 @@ fn generate_standalone_qenum(qenum: &ParsedQEnum) -> GeneratedRustFragment {
     let variants = &item.variants;
     let docs = &qenum.docs;
     let cfgs = &qenum.cfgs;
+    let allows = &qenum.allows;
 
     GeneratedRustFragment {
         cxx_mod_contents: vec![
@@ -115,6 +119,7 @@ fn generate_standalone_qenum(qenum: &ParsedQEnum) -> GeneratedRustFragment {
                 item.span() =>
                     #[repr(i32)]
                     #(#cfgs)*
+                    #(#allows)*
                     #(#docs)*
                     #(#qenum_attrs)*
                     #vis enum #qenum_ident {
@@ -125,6 +130,7 @@ fn generate_standalone_qenum(qenum: &ParsedQEnum) -> GeneratedRustFragment {
                 item.span() =>
                     extern "C++" {
                         #(#cfgs)*
+                        #(#allows)*
                         #(#qenum_attrs)*
                         type #qenum_ident;
                     }
@@ -244,6 +250,97 @@ mod tests {
                     #[automatically_derived]
                     unsafe impl ::cxx::ExternType for MyEnum {
                         type Id = ::cxx::type_id!("MyEnum");
+                        type Kind = ::cxx::kind::Trivial;
+                    }
+                }
+            },
+        );
+    }
+
+    #[test]
+    fn generates_allow() {
+        let qenums = vec![
+            ParsedQEnum::parse(
+                parse_quote! {
+                    #[allow(non_camel_case_types)]
+                    #[namespace="my_namespace"]
+                    enum my_enum {
+                        A,
+                    }
+                },
+                None,
+                None,
+                &format_ident!("qobject"),
+            )
+            .unwrap(),
+            ParsedQEnum::parse(
+                parse_quote! {
+                    #[allow(non_camel_case_types, dead_code)]
+                    enum my_member_enum {
+                        A,
+                    }
+                },
+                Some(format_ident!("MyObject")),
+                None,
+                &format_ident!("qobject"),
+            )
+            .unwrap(),
+        ];
+        let generated = generate(&qenums);
+        assert_eq!(generated.len(), 2);
+
+        // The standalone QEnum gets the allow on the enum and its declaration
+        assert_tokens_eq(
+            &generated[0].cxx_mod_contents[0],
+            quote! {
+                #[repr(i32)]
+                #[allow(non_camel_case_types)]
+                #[namespace = "my_namespace"]
+                enum my_enum {
+                    A,
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated[0].cxx_mod_contents[1],
+            quote! {
+                extern "C++" {
+                    #[allow(non_camel_case_types)]
+                    #[namespace = "my_namespace"]
+                    type my_enum;
+                }
+            },
+        );
+
+        // The member QEnum gets the allow on its declaration and on the module
+        // with the generated struct, which is where the lints are reported
+        assert_tokens_eq(
+            &generated[1].cxx_mod_contents[0],
+            quote! {
+                extern "C++" {
+                    #[allow(non_camel_case_types, dead_code)]
+                    type my_member_enum = super::cxx_qt_private_qenum_my_member_enum::my_member_enum;
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated[1].cxx_qt_mod_contents[0],
+            quote! {
+                #[allow(non_camel_case_types, dead_code)]
+                mod cxx_qt_private_qenum_my_member_enum {
+                    #[derive(PartialEq, Eq, Clone, Copy)]
+                    #[repr(transparent)]
+                    pub struct my_member_enum {
+                        #[allow(missing_docs)]
+                        pub repr: i32
+                    }
+                    #[allow(non_upper_case_globals)]
+                    impl my_member_enum {
+                        pub const A: my_member_enum = my_member_enum { repr: 0i32 };
+                    }
+                    #[automatically_derived]
+                    unsafe impl ::cxx::ExternType for my_member_enum {
+                        type Id = ::cxx::type_id!("my_member_enum");
                         type Kind = ::cxx::kind::Trivial;
                     }
                 }

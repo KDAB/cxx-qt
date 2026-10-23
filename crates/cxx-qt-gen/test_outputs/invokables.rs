@@ -65,6 +65,7 @@ mod ffi {
     extern "Rust" {
         #[cxx_name = "invokable_parameters"]
         #[namespace = "cxx_qt::my_object"]
+        #[allow(clippy::too_many_arguments)]
         #[doc(hidden)]
         unsafe fn invokable_parameters(
             self: &MyObject,

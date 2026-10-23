@@ -5,7 +5,9 @@
 use crate::parser::{extract_docs, CaseConversion};
 use crate::{
     naming::Name,
-    parser::{extract_cfgs, parameter::ParsedFunctionParameter, require_attributes},
+    parser::{
+        extract_allows, extract_cfgs, parameter::ParsedFunctionParameter, require_attributes,
+    },
     syntax::{foreignmod, types},
 };
 use core::ops::Deref;
@@ -65,12 +67,15 @@ pub struct ParsedMethod {
     pub cfgs: Vec<Attribute>,
     /// Docs for the method, for passing onto the auto_wrap generated methods
     pub docs: Vec<Attribute>,
+    /// All the allow attributes of the method, these are passed to the generated code
+    pub allows: Vec<Attribute>,
     /// Whether the block containing the method is safe or unsafe
     pub unsafe_block: bool,
 }
 
 impl ParsedMethod {
-    const ALLOWED_ATTRS: [&'static str; 10] = [
+    const ALLOWED_ATTRS: [&'static str; 11] = [
+        "allow",
         "cxx_name",
         "rust_name",
         "qinvokable",
@@ -127,6 +132,7 @@ impl ParsedMethod {
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&fields.method.attrs);
         let docs = extract_docs(&fields.method.attrs);
+        let allows = extract_allows(&fields.method.attrs);
 
         // Determine if the method is invokable
         let is_qinvokable = attrs.contains_key("qinvokable");
@@ -142,6 +148,7 @@ impl ParsedMethod {
             wrap,
             cfgs,
             docs,
+            allows,
             unsafe_block,
         })
     }
@@ -196,5 +203,28 @@ impl MethodFields {
 
     pub(crate) fn self_unresolved(&self) -> bool {
         self.qobject_ident == format_ident!("Self")
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use syn::parse_quote;
+
+    #[test]
+    fn test_parse_allow() {
+        let method: ForeignItemFn = parse_quote! {
+            #[qinvokable]
+            #[allow(clippy::too_many_arguments)]
+            fn invokable(self: &MyObject);
+        };
+        let parsed = ParsedMethod::parse(method, CaseConversion::none(), false).unwrap();
+
+        assert!(parsed.is_qinvokable);
+        assert_eq!(parsed.allows.len(), 1);
+        assert_eq!(
+            parsed.allows[0],
+            parse_quote! { #[allow(clippy::too_many_arguments)] }
+        );
     }
 }
