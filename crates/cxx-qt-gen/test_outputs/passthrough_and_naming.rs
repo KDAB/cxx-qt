@@ -332,12 +332,16 @@ pub mod ffi {
         #[doc = "\n\nNote: The C++ name of this QObject is: "]
         #[doc = "MyCxxName"]
         #[cxx_name = "MyCxxName"]
+        #[allow(clippy::unnecessary_box_returns)]
         type MyRustName;
     }
     extern "Rust" {
         #[namespace = "my_namespace"]
+        #[allow(clippy::useless_attribute)]
+        #[allow(clippy::unnecessary_box_returns)]
         type ThirdObjectRust;
     }
+    #[allow(clippy::unnecessary_box_returns)]
     extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "upcastPtr"]
@@ -351,14 +355,17 @@ pub mod ffi {
     extern "Rust" {
         #[cxx_name = "createRs"]
         #[namespace = "my_namespace::cxx_qt_MyRustName"]
+        #[allow(clippy::unnecessary_box_returns)]
         fn create_rs_ThirdObjectRust() -> Box<ThirdObjectRust>;
     }
+    #[allow(clippy::unnecessary_box_returns)]
     unsafe extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "unsafeRust"]
         #[namespace = "rust::cxxqt1"]
         fn cxx_qt_ffi_MyCxxName_unsafeRust(outer: &MyRustName) -> &ThirdObjectRust;
     }
+    #[allow(clippy::unnecessary_box_returns)]
     unsafe extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "unsafeRustMut"]
@@ -870,6 +877,7 @@ impl ::cxx_qt::CxxQtType for ffi::SecondObject {
         ffi::cxx_qt_ffi_SecondObject_unsafeRustMut(self)
     }
 }
+#[allow(clippy::unnecessary_box_returns)]
 unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::MyRustName {
     unsafe fn upcast_ptr(this: *const Self) -> *const ::cxx_qt::QObject {
         ffi::cxx_qt_ffi_MyCxxName_upcastPtr(this)
@@ -880,15 +888,18 @@ unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for ffi::MyRustName {
 }
 #[doc(hidden)]
 #[allow(clippy::unnecessary_box_returns)]
+#[allow(clippy::unnecessary_box_returns)]
 pub fn create_rs_ThirdObjectRust() -> std::boxed::Box<ThirdObjectRust> {
     std::boxed::Box::new(core::default::Default::default())
 }
+#[allow(clippy::unnecessary_box_returns)]
 impl ::core::ops::Deref for ffi::MyRustName {
     type Target = ThirdObjectRust;
     fn deref(&self) -> &Self::Target {
         ffi::cxx_qt_ffi_MyCxxName_unsafeRust(self)
     }
 }
+#[allow(clippy::unnecessary_box_returns)]
 impl ::cxx_qt::CxxQtType for ffi::MyRustName {
     type Rust = ThirdObjectRust;
     fn rust(&self) -> &Self::Rust {

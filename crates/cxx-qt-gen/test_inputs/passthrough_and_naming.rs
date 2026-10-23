@@ -153,6 +153,7 @@ pub mod ffi {
         #[cxx_name = "MyCxxName"]
         #[rust_name = "MyRustName"]
         #[namespace = "my_namespace"]
+        #[allow(clippy::unnecessary_box_returns)]
         type MyUnusedName = super::ThirdObjectRust;
     }
 }

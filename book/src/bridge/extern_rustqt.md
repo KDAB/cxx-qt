@@ -57,6 +57,8 @@ struct MyObjectRust;
 > Therefore, the Rust type must be available just outside the bridge module.
 > You can bring any type into scope with a `pub use` directive if you want to reuse an existing type.
 
+> **📝 Note**: `#[allow(...)]` on a QObject is passed on to the code generated for it
+
 ### QML Attributes
 
 `QObject`s can be registered as a QML type directly at build time by using the [`#[qml_element]`](https://doc.qt.io/qt-6/qqmlengine.html#QML_ELEMENT) attribute.
