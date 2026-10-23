@@ -54,6 +54,7 @@ mod inheritance {
     }
     unsafe extern "C++" {
         #[cxx_name = "helloWorldCxxQtInherit"]
+        #[allow(dead_code)]
         fn hello_world(self: &MyObject, parent: &QModelIndex) -> bool;
     }
     extern "C++" {

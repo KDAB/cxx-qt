@@ -35,6 +35,7 @@ mod inheritance {
 
         #[rust_name = "hello_world"]
         #[inherit]
+        #[allow(dead_code)]
         fn helloWorld(self: &MyObject, parent: &QModelIndex) -> bool;
     }
 
