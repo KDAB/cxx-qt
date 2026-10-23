@@ -48,61 +48,56 @@ mod ffi {
         #[cxx_name = "cpp_method"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn cpp_method(self: &MyObject);
+        fn cpp_method(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable(self: &MyObject);
+        fn invokable(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable_mutable"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable_mutable(self: Pin<&mut MyObject>);
+        fn invokable_mutable(self: Pin<&mut MyObject>);
     }
     extern "Rust" {
         #[cxx_name = "invokable_parameters"]
         #[namespace = "cxx_qt::my_object"]
         #[allow(clippy::too_many_arguments)]
         #[doc(hidden)]
-        unsafe fn invokable_parameters(
-            self: &MyObject,
-            opaque: &QColor,
-            trivial: &QPoint,
-            primitive: i32,
-        );
+        fn invokable_parameters(self: &MyObject, opaque: &QColor, trivial: &QPoint, primitive: i32);
     }
     extern "Rust" {
         #[cxx_name = "invokable_return_opaque"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
+        fn invokable_return_opaque(self: Pin<&mut MyObject>) -> UniquePtr<Opaque>;
     }
     extern "Rust" {
         #[cxx_name = "invokable_return_trivial"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
+        fn invokable_return_trivial(self: Pin<&mut MyObject>) -> QPoint;
     }
     extern "Rust" {
         #[cxx_name = "invokable_final"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable_final(self: &MyObject);
+        fn invokable_final(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable_override"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable_override(self: &MyObject);
+        fn invokable_override(self: &MyObject);
     }
     extern "Rust" {
         #[cxx_name = "invokable_virtual"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable_virtual(self: &MyObject);
+        fn invokable_virtual(self: &MyObject);
     }
     unsafe extern "C++" {
         #[cxx_name = "invokable_pure_virtual"]
@@ -114,13 +109,19 @@ mod ffi {
         #[cxx_name = "invokable_result_tuple"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable_result_tuple(self: &MyObject) -> Result<()>;
+        fn invokable_result_tuple(self: &MyObject) -> Result<()>;
     }
     extern "Rust" {
         #[cxx_name = "invokable_result_type"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn invokable_result_type(self: &MyObject) -> Result<String>;
+        fn invokable_result_type(self: &MyObject) -> Result<String>;
+    }
+    extern "Rust" {
+        #[cxx_name = "invokable_unsafe"]
+        #[namespace = "cxx_qt::my_object"]
+        #[doc(hidden)]
+        unsafe fn invokable_unsafe(self: &MyObject, opaque: *mut Opaque);
     }
     unsafe extern "C++" {
         #[doc(hidden)]

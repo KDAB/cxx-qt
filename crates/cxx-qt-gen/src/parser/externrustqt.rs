@@ -118,8 +118,7 @@ impl ParsedExternRustQt {
             self.inherited_methods.push(parsed_inherited_method);
             // Remaining methods are either C++ methods or invokables
         } else {
-            let parsed_method =
-                ParsedMethod::parse(foreign_fn, auto_case, self.unsafety.is_some())?;
+            let parsed_method = ParsedMethod::parse(foreign_fn, auto_case)?;
             self.methods.push(parsed_method);
         }
 

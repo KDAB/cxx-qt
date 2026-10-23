@@ -38,6 +38,7 @@ public:
   Q_INVOKABLE virtual void invokable_pure_virtual() const noexcept = 0;
   Q_INVOKABLE void invokable_result_tuple() const;
   Q_INVOKABLE ::rust::String invokable_result_type() const;
+  Q_INVOKABLE void invokable_unsafe(Opaque* opaque) const noexcept;
   explicit MyObject(::std::int32_t arg0, QString const& arg1);
   explicit MyObject();
 

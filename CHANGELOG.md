@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[allow(...)]` attributes on an `#[inherit]` method are now passed on to the code generated for it
 - `#[allow(...)]` attributes on a `#[qobject]` in an `extern "C++Qt"` block are now passed on to the code generated for it
 
+### Changed
+
+- Methods and invokables in an `unsafe extern "RustQt"` block are no longer implicitly `unsafe`, matching an `extern "Rust"` block in CXX. The `unsafe` on the block now only applies to `#[inherit]` methods and `#[inherit]` signals. Methods taking a raw pointer or implemented as an `unsafe fn` need to be declared as an `unsafe fn` themselves
+
 ### Fixed
 
 - `cfg` attributes on a `#[qobject]` are now applied to its casting implementation and its properties, so that a disabled QObject no longer fails to build

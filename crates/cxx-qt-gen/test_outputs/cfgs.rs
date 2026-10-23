@@ -82,13 +82,13 @@ mod ffi {
         #[cxx_name = "invokable_disabled"]
         #[cfg(not(enabled))]
         #[doc(hidden)]
-        unsafe fn invokable_disabled(self: &QObjectEnabled);
+        fn invokable_disabled(self: &QObjectEnabled);
     }
     extern "Rust" {
         #[cxx_name = "invokable_enabled"]
         #[cfg(enabled)]
         #[doc(hidden)]
-        unsafe fn invokable_enabled(self: &QObjectEnabled);
+        fn invokable_enabled(self: &QObjectEnabled);
     }
     unsafe extern "C++" {
         #[cxx_name = "inherit_disabledCxxQtInherit"]
@@ -271,13 +271,13 @@ mod ffi {
         #[cxx_name = "invokable_disabled"]
         #[cfg(not(enabled))]
         #[doc(hidden)]
-        unsafe fn invokable_disabled(self: &QObjectDisabled);
+        fn invokable_disabled(self: &QObjectDisabled);
     }
     extern "Rust" {
         #[cxx_name = "invokable_enabled"]
         #[cfg(enabled)]
         #[doc(hidden)]
-        unsafe fn invokable_enabled(self: &QObjectDisabled);
+        fn invokable_enabled(self: &QObjectDisabled);
     }
     unsafe extern "C++" {
         #[cxx_name = "inherit_disabledCxxQtInherit"]
