@@ -217,6 +217,9 @@ Implementations of the method are then written as normal outside the bridge.
 
 > Note how this uses `impl qobject::T` rather than `impl T` where `qobject` is the bridge module name.
 
+> **📝 Note**: `#[allow(...)]` on a method is passed on to the code generated for it,
+> e.g. `#[allow(clippy::too_many_arguments)]` for a method with many parameters
+
 ### Invokables
 
 The `#[qinvokable]` attribute can be specified on signatures to expose them as a [`Q_INVOKABLE`](https://doc.qt.io/qt-6/qobject.html#Q_INVOKABLE) in C++.

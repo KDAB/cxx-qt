@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[allow(...)]` attributes on a `#[qsignal]` are now passed on to the generated code, so that lints such as `clippy::too_many_arguments` can be silenced for a single signal
 - `#[allow(...)]` attributes on a `#[qobject]` are now passed on to the code generated for it
 - `#[allow(...)]` attributes on a `#[qenum]` are now passed on to the code generated for it
+- `#[allow(...)]` attributes on a method or `#[qinvokable]` are now passed on to the code generated for it, including its `#[auto_wrap]` method
 
 ### Fixed
 

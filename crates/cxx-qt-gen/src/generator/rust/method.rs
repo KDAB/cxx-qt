@@ -39,6 +39,7 @@ pub fn generate_rust_methods(
             let return_type = &invokable.method.sig.output;
 
             let cfgs = &invokable.cfgs;
+            let allows = &invokable.allows;
 
             let cxx_namespace = qobject_names.namespace_tokens();
 
@@ -81,6 +82,7 @@ pub fn generate_rust_methods(
                         // but to apply it to only certain types, it is needed here too
                         #cxx_namespace
                         #(#cfgs)*
+                        #(#allows)*
                         #[doc(hidden)]
                         #unsafe_call fn #invokable_ident_rust(#parameter_signatures) #return_type;
                     }
@@ -100,6 +102,7 @@ pub fn generate_auto_wrap_fn(
 ) -> Result<Item> {
     let docs = &invokable.docs;
     let cfgs = &invokable.cfgs;
+    let allows = &invokable.allows;
 
     let qualified_impl = type_names.rust_qualified(&invokable.qobject_ident)?;
 
@@ -139,6 +142,7 @@ pub fn generate_auto_wrap_fn(
         invokable.method.span() =>
         #(#cfgs)*
         impl #qualified_impl {
+            #(#allows)*
             #(#docs)*
             pub #method_safety fn #invokable_ident_rust(#parameter_signatures_qualified) #qualified_return_type {
                 use ::cxx_qt::CxxQtType;
@@ -269,6 +273,53 @@ mod tests {
                         use ::cxx_qt::CxxQtType;
 
                         self.rust().unsafe_invokable(param)
+                    }
+                }
+            },
+        );
+    }
+
+    #[test]
+    fn test_generate_rust_invokable_allow() {
+        let method: ForeignItemFn = parse_quote! {
+            #[cxx_name = "manyArguments"]
+            #[auto_wrap]
+            #[allow(clippy::too_many_arguments)]
+            fn many_arguments(self: &MyObject, param: i32);
+        };
+        let invokables = [ParsedMethod::mock_qinvokable(&method)];
+        let qobject_names = create_qobjectname_with_qcolor();
+        let type_names = TypeNames::mock();
+
+        let generated = generate_rust_methods(
+            &invokables.iter().collect::<Vec<_>>(),
+            &qobject_names,
+            &type_names,
+        )
+        .unwrap();
+
+        // The allow is passed on to the extern "Rust" declaration, for which CXX
+        // generates a shim, and to the generated wrapper
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[0],
+            quote! {
+                extern "Rust" {
+                    #[cxx_name = "manyArguments"]
+                    #[allow(clippy::too_many_arguments)]
+                    #[doc(hidden)]
+                    fn many_arguments(self: &MyObject, param: i32);
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[0],
+            quote! {
+                impl qobject::MyObject {
+                    #[allow(clippy::too_many_arguments)]
+                    pub fn many_arguments(self: &qobject::MyObject, param: i32) {
+                        use ::cxx_qt::CxxQtType;
+
+                        self.rust().many_arguments(param)
                     }
                 }
             },
