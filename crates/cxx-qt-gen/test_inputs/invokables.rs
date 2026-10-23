@@ -59,6 +59,9 @@ mod ffi {
 
         #[qinvokable]
         fn invokable_result_type(self: &MyObject) -> Result<String>;
+
+        #[qinvokable]
+        unsafe fn invokable_unsafe(self: &MyObject, opaque: *mut Opaque);
     }
 
     impl cxx_qt::Threading for MyObject {}

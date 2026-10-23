@@ -353,19 +353,19 @@ mod ffi {
         #[cxx_name = "myGetter"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn my_getter(self: &MyObject) -> i32;
+        fn my_getter(self: &MyObject) -> i32;
     }
     extern "Rust" {
         #[cxx_name = "MyCustomSetter"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn my_setter(self: Pin<&mut MyObject>, value: i32);
+        fn my_setter(self: Pin<&mut MyObject>, value: i32);
     }
     extern "Rust" {
         #[cxx_name = "myResetFn"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn myResetFn(self: Pin<&mut MyObject>);
+        fn myResetFn(self: Pin<&mut MyObject>);
     }
     unsafe extern "C++" {
         #[cxx_name = "my_on_changed"]

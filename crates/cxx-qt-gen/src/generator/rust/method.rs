@@ -48,15 +48,10 @@ pub fn generate_rust_methods(
             } else {
                 ("Rust", None)
             };
-            // When generating extern Rust forward the block unsafe to fn
-            // This allows for then defining pointer args when the whole block
-            // is unsafe, as CXX does not allow for unsafe Rust
+            // Follow the same rules as an extern "Rust" block in CXX, only the unsafe
+            // on the fn itself is used. So any pointer arguments require an unsafe fn.
             let unsafe_call = if invokable.safe {
-                if block_safety.is_none() && invokable.unsafe_block {
-                    Some(quote! { unsafe })
-                } else {
-                    None
-                }
+                None
             } else {
                 Some(quote! { unsafe })
             };
