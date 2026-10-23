@@ -44,6 +44,8 @@ Additionally, the `self` type must be either `self: Pin<&mut qobject::T>` or `se
 
 If the Rust name should differ from the C++ method name, (e.g. due to snake_case vs. camelCase) use the `#[cxx_name = "myFunctionName"]` or `#[rust_name = "my_function_name"]` attributes.
 
+`#[allow(...)]` on an inherited method is passed on to the code generated for it, e.g. `#[allow(dead_code)]` for a method that is not called from Rust.
+
 > `#[inherit]` can also be used on signals that exist on the base class in an [`extern RustQt` block](../bridge/extern_rustqt.md#signals)
 
 ## Overriding base class methods

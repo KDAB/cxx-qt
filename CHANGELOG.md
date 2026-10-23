@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `#[allow(...)]` attributes on a `#[qobject]` are now passed on to the code generated for it
 - `#[allow(...)]` attributes on a `#[qenum]` are now passed on to the code generated for it
 - `#[allow(...)]` attributes on a method or `#[qinvokable]` are now passed on to the code generated for it, including its `#[auto_wrap]` method
+- `#[allow(...)]` attributes on an `#[inherit]` method are now passed on to the code generated for it
 
 ### Fixed
 

@@ -10,9 +10,10 @@
 //! A signal with this many parameters makes clippy report `too_many_arguments`
 //! on the generated signal and signal handler functions, and so does an
 //! invokable on the shim CXX generates for it and on its `auto_wrap` method.
-//! A signal that is never emitted is reported as `dead_code`. So is a QEnum
-//! that is never used, and its name, which is not in camel case, is reported
-//! as `non_camel_case_types`. If the attributes are not passed on,
+//! A signal that is never emitted is reported as `dead_code`, and so are an
+//! inherited method that is never called and a QEnum that is never used. The
+//! name of the QEnum, which is not in camel case, is also reported as
+//! `non_camel_case_types`. If the attributes are not passed on,
 //! `cargo clippy -- -D warnings` fails on this file.
 
 #![warn(clippy::unnecessary_box_returns)]
@@ -58,6 +59,11 @@ mod ffi {
             seventh: i32,
             eighth: i32,
         );
+
+        #[inherit]
+        #[cxx_name = "blockSignals"]
+        #[allow(dead_code)]
+        fn block_signals(self: Pin<&mut Self>, block: bool) -> bool;
     }
 }
 
