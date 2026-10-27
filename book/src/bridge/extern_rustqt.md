@@ -11,6 +11,7 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 - [Properties](#properties)
 - [Methods](#methods)
 - [Signals](#signals)
+- [Safety](#safety)
 
 ```rust,ignore,noplayground
 #[cxx_qt::bridge]
@@ -327,3 +328,16 @@ If a signal is defined on the base class of the `QObject` then the `#[inherit]` 
 ```rust,ignore,noplayground
 {{#include ../../../examples/qml_features/rust/src/custom_base_class.rs:book_qsignals_inherit}}
 ```
+
+## Safety
+
+Methods and invokables are implemented in Rust, so they follow the same rules as functions in an [`extern "Rust"` CXX section](https://cxx.rs/extern-rust.html).
+Only the `unsafe` on the function itself is used, the `unsafe` on an `unsafe extern "RustQt"` block does not make a method `unsafe`.
+This means that a method which takes a [raw pointer](https://cxx.rs/binding/rawptr.html) as an argument, or is implemented as an `unsafe fn`, must be declared as an `unsafe fn`.
+
+``` rust,ignore,noplayground
+{{#include ../../../examples/qml_features/rust/src/custom_parent_class.rs:book_unsafe_method_signature}}
+```
+
+`#[inherit]` methods and `#[inherit]` signals call into the C++ base class, so they follow the same rules as functions in an [`extern "C++"` CXX section](https://cxx.rs/extern-c++.html).
+The block must be declared as `unsafe extern "RustQt"` if it contains any safe-to-call `#[inherit]` methods or `#[inherit]` signals, which is the programmer's promise that they are safe to call.
