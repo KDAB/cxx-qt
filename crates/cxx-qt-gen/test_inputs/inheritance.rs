@@ -18,6 +18,7 @@ mod inheritance {
     extern "C++Qt" {
         #[base = QPushButton]
         #[qobject]
+        #[allow(dead_code)]
         type QPushButtonChild;
     }
 

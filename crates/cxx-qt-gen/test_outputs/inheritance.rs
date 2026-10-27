@@ -108,6 +108,7 @@ mod inheritance {
     extern "C++" {
         include ! (< QtWidgets / QPushButton >);
     }
+    #[allow(dead_code)]
     extern "C++" {
         #[doc(hidden)]
         #[cxx_name = "upcastPtr"]
@@ -123,6 +124,7 @@ mod inheritance {
         ) -> *const QPushButtonChild;
     }
     extern "C++" {
+        #[allow(dead_code)]
         type QPushButtonChild;
     }
     extern "C++" {
@@ -167,6 +169,7 @@ unsafe impl ::cxx_qt::casting::Upcast<::cxx_qt::QObject> for inheritance::QPushB
         inheritance::cxx_qt_ffi_QPushButton_downcastPtr(base)
     }
 }
+#[allow(dead_code)]
 unsafe impl ::cxx_qt::casting::Upcast<inheritance::QPushButton> for inheritance::QPushButtonChild {
     unsafe fn upcast_ptr(this: *const Self) -> *const inheritance::QPushButton {
         inheritance::cxx_qt_ffi_QPushButtonChild_upcastPtr(this)
