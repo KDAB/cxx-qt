@@ -63,12 +63,20 @@ impl GeneratedRustFragment {
                     .iter()
                     .filter(|attr| path_compare_str(attr.meta.path(), &["doc"]))
                     .collect();
+                let allows = &ty.allows;
+                // The allows of the QObject go where its cfgs go, so that a lint which fires
+                // on the code generated for the QObject can be silenced
+                let attrs = cfgs
+                    .iter()
+                    .chain(allows)
+                    .cloned()
+                    .collect::<Vec<Attribute>>();
                 generated.push(GeneratedRustFragment::generate_casting_impl(
                     &qobject_names,
                     type_names,
                     &ty.name,
                     &ty.base_class,
-                    &cfgs,
+                    &attrs,
                 )?);
                 generated.push(GeneratedRustFragment::from_cxx_item(parse_quote! {
                     #extern_block_namespace
@@ -76,6 +84,7 @@ impl GeneratedRustFragment {
                         #namespace
                         #cxx_name
                         #(#cfgs)*
+                        #(#allows)*
                         #(#docs)*
                         #vis type #ident;
                     }

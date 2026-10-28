@@ -18,6 +18,7 @@ mod inheritance {
     extern "C++Qt" {
         #[base = QPushButton]
         #[qobject]
+        #[allow(dead_code)]
         type QPushButtonChild;
     }
 
@@ -35,6 +36,7 @@ mod inheritance {
 
         #[rust_name = "hello_world"]
         #[inherit]
+        #[allow(dead_code)]
         fn helloWorld(self: &MyObject, parent: &QModelIndex) -> bool;
     }
 

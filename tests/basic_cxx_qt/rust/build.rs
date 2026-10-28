@@ -10,6 +10,7 @@ fn main() {
         .file("src/cfgs.rs")
         .file("src/empty.rs")
         .file("src/data.rs")
+        .file("src/lints.rs")
         .file("src/lib.rs")
         .file("src/types.rs")
         .file("src/naming.rs")

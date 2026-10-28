@@ -100,6 +100,7 @@ pub fn generate_rust_signal(
     };
     let doc_comments = &signal.docs;
     let cfgs = &signal.cfgs;
+    let allows = &signal.allows;
     let namespace = if let Some(namespace) = qobject_name.namespace() {
         quote_spanned! { span=> #[namespace = #namespace ] }
     } else {
@@ -128,6 +129,7 @@ pub fn generate_rust_signal(
             #(#cfgs)*
             #unsafety_block extern "C++" {
                 #[cxx_name = #cpp_ident]
+                #(#allows)*
                 #(#doc_comments)*
                 #namespace
                 #unsafe_call fn #signal_ident_cpp(#parameter_signatures) #return_type;
@@ -159,6 +161,7 @@ pub fn generate_rust_signal(
                 fn #signal_handler_drop(handler: #signal_handler_alias);
 
                 #[doc(hidden)]
+                #(#allows)*
                 #unsafe_call fn #signal_handler_call(handler: &mut #signal_handler_alias, self_value: #self_type_cxx, #(#parameters_cxx),*);
             }
         }]);
@@ -226,6 +229,7 @@ pub fn generate_rust_signal(
             parse_quote_spanned! {
                 span =>
                 #(#cfgs)*
+                #(#allows)*
                 fn #signal_handler_call(
                     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<#closure_struct>,
                     self_value: #self_type_qualified,
@@ -440,6 +444,63 @@ mod tests {
         common_asserts(
             &generated.cxx_mod_contents[1..].into(),
             &generated.cxx_qt_mod_contents,
+        );
+    }
+
+    #[test]
+    fn test_generate_rust_signal_allow() {
+        let method: ForeignItemFn = parse_quote! {
+            #[cxx_name = "dataChanged"]
+            #[allow(clippy::too_many_arguments)]
+            fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
+        };
+        let qsignal = ParsedSignal::mock(&method);
+        let qobject_names = create_qobjectname();
+
+        let mut type_names = TypeNames::mock();
+        type_names.mock_insert("QColor", None, None, None);
+        let generated = generate_rust_signals(&[&qsignal], &qobject_names, &type_names).unwrap();
+
+        // The allow is passed on to the three generated functions which take the
+        // parameters of the signal, so that a lint such as too_many_arguments can
+        // be silenced by the developer.
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[0],
+            quote! {
+                unsafe extern "C++" {
+                    #[cxx_name = "dataChanged"]
+                    #[allow(clippy::too_many_arguments)]
+                    fn data_changed(self: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[2],
+            quote! {
+                #[namespace = "rust::cxxqtgen1"]
+                extern "Rust" {
+                    #[doc(hidden)]
+                    fn drop_MyObject_signal_handler_dataChanged(handler: MyObjectCxxQtSignalHandlerdataChanged);
+
+                    #[doc(hidden)]
+                    #[allow(clippy::too_many_arguments)]
+                    fn call_MyObject_signal_handler_dataChanged(handler: &mut MyObjectCxxQtSignalHandlerdataChanged, self_value: Pin<&mut MyObject>, trivial: i32, opaque: UniquePtr<QColor>);
+                }
+            },
+        );
+        assert_tokens_eq(
+            &generated.cxx_qt_mod_contents[5],
+            quote! {
+                #[allow(clippy::too_many_arguments)]
+                fn call_MyObject_signal_handler_dataChanged(
+                    handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuredataChanged>,
+                    self_value: core::pin::Pin<&mut qobject::MyObject>,
+                    trivial: i32,
+                    opaque: cxx::UniquePtr<QColor>
+                ) {
+                    handler.closure()(self_value, trivial, opaque);
+                }
+            },
         );
     }
 

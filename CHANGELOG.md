@@ -17,6 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased](https://github.com/KDAB/cxx-qt/compare/v0.10.0...HEAD)
 
+### Added
+
+- `#[allow(...)]` attributes on a `#[qsignal]` are now passed on to the generated code, so that lints such as `clippy::too_many_arguments` can be silenced for a single signal
+- `#[allow(...)]` attributes on a `#[qobject]` are now passed on to the code generated for it
+- `#[allow(...)]` attributes on a `#[qenum]` are now passed on to the code generated for it
+- `#[allow(...)]` attributes on a method or `#[qinvokable]` are now passed on to the code generated for it, including its `#[auto_wrap]` method
+- `#[allow(...)]` attributes on an `#[inherit]` method are now passed on to the code generated for it
+- `#[allow(...)]` attributes on a `#[qobject]` in an `extern "C++Qt"` block are now passed on to the code generated for it
+
 ### Fixed
 
 - `cfg` attributes on a `#[qobject]` are now applied to its casting implementation and its properties, so that a disabled QObject no longer fails to build

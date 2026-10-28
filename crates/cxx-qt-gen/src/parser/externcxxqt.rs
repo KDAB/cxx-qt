@@ -183,6 +183,40 @@ mod tests {
     }
 
     #[test]
+    fn test_extern_cxxqt_allow() {
+        let extern_cxx_qt = ParsedExternCxxQt::parse(
+            parse_quote! {
+                unsafe extern "C++Qt" {
+                    #[qobject]
+                    #[allow(dead_code)]
+                    type QPushButton;
+
+                    #[qsignal]
+                    #[allow(clippy::too_many_arguments)]
+                    fn clicked(self: Pin<&mut QPushButton>, checked: bool);
+                }
+            },
+            &format_ident!("qobject"),
+            None,
+        )
+        .unwrap();
+
+        assert_eq!(extern_cxx_qt.qobjects.len(), 1);
+        assert_eq!(extern_cxx_qt.qobjects[0].allows.len(), 1);
+        assert_eq!(
+            extern_cxx_qt.qobjects[0].allows[0],
+            parse_quote! { #[allow(dead_code)] }
+        );
+
+        assert_eq!(extern_cxx_qt.signals.len(), 1);
+        assert_eq!(extern_cxx_qt.signals[0].allows.len(), 1);
+        assert_eq!(
+            extern_cxx_qt.signals[0].allows[0],
+            parse_quote! { #[allow(clippy::too_many_arguments)] }
+        );
+    }
+
+    #[test]
     fn test_extern_cxxqt_type_non_type() {
         let extern_cxx_qt = ParsedExternCxxQt::parse(
             parse_quote! {

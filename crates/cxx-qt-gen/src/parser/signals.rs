@@ -4,7 +4,9 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::parser::CaseConversion;
 use crate::{
-    parser::{extract_cfgs, extract_docs, method::MethodFields, require_attributes},
+    parser::{
+        extract_allows, extract_cfgs, extract_docs, method::MethodFields, require_attributes,
+    },
     syntax::path::path_compare_str,
 };
 use core::ops::Deref;
@@ -25,6 +27,8 @@ pub struct ParsedSignal {
     pub docs: Vec<Attribute>,
     /// Cfgs for signal
     pub cfgs: Vec<Attribute>,
+    /// All the allow attributes of the signal, these are passed to the generated code
+    pub allows: Vec<Attribute>,
 }
 
 pub enum ImmutabilityConstraint {
@@ -33,8 +37,15 @@ pub enum ImmutabilityConstraint {
 }
 
 impl ParsedSignal {
-    const ALLOWED_ATTRS: [&'static str; 6] =
-        ["cfg", "cxx_name", "rust_name", "inherit", "doc", "qsignal"];
+    const ALLOWED_ATTRS: [&'static str; 7] = [
+        "allow",
+        "cfg",
+        "cxx_name",
+        "rust_name",
+        "inherit",
+        "doc",
+        "qsignal",
+    ];
 
     #[cfg(test)]
     /// Test fn for creating a mocked signal from a method body
@@ -49,6 +60,7 @@ impl ParsedSignal {
     ) -> Result<Self> {
         let docs = extract_docs(&method.attrs);
         let cfgs = extract_cfgs(&method.attrs);
+        let allows = extract_allows(&method.attrs);
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
 
@@ -73,6 +85,7 @@ impl ParsedSignal {
             private,
             docs,
             cfgs,
+            allows,
         })
     }
 
@@ -159,6 +172,24 @@ mod tests {
         assert!(signal.safe);
         assert!(!signal.inherit);
         assert!(!signal.private);
+    }
+
+    #[test]
+    fn test_parse_signal_allow() {
+        let method: ForeignItemFn = parse_quote! {
+            #[allow(clippy::too_many_arguments)]
+            fn ready(self: Pin<&mut MyObject>);
+        };
+        let signal =
+            ParsedSignal::parse_rust_qt_signal(method.clone(), CaseConversion::none()).unwrap();
+
+        assert_eq!(signal.method, method);
+        assert_eq!(signal.name, Name::new(format_ident!("ready")));
+        assert_eq!(signal.allows.len(), 1);
+        assert_eq!(
+            signal.allows[0],
+            parse_quote! { #[allow(clippy::too_many_arguments)] }
+        );
     }
 
     #[test]

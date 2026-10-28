@@ -20,6 +20,7 @@ mod ffi {
 
         /// A constant signal for when the timer is ready
         #[qsignal]
+        #[allow(dead_code)]
         fn const_ready(&self);
 
     }
@@ -32,6 +33,7 @@ mod ffi {
         fn ready(self: Pin<&mut Self>);
 
         #[qsignal]
+        #[allow(clippy::too_many_arguments)]
         fn data_changed(
             self: Pin<&mut Self>,
             first: i32,

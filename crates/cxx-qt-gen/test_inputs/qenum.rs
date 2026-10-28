@@ -1,6 +1,7 @@
 #[cxx_qt::bridge(namespace = "cxx_qt::my_object")]
 mod ffi {
     #[qenum(MyObject)]
+    #[allow(dead_code)]
     enum MyEnum {
         A,
     }
@@ -18,6 +19,7 @@ mod ffi {
     qnamespace!("cxx_qt::my_object");
 
     #[qenum]
+    #[allow(clippy::enum_variant_names)]
     enum MyNamespacedEnum {
         A,
         B,

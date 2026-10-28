@@ -57,6 +57,8 @@ struct MyObjectRust;
 > Therefore, the Rust type must be available just outside the bridge module.
 > You can bring any type into scope with a `pub use` directive if you want to reuse an existing type.
 
+> **📝 Note**: `#[allow(...)]` on a QObject is passed on to the code generated for it
+
 ### QML Attributes
 
 `QObject`s can be registered as a QML type directly at build time by using the [`#[qml_element]`](https://doc.qt.io/qt-6/qqmlengine.html#QML_ELEMENT) attribute.
@@ -215,6 +217,9 @@ Implementations of the method are then written as normal outside the bridge.
 
 > Note how this uses `impl qobject::T` rather than `impl T` where `qobject` is the bridge module name.
 
+> **📝 Note**: `#[allow(...)]` on a method is passed on to the code generated for it,
+> e.g. `#[allow(clippy::too_many_arguments)]` for a method with many parameters
+
 ### Invokables
 
 The `#[qinvokable]` attribute can be specified on signatures to expose them as a [`Q_INVOKABLE`](https://doc.qt.io/qt-6/qobject.html#Q_INVOKABLE) in C++.
@@ -272,6 +277,9 @@ A full example can be found in the [qml features example](https://github.com/KDA
 
 > **📝 Note**: using `pub(self)` as the visibility of the signal
 > allows for declaring private signals
+
+> **📝 Note**: `#[allow(...)]` on a signal is passed on to the code generated for it,
+> e.g. `#[allow(clippy::too_many_arguments)]` for a signal with many parameters
 
 ### Connecting to a signal
 

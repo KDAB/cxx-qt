@@ -4,7 +4,8 @@
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
 use crate::parser::{
-    extract_cfgs, extract_docs, method::MethodFields, require_attributes, CaseConversion,
+    extract_allows, extract_cfgs, extract_docs, method::MethodFields, require_attributes,
+    CaseConversion,
 };
 use core::ops::Deref;
 use quote::format_ident;
@@ -19,10 +20,13 @@ pub struct ParsedInheritedMethod {
     pub docs: Vec<Attribute>,
     /// Cfgs for the inherited method
     pub cfgs: Vec<Attribute>,
+    /// All the allow attributes of the inherited method, these are passed to the generated code
+    pub allows: Vec<Attribute>,
 }
 
 impl ParsedInheritedMethod {
-    const ALLOWED_ATTRS: [&'static str; 6] = [
+    const ALLOWED_ATTRS: [&'static str; 7] = [
+        "allow",
         "cxx_name",
         "rust_name",
         "qinvokable",
@@ -35,11 +39,13 @@ impl ParsedInheritedMethod {
         require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
         let docs = extract_docs(&method.attrs);
         let cfgs = extract_cfgs(&method.attrs);
+        let allows = extract_allows(&method.attrs);
 
         Ok(Self {
             method_fields: MethodFields::parse(method, auto_case)?,
             docs,
             cfgs,
+            allows,
         })
     }
 
@@ -137,5 +143,17 @@ mod tests {
         );
         assert!(parsed.mutable);
         assert!(parsed.safe);
+    }
+
+    #[test]
+    fn test_parse_allow() {
+        let function: ForeignItemFn = parse_quote! {
+            #[allow(dead_code)]
+            fn test(self: &T);
+        };
+
+        let parsed = ParsedInheritedMethod::parse(function, CaseConversion::none()).unwrap();
+        assert_eq!(parsed.allows.len(), 1);
+        assert_eq!(parsed.allows[0], parse_quote! { #[allow(dead_code)] });
     }
 }

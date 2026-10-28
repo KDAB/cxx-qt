@@ -7,6 +7,7 @@
 mod cfgs;
 mod data;
 mod empty;
+mod lints;
 mod naming;
 mod types;
 

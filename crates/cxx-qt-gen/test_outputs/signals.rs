@@ -75,6 +75,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "data_changed"]
+        #[allow(clippy::too_many_arguments)]
         #[namespace = "cxx_qt::my_object"]
         fn data_changed(
             self: Pin<&mut MyObject>,
@@ -106,6 +107,7 @@ mod ffi {
             handler: MyObjectCxxQtSignalHandlerdata_changed,
         );
         #[doc(hidden)]
+        #[allow(clippy::too_many_arguments)]
         fn call_MyObject_signal_handler_data_changed(
             handler: &mut MyObjectCxxQtSignalHandlerdata_changed,
             self_value: Pin<&mut MyObject>,
@@ -225,6 +227,7 @@ mod ffi {
     }
     unsafe extern "C++" {
         #[cxx_name = "const_ready"]
+        #[allow(dead_code)]
         #[doc = " A constant signal for when the timer is ready"]
         #[namespace = "cxx_qt::my_object"]
         fn const_ready(self: &QTimer);
@@ -248,6 +251,7 @@ mod ffi {
         #[doc(hidden)]
         fn drop_QTimer_signal_handler_const_ready(handler: QTimerCxxQtSignalHandlerconst_ready);
         #[doc(hidden)]
+        #[allow(dead_code)]
         fn call_QTimer_signal_handler_const_ready(
             handler: &mut QTimerCxxQtSignalHandlerconst_ready,
             self_value: &QTimer,
@@ -382,6 +386,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for MyObjectCxxQtSignalClo
         ) + Send;
 }
 use core::mem::drop as drop_MyObject_signal_handler_data_changed;
+#[allow(clippy::too_many_arguments)]
 fn call_MyObject_signal_handler_data_changed(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<MyObjectCxxQtSignalClosuredata_changed>,
     self_value: core::pin::Pin<&mut ffi::MyObject>,
@@ -635,6 +640,7 @@ impl cxx_qt::signalhandler::CxxQtSignalHandlerClosure for QTimerCxxQtSignalClosu
     type FnType = dyn FnMut(&ffi::QTimer) + Send;
 }
 use core::mem::drop as drop_QTimer_signal_handler_const_ready;
+#[allow(dead_code)]
 fn call_QTimer_signal_handler_const_ready(
     handler: &mut cxx_qt::signalhandler::CxxQtSignalHandler<QTimerCxxQtSignalClosureconst_ready>,
     self_value: &ffi::QTimer,

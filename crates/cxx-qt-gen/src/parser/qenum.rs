@@ -3,7 +3,7 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 
-use crate::parser::{extract_cfgs, extract_docs, CaseConversion};
+use crate::parser::{extract_allows, extract_cfgs, extract_docs, CaseConversion};
 use crate::{naming::Name, parser::require_attributes, syntax::path::path_compare_str};
 use quote::ToTokens;
 use syn::{Attribute, Ident, ItemEnum, Result, Variant};
@@ -21,11 +21,20 @@ pub struct ParsedQEnum {
     pub docs: Vec<Attribute>,
     /// Cfgs from the qenum
     pub cfgs: Vec<Attribute>,
+    /// All the allow attributes of the qenum, these are passed to the generated code
+    pub allows: Vec<Attribute>,
 }
 
 impl ParsedQEnum {
-    const ALLOWED_ATTRS: [&'static str; 6] =
-        ["cfg", "doc", "cxx_name", "rust_name", "namespace", "qenum"];
+    const ALLOWED_ATTRS: [&'static str; 7] = [
+        "allow",
+        "cfg",
+        "doc",
+        "cxx_name",
+        "rust_name",
+        "namespace",
+        "qenum",
+    ];
     fn parse_variant(variant: &Variant) -> Result<Ident> {
         fn err(spanned: &impl ToTokens, message: &str) -> Result<Ident> {
             Err(syn::Error::new_spanned(spanned, message))
@@ -63,6 +72,7 @@ impl ParsedQEnum {
         require_attributes(&qenum.attrs, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&qenum.attrs);
         let docs = extract_docs(&qenum.attrs);
+        let allows = extract_allows(&qenum.attrs);
 
         if qenum.variants.is_empty() {
             return Err(syn::Error::new_spanned(
@@ -98,6 +108,7 @@ impl ParsedQEnum {
             variants,
             docs,
             cfgs,
+            allows,
             item: qenum,
         })
     }
@@ -144,6 +155,24 @@ mod tests {
 
         assert_eq!(*variants_to_strings(&parsed), ["Variant1", "Variant2"],);
         assert_tokens_eq(&parsed.item, qenum.to_token_stream());
+    }
+
+    #[test]
+    fn parse_allow() {
+        let qenum: ItemEnum = parse_quote! {
+            #[allow(non_camel_case_types)]
+            enum my_enum {
+                A,
+            }
+        };
+        let qobject = Some(format_ident!("MyObject"));
+
+        let parsed = ParsedQEnum::parse(qenum, qobject, None, &mock_module()).unwrap();
+        assert_eq!(parsed.allows.len(), 1);
+        assert_eq!(
+            parsed.allows[0],
+            parse_quote! { #[allow(non_camel_case_types)] }
+        );
     }
 
     #[test]

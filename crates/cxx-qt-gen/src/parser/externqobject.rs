@@ -3,8 +3,8 @@
 //
 // SPDX-License-Identifier: MIT OR Apache-2.0
 use crate::naming::Name;
-use crate::parser::{parse_base_type, require_attributes, CaseConversion};
-use syn::{ForeignItemType, Ident, Result};
+use crate::parser::{extract_allows, parse_base_type, require_attributes, CaseConversion};
+use syn::{Attribute, ForeignItemType, Ident, Result};
 
 /// A representation of a QObject to be generated in an extern C++ block
 pub struct ParsedExternQObject {
@@ -14,10 +14,13 @@ pub struct ParsedExternQObject {
     pub declaration: ForeignItemType,
     /// The base class of the struct
     pub base_class: Option<Ident>,
+    /// All the allow attributes of the object, these are passed to the generated code
+    pub allows: Vec<Attribute>,
 }
 
 impl ParsedExternQObject {
-    const ALLOWED_ATTRS: [&'static str; 7] = [
+    const ALLOWED_ATTRS: [&'static str; 8] = [
+        "allow",
         "cxx_name",
         "rust_name",
         "namespace",
@@ -35,6 +38,7 @@ impl ParsedExternQObject {
         let attributes = require_attributes(&ty.attrs, &Self::ALLOWED_ATTRS)?;
 
         let base_class = parse_base_type(&attributes)?;
+        let allows = extract_allows(&ty.attrs);
 
         Ok(Self {
             name: Name::from_ident_and_attrs(
@@ -46,6 +50,7 @@ impl ParsedExternQObject {
             )?,
             declaration: ty,
             base_class,
+            allows,
         })
     }
 }

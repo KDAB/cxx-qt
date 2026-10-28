@@ -37,6 +37,8 @@ QObject types that are defined in C++ can be made available to Rust, by declarin
 
 > **📝 Note**: Types inside `extern "C++Qt"` are currently required to have a `#[qobject]` attribute
 
+> **📝 Note**: `#[allow(...)]` on a QObject is passed on to the code generated for it
+
 ```rust,ignore,noplayground
 #[cxx_qt::bridge]
 mod ffi {
@@ -103,6 +105,9 @@ This then causes CXX-Qt to generate Rust methods to emit and connect to the `#[q
 in the same way as a `#[qsignal]` in a [`extern "RustQt"` block](./extern_rustqt.md#signals).
 
 > **📝 Note**: Using `pub(self)` as the visibility of the signal allows for declaring private signals
+
+> **📝 Note**: `#[allow(...)]` on a signal is passed on to the code generated for it,
+> e.g. `#[allow(clippy::too_many_arguments)]` for a signal with many parameters
 
 <!--
 TODO: use a real example from qml_features once closure support lands
