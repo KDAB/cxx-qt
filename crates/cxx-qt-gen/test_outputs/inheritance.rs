@@ -40,12 +40,12 @@ mod inheritance {
     extern "Rust" {
         #[cxx_name = "data"]
         #[doc(hidden)]
-        unsafe fn data(self: &MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
+        fn data(self: &MyObject, _index: &QModelIndex, _role: i32) -> QVariant;
     }
     extern "Rust" {
         #[cxx_name = "has_children"]
         #[doc(hidden)]
-        unsafe fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
+        fn has_children(self: &MyObject, _parent: &QModelIndex) -> bool;
     }
     unsafe extern "C++" {
         #[cxx_name = "hasChildrenCxxQtInherit"]
