@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Methods and invokables in an `unsafe extern "RustQt"` block are no longer implicitly `unsafe`, matching an `extern "Rust"` block in CXX. The `unsafe` on the block now only applies to `#[inherit]` methods and `#[inherit]` signals. Methods taking a raw pointer or implemented as an `unsafe fn` need to be declared as an `unsafe fn` themselves
+- `#[inherit]` methods and `#[qsignal]`s taking a raw pointer as an argument now need to be declared as an `unsafe fn` in the bridge, matching CXX, instead of failing later in the generated CXX bridge. The generated `extern "C++"` block of an `#[inherit]` method keeps the `unsafe` of the `extern "RustQt"` block it is declared in
 
 ### Fixed
 

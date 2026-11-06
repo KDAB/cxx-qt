@@ -14,7 +14,7 @@ use core::ops::Deref;
 use quote::format_ident;
 use std::collections::{BTreeMap, HashSet};
 use std::ops::DerefMut;
-use syn::{Attribute, ForeignItemFn, Ident, Result};
+use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Type};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -196,6 +196,23 @@ impl MethodFields {
 
     pub(crate) fn self_unresolved(&self) -> bool {
         self.qobject_ident == format_ident!("Self")
+    }
+
+    /// As with CXX, a function taking a raw pointer as an argument must be an unsafe fn
+    pub(crate) fn require_unsafe_for_pointer_args(&self) -> Result<()> {
+        if self.safe {
+            if let Some(parameter) = self
+                .parameters
+                .iter()
+                .find(|parameter| matches!(parameter.ty, Type::Ptr(_)))
+            {
+                return Err(Error::new(
+                    parameter.ty.span(),
+                    "pointer argument requires that the function be marked unsafe",
+                ));
+            }
+        }
+        Ok(())
     }
 }
 

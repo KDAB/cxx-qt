@@ -42,12 +42,13 @@ pub fn generate(
             };
             let return_type = &method.method.sig.output;
 
-            let mut unsafe_block = None;
+            // Inherited methods are C++ functions, so follow the same rules as an
+            // extern "C++" block in CXX and keep the unsafe of the source block and fn.
+            // The parser ensures that a safe fn is within an unsafe block.
+            //
             // Needs to be unspanned or clippy breaks surrounding the safety comment
-            let mut unsafe_call = Some(quote! { unsafe });
-            if method.safe {
-                std::mem::swap(&mut unsafe_call, &mut unsafe_block);
-            }
+            let unsafe_block = method.unsafe_block.then(|| quote! { unsafe });
+            let unsafe_call = (!method.safe).then(|| quote! { unsafe });
             let doc_comments = &method.docs;
             let cfgs = &method.cfgs;
             let allows = &method.allows;
@@ -79,7 +80,14 @@ mod tests {
     use syn::{parse_quote, ForeignItemFn};
 
     fn generate_from_foreign(method: ForeignItemFn) -> Result<GeneratedRustFragment> {
-        let method = ParsedInheritedMethod::parse(method, CaseConversion::none())?;
+        generate_from_foreign_in_block(method, true)
+    }
+
+    fn generate_from_foreign_in_block(
+        method: ForeignItemFn,
+        unsafe_block: bool,
+    ) -> Result<GeneratedRustFragment> {
+        let method = ParsedInheritedMethod::parse(method, CaseConversion::none(), unsafe_block)?;
         let inherited_methods = vec![&method];
         generate(&create_qobjectname(), &inherited_methods)
     }
@@ -149,9 +157,12 @@ mod tests {
 
     #[test]
     fn test_unsafe() {
-        let generated = generate_from_foreign(parse_quote! {
-            unsafe fn test(self: &MyObject);
-        })
+        let generated = generate_from_foreign_in_block(
+            parse_quote! {
+                unsafe fn test(self: &MyObject);
+            },
+            false,
+        )
         .unwrap();
 
         assert_eq!(generated.cxx_mod_contents.len(), 1);
@@ -167,5 +178,35 @@ mod tests {
                 }
             },
         );
+    }
+
+    #[test]
+    fn test_unsafe_in_unsafe_block() {
+        let generated = generate_from_foreign_in_block(
+            parse_quote! {
+                unsafe fn test(self: &MyObject, ptr: *mut T);
+            },
+            true,
+        )
+        .unwrap();
+
+        assert_eq!(generated.cxx_mod_contents.len(), 1);
+        assert_tokens_eq(
+            &generated.cxx_mod_contents[0],
+            quote! {
+                unsafe extern "C++" {
+                    #[cxx_name = "testCxxQtInherit"]
+                    unsafe fn test(self: &MyObject, ptr: *mut T);
+                }
+            },
+        );
+    }
+
+    #[test]
+    fn test_safe_pointer() {
+        assert!(generate_from_foreign(parse_quote! {
+            fn test(self: &MyObject, ptr: *mut T);
+        })
+        .is_err());
     }
 }

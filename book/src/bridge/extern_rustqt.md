@@ -341,3 +341,4 @@ This means that a method which takes a [raw pointer](https://cxx.rs/binding/rawp
 
 `#[inherit]` methods and `#[inherit]` signals call into the C++ base class, so they follow the same rules as functions in an [`extern "C++"` CXX section](https://cxx.rs/extern-c++.html).
 The block must be declared as `unsafe extern "RustQt"` if it contains any safe-to-call `#[inherit]` methods or `#[inherit]` signals, which is the programmer's promise that they are safe to call.
+As with CXX, a method or signal which takes a raw pointer as an argument must be declared as an `unsafe fn`, the `unsafe` on the block does not change this.

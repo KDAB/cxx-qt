@@ -63,6 +63,7 @@ impl ParsedSignal {
         let allows = extract_allows(&method.attrs);
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
+        fields.require_unsafe_for_pointer_args()?;
 
         if matches!(immutability_allowed, ImmutabilityConstraint::Disallowed) && !fields.mutable {
             return Err(Error::new(
