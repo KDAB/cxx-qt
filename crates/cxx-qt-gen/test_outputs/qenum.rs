@@ -36,7 +36,7 @@ mod ffi {
         #[cxx_name = "my_invokable"]
         #[namespace = "cxx_qt::my_object"]
         #[doc(hidden)]
-        unsafe fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
+        fn my_invokable(self: &MyObject, qenum: MyEnum, other_qenum: MyOtherEnum);
     }
     extern "C++" {
         #[doc(hidden)]
