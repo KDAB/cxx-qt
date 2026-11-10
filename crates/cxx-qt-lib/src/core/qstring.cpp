@@ -186,5 +186,11 @@ qstringTrimmed(const QString& string)
   return string.trimmed();
 }
 
+bool
+qstringEqStr(const QString& lhs, rust::Str rhs)
+{
+  return lhs == QUtf8StringView(rhs.data(), rhs.size());
+}
+
 }
 }

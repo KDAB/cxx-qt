@@ -7,3 +7,9 @@
 #pragma once
 
 #include "core/qstring.h"
+#include "rust/cxx.h"
+
+namespace rust::cxxqtlib1 {
+bool
+qstringEqStr(const QString& lhs, rust::Str rhs);
+}
