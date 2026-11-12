@@ -33,7 +33,7 @@ pub use installation::QtInstallation;
 #[cfg(feature = "qmake")]
 pub use installation::qmake::QtInstallationQMake;
 
-#[cfg(feature = "qt_minimal")]
+#[cfg(feature = "download_qt_minimal")]
 pub use installation::qt_minimal::QtInstallationQtMinimal;
 
 #[cfg(feature = "qmake")]
@@ -144,7 +144,7 @@ impl QtBuild {
                 }
 
                 // Check for a qt_minimal install
-                #[cfg(feature = "qt_minimal")]
+                #[cfg(feature = "download_qt_minimal")]
                 {
                     // Search existing installed qt_minimal versions
                     if let Ok(local_artifacts) = QtInstallationQtMinimal::local_artifacts() {
@@ -199,8 +199,8 @@ impl QtBuild {
                     }
                 }
 
-                // NOTE: qt_minimal feature implies qt_version feature
-                // so we do not need to check for qt_minimal
+                // NOTE: download_qt_minimal feature implies qt_version feature
+                // so we do not need to check for download_qt_minimal
             }
 
             #[cfg(feature = "qt_version")]

@@ -6,7 +6,7 @@
 #[cfg(feature = "qmake")]
 pub(crate) mod qmake;
 
-#[cfg(feature = "qt_minimal")]
+#[cfg(feature = "download_qt_minimal")]
 pub(crate) mod qt_minimal;
 
 mod shared;
