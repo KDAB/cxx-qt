@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `cfg` attributes on a `#[qobject]` are now applied to its casting implementation and its properties, so that a disabled QObject no longer fails to build
 - `cfg(feature = "...")` attributes now match features containing a `-` when generating C++, by reading the enabled features from `CARGO_CFG_FEATURE` like CXX does
 - cxx-qt-build links the Qt modules in a sorted order instead of the order of a `HashSet`, which changed from build to build and made builds not reproducible
+- qt-build-utils passes `SOURCE_DATE_EPOCH` and `QT_RCC_SOURCE_DATE_OVERRIDE` on to rcc, which ran with an empty environment and so wrote the modification times of the files into the resources, making builds not reproducible
 
 ## [0.10.0](https://github.com/KDAB/cxx-qt/compare/v0.9.1...v0.10.0) - 2026-08-24
 
