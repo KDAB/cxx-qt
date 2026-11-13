@@ -39,7 +39,7 @@ pub use qt_build_utils::{QResource, QResources};
 use quote::ToTokens;
 use std::fs::OpenOptions;
 use std::{
-    collections::HashSet,
+    collections::{BTreeSet, HashSet},
     env,
     fs::File,
     io::Write,
@@ -1219,8 +1219,10 @@ extern "C" bool {init_fun}() {{
             .collect()
     }
 
-    fn qt_modules(&self, dependencies: &[Dependency]) -> HashSet<String> {
-        let mut qt_modules = self.qt_modules.clone();
+    /// The Qt modules of this crate and its dependencies, sorted, so that every build links them
+    /// in the same order and the build is reproducible.
+    fn qt_modules(&self, dependencies: &[Dependency]) -> BTreeSet<String> {
+        let mut qt_modules: BTreeSet<String> = self.qt_modules.iter().cloned().collect();
         for dependency in dependencies {
             qt_modules.extend(dependency.manifest.qt_modules.iter().cloned());
         }
