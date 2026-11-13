@@ -75,12 +75,7 @@ impl TryFrom<PathBuf> for QtInstallationQtMinimal {
         )
         .expect("Could not parse Qt version");
 
-        let link_location = Self::symlink_install_location()?;
-        let linked_path = link_location.join(path_qt.strip_prefix(Self::qt_minimal_root())?);
-        Ok(Self {
-            path_qt: linked_path.to_path_buf(),
-            version,
-        })
+        Ok(Self { path_qt, version })
     }
 }
 
@@ -197,13 +192,20 @@ impl QtInstallationQtMinimal {
     fn qt_minimal_root() -> PathBuf {
         // Check if a custom root has been set
         println!("cargo::rerun-if-env-changed=QT_MINIMAL_DOWNLOAD_ROOT");
-        let path = if let Ok(root) = std::env::var("QT_MINIMAL_DOWNLOAD_ROOT") {
-            PathBuf::from(root)
-        } else {
-            // Otherwise fallback to user data dir
-            dirs::data_local_dir()
-                .expect("User local data directory to be found")
-                .join("qt_minimal_download")
+        let path = match std::env::var("QT_MINIMAL_DOWNLOAD_ROOT") {
+            Ok(root) => PathBuf::from(root),
+            // Use env! to read qt-build-utils' OUT_DIR at the time qt-build-utils is compiled
+            // rather than std::env::var to read it at runtime of the build.rs that calls qt-build-utils.
+            // To tell Cargo to set OUT_DIR when qt-build-utils is compiled, qt-build-utils needs
+            // a build.rs, even if that is a no-op.
+            //
+            // This allows multiple crates in the dependency graph to use a single Qt Minimal
+            // installation in qt-build-utils' OUT_DIR instead of each downstream crate downloading their own.
+            //
+            // NOTE: If multiple semver-incompatible versions of qt-build-utils are used in the
+            // dependency graph, there is a potential that they could download and try to link
+            // multiple versions of Qt, which would probably fail to link.
+            Err(_) => PathBuf::from(env!("OUT_DIR")).join("qt_minimal_download"),
         };
 
         // Only create when it doesn't exist to avoid file modifications
@@ -212,45 +214,6 @@ impl QtInstallationQtMinimal {
         }
 
         path
-    }
-
-    /// Make sure a local install folder is linked to the build directory
-    pub fn symlink_install_location() -> anyhow::Result<PathBuf> {
-        let out_dir = std::env::var("OUT_DIR")?;
-        let qt_location = QtInstallationQtMinimal::qt_minimal_root();
-
-        let new_location = Path::new(&out_dir).join("qt_minimal_root");
-
-        println!("cargo::rerun-if-changed={}", new_location.display());
-        if let Ok(existing_link) = new_location.read_link() {
-            if existing_link == qt_location {
-                return Ok(new_location);
-            }
-            #[cfg(unix)]
-            {
-                std::fs::remove_file(&new_location)?;
-            }
-            // On windows symlink will be a directory as opposed to a file
-            #[cfg(windows)]
-            {
-                std::fs::remove_dir(&new_location)?;
-            }
-        }
-        // Different symlinking calls per OS
-        #[cfg(unix)]
-        {
-            std::os::unix::fs::symlink(qt_location, &new_location)?;
-        }
-        #[cfg(windows)]
-        {
-            std::os::windows::fs::symlink_dir(qt_location, &new_location)?;
-        }
-        #[cfg(not(any(unix, windows)))]
-        panic!(
-            "Unknown platform, cannot create symlink to OUT_DIR from {}",
-            qt_location.display()
-        );
-        Ok(new_location)
     }
 
     /// Get a collection of the locally installed Qt artifacts
