@@ -7,10 +7,15 @@ use crate::{utils, Initializer, QtInstallation, QtTool};
 
 use semver::Version;
 use std::{
+    env,
     ffi::{OsStr, OsString},
     path::{Path, PathBuf},
     process::Command,
 };
+
+/// The variables with which rcc writes a fixed time instead of the modification time of a file,
+/// see <https://reproducible-builds.org/docs/source-date-epoch/>
+const SOURCE_DATE_VARIABLES: [&str; 2] = ["SOURCE_DATE_EPOCH", "QT_RCC_SOURCE_DATE_OVERRIDE"];
 
 /// A wrapper around the [rcc](https://doc.qt.io/qt-6/resources.html) tool
 pub struct QtToolRcc {
@@ -75,10 +80,19 @@ impl QtToolRcc {
         ];
         args.extend(self.custom_args.iter().cloned());
 
-        let cmd = Command::new(&self.executable)
-            // Binaries should work without environment and this prevents
-            // LD_LIBRARY_PATH from causing different Qt version clashes
-            .env_clear()
+        let mut command = Command::new(&self.executable);
+        // Binaries should work without environment and this prevents
+        // LD_LIBRARY_PATH from causing different Qt version clashes
+        command.env_clear();
+        // rcc writes the modification time of each file into the resources, unless one of these
+        // fixes the time for a reproducible build
+        for variable in SOURCE_DATE_VARIABLES {
+            println!("cargo::rerun-if-env-changed={variable}");
+            if let Some(value) = env::var_os(variable) {
+                command.env(variable, value);
+            }
+        }
+        let cmd = command
             .args(args)
             .output()
             .unwrap_or_else(|_| panic!("rcc failed for {}", input_path.display()));
