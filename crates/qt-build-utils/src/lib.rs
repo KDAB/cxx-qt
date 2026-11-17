@@ -373,6 +373,20 @@ impl QtBuild {
                 .expect("Could note write qrc file");
         }
 
+        // Run qmltyperegistrar over the meta types
+        //
+        // This has to happen before qmlcachegen: qmlcachegen reads the type info of
+        // the module through the qmldir (`typeinfo plugin.qmltypes`). Run afterwards,
+        // the file is missing on a clean build and left over from the previous build
+        // otherwise, so the ahead-of-time compiled code bakes in method indices of the
+        // old meta object.
+        let qmltyperegistrar_path = self.qmltyperegistrar().compile(
+            metatypes_json,
+            &qmltypes_path,
+            uri,
+            Version::new(version_major as u64, version_minor as u64, 0),
+        );
+
         // Run qmlcachegen
         // qmlcachegen needs to be run once for each .qml file with --resource-path,
         // then once for the module with --resource-name.
@@ -404,14 +418,6 @@ impl QtBuild {
 
         let qml_plugin_dir = PathBuf::from(format!("{out_dir}/qt-build-utils/qml_plugin"));
         std::fs::create_dir_all(&qml_plugin_dir).expect("Could not create qml_plugin dir");
-
-        // Run qmltyperegistrar over the meta types
-        let qmltyperegistrar_path = self.qmltyperegistrar().compile(
-            metatypes_json,
-            &qmltypes_path,
-            uri,
-            Version::new(version_major as u64, version_minor as u64, 0),
-        );
 
         // Generate QQmlEngineExtensionPlugin
         let qml_plugin_cpp_path = qml_plugin_dir.join(format!("{plugin_class_name}.cpp"));
