@@ -19,7 +19,7 @@ In this setup we'll stick with a standard Cargo folder layout with just the adde
 The complete example code is available in [`examples/cargo_without_cmake`][cargo-without-cmake]
 in the CXX-Qt repository.
 
-> Note the only difference to [Building with Cargo](./4-cargo-executable.md) is the `qt_minimal` feature and `qt-version` dependency
+> Note the only difference to [Building with Cargo](./4-cargo-executable.md) is the `download_qt_minimal` feature and `qt-version` dependency
 
 > Note `qt-build-utils` will first check for a system Qt install matching the Qt version requirements first and then download Qt minimal if required.
 
@@ -39,9 +39,9 @@ cxx-qt-lib = { version="0.10", features = ["qt_full"] }
 # The link_qt_object_files feature is required for statically linking Qt 6.
 cxx-qt-build = { version = "0.10", features = [ "link_qt_object_files" ] }
 
-# Enable the qt_minimal feature in qt-build-utils
+# Enable the download_qt_minimal feature in qt-build-utils
 # this allows for automatically downloading Qt when not found with qmake
-qt-build-utils = { version = "0.10", features = ["qt_minimal"] }
+qt-build-utils = { version = "0.10", features = ["download_qt_minimal"] }
 # Indicate which Qt version is required via features
 qt-version = { version = "0.1", features = ["qt_version_at_least_6_10"] }
 ```

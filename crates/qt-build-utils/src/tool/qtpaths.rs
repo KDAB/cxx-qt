@@ -88,7 +88,7 @@ impl QtToolQtPaths {
     }
 }
 
-#[cfg(feature = "qt_minimal")]
+#[cfg(feature = "download_qt_minimal")]
 impl QtToolQtPaths {
     /// Construct from an executable path this is used interally to allow for querying for the Qt version
     pub(crate) fn from_path_buf(executable: PathBuf) -> Self {
