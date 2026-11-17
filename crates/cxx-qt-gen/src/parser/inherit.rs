@@ -22,6 +22,8 @@ pub struct ParsedInheritedMethod {
     pub cfgs: Vec<Attribute>,
     /// All the allow attributes of the inherited method, these are passed to the generated code
     pub allows: Vec<Attribute>,
+    /// Whether the block containing the inherited method is unsafe
+    pub unsafe_block: bool,
 }
 
 impl ParsedInheritedMethod {
@@ -35,17 +37,24 @@ impl ParsedInheritedMethod {
         "cfg",
     ];
 
-    pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
+    pub fn parse(
+        method: ForeignItemFn,
+        auto_case: CaseConversion,
+        unsafe_block: bool,
+    ) -> Result<Self> {
         require_attributes(&method.attrs, &Self::ALLOWED_ATTRS)?;
         let docs = extract_docs(&method.attrs);
         let cfgs = extract_cfgs(&method.attrs);
         let allows = extract_allows(&method.attrs);
+        let method_fields = MethodFields::parse(method, auto_case)?;
+        method_fields.require_unsafe_for_pointer_args()?;
 
         Ok(Self {
-            method_fields: MethodFields::parse(method, auto_case)?,
+            method_fields,
             docs,
             cfgs,
             allows,
+            unsafe_block,
         })
     }
 
@@ -78,7 +87,7 @@ mod tests {
     #[test]
     fn test_parser_errors() {
         assert_parse_errors! {
-            |item| ParsedInheritedMethod::parse(item, CaseConversion::none()) =>
+            |item| ParsedInheritedMethod::parse(item, CaseConversion::none(), true) =>
 
             // Missing self type
             { fn test(self: &mut T); }
@@ -90,6 +99,9 @@ mod tests {
             { fn test(self: &mut T); }
             // Attributes
             { fn test(#[test] self: &T); }
+            // Pointer arguments require an unsafe fn
+            { fn test(self: &T, a: *mut A); }
+            { fn test(self: &T, a: *const A); }
         }
     }
 
@@ -100,7 +112,8 @@ mod tests {
             parse_quote! {
                 fn test(self: &T);
             },
-            CaseConversion::none()
+            CaseConversion::none(),
+            true
         )
         .is_ok());
         // T by ref is ok in this shorthand (provided the block has one QObject)
@@ -108,7 +121,8 @@ mod tests {
             parse_quote! {
                 fn test(&self);
             },
-            CaseConversion::none()
+            CaseConversion::none(),
+            true
         )
         .is_ok());
         // T by Pin
@@ -116,9 +130,21 @@ mod tests {
             parse_quote! {
                 fn test(self: Pin<&mut T>);
             },
-            CaseConversion::none()
+            CaseConversion::none(),
+            true
         )
         .is_ok());
+    }
+
+    #[test]
+    fn test_parse_unsafe_pointer() {
+        let function: ForeignItemFn = parse_quote! {
+            unsafe fn test(self: &T, a: *mut A);
+        };
+
+        let parsed = ParsedInheritedMethod::parse(function, CaseConversion::none(), false).unwrap();
+        assert!(!parsed.safe);
+        assert!(!parsed.unsafe_block);
     }
 
     #[test]
@@ -128,7 +154,7 @@ mod tests {
             fn test(self: Pin<&mut T>, a: i32, b: &str);
         };
 
-        let parsed = ParsedInheritedMethod::parse(function, CaseConversion::none()).unwrap();
+        let parsed = ParsedInheritedMethod::parse(function, CaseConversion::none(), true).unwrap();
 
         assert_eq!(parsed.qobject_ident, format_ident!("T"));
         assert_eq!(parsed.parameters.len(), 2);
@@ -152,7 +178,7 @@ mod tests {
             fn test(self: &T);
         };
 
-        let parsed = ParsedInheritedMethod::parse(function, CaseConversion::none()).unwrap();
+        let parsed = ParsedInheritedMethod::parse(function, CaseConversion::none(), true).unwrap();
         assert_eq!(parsed.allows.len(), 1);
         assert_eq!(parsed.allows[0], parse_quote! { #[allow(dead_code)] });
     }

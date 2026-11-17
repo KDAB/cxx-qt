@@ -14,7 +14,7 @@ use core::ops::Deref;
 use quote::format_ident;
 use std::collections::{BTreeMap, HashSet};
 use std::ops::DerefMut;
-use syn::{Attribute, ForeignItemFn, Ident, Result};
+use syn::{spanned::Spanned, Attribute, Error, ForeignItemFn, Ident, Result, Type};
 
 /// Describes a C++ specifier for the Q_INVOKABLE
 #[derive(Eq, Hash, PartialEq)]
@@ -69,8 +69,6 @@ pub struct ParsedMethod {
     pub docs: Vec<Attribute>,
     /// All the allow attributes of the method, these are passed to the generated code
     pub allows: Vec<Attribute>,
-    /// Whether the block containing the method is safe or unsafe
-    pub unsafe_block: bool,
 }
 
 impl ParsedMethod {
@@ -92,7 +90,7 @@ impl ParsedMethod {
     pub fn mock_qinvokable(method: &ForeignItemFn) -> Self {
         Self {
             is_qinvokable: true,
-            ..Self::parse(method.clone(), CaseConversion::none(), false).unwrap()
+            ..Self::parse(method.clone(), CaseConversion::none()).unwrap()
         }
     }
 
@@ -123,11 +121,7 @@ impl ParsedMethod {
         Self { specifiers, ..self }
     }
 
-    pub fn parse(
-        method: ForeignItemFn,
-        auto_case: CaseConversion,
-        unsafe_block: bool,
-    ) -> Result<Self> {
+    pub fn parse(method: ForeignItemFn, auto_case: CaseConversion) -> Result<Self> {
         let fields = MethodFields::parse(method, auto_case)?;
         let attrs = require_attributes(&fields.method.attrs, &Self::ALLOWED_ATTRS)?;
         let cfgs = extract_cfgs(&fields.method.attrs);
@@ -149,7 +143,6 @@ impl ParsedMethod {
             cfgs,
             docs,
             allows,
-            unsafe_block,
         })
     }
 }
@@ -204,6 +197,23 @@ impl MethodFields {
     pub(crate) fn self_unresolved(&self) -> bool {
         self.qobject_ident == format_ident!("Self")
     }
+
+    /// As with CXX, a function taking a raw pointer as an argument must be an unsafe fn
+    pub(crate) fn require_unsafe_for_pointer_args(&self) -> Result<()> {
+        if self.safe {
+            if let Some(parameter) = self
+                .parameters
+                .iter()
+                .find(|parameter| matches!(parameter.ty, Type::Ptr(_)))
+            {
+                return Err(Error::new(
+                    parameter.ty.span(),
+                    "pointer argument requires that the function be marked unsafe",
+                ));
+            }
+        }
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -218,7 +228,7 @@ mod tests {
             #[allow(clippy::too_many_arguments)]
             fn invokable(self: &MyObject);
         };
-        let parsed = ParsedMethod::parse(method, CaseConversion::none(), false).unwrap();
+        let parsed = ParsedMethod::parse(method, CaseConversion::none()).unwrap();
 
         assert!(parsed.is_qinvokable);
         assert_eq!(parsed.allows.len(), 1);

@@ -42,6 +42,8 @@ See [the Qt docs](https://doc.qt.io/qt-6/qabstractlistmodel.html) for more detai
 Methods in a `extern "RustQt"` block similar to CXX can be tagged with an `#[inherit]` attribute, with the same restrictions regarding which types can be used.
 Additionally, the `self` type must be either `self: Pin<&mut qobject::T>` or `self: &qobject::T`, where `qobject::T` must refer to a `QObject` marked with `#[qobject]` in the `#[cxx_qt::bridge]`
 
+As with `unsafe extern "C++"` in CXX, the block must be declared as `unsafe extern "RustQt"` if it contains any safe-to-call `#[inherit]` methods, see [Safety](../bridge/extern_rustqt.md#safety).
+
 If the Rust name should differ from the C++ method name, (e.g. due to snake_case vs. camelCase) use the `#[cxx_name = "myFunctionName"]` or `#[rust_name = "my_function_name"]` attributes.
 
 `#[allow(...)]` on an inherited method is passed on to the code generated for it, e.g. `#[allow(dead_code)]` for a method that is not called from Rust.

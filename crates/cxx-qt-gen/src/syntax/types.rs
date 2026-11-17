@@ -181,7 +181,7 @@ mod tests {
             #[qinvokable]
             unsafe fn test(self: Pin);
         };
-        let parsed = ParsedMethod::parse(method, CaseConversion::none(), false);
+        let parsed = ParsedMethod::parse(method, CaseConversion::none());
         assert!(parsed.is_err())
     }
 }

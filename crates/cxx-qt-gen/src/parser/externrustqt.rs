@@ -113,13 +113,13 @@ impl ParsedExternRustQt {
                 return Err(Error::new(foreign_fn.span(), "block must be declared `unsafe extern \"RustQt\"` if it contains any safe-to-call #[inherit] functions"));
             }
 
-            let parsed_inherited_method = ParsedInheritedMethod::parse(foreign_fn, auto_case)?;
+            let parsed_inherited_method =
+                ParsedInheritedMethod::parse(foreign_fn, auto_case, self.unsafety.is_some())?;
 
             self.inherited_methods.push(parsed_inherited_method);
             // Remaining methods are either C++ methods or invokables
         } else {
-            let parsed_method =
-                ParsedMethod::parse(foreign_fn, auto_case, self.unsafety.is_some())?;
+            let parsed_method = ParsedMethod::parse(foreign_fn, auto_case)?;
             self.methods.push(parsed_method);
         }
 
@@ -238,6 +238,23 @@ mod tests {
                 extern "RustQt" {
                     #[inherit]
                     fn invokable(self: &MyObject);
+                }
+            }
+
+            // Pointer arguments require an unsafe fn for inherit methods
+            {
+                unsafe extern "RustQt" {
+                    #[inherit]
+                    fn invokable(self: &MyObject, ptr: *mut T);
+                }
+            }
+
+            // Pointer arguments require an unsafe fn for signals
+            {
+                unsafe extern "RustQt" {
+                    #[inherit]
+                    #[qsignal]
+                    fn signal(self: Pin<&mut MyObject>, ptr: *mut T);
                 }
             }
 
