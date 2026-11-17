@@ -93,6 +93,15 @@ impl QtToolMoc {
         // Put all the moc files into one place, this can then be added to the include path
         let moc_dir = QtTool::Moc.writable_path();
         std::fs::create_dir_all(&moc_dir).expect("Could not create moc dir");
+        // moc includes the input relative to the output directory without resolving symlinks,
+        // so a symlinked target directory needs the real path. On Windows canonicalize returns a
+        // verbatim `\\?\` path, so the directory is kept as Cargo gave it, as it is when the real
+        // path is not UTF-8.
+        #[cfg(unix)]
+        let moc_dir = match moc_dir.canonicalize() {
+            Ok(real) if real.to_str().is_some() => real,
+            _ => moc_dir,
+        };
         let output_path = moc_dir.join(format!(
             "moc_{}.cpp",
             input_path.file_name().unwrap().to_str().unwrap()

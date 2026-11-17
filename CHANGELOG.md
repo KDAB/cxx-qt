@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - qt-build-utils passes `SOURCE_DATE_EPOCH` and `QT_RCC_SOURCE_DATE_OVERRIDE` on to rcc, which ran with an empty environment and so wrote the modification times of the files into the resources, making builds not reproducible
 - cxx-qt-build defines `QT_NO_DEBUG` in release builds, as `is_debug` took every build for a debug build, which kept `Q_ASSERT` active in release builds and warned about debug builds of dynamic QML plugins under MSVC in release builds as well
 - qt-build-utils runs qmltyperegistrar before qmlcachegen, which read the `plugin.qmltypes` of the previous build (or none on a clean build), so ahead-of-time compiled QML could call the wrong method of a QObject whose signals or methods had changed and crash
+- qt-build-utils resolves the moc output directory on Unix, so moc output for a header outside `OUT_DIR` now builds when the target directory is a symlink
 
 ## [0.10.0](https://github.com/KDAB/cxx-qt/compare/v0.9.1...v0.10.0) - 2026-08-24
 
