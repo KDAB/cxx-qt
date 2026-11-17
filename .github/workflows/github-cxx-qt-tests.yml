@@ -137,7 +137,10 @@ jobs:
         include:
           - name: macOS 15 (clang) Qt 6 Minimal
             runs-on: macos-15
-            clang_format_path: /Users/runner/Library/Python/3.14/bin/clang-format
+            clang_format_path: /Users/runner/.local/bin/clang-format
+            # The Python of pip changes with the images of the runners; a user base of its own
+            # keeps the path of clang-format the same.
+            python_user_base: /Users/runner/.local
           - name: Ubuntu 24.04 (gcc) Qt 6 Minimal
             runs-on: ubuntu-24.04
             clang_format_path: /home/runner/.local/bin/clang-format
@@ -146,6 +149,10 @@ jobs:
             clang_format_path: C:\Users\runneradmin\AppData\Roaming\Python\Python312\Scripts\clang-format.exe
     runs-on: ${{ matrix.runs-on }}
     name: ${{ matrix.name }}
+    env:
+      # clang-format from pip is a script that loads its module from the user base, so the
+      # user base must be the same where it is installed and where it runs
+      PYTHONUSERBASE: ${{ matrix.python_user_base }}
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v7
@@ -386,7 +393,10 @@ jobs:
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
-            clang_format_path: /Users/runner/Library/Python/3.14/bin/clang-format
+            clang_format_path: /Users/runner/.local/bin/clang-format
+            # The Python of pip changes with the images of the runners; a user base of its own
+            # keeps the path of clang-format the same.
+            python_user_base: /Users/runner/.local
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
@@ -409,7 +419,10 @@ jobs:
             qt_qpa_platform: cocoa
             compiler_cache_path: /Users/runner/Library/Caches/Mozilla.sccache
             sccache_log_path: /Users/runner/Library/Caches/Mozilla.sccache.log.txt
-            clang_format_path: /Users/runner/Library/Python/3.14/bin/clang-format
+            clang_format_path: /Users/runner/.local/bin/clang-format
+            # The Python of pip changes with the images of the runners; a user base of its own
+            # keeps the path of clang-format the same.
+            python_user_base: /Users/runner/.local
             cargo_dir: ~/.cargo
             cc: clang
             cxx: clang++
@@ -487,6 +500,9 @@ jobs:
         SCCACHE_CACHE_SIZE: 600M
         SCCACHE_ERROR_LOG: ${{ matrix.sccache_log_path }}
         QMAKE: ${{ matrix.qmake_path }}
+        # clang-format from pip is a script that loads its module from the user base, so the
+        # user base must be the same where it is installed and where it runs
+        PYTHONUSERBASE: ${{ matrix.python_user_base }}
 
     steps:
     - name: "Clone Git repository"
