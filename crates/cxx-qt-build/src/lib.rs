@@ -716,8 +716,14 @@ impl CxxQtBuilder {
     }
 
     fn is_debug() -> bool {
-        let debug = std::env::var("DEBUG").unwrap_or_else(|_| "0".to_owned());
-        debug != "0" && debug != "false" || debug != "none"
+        Self::is_debug_value(std::env::var("DEBUG").ok().as_deref())
+    }
+
+    /// Whether the value of the `DEBUG` variable of a build script means a debug build.
+    /// Cargo sets it to `false` for a profile without debug info, such as `release`.
+    fn is_debug_value(debug: Option<&str>) -> bool {
+        let debug = debug.unwrap_or("0");
+        debug != "0" && debug != "false" && debug != "none"
     }
 
     fn setup_cc_builder(builder: &mut cc::Build, include_paths: &[impl AsRef<Path>]) {
@@ -1372,5 +1378,21 @@ extern "C" bool {init_fun}() {{
             dependencies,
             ..Default::default()
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn release_builds_are_no_debug_builds() {
+        // What Cargo passes to build scripts with and without debug info.
+        assert!(CxxQtBuilder::is_debug_value(Some("true")));
+        assert!(!CxxQtBuilder::is_debug_value(Some("false")));
+        // The values of the `debug` setting of a profile that mean no debug info.
+        assert!(!CxxQtBuilder::is_debug_value(Some("0")));
+        assert!(!CxxQtBuilder::is_debug_value(Some("none")));
+        assert!(!CxxQtBuilder::is_debug_value(None));
     }
 }
