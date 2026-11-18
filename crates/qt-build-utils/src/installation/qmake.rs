@@ -116,8 +116,8 @@ impl TryFrom<PathBuf> for QtInstallationQMake {
 
     fn try_from(qmake_path: PathBuf) -> anyhow::Result<Self> {
         // Attempt to read the QT_VERSION from qmake
-        let qmake_version = match Command::new(&qmake_path)
-            .args(["-query", "QT_VERSION"])
+        let mut cmd = crate::utils::qmake_query_command(&qmake_path, "QT_VERSION");
+        let qmake_version = match cmd
             // Binaries should work without environment and this prevents
             // LD_LIBRARY_PATH from causing different Qt version clashes
             .env_clear()
@@ -211,9 +211,9 @@ impl QtInstallation for QtInstallationQMake {
 
 impl QtInstallationQMake {
     fn qmake_query(&self, var_name: &str) -> String {
+        let mut cmd = crate::utils::qmake_query_command(&self.qmake_path, var_name);
         String::from_utf8_lossy(
-            &Command::new(&self.qmake_path)
-                .args(["-query", var_name])
+            &cmd
                 // Binaries should work without environment and this prevents
                 // LD_LIBRARY_PATH from causing different Qt version clashes
                 .env_clear()
