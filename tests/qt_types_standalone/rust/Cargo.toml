@@ -20,3 +20,6 @@ cxx-qt-lib = { workspace = true, features = ["qt_gui", "qt_qml"] }
 [build-dependencies]
 cxx-qt-build.workspace = true
 qt-build-utils.workspace = true
+
+[lints]
+workspace = true

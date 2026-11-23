@@ -21,3 +21,6 @@ links = "sub3"
 
 [build-dependencies]
 cxx-qt-build.workspace = true
+
+[lints]
+workspace = true

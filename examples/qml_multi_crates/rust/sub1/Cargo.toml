@@ -17,3 +17,6 @@ cxx-qt-lib.workspace = true
 
 [build-dependencies]
 cxx-qt-build.workspace = true
+
+[lints]
+workspace = true
