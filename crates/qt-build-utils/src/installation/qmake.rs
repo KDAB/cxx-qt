@@ -177,6 +177,7 @@ impl QtInstallation for QtInstallationQMake {
         let path_lib = PathBuf::from(self.qmake_query("QT_INSTALL_LIBS"));
         let path_prefix = PathBuf::from(self.qmake_query("QT_INSTALL_PREFIX"));
         let path_plugins = PathBuf::from(self.qmake_query("QT_INSTALL_PLUGINS"));
+        let path_qml = PathBuf::from(self.qmake_query("QT_INSTALL_QML"));
         let qt_version = self.qmake_version.clone();
         super::shared::link_for_qt_modules(
             builder,
@@ -185,7 +186,24 @@ impl QtInstallation for QtInstallationQMake {
             path_lib,
             path_prefix,
             path_plugins,
+            path_qml,
             qt_version,
+        );
+    }
+
+    fn link_plugins(&self, builder: &mut cc::Build) {
+        let path_prefix = PathBuf::from(self.qmake_query("QT_INSTALL_PREFIX"));
+        let path_lib = PathBuf::from(self.qmake_query("QT_INSTALL_LIBS"));
+        let path_plugins = PathBuf::from(self.qmake_query("QT_INSTALL_PLUGINS"));
+        let path_qml = PathBuf::from(self.qmake_query("QT_INSTALL_QML"));
+
+        super::shared::link_plugins(
+            path_prefix,
+            path_lib,
+            path_plugins,
+            path_qml,
+            builder,
+            &self.qmake_version,
         );
     }
 

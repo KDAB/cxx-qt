@@ -54,3 +54,14 @@ pub(crate) fn is_windows_target() -> bool {
 pub(crate) fn is_emscripten_target() -> bool {
     std::env::var("CARGO_CFG_TARGET_OS") == Ok("emscripten".to_owned())
 }
+
+/// Tests whether a file is an object file to be linked.
+pub(crate) fn is_object_file(path: &std::path::Path) -> bool {
+    let Some(ext_os) = path.extension() else {
+        return false;
+    };
+    let Some(ext) = ext_os.to_str() else {
+        return false;
+    };
+    ext == "o" || ext == "obj"
+}
