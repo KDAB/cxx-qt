@@ -7,7 +7,10 @@
 use cxx_qt_build::{CxxQtBuilder, QmlModule};
 
 fn main() {
-    CxxQtBuilder::new_qml_module(QmlModule::new("com.kdab.cxx_qt.demo").qml_file("qml/main.qml"))
+    unsafe {
+        CxxQtBuilder::new_qml_module(
+            QmlModule::new("com.kdab.cxx_qt.demo").qml_file("qml/main.qml"),
+        )
         // Link Qt's Network library
         // - Qt Core is always linked
         // - Qt Gui is linked by enabling the qt_gui Cargo feature of cxx-qt-lib.
@@ -15,6 +18,10 @@ fn main() {
         // - Qt Qml requires linking Qt Network on macOS
         .qt_module("Network")
         .files(["src/cxxqt_object.rs"])
+        .cc_builder(|builder| {
+            builder.link_lib_modifier("+whole-archive");
+        })
         .build();
+    }
 }
 // ANCHOR_END: book_cargo_executable_build_rs

@@ -248,6 +248,7 @@ impl QtBuild {
     /// Tell Cargo to link each Qt module.
     pub fn cargo_link_libraries(&self, builder: &mut cc::Build) {
         self.qt_installation.link_modules(builder, &self.qt_modules);
+        self.qt_installation.link_plugins(builder);
     }
 
     /// Get the frmaework paths for Qt. This is intended to be passed to whichever tool
