@@ -29,3 +29,6 @@ default = []
 
 # Enable this feature to use qt_minimal downloads when QMAKE is not set
 qt_minimal = ["qt-build-utils/qt_minimal"]
+
+[lints]
+workspace = true

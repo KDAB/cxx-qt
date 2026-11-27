@@ -22,3 +22,6 @@ cxx-qt-lib = { workspace = true, features = [ "qt_full" ] }
 
 [build-dependencies]
 cxx-qt-build.workspace = true
+
+[lints]
+workspace = true

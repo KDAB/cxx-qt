@@ -48,7 +48,6 @@ cxx-qt-build = { path = "crates/cxx-qt-build", version = "0.10.0" }
 cxx-qt-gen = { path = "crates/cxx-qt-gen", version = "0.10.0" }
 cxx-qt-lib = { path = "crates/cxx-qt-lib", version = "0.10.0" }
 qt-build-utils = { path = "crates/qt-build-utils", version = "0.10.0" }
-cxx-qt-lib-extras = { path = "crates/cxx-qt-lib-extras", version = "0.10.0" }
 
 cc = { version = "1.0.100", features = ["parallel"] }
 # Ensure that the example comments are kept in sync
@@ -58,7 +57,6 @@ cc = { version = "1.0.100", features = ["parallel"] }
 # ./book/src/getting-started/5-cmake-integration.md
 # TODO: Can we re-export cxx from cxx-qt, so people don't need to manually add this anymore?
 cxx = "1.0.176"
-cxx-build = { version = "1.0.176", features = [ "parallel" ] }
 cxx-gen = "0.7.176"
 proc-macro2 = "1.0"
 syn = { version = "2.0", features = ["extra-traits", "full"] }

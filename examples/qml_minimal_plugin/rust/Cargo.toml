@@ -27,3 +27,6 @@ cxx-qt-build.workspace = true
 [features]
 # This feature must be enabled for `cargo test` when linking Qt 6 statically.
 link_qt_object_files = [ "cxx-qt-build/link_qt_object_files" ]
+
+[lints]
+workspace = true
