@@ -34,17 +34,6 @@ zip = { version = "7.2.0", optional = true, default-features = false, features =
 [features]
 # TODO: should we default to qmake or let downstream crates specify, such as cxx-qt-build
 default = ["qmake"]
-# When Cargo links an executable, whether a bin crate or test executable,
-# and Qt 6 is linked statically, this feature must be enabled to link
-# unarchived .o files with static symbols that Qt ships (for example
-# to initialize Qt resources embedded within Qt libraries).
-#
-# CMake also links those .o files when linking Qt's targets, so this
-# feature must be disabled for staticlib crates. Otherwise, linking
-# will fail with duplicate symbol errors.
-#
-# When linking Qt dynamically, this makes no difference.
-link_qt_object_files = []
 qmake = ["dep:which"]
 qt_minimal = ["qt_version", "dep:serde", "serde/derive", "semver/serde", "dep:reqwest", "dep:sha2", "dep:tempfile", "dep:serde_json", "dep:flate2", "dep:tar", "dep:qt-artifacts", "dep:dirs", "dep:zip"]
 qt_version = ["dep:qt-version"]

@@ -81,8 +81,7 @@ cxx-qt = "0.10"
 cxx-qt-lib = { version="0.10", features = ["qt_full"] }
 
 [build-dependencies]
-# The link_qt_object_files feature is required for statically linking Qt 6.
-cxx-qt-build = { version = "0.10", features = [ "link_qt_object_files" ] }
+cxx-qt-build = "0.10"
 ```
 
 We'll then also need to add a script named `build.rs` next to the `Cargo.toml`:

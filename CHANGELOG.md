@@ -36,6 +36,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - qt-build-utils runs qmltyperegistrar before qmlcachegen, which read the `plugin.qmltypes` of the previous build (or none on a clean build), so ahead-of-time compiled QML could call the wrong method of a QObject whose signals or methods had changed and crash
 - qt-build-utils resolves the moc output directory on Unix, so moc output for a header outside `OUT_DIR` now builds when the target directory is a symlink
 
+### Removed
+- link_qt_object_files Cargo feature of qt-build-utils and cxx-qt-build is no longer needed, so it has been removed.
+
 ## [0.10.0](https://github.com/KDAB/cxx-qt/compare/v0.9.1...v0.10.0) - 2026-08-24
 
 ### Added

@@ -23,7 +23,7 @@ prettyplease = { version = "0.2", features = ["verbatim"] }
 syn.workspace = true
 
 [build-dependencies]
-cxx-qt-build = { workspace = true, features = ["link_qt_object_files"] }
+cxx-qt-build.workspace = true
 
 [lints]
 workspace = true
