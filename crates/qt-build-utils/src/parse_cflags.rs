@@ -22,7 +22,7 @@ static LINKED_OBJECT_FILES: OnceLock<RwLock<HashSet<PathBuf>>> = OnceLock::new()
 
 /// Extract the &str to pass to cargo::rustc-link-lib from a filename (just the file name, not including directories)
 /// using target-specific logic.
-fn extract_lib_from_filename<'a>(target: &str, filename: &'a str) -> Option<&'a str> {
+pub(crate) fn extract_lib_from_filename<'a>(target: &str, filename: &'a str) -> Option<&'a str> {
     fn test_suffixes<'b>(filename: &'b str, suffixes: &[&str]) -> Option<&'b str> {
         for suffix in suffixes {
             if let Some(lib_basename) = filename.strip_suffix(suffix) {
@@ -75,17 +75,6 @@ fn extract_lib_from_filename<'a>(target: &str, filename: &'a str) -> Option<&'a 
             None
         }
     }
-}
-
-/// Tests whether a file is an object file to be linked.
-fn is_object_file(path: &std::path::Path) -> bool {
-    let Some(ext_os) = path.extension() else {
-        return false;
-    };
-    let Some(ext) = ext_os.to_str() else {
-        return false;
-    };
-    ext == "o" || ext == "obj"
 }
 
 /// Split link_args produced by pkg-config --cflags and / or --libs into separate flags.
@@ -186,7 +175,7 @@ pub(crate) fn parse_libs_cflags(link_args: &[u8], _builder: &mut cc::Build) {
                     if let (Some(dir), Some(file_name), Ok(target)) =
                         (path.parent(), path.file_name(), &target)
                     {
-                        if is_object_file(path) {
+                        if crate::utils::is_object_file(path) {
                             #[cfg(feature = "link_qt_object_files")]
                             {
                                 // Linking will fail with duplicate symbol errors if the same .o file is linked twice.

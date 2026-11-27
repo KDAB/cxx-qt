@@ -154,6 +154,7 @@ impl QtInstallation for QtInstallationQtMinimal {
         let path_lib = self.path_qt.join("lib");
         let path_prefix = self.path_qt.clone();
         let path_plugins = self.path_qt.join("plugins");
+        let path_qml = self.path_qt.join("qml");
         let qt_version = self.version.clone();
         super::shared::link_for_qt_modules(
             builder,
@@ -162,7 +163,24 @@ impl QtInstallation for QtInstallationQtMinimal {
             path_lib,
             path_prefix,
             path_plugins,
+            path_qml,
             qt_version,
+        );
+    }
+
+    fn link_plugins(&self, builder: &mut cc::Build) {
+        let path_prefix = self.path_qt.clone();
+        let path_lib = self.path_qt.join("lib");
+        let path_plugins = self.path_qt.join("plugins");
+        let path_qml = self.path_qt.join("qml");
+
+        super::shared::link_plugins(
+            path_prefix,
+            path_lib,
+            path_plugins,
+            path_qml,
+            builder,
+            &self.version,
         );
     }
 
