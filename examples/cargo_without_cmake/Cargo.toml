@@ -18,11 +18,9 @@ cxx-qt.workspace = true
 cxx-qt-lib = { workspace = true, features = ["full"] }
 
 [build-dependencies]
-# The link_qt_object_files feature is required for statically linking Qt 6.
-cxx-qt-build = { workspace = true, features = [ "link_qt_object_files" ] }
-
+cxx-qt-build.workspace = true
 # Depend on qt-build-utils so that qt_minimal feature can be enabled
-qt-build-utils = { workspace = true }
+qt-build-utils.workspace = true
 
 [features]
 default = []

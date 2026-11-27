@@ -8,16 +8,13 @@
 //! It has been decoupled from the pkg-config crate because qt-build-utils reads Qt's .prl files instead, which
 //! does not require a pkg-config executable to be available.
 
-use std::env;
-
-#[cfg(feature = "link_qt_object_files")]
 use std::{
     collections::HashSet,
+    env,
     path::PathBuf,
     sync::{OnceLock, RwLock},
 };
 
-#[cfg(feature = "link_qt_object_files")]
 static LINKED_OBJECT_FILES: OnceLock<RwLock<HashSet<PathBuf>>> = OnceLock::new();
 
 /// Extract the &str to pass to cargo::rustc-link-lib from a filename (just the file name, not including directories)
@@ -187,29 +184,26 @@ pub(crate) fn parse_libs_cflags(link_args: &[u8], _builder: &mut cc::Build) {
                         (path.parent(), path.file_name(), &target)
                     {
                         if is_object_file(path) {
-                            #[cfg(feature = "link_qt_object_files")]
+                            // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
+                            // Many of Qt's .prl files repeat listing .o files that other .prl files also list.
+                            let already_linked_object_files =
+                                LINKED_OBJECT_FILES.get_or_init(|| RwLock::new(HashSet::new()));
+                            if !already_linked_object_files
+                                .read()
+                                .expect("Lock poisoned")
+                                .contains(path)
                             {
-                                // Linking will fail with duplicate symbol errors if the same .o file is linked twice.
-                                // Many of Qt's .prl files repeat listing .o files that other .prl files also list.
-                                let already_linked_object_files =
-                                    LINKED_OBJECT_FILES.get_or_init(|| RwLock::new(HashSet::new()));
-                                if !already_linked_object_files
-                                    .read()
-                                    .expect("Lock poisoned")
-                                    .contains(path)
-                                {
-                                    // Cargo doesn't have a means to directly specify an object to link,
-                                    // so use the cc crate to specify it instead.
-                                    // TODO: pass file path directly when link-arg library type is stabilized
-                                    // https://github.com/rust-lang/rust/issues/99427#issuecomment-1562092085
-                                    // TODO: remove builder argument when it's not used anymore to link object files.
-                                    // also remove the dependency on cc when this is done
-                                    _builder.object(path);
-                                    already_linked_object_files
-                                        .write()
-                                        .expect("Lock poisoned!")
-                                        .insert(path.to_path_buf());
-                                }
+                                // Cargo doesn't have a means to directly specify an object to link,
+                                // so use the cc crate to specify it instead.
+                                // TODO: pass file path directly when link-arg library type is stabilized
+                                // https://github.com/rust-lang/rust/issues/99427#issuecomment-1562092085
+                                // TODO: remove builder argument when it's not used anymore to link object files.
+                                // also remove the dependency on cc when this is done
+                                _builder.object(path);
+                                already_linked_object_files
+                                    .write()
+                                    .expect("Lock poisoned!")
+                                    .insert(path.to_path_buf());
                             }
                         } else {
                             match extract_lib_from_filename(target, &file_name.to_string_lossy()) {

@@ -79,7 +79,6 @@ serde = ["dep:serde"]
 uuid = ["dep:uuid"]
 image-v0-24 = ["dep:image-v0-24"]
 image-v0-25 = ["dep:image-v0-25"]
-link_qt_object_files = ["cxx-qt-build/link_qt_object_files"]
 
 [lints]
 workspace = true

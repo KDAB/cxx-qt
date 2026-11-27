@@ -14,7 +14,7 @@ cxx-qt.workspace = true
 cxx-qt-lib = { workspace = true, features = ["full"] }
 
 [build-dependencies]
-cxx-qt-build = { workspace = true, features = ["link_qt_object_files"] }
+cxx-qt-build.workspace = true
 
 [lints]
 workspace = true

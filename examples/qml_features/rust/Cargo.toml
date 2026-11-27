@@ -22,8 +22,5 @@ serde_json.workspace = true
 [build-dependencies]
 cxx-qt-build.workspace = true
 
-[features]
-link_qt_object_files = [ "cxx-qt-build/link_qt_object_files" ]
-
 [lints]
 workspace = true

@@ -36,8 +36,7 @@ cxx-qt = "0.10"
 cxx-qt-lib = { version="0.10", features = ["qt_full"] }
 
 [build-dependencies]
-# The link_qt_object_files feature is required for statically linking Qt 6.
-cxx-qt-build = { version = "0.10", features = [ "link_qt_object_files" ] }
+cxx-qt-build = "0.10"
 
 # Enable the qt_minimal feature in qt-build-utils
 # this allows for automatically downloading Qt when not found with qmake
